@@ -1,5 +1,5 @@
 # UmamusumeResponseAnalyzer
-请搭配https://github.com/EtherealAO/umamusume-localify使用
+请搭配 https://github.com/EtherealAO/umamusume-localify 使用
 
 已知BUG：
 多分支 无选项事件显示错误（比如抽奖、粉丝数事件）
