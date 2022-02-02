@@ -27,6 +27,10 @@ namespace UmamusumeResponseAnalyzer
                     ctx.Request.InputStream.CopyTo(ms);
                     var buffer = ms.ToArray();
 
+#if DEBUG
+                    if (!Directory.Exists("response")) Directory.CreateDirectory("response");
+                    File.WriteAllBytes(@$"response/{DateTime.Now.Ticks}.msgpack", buffer);
+#endif
                     _ = Task.Run(() => ParseResponse(buffer));
 
                     await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
@@ -52,6 +56,9 @@ namespace UmamusumeResponseAnalyzer
                         case var FriendSearch when str.Contains("friend_info") && str.Contains("user_info_summary") && str.Contains("practice_partner_info") && str.Contains("directory_card_array") && str.Contains("support_card_data") && str.Contains("release_num_info") && str.Contains("trophy_num_info") && str.Contains("team_stadium_user") && str.Contains("follower_num") && str.Contains("own_follow_num") && str.Contains("enable_circle_scout"):
                             ParseFriendSearchResponse(buffer);
                             break;
+                        case var TeamStadiumOpponentList when str.Contains("opponent_info_array"):
+                            ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
+                            break;
                         default:
                             return;
                     }
@@ -59,7 +66,10 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception)
             {
+#if DEBUG
+                if (!Directory.Exists("response")) Directory.CreateDirectory("response");
                 File.WriteAllBytes(@$"./response/{DateTime.Now.Ticks}.bin", buffer);
+#endif
             }
         }
         static void ParseSingleModeCheckEventResponse(byte[] buffer)
@@ -118,6 +128,51 @@ namespace UmamusumeResponseAnalyzer
                 Console.WriteLine($"种马：{Name}\t\t{WinSaddle}\t\t{Score}");
                 Console.WriteLine("—————————————————————————————————");
             }
+        }
+        static void ParseTeamStadiumOpponentListResponse(byte[] buffer)
+        {
+            var @event = MessagePack.MessagePackSerializer.Deserialize<Gallop.TeamStadiumOpponentListResponse>(buffer);
+            var data = @event.data;
+            foreach (var i in data.opponent_info_array.OrderByDescending(x => x.strength))
+            {
+                var Type = i.strength switch
+                {
+                    1 => "上",
+                    2 => "中",
+                    3 => "下"
+                };
+                Console.WriteLine($"————————————————{Type}————————————————");
+                var dic = new Dictionary<int, string>();
+                foreach (var j in i.trained_chara_array)
+                    dic.Add(j.trained_chara_id, $"\t短{GetProper(j.proper_distance_short)}\t英{GetProper(j.proper_distance_mile)}\t中{GetProper(j.proper_distance_middle)}\t长{GetProper(j.proper_distance_long)}\t泥{GetProper(j.proper_ground_dirt)}{Environment.NewLine}\t速{j.speed}\t耐{j.stamina}\t力{j.power}\t根{j.guts}\t智{j.wiz}");
+                foreach (var j in i.team_data_array.GroupBy(x => x.distance_type))
+                {
+                    var distance = j.Key switch
+                    {
+                        1 => "短",
+                        2 => "英",
+                        3 => "中",
+                        4 => "长",
+                        5 => "泥"
+                    };
+                    Console.WriteLine($"{distance}: ");
+                    foreach (var k in j)
+                        Console.WriteLine(dic[k.trained_chara_id]);
+                }
+            }
+
+            static string GetProper(int proper) => proper switch
+            {
+                1 => "G",
+                2 => "F",
+                3 => "E",
+                4 => "D",
+                5 => "C",
+                6 => "B",
+                7 => "A",
+                8 => "S",
+                _ => "错误"
+            };
         }
     }
 }
