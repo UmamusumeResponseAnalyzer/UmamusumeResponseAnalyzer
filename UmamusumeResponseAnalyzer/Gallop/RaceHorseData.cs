@@ -25,7 +25,7 @@ namespace Gallop
 		[Key("nickname_id")]
 		public int nickname_id; // 0x38
 		[Key("card_id")]
-		public int card_id; // 0x3C
+		public int? card_id; // 0x3C
 		[Key("chara_id")]
 		public int chara_id; // 0x40
 		[Key("rarity")]

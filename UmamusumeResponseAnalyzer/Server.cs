@@ -68,13 +68,13 @@ namespace UmamusumeResponseAnalyzer
             {
 #if DEBUG
                 if (!Directory.Exists("response")) Directory.CreateDirectory("response");
-                File.WriteAllBytes(@$"./response/{DateTime.Now.Ticks}.bin", buffer);
+                File.WriteAllBytes(@$"./response/{DateTime.Now.Ticks}.error", buffer);
 #endif
             }
         }
         static void ParseSingleModeCheckEventResponse(byte[] buffer)
         {
-            var @event = MessagePack.MessagePackSerializer.Deserialize<Gallop.SingleModeCheckEventResponse>(buffer);
+            var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
             if (@event != default && @event.data.unchecked_event_array?.Length > 0)
             {
                 foreach (var i in @event.data.unchecked_event_array)
@@ -94,7 +94,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static void ParseTrainedCharaLoadResponse(byte[] buffer)
         {
-            var @event = MessagePack.MessagePackSerializer.Deserialize<Gallop.TrainedCharaLoadResponse>(buffer);
+            var @event = TryDeserialize<Gallop.TrainedCharaLoadResponse>(buffer);
             var data = @event.data;
             if (@event != default && data.trained_chara_array.Length > 0 && data.trained_chara_favorite_array.Length > 0)
             {
@@ -114,7 +114,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static void ParseFriendSearchResponse(byte[] buffer)
         {
-            var @event = MessagePack.MessagePackSerializer.Deserialize<Gallop.FriendSearchResponse>(buffer);
+            var @event = TryDeserialize<Gallop.FriendSearchResponse>(buffer);
             var data = @event.data;
             if (@event != default)
             {
@@ -131,7 +131,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static void ParseTeamStadiumOpponentListResponse(byte[] buffer)
         {
-            var @event = MessagePack.MessagePackSerializer.Deserialize<Gallop.TeamStadiumOpponentListResponse>(buffer);
+            var @event = TryDeserialize<Gallop.TeamStadiumOpponentListResponse>(buffer);
             var data = @event.data;
             foreach (var i in data.opponent_info_array.OrderByDescending(x => x.strength))
             {
@@ -173,6 +173,18 @@ namespace UmamusumeResponseAnalyzer
                 8 => "S",
                 _ => "错误"
             };
+        }
+        internal static T TryDeserialize<T>(byte[] buffer)
+        {
+            try
+            {
+                return MessagePack.MessagePackSerializer.Deserialize<T>(buffer);
+            }
+            catch (Exception)
+            {
+                var json = MessagePack.MessagePackSerializer.ConvertToJson(buffer);
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
+            }
         }
     }
 }
