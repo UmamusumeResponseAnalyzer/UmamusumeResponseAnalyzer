@@ -18,6 +18,13 @@
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="2.3.85" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Spectre.Console" Version="0.43.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="events.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
