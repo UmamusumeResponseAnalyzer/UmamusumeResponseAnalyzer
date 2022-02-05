@@ -1,0 +1,26 @@
+[
+	{
+		"Name": "レース勝利！",
+		"ChoiceIndex": 2,
+		"SelectIndex": 1,
+		"Effect": "体力-5"
+	},
+	{
+		"Name": "謎の儀式図で運試し！",
+		"ChoiceIndex": 1,
+		"SelectIndex": 1,
+		"Effect": "全属性+7"
+	},
+	{
+		"Name": "仲間と一緒に笑福万来！",
+		"ChoiceIndex": 1,
+		"SelectIndex": 1,
+		"Effect": "全属性+7"
+	},
+	{
+		"Name": "意外な一面",
+		"ChoiceIndex": 1,
+		"SelectIndex": 1,
+		"Effect": "体力+15~19，耐力+10~13，ペースアップ的hint+3，解锁理事长的外出事件"
+	}
+]

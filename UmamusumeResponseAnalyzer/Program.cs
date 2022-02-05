@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System;
 using System.Text.RegularExpressions;
+using MessagePack;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -33,12 +34,67 @@ namespace UmamusumeResponseAnalyzer
                     .AddChoices(new[]
                             {
                             "Start!",
+                            "Options",
                             "Update events.json",
                             "Kill process who occupied 4693 ports"
                             }
                     ));
                 switch (prompt)
                 {
+                    case "Options":
+                        var multiSelection = new MultiSelectionPrompt<string>()
+                            .Title("Options")
+                            .Mode(SelectionMode.Leaf)
+                            .PageSize(10)
+                            .InstructionsText(
+                                "[grey](Press [blue]<space>[/] to toggle a fruit, " +
+                                "[green]<enter>[/] to accept)[/]");
+                        foreach (var i in Config.ConfigSet)
+                        {
+                            if (i.Value == Array.Empty<string>())
+                            {
+                                Debug.WriteLine($"Add selection: {i.Key}");
+                                multiSelection.AddChoice(i.Key);
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Add selection group {i.Key}: {string.Join(',', i.Value)}");
+                                multiSelection.AddChoiceGroup(i.Key, i.Value);
+                            }
+                        }
+                        foreach (var i in Config.Configuration)
+                        {
+                            if (i.Value)
+                            {
+                                Debug.WriteLine($"Set {i.Key} to true because of configuration file");
+                                multiSelection.Select(i.Key);
+                            }
+                        }
+                        foreach (var i in Config.ConfigSet)
+                        {
+                            if (i.Value != Array.Empty<string>() && Config.Configuration.Where(x => x.Value == true).Select(x => x.Key).Intersect(i.Value).Count() == i.Value.Length)
+                            {
+                                Debug.WriteLine($"All of {i.Key} was selected, select {i.Key} too");
+                                multiSelection.Select(i.Key);
+                            }
+                        }
+                        var options = AnsiConsole.Prompt(multiSelection);
+#if DEBUG
+                        foreach (var i in options)
+                        {
+                            if (!Config.Configuration.ContainsKey(i))
+                                Config.Configuration.Add(i, true);
+                        }
+                        File.WriteAllBytes(@".config", MessagePackSerializer.Serialize(Config.Configuration));
+#endif
+                        foreach (var i in Config.Configuration.Keys)
+                        {
+                            if (options.Contains(i))
+                                Config.Configuration[i] = true;
+                            else
+                                Config.Configuration[i] = false;
+                        }
+                        break;
                     case "Update events.json":
                         await AnsiConsole.Progress()
                             .StartAsync(async ctx =>
@@ -111,7 +167,7 @@ namespace UmamusumeResponseAnalyzer
                         }
                         Console.WriteLine("Program using 4693 port not found!");
                         Console.WriteLine("Press any key to return main menu...");
-                        Console.ReadLine();
+                        Console.ReadKey();
                         break;
                 }
                 Console.Clear();

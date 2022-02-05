@@ -13,15 +13,13 @@ namespace UmamusumeResponseAnalyzer
         const string EVENT_NAME_FILEPATH = @"./events.json";
         const string SUCCESS_EVENT_FILEPATH = @"./successevent.json";
         public static Dictionary<long, Story> Events = new();
-        public static Dictionary<int, (int Choice, string Effect)> SuccessEvent = new();
+        public static Dictionary<string, SuccessStory> SuccessEvent = new();
         public static void Initialize()
         {
             if (File.Exists(EVENT_NAME_FILEPATH))
-            {
                 Events = JArray.Parse(File.ReadAllText(EVENT_NAME_FILEPATH)).ToObject<List<Story>>().ToDictionary(x => x.Id, x => x);
-            }
             if (File.Exists(SUCCESS_EVENT_FILEPATH))
-                SuccessEvent = JObject.Parse(File.ReadAllText(SUCCESS_EVENT_FILEPATH)).ToObject<Dictionary<int, (int Choice, string Effect)>>();
+                SuccessEvent = JArray.Parse(File.ReadAllText(SUCCESS_EVENT_FILEPATH)).ToObject<List<SuccessStory>>().ToDictionary(x => x.Name, x => x);
         }
     }
 }
@@ -42,4 +40,11 @@ public class Choice
         Option = opt;
         Effect = eff;
     }
+}
+public class SuccessStory
+{
+    public string Name { get; set; }
+    public int ChoiceIndex { get; set; }
+    public int SelectIndex { get; set; }
+    public string Effect { get; set; }
 }

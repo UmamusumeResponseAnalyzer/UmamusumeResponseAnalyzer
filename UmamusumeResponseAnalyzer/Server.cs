@@ -49,16 +49,20 @@ namespace UmamusumeResponseAnalyzer
                     switch (str)
                     {
                         case var CheckEvent when str.Contains("event_contents_info") && str.Contains("choice_array"):
-                            ParseSingleModeCheckEventResponse(buffer);
+                            if (Config.Configuration[nameof(ParseSingleModeCheckEventResponse)])
+                                ParseSingleModeCheckEventResponse(buffer);
                             break;
                         case var TrainedCharaLoad when str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"):
-                            ParseTrainedCharaLoadResponse(buffer);
+                            if (Config.Configuration[nameof(ParseTrainedCharaLoadResponse)])
+                                ParseTrainedCharaLoadResponse(buffer);
                             break;
                         case var FriendSearch when str.Contains("friend_info") && str.Contains("user_info_summary") && str.Contains("practice_partner_info") && str.Contains("directory_card_array") && str.Contains("support_card_data") && str.Contains("release_num_info") && str.Contains("trophy_num_info") && str.Contains("team_stadium_user") && str.Contains("follower_num") && str.Contains("own_follow_num") && str.Contains("enable_circle_scout"):
-                            ParseFriendSearchResponse(buffer);
+                            if (Config.Configuration[nameof(ParseFriendSearchResponse)])
+                                ParseFriendSearchResponse(buffer);
                             break;
                         case var TeamStadiumOpponentList when str.Contains("opponent_info_array"):
-                            ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
+                            if (Config.Configuration[nameof(ParseTeamStadiumOpponentListResponse)])
+                                ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
                             break;
                         default:
                             return;
@@ -83,10 +87,21 @@ namespace UmamusumeResponseAnalyzer
                     if (i.event_contents_info?.choice_array.Length == 0) continue;
                     var mainTree = new Tree(Database.Events[i.story_id].TriggerName.EscapeMarkup());
                     var eventTree = new Tree(Database.Events[i.story_id].Name.EscapeMarkup());
+                    var success = Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent);
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
                         var tree = new Tree($"{Database.Events[i.story_id].Choices[j].Option} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                        tree.AddNode($"{Database.Events[i.story_id].Choices[j].Effect}".EscapeMarkup());
+                        if (success && successEvent.ChoiceIndex == j + 1)
+                        {
+                            if (successEvent.SelectIndex == i.event_contents_info.choice_array[j].select_index)
+                                tree.AddNode($"[mediumspringgreen on #F7EED6]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
+                            else
+                                tree.AddNode($"[red on #F7EED6]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
+                        }
+                        else
+                        {
+                            tree.AddNode($"{Database.Events[i.story_id].Choices[j].Effect}".EscapeMarkup());
+                        }
                         eventTree.AddNode(tree);
                     }
                     mainTree.AddNode(eventTree);
@@ -228,7 +243,7 @@ namespace UmamusumeResponseAnalyzer
                 container.AddRow(table);
             }
             Console.BufferWidth = 160;
-            Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
+            Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
             AnsiConsole.Write(container);
 
             static string GetProper(int proper) => proper switch
