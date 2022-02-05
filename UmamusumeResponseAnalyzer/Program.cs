@@ -100,21 +100,39 @@ namespace UmamusumeResponseAnalyzer
                             .StartAsync(async ctx =>
                             {
                                 var client = new HttpClient();
-                                var task = ctx.AddTask("Downloading events.json from github", false);
-                                using var response = await client.GetAsync("https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json", HttpCompletionOption.ResponseContentRead);
-                                response.EnsureSuccessStatusCode();
-                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                task.StartTask();
-                                using var contentStream = await response.Content.ReadAsStreamAsync();
-                                using var fileStream = new FileStream("events.json", FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                var buffer = new byte[8192];
-                                while (true)
-                                {
-                                    var read = await contentStream.ReadAsync(buffer);
-                                    if (read == 0)
-                                        break;
-                                    task.Increment(read);
-                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                                { //events.json
+                                    var task = ctx.AddTask("Downloading events.json from github", false);
+                                    using var response = await client.GetAsync("https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json", HttpCompletionOption.ResponseContentRead);
+                                    task.MaxValue(response.Content.Headers.ContentLength ?? 0);
+                                    task.StartTask();
+                                    using var contentStream = await response.Content.ReadAsStreamAsync();
+                                    using var fileStream = new FileStream("events.json", FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                                    var buffer = new byte[8192];
+                                    while (true)
+                                    {
+                                        var read = await contentStream.ReadAsync(buffer);
+                                        if (read == 0)
+                                            break;
+                                        task.Increment(read);
+                                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                                    }
+                                }
+                                { //successevent.json
+                                    var task = ctx.AddTask("Downloading successevent.json from github", false);
+                                    using var response = await client.GetAsync("https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevent.json", HttpCompletionOption.ResponseContentRead);
+                                    task.MaxValue(response.Content.Headers.ContentLength ?? 0);
+                                    task.StartTask();
+                                    using var contentStream = await response.Content.ReadAsStreamAsync();
+                                    using var fileStream = new FileStream("successevent.json", FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                                    var buffer = new byte[8192];
+                                    while (true)
+                                    {
+                                        var read = await contentStream.ReadAsync(buffer);
+                                        if (read == 0)
+                                            break;
+                                        task.Increment(read);
+                                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                                    }
                                 }
                             });
                         Console.Clear();
