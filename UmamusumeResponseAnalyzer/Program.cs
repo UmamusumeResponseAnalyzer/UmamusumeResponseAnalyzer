@@ -139,7 +139,7 @@ namespace UmamusumeResponseAnalyzer
                         Console.WriteLine("Press any key to return main menu...");
                         Console.ReadKey();
                         break;
-                    case "Kill process who occupied 4693 ports":
+                    case "Kill process who occupied 4693 port":
                         using (var Proc = new Process())
                         {
 

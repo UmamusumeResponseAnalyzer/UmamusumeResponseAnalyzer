@@ -97,9 +97,9 @@ namespace UmamusumeResponseAnalyzer
                             if (successChoice != default)
                             {
                                 if (successChoice.SelectIndex == i.event_contents_info.choice_array[j].select_index)
-                                    tree.AddNode($"[mediumspringgreen on #F7EED6]{successChoice.Effect.EscapeMarkup()}[/]");
+                                    tree.AddNode($"[mediumspringgreen on #081129]{successChoice.Effect.EscapeMarkup()}[/]");
                                 else
-                                    tree.AddNode($"[red on #F7EED6]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
+                                    tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
                             }
                         }
                         else

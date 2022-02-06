@@ -22,7 +22,25 @@ namespace UmamusumeResponseAnalyzer
             });
             ConfigSet.Add("Test", Array.Empty<string>());
             if (File.Exists(@".config"))
+            {
                 Configuration = MessagePackSerializer.Deserialize<Dictionary<string, bool>>(File.ReadAllBytes(@".config"));
+            }
+            else
+            {
+                foreach (var i in ConfigSet)
+                {
+                    if (i.Value == Array.Empty<string>())
+                    {
+                        Configuration.Add(i.Key, true);
+                    }
+                    else
+                    {
+                        foreach (var j in i.Value)
+                        {
+                            Configuration.Add(j, true);
+                        }
+                    }
+                }
+            }
         }
     }
-}

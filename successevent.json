@@ -54,5 +54,15 @@
 			"Effect": "体力+20，干劲提升，获得爱娇"
 		}
 		]
+	},
+	{
+		"Name": "気まぐれ天才魔法少女スイーピー☆",
+		"Choices": [
+		{
+			"ChoiceIndex": 1,
+			"SelectIndex": 1,
+			"Effect": "干劲提升，直线一气的Hint+2"
+		}
+		]
 	}
 ]
