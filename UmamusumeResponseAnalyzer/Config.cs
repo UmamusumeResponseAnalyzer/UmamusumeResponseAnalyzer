@@ -24,6 +24,21 @@ namespace UmamusumeResponseAnalyzer
             if (File.Exists(@".config"))
             {
                 Configuration = MessagePackSerializer.Deserialize<Dictionary<string, bool>>(File.ReadAllBytes(@".config"));
+                foreach (var i in ConfigSet)
+                {
+                    if (i.Value == Array.Empty<string>())
+                    {
+                        if (!Configuration.ContainsKey(i.Key))
+                            Configuration.Add(i.Key, false); //对于新添加的功能 默认不开启
+                    }
+                    else
+                    {
+                        foreach (var j in i.Value)
+                        {
+                            Configuration.Add(j, false);
+                        }
+                    }
+                }
             }
             else
             {
@@ -41,6 +56,8 @@ namespace UmamusumeResponseAnalyzer
                         }
                     }
                 }
+                File.WriteAllBytes(@".config", MessagePackSerializer.Serialize(Configuration));
             }
         }
     }
+}
