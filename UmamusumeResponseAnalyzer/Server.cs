@@ -246,8 +246,11 @@ namespace UmamusumeResponseAnalyzer
                 table.AddRow(wizLine.Append(wizLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
                 container.AddRow(table);
             }
-            Console.BufferWidth = 160;
-            Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
+            if (Console.BufferWidth < 160 || Console.WindowWidth < 160)
+            {
+                Console.BufferWidth = 160;
+                Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
+            }
             AnsiConsole.Write(container);
 
             static string GetProper(int proper) => proper switch
