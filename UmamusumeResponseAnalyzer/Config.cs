@@ -11,7 +11,7 @@ namespace UmamusumeResponseAnalyzer
     {
         internal static Dictionary<string, string[]> ConfigSet { get; set; } = new();
         internal static Dictionary<string, bool> Configuration { get; set; } = new();
-        static Config()
+        internal static void Initialize()
         {
             ConfigSet.Add("Events", new[]
             {
@@ -35,7 +35,8 @@ namespace UmamusumeResponseAnalyzer
                     {
                         foreach (var j in i.Value)
                         {
-                            Configuration.Add(j, false);
+                            if (!Configuration.ContainsKey(j))
+                                Configuration.Add(j, false);
                         }
                     }
                 }

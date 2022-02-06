@@ -25,6 +25,7 @@ namespace UmamusumeResponseAnalyzer
             Console.BufferWidth = 160;
             Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
             Console.OutputEncoding = Encoding.UTF8;
+            Config.Initialize();
             var prompt = string.Empty;
             do
             {
@@ -102,7 +103,7 @@ namespace UmamusumeResponseAnalyzer
                                 var client = new HttpClient();
                                 { //events.json
                                     var task = ctx.AddTask("Downloading events.json from github", false);
-                                    using var response = await client.GetAsync("https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json", HttpCompletionOption.ResponseContentRead);
+                                    using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/events.json", HttpCompletionOption.ResponseContentRead);
                                     task.MaxValue(response.Content.Headers.ContentLength ?? 0);
                                     task.StartTask();
                                     using var contentStream = await response.Content.ReadAsStreamAsync();
@@ -119,7 +120,7 @@ namespace UmamusumeResponseAnalyzer
                                 }
                                 { //successevent.json
                                     var task = ctx.AddTask("Downloading successevent.json from github", false);
-                                    using var response = await client.GetAsync("https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevent.json", HttpCompletionOption.ResponseContentRead);
+                                    using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/successevent.json", HttpCompletionOption.ResponseContentRead);
                                     task.MaxValue(response.Content.Headers.ContentLength ?? 0);
                                     task.StartTask();
                                     using var contentStream = await response.Content.ReadAsStreamAsync();
