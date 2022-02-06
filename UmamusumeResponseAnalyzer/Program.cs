@@ -135,7 +135,6 @@ namespace UmamusumeResponseAnalyzer
                                     }
                                 }
                             });
-                        Console.Clear();
                         AnsiConsole.MarkupLine($"Download completed!");
                         Console.WriteLine("Press any key to return main menu...");
                         Console.ReadKey();

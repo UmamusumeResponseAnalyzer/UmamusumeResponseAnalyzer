@@ -91,12 +91,16 @@ namespace UmamusumeResponseAnalyzer
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
                         var tree = new Tree($"{Database.Events[i.story_id].Choices[j].Option} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                        if (success && successEvent.ChoiceIndex == j + 1)
+                        if (success)
                         {
-                            if (successEvent.SelectIndex == i.event_contents_info.choice_array[j].select_index)
-                                tree.AddNode($"[mediumspringgreen on #F7EED6]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
-                            else
-                                tree.AddNode($"[red on #F7EED6]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
+                            var successChoice = successEvent.Choices.FirstOrDefault(x => x.ChoiceIndex == j + 1);
+                            if (successChoice != default)
+                            {
+                                if (successChoice.SelectIndex == i.event_contents_info.choice_array[j].select_index)
+                                    tree.AddNode($"[mediumspringgreen on #F7EED6]{successChoice.Effect.EscapeMarkup()}[/]");
+                                else
+                                    tree.AddNode($"[red on #F7EED6]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
+                            }
                         }
                         else
                         {

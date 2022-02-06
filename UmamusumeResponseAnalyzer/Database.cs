@@ -44,6 +44,10 @@ public class Choice
 public class SuccessStory
 {
     public string Name { get; set; }
+    public List<SuccessChoice> Choices { get; set; } = new();
+}
+public class SuccessChoice
+{
     public int ChoiceIndex { get; set; }
     public int SelectIndex { get; set; }
     public string Effect { get; set; }
