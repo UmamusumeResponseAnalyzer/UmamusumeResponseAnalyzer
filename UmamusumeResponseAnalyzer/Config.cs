@@ -4,32 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
     internal static class Config
     {
+        internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
         internal static Dictionary<string, string[]> ConfigSet { get; set; } = new();
         internal static Dictionary<string, bool> Configuration { get; set; } = new();
         internal static void Initialize()
         {
-            ConfigSet.Add("Events", new[]
+            ConfigSet.Add(Resource.ConfigSet_Events, new[]
             {
-                "ParseSingleModeCheckEventResponse",
-                "ParseTrainedCharaLoadResponse",
-                "ParseFriendSearchResponse",
-                "ParseTeamStadiumOpponentListResponse"
+                Resource.ConfigSet_ParseSingleModeCheckEventResponse,
+                Resource.ConfigSet_ParseTrainedCharaLoadResponse,
+                Resource.ConfigSet_ParseFriendSearchResponse,
+                Resource.ConfigSet_ParseTeamStadiumOpponentListResponse
             });
-            ConfigSet.Add("Test", Array.Empty<string>());
-            if (File.Exists(@".config"))
+            ConfigSet.Add(Resource.ConfigSet_Test, Array.Empty<string>());
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
+            if (File.Exists(CONFIG_FILEPATH))
             {
-                Configuration = MessagePackSerializer.Deserialize<Dictionary<string, bool>>(File.ReadAllBytes(@".config"));
+                Configuration = MessagePackSerializer.Deserialize<Dictionary<string, bool>>(File.ReadAllBytes(CONFIG_FILEPATH));
                 foreach (var i in ConfigSet)
                 {
                     if (i.Value == Array.Empty<string>())
                     {
                         if (!Configuration.ContainsKey(i.Key))
-                            Configuration.Add(i.Key, false); //对于新添加的功能 默认不开启
+                            Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
                     }
                     else
                     {
@@ -57,7 +60,7 @@ namespace UmamusumeResponseAnalyzer
                         }
                     }
                 }
-                File.WriteAllBytes(@".config", MessagePackSerializer.Serialize(Configuration));
+                File.WriteAllBytes(CONFIG_FILEPATH, MessagePackSerializer.Serialize(Configuration));
             }
         }
     }

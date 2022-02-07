@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -49,19 +50,19 @@ namespace UmamusumeResponseAnalyzer
                     switch (str)
                     {
                         case var CheckEvent when str.Contains("event_contents_info") && str.Contains("choice_array"):
-                            if (Config.Configuration[nameof(ParseSingleModeCheckEventResponse)])
+                            if (Config.Configuration[Resource.ConfigSet_ParseSingleModeCheckEventResponse])
                                 ParseSingleModeCheckEventResponse(buffer);
                             break;
                         case var TrainedCharaLoad when str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"):
-                            if (Config.Configuration[nameof(ParseTrainedCharaLoadResponse)])
+                            if (Config.Configuration[Resource.ConfigSet_ParseTrainedCharaLoadResponse])
                                 ParseTrainedCharaLoadResponse(buffer);
                             break;
                         case var FriendSearch when str.Contains("friend_info") && str.Contains("user_info_summary") && str.Contains("practice_partner_info") && str.Contains("directory_card_array") && str.Contains("support_card_data") && str.Contains("release_num_info") && str.Contains("trophy_num_info") && str.Contains("team_stadium_user") && str.Contains("follower_num") && str.Contains("own_follow_num") && str.Contains("enable_circle_scout"):
-                            if (Config.Configuration[nameof(ParseFriendSearchResponse)])
+                            if (Config.Configuration[Resource.ConfigSet_ParseFriendSearchResponse])
                                 ParseFriendSearchResponse(buffer);
                             break;
                         case var TeamStadiumOpponentList when str.Contains("opponent_info_array"):
-                            if (Config.Configuration[nameof(ParseTeamStadiumOpponentListResponse)])
+                            if (Config.Configuration[Resource.ConfigSet_ParseTeamStadiumOpponentListResponse])
                                 ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
                             break;
                         default:

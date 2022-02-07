@@ -7,6 +7,8 @@ using System.Text;
 using System;
 using System.Text.RegularExpressions;
 using MessagePack;
+using System.Globalization;
+using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -18,7 +20,7 @@ namespace UmamusumeResponseAnalyzer
             var msgpackPath = @"response/637795073363227948.bin";
             var msgpackBytes = File.ReadAllBytes(msgpackPath);
             var jsonPath = @"response/637795073363227948.json";
-            var json = MessagePack.MessagePackSerializer.ConvertToJson(msgpackBytes);
+            var json = MessagePackSerializer.ConvertToJson(msgpackBytes);
             File.WriteAllText(jsonPath, JObject.Parse(json).ToString());
             File.WriteAllText(jsonPath + ".msgpack.json", JsonConvert.SerializeObject(Server.TryDeserialize<Gallop.SingleModeCheckEventResponse>(msgpackBytes), Formatting.Indented));
 #endif
@@ -30,166 +32,152 @@ namespace UmamusumeResponseAnalyzer
             do
             {
                 prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                    .Title("Launch Menu")
+                    .Title(Resource.LaunchMenu)
                     .PageSize(10)
                     .AddChoices(new[]
-                            {
-                            "Start!",
-                            "Options",
-                            "Update events.json",
-                            "Kill process who occupied 4693 ports"
-                            }
+                    {
+                        Resource.LaunchMenu_Start,
+                        Resource.LaunchMenu_Options,
+                        Resource.LaunchMenu_Update,
+                        Resource.LaunchMenu_Kill4693
+                    }
                     ));
-                switch (prompt)
+                if (prompt == Resource.LaunchMenu_Options)
                 {
-                    case "Options":
-                        var multiSelection = new MultiSelectionPrompt<string>()
-                            .Title("Options")
-                            .Mode(SelectionMode.Leaf)
-                            .PageSize(10)
-                            .InstructionsText(
-                                "[grey](Press [blue]<space>[/] to toggle a fruit, " +
-                                "[green]<enter>[/] to accept)[/]");
-                        foreach (var i in Config.ConfigSet)
+                    var multiSelection = new MultiSelectionPrompt<string>()
+                        .Title(Resource.LaunchMenu_Options)
+                        .Mode(SelectionMode.Leaf)
+                        .PageSize(10)
+                        .InstructionsText(Resource.LaunchMenu_Options_Instruction);
+                    foreach (var i in Config.ConfigSet)
+                    {
+                        if (i.Value == Array.Empty<string>())
                         {
-                            if (i.Value == Array.Empty<string>())
-                            {
-                                Debug.WriteLine($"Add selection: {i.Key}");
-                                multiSelection.AddChoice(i.Key);
-                            }
-                            else
-                            {
-                                Debug.WriteLine($"Add selection group {i.Key}: {string.Join(',', i.Value)}");
-                                multiSelection.AddChoiceGroup(i.Key, i.Value);
-                            }
+                            multiSelection.AddChoice(i.Key);
                         }
-                        foreach (var i in Config.Configuration)
+                        else
                         {
-                            if (i.Value)
-                            {
-                                Debug.WriteLine($"Set {i.Key} to true because of configuration file");
-                                multiSelection.Select(i.Key);
-                            }
+                            multiSelection.AddChoiceGroup(i.Key, i.Value);
                         }
-                        foreach (var i in Config.ConfigSet)
+                    }
+                    foreach (var i in Config.Configuration)
+                    {
+                        if (i.Value)
                         {
-                            if (i.Value != Array.Empty<string>() && Config.Configuration.Where(x => x.Value == true).Select(x => x.Key).Intersect(i.Value).Count() == i.Value.Length)
-                            {
-                                Debug.WriteLine($"All of {i.Key} was selected, select {i.Key} too");
-                                multiSelection.Select(i.Key);
-                            }
+                            multiSelection.Select(i.Key);
                         }
-                        var options = AnsiConsole.Prompt(multiSelection);
-#if DEBUG
-                        foreach (var i in options)
+                    }
+                    foreach (var i in Config.ConfigSet)
+                    {
+                        if (i.Value != Array.Empty<string>() && Config.Configuration.Where(x => x.Value == true).Select(x => x.Key).Intersect(i.Value).Count() == i.Value.Length)
                         {
-                            if (!Config.Configuration.ContainsKey(i))
-                                Config.Configuration.Add(i, true);
+                            multiSelection.Select(i.Key);
                         }
-                        File.WriteAllBytes(@".config", MessagePackSerializer.Serialize(Config.Configuration));
-#endif
-                        foreach (var i in Config.Configuration.Keys)
+                    }
+                    var options = AnsiConsole.Prompt(multiSelection);
+                    foreach (var i in Config.Configuration.Keys)
+                    {
+                        if (options.Contains(i))
+                            Config.Configuration[i] = true;
+                        else
+                            Config.Configuration[i] = false;
+                    }
+                }
+                else if (prompt == Resource.LaunchMenu_Update)
+                {
+                    await AnsiConsole.Progress()
+                        .StartAsync(async ctx =>
                         {
-                            if (options.Contains(i))
-                                Config.Configuration[i] = true;
-                            else
-                                Config.Configuration[i] = false;
-                        }
-                        break;
-                    case "Update events.json":
-                        await AnsiConsole.Progress()
-                            .StartAsync(async ctx =>
-                            {
-                                var client = new HttpClient();
-                                { //events.json
-                                    var task = ctx.AddTask("Downloading events.json from github", false);
-                                    using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/events.json", HttpCompletionOption.ResponseContentRead);
-                                    task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                    task.StartTask();
-                                    using var contentStream = await response.Content.ReadAsStreamAsync();
-                                    using var fileStream = new FileStream("events.json", FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                    var buffer = new byte[8192];
-                                    while (true)
-                                    {
-                                        var read = await contentStream.ReadAsync(buffer);
-                                        if (read == 0)
-                                            break;
-                                        task.Increment(read);
-                                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                                    }
-                                }
-                                { //successevent.json
-                                    var task = ctx.AddTask("Downloading successevent.json from github", false);
-                                    using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/successevent.json", HttpCompletionOption.ResponseContentRead);
-                                    task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                    task.StartTask();
-                                    using var contentStream = await response.Content.ReadAsStreamAsync();
-                                    using var fileStream = new FileStream("successevent.json", FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                    var buffer = new byte[8192];
-                                    while (true)
-                                    {
-                                        var read = await contentStream.ReadAsync(buffer);
-                                        if (read == 0)
-                                            break;
-                                        task.Increment(read);
-                                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                                    }
-                                }
-                            });
-                        AnsiConsole.MarkupLine($"Download completed!");
-                        Console.WriteLine("Press any key to return main menu...");
-                        Console.ReadKey();
-                        break;
-                    case "Kill process who occupied 4693 port":
-                        using (var Proc = new Process())
-                        {
-
-                            var StartInfo = new ProcessStartInfo();
-                            StartInfo.FileName = "netstat.exe";
-                            StartInfo.Arguments = "-a -n -o";
-                            StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                            StartInfo.UseShellExecute = false;
-                            StartInfo.RedirectStandardInput = true;
-                            StartInfo.RedirectStandardOutput = true;
-                            StartInfo.RedirectStandardError = true;
-                            Proc.StartInfo = StartInfo;
-                            Proc.Start();
-                            var NetStatRows = Regex.Split(Proc.StandardOutput.ReadToEnd() + Proc.StandardError.ReadToEnd(), "\r\n");
-                            foreach (string NetStatRow in NetStatRows)
-                            {
-                                string[] Tokens = Regex.Split(NetStatRow, "\\s+");
-                                if (Tokens.Length > 4 && (Tokens[1].Equals("UDP") || Tokens[1].Equals("TCP")))
+                            var client = new HttpClient();
+                            { //events.json
+                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadEventsInstruction, false);
+                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/events.json", HttpCompletionOption.ResponseContentRead);
+                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
+                                task.StartTask();
+                                using var contentStream = await response.Content.ReadAsStreamAsync();
+                                using var fileStream = new FileStream(Database.EVENT_NAME_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                                var buffer = new byte[8192];
+                                while (true)
                                 {
-                                    string IpAddress = Regex.Replace(Tokens[2], @"\[(.*?)\]", "1.1.1.1");
-                                    var port = Convert.ToInt32(IpAddress.Split(':')[1]);
-                                    if (port != 4693) continue;
-                                    var pid = Tokens[1] == "UDP" ? Convert.ToInt16(Tokens[4]) : Convert.ToInt16(Tokens[5]);
-                                    var name = Tokens[1] == "UDP" ? Process.GetProcessById(pid).ProcessName : Process.GetProcessById(pid).ProcessName;
+                                    var read = await contentStream.ReadAsync(buffer);
+                                    if (read == 0)
+                                        break;
+                                    task.Increment(read);
+                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                                }
+                            }
+                            { //successevent.json
+                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, false);
+                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/successevents.json", HttpCompletionOption.ResponseContentRead);
+                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
+                                task.StartTask();
+                                using var contentStream = await response.Content.ReadAsStreamAsync();
+                                using var fileStream = new FileStream(Database.SUCCESS_EVENT_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                                var buffer = new byte[8192];
+                                while (true)
+                                {
+                                    var read = await contentStream.ReadAsync(buffer);
+                                    if (read == 0)
+                                        break;
+                                    task.Increment(read);
+                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                                }
+                            }
+                        });
+                    AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
+                    Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
+                    Console.ReadKey();
+                }
+                else if (prompt == Resource.LaunchMenu_Kill4693)
+                {
+                    using (var Proc = new Process())
+                    {
 
-                                    var decision = AnsiConsole.Confirm($"Confirm to kill ProcessId:{pid} Name:{name}?");
-                                    if (decision)
+                        var StartInfo = new ProcessStartInfo();
+                        StartInfo.FileName = "netstat.exe";
+                        StartInfo.Arguments = "-a -n -o";
+                        StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        StartInfo.UseShellExecute = false;
+                        StartInfo.RedirectStandardInput = true;
+                        StartInfo.RedirectStandardOutput = true;
+                        StartInfo.RedirectStandardError = true;
+                        Proc.StartInfo = StartInfo;
+                        Proc.Start();
+                        var NetStatRows = Regex.Split(Proc.StandardOutput.ReadToEnd() + Proc.StandardError.ReadToEnd(), "\r\n");
+                        foreach (string NetStatRow in NetStatRows)
+                        {
+                            string[] Tokens = Regex.Split(NetStatRow, "\\s+");
+                            if (Tokens.Length > 4 && (Tokens[1].Equals("UDP") || Tokens[1].Equals("TCP")))
+                            {
+                                string IpAddress = Regex.Replace(Tokens[2], @"\[(.*?)\]", "1.1.1.1");
+                                var port = Convert.ToInt32(IpAddress.Split(':')[1]);
+                                if (port != 4693) continue;
+                                var pid = Tokens[1] == "UDP" ? Convert.ToInt16(Tokens[4]) : Convert.ToInt16(Tokens[5]);
+                                var name = Tokens[1] == "UDP" ? Process.GetProcessById(pid).ProcessName : Process.GetProcessById(pid).ProcessName;
+
+                                var decision = AnsiConsole.Confirm(string.Format(Resource.LaunchMenu_Kill4693_Confirm, pid, name));
+                                if (decision)
+                                {
+                                    if (name == "System")
                                     {
-                                        if (name == "System")
-                                        {
-                                            Console.WriteLine("YOU CAN'T KILL SYSTEM! Please follow FAQ to solve conflict problem.");
-                                            break;
-                                        }
-                                        Process.GetProcessById(pid).Kill();
+                                        Console.WriteLine(Resource.LaunchMenu_Kill4693_KillSystemAlert);
+                                        break;
                                     }
-                                    else
-                                    {
-                                        Environment.Exit(1);
-                                    }
+                                    Process.GetProcessById(pid).Kill();
+                                }
+                                else
+                                {
+                                    Environment.Exit(1);
                                 }
                             }
                         }
-                        Console.WriteLine("Program using 4693 port not found!");
-                        Console.WriteLine("Press any key to return main menu...");
-                        Console.ReadKey();
-                        break;
+                    }
+                    Console.WriteLine(Resource.LaunchMenu_Kill4693_NotFound);
+                    Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
+                    Console.ReadKey();
                 }
                 Console.Clear();
-            } while (prompt != "Start!");
+            } while (prompt != Resource.LaunchMenu_Start);
             Database.Initialize();
             Server.Start();
             while (true)

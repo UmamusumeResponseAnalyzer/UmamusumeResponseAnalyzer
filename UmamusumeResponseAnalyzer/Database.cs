@@ -10,12 +10,13 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class Database
     {
-        const string EVENT_NAME_FILEPATH = @"./events.json";
-        const string SUCCESS_EVENT_FILEPATH = @"./successevent.json";
+        internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.json");
+        internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.json");
         public static Dictionary<long, Story> Events = new();
         public static Dictionary<string, SuccessStory> SuccessEvent = new();
         public static void Initialize()
         {
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(EVENT_NAME_FILEPATH))
                 Events = JArray.Parse(File.ReadAllText(EVENT_NAME_FILEPATH)).ToObject<List<Story>>().ToDictionary(x => x.Id, x => x);
             if (File.Exists(SUCCESS_EVENT_FILEPATH))
