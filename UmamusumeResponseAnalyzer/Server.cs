@@ -117,7 +117,7 @@ namespace UmamusumeResponseAnalyzer
                 var date = string.Format(Resource.Events_ParseSingleModeCheckEventResponse_Date, MDays == 24 ? Year : (Year + 1), Month, Days == 1 ? Resource.Events_ParseSingleModeCheckEventResponse_Date_Lower : Resource.Events_ParseSingleModeCheckEventResponse_Date_Upper);
                 var dateCode = $"{(MDays == 24 ? Year : Year + 1)}{(Month < 10 ? $"0{Month}" : Month)}{Days + 1}";
                 var race = Config.Get<List<string>>("Races").FirstOrDefault(x => x[..4] == dateCode);
-                if (race != default) race = Database.Races[race];
+                if (race != default && Database.Races.ContainsKey(race)) race = Database.Races[race];
                 var rule = new Rule(string.Format(Resource.Events_NextTurnPrompting, date, race != default ? string.Format(Resource.Events_NextTurnRacePrompting, race) : string.Empty))
                     .Alignment(Justify.Left);
                 AnsiConsole.Write(rule);
@@ -134,7 +134,7 @@ namespace UmamusumeResponseAnalyzer
                 var date = string.Format(Resource.Events_ParseSingleModeCheckEventResponse_Date, MDays == 24 ? Year : (Year + 1), Month, Days == 1 ? Resource.Events_ParseSingleModeCheckEventResponse_Date_Lower : Resource.Events_ParseSingleModeCheckEventResponse_Date_Upper);
                 var dateCode = $"{(MDays == 24 ? Year : Year + 1)}{(Month < 10 ? $"0{Month}" : Month)}{Days + 1}";
                 var race = Config.Get<List<string>>("Races").FirstOrDefault(x => x[..4] == dateCode);
-                if (race != default) race = Database.Races[race];
+                if (race != default && Database.Races.ContainsKey(race)) race = Database.Races[race];
                 var rule = new Rule(string.Format(Resource.Events_NextTurnPrompting, date, race != default ? string.Format(Resource.Events_NextTurnRacePrompting, race) : string.Empty))
                     .Alignment(Justify.Left);
                 AnsiConsole.Write(rule);

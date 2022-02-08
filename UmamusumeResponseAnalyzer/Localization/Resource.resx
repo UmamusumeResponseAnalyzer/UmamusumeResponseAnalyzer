@@ -195,4 +195,7 @@
   <data name="LaunchMenu_Update_DownloadSuccessEventsInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的successevents.json</value>
   </data>
+  <data name="LaunchMenu_Update_DownloadRacesInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的races.json</value>
+  </data>
 </root>

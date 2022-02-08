@@ -121,6 +121,23 @@ namespace UmamusumeResponseAnalyzer
                                     await fileStream.WriteAsync(buffer.AsMemory(0, read));
                                 }
                             }
+                            { //races.json
+                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadRacesInstruction, false);
+                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/races.json", HttpCompletionOption.ResponseContentRead);
+                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
+                                task.StartTask();
+                                using var contentStream = await response.Content.ReadAsStreamAsync();
+                                using var fileStream = new FileStream(Database.SUCCESS_EVENT_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                                var buffer = new byte[8192];
+                                while (true)
+                                {
+                                    var read = await contentStream.ReadAsync(buffer);
+                                    if (read == 0)
+                                        break;
+                                    task.Increment(read);
+                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                                }
+                            }
                         });
                     AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
                     Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);

@@ -13,9 +13,9 @@ namespace UmamusumeResponseAnalyzer
         internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.json");
         internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.json");
         internal static string RACE_CODES_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races.json");
-        public static Dictionary<long, Story> Events = new();
-        public static Dictionary<string, SuccessStory> SuccessEvent = new();
-        public static Dictionary<string, string> Races = new();
+        public static Dictionary<long, Story> Events { get; set; } = new();
+        public static Dictionary<string, SuccessStory> SuccessEvent { get; set; } = new();
+        public static Dictionary<string, string> Races { get; set; } = new();
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));

@@ -195,4 +195,7 @@
   <data name="LaunchMenu_SetRaceScheduleInstruction" xml:space="preserve">
     <value>Please input race codes from http://jitaserver.com/smn</value>
   </data>
+  <data name="LaunchMenu_Update_DownloadRacesInstruction" xml:space="preserve">
+    <value>Downloading races.json from github</value>
+  </data>
 </root>

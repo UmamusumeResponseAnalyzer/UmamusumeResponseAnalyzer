@@ -1,5 +1,4 @@
-[
-	{
+[{
 		"Name": "レース勝利！",
 		"Choices": [{
 			"ChoiceIndex": 2,
@@ -9,14 +8,12 @@
 	},
 	{
 		"Name": "レース入着",
-		"Choices": [
-		{
+		"Choices": [{
 			"ChoiceIndex": 2,
 			"SelectIndex": 1,
 			"Effect": "体力-10"
 		}]
-	}
-	{
+	}, {
 		"Name": "謎の儀式図で運試し！",
 		"Choices": [{
 			"ChoiceIndex": 1,
@@ -42,47 +39,42 @@
 	},
 	{
 		"Name": "あんし～ん笹針師、参☆上",
-		"Choices": [
-		{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "全属性+20"
-		},
-		{
-			"ChoiceIndex": 2,
-			"SelectIndex": 3,
-			"Effect": "直接习得コーナー回復◯、直線回復"
-		},
-		{
-			"ChoiceIndex": 3,
-			"SelectIndex": 5,
-			"Effect": "体力最大值+12，体力+40，治愈所有负面效果"
-		},
-		{
-			"ChoiceIndex": 4,
-			"SelectIndex": 7,
-			"Effect": "体力+20，干劲提升，获得爱娇"
-		}
+		"Choices": [{
+				"ChoiceIndex": 1,
+				"SelectIndex": 1,
+				"Effect": "全属性+20"
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 3,
+				"Effect": "直接习得コーナー回復◯、直線回復"
+			},
+			{
+				"ChoiceIndex": 3,
+				"SelectIndex": 5,
+				"Effect": "体力最大值+12，体力+40，治愈所有负面效果"
+			},
+			{
+				"ChoiceIndex": 4,
+				"SelectIndex": 7,
+				"Effect": "体力+20，干劲提升，获得爱娇"
+			}
 		]
 	},
 	{
 		"Name": "気まぐれ天才魔法少女スイーピー☆",
-		"Choices": [
-		{
+		"Choices": [{
 			"ChoiceIndex": 1,
 			"SelectIndex": 1,
 			"Effect": "干劲提升，直线一气的Hint+2"
-		}
-		]
+		}]
 	},
 	{
 		"Name": "オグリの大食い選手権",
-		"Choices": [
-		{
+		"Choices": [{
 			"ChoiceIndex": 1,
 			"SelectIndex": 1,
 			"Effect": "体力+30，パワー（力量）+10，スキルPt（技能点数）+10"
-		}
-		]
+		}]
 	}
 ]
