@@ -127,7 +127,7 @@ namespace UmamusumeResponseAnalyzer
                                 task.MaxValue(response.Content.Headers.ContentLength ?? 0);
                                 task.StartTask();
                                 using var contentStream = await response.Content.ReadAsStreamAsync();
-                                using var fileStream = new FileStream(Database.SUCCESS_EVENT_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                                using var fileStream = new FileStream(Database.RACE_CODES_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                                 var buffer = new byte[8192];
                                 while (true)
                                 {
