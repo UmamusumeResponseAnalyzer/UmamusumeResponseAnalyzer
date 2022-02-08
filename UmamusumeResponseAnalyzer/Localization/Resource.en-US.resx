@@ -145,16 +145,16 @@
     <value>Confirm to kill process {1} with pid {0}?</value>
   </data>
   <data name="LaunchMenu_Kill4693_KillSystemAlert" xml:space="preserve">
-    <value>YOU CAN'T KILL SYSTEM! Please follow FAQ to solve conflict problem.</value>
+    <value>YOU CAN'T KILL SYSTEM! Please follow FAQ to solve conflict problem</value>
   </data>
   <data name="LaunchMenu_Kill4693_NotFound" xml:space="preserve">
-    <value>Program using 4693 port not found!</value>
+    <value>Program using 4693 port not found</value>
   </data>
   <data name="LaunchMenu_Options" xml:space="preserve">
     <value>Options</value>
   </data>
   <data name="LaunchMenu_Options_BackToMenuInstruction" xml:space="preserve">
-    <value>Press any key to return main menu...</value>
+    <value>Press any key to return main menu</value>
   </data>
   <data name="LaunchMenu_Options_Instruction" xml:space="preserve">
     <value>[grey](Press [blue]&lt;space&gt;[/] to toggle, [green]&lt;enter&gt;[/] to accept)[/]</value>
@@ -166,12 +166,33 @@
     <value>Update data</value>
   </data>
   <data name="LaunchMenu_Update_DownloadedInstruction" xml:space="preserve">
-    <value>Download completed!</value>
+    <value>Download completed</value>
   </data>
   <data name="LaunchMenu_Update_DownloadEventsInstruction" xml:space="preserve">
     <value>Downloading events.json from github</value>
   </data>
   <data name="LaunchMenu_Update_DownloadSuccessEventsInstruction" xml:space="preserve">
     <value>Downloading successevents.json from github</value>
+  </data>
+  <data name="Events_NextTurnPrompting" xml:space="preserve">
+    <value>Next turn: {0} {1}</value>
+  </data>
+  <data name="Events_NextTurnRacePrompting" xml:space="preserve">
+    <value>[mediumspringgreen]Going to {0}[/]</value>
+  </data>
+  <data name="Events_ParseSingleModeCheckEventResponse_Date" xml:space="preserve">
+    <value>{0}年{1}月{2}</value>
+  </data>
+  <data name="Events_ParseSingleModeCheckEventResponse_Date_Lower" xml:space="preserve">
+    <value>後半</value>
+  </data>
+  <data name="Events_ParseSingleModeCheckEventResponse_Date_Upper" xml:space="preserve">
+    <value>前半</value>
+  </data>
+  <data name="LaunchMenu_SetRaceSchedule" xml:space="preserve">
+    <value>Set race schedule</value>
+  </data>
+  <data name="LaunchMenu_SetRaceScheduleInstruction" xml:space="preserve">
+    <value>Please input race codes from http://jitaserver.com/smn</value>
   </data>
 </root>

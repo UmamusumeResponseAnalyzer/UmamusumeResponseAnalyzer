@@ -12,8 +12,10 @@ namespace UmamusumeResponseAnalyzer
     {
         internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.json");
         internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.json");
+        internal static string RACE_CODES_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races.json");
         public static Dictionary<long, Story> Events = new();
         public static Dictionary<string, SuccessStory> SuccessEvent = new();
+        public static Dictionary<string, string> Races = new();
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -21,6 +23,8 @@ namespace UmamusumeResponseAnalyzer
                 Events = JArray.Parse(File.ReadAllText(EVENT_NAME_FILEPATH)).ToObject<List<Story>>().ToDictionary(x => x.Id, x => x);
             if (File.Exists(SUCCESS_EVENT_FILEPATH))
                 SuccessEvent = JArray.Parse(File.ReadAllText(SUCCESS_EVENT_FILEPATH)).ToObject<List<SuccessStory>>().ToDictionary(x => x.Name, x => x);
+            if (File.Exists(RACE_CODES_FILEPATH))
+                Races = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(RACE_CODES_FILEPATH));
         }
     }
 }

@@ -16,14 +16,6 @@ namespace UmamusumeResponseAnalyzer
     {
         public static async Task Main()
         {
-#if DEBUG
-            var msgpackPath = @"response/637795073363227948.bin";
-            var msgpackBytes = File.ReadAllBytes(msgpackPath);
-            var jsonPath = @"response/637795073363227948.json";
-            var json = MessagePackSerializer.ConvertToJson(msgpackBytes);
-            File.WriteAllText(jsonPath, JObject.Parse(json).ToString());
-            File.WriteAllText(jsonPath + ".msgpack.json", JsonConvert.SerializeObject(Server.TryDeserialize<Gallop.SingleModeCheckEventResponse>(msgpackBytes), Formatting.Indented));
-#endif
             Console.BufferWidth = 160;
             Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
             Console.OutputEncoding = Encoding.UTF8;
@@ -38,6 +30,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Resource.LaunchMenu_Start,
                         Resource.LaunchMenu_Options,
+                        Resource.LaunchMenu_SetRaceSchedule,
                         Resource.LaunchMenu_Update,
                         Resource.LaunchMenu_Kill4693
                     }
@@ -62,14 +55,14 @@ namespace UmamusumeResponseAnalyzer
                     }
                     foreach (var i in Config.Configuration)
                     {
-                        if (i.Value)
+                        if (i.Value.GetType() == typeof(bool) && (bool)i.Value)
                         {
                             multiSelection.Select(i.Key);
                         }
                     }
                     foreach (var i in Config.ConfigSet)
                     {
-                        if (i.Value != Array.Empty<string>() && Config.Configuration.Where(x => x.Value == true).Select(x => x.Key).Intersect(i.Value).Count() == i.Value.Length)
+                        if (i.Value != Array.Empty<string>() && Config.Configuration.Where(x => x.Value.GetType() == typeof(bool) && (bool)x.Value == true).Select(x => x.Key).Intersect(i.Value).Count() == i.Value.Length)
                         {
                             multiSelection.Select(i.Key);
                         }
@@ -78,10 +71,15 @@ namespace UmamusumeResponseAnalyzer
                     foreach (var i in Config.Configuration.Keys)
                     {
                         if (options.Contains(i))
-                            Config.Configuration[i] = true;
+                            Config.Set(i, true);
                         else
-                            Config.Configuration[i] = false;
+                            Config.Set(i, false);
                     }
+                }
+                else if (prompt == Resource.LaunchMenu_SetRaceSchedule)
+                {
+                    var races = AnsiConsole.Ask<string>(Resource.LaunchMenu_SetRaceScheduleInstruction);
+                    Config.Set("Races", races.Split(',').ToList());
                 }
                 else if (prompt == Resource.LaunchMenu_Update)
                 {

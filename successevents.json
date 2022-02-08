@@ -1,4 +1,5 @@
-[{
+[
+	{
 		"Name": "レース勝利！",
 		"Choices": [{
 			"ChoiceIndex": 2,
@@ -6,6 +7,15 @@
 			"Effect": "体力-5"
 		}]
 	},
+	{
+		"Name": "レース入着",
+		"Choices": [
+		{
+			"ChoiceIndex": 2,
+			"SelectIndex": 1,
+			"Effect": "体力-10"
+		}]
+	}
 	{
 		"Name": "謎の儀式図で運試し！",
 		"Choices": [{
@@ -62,6 +72,16 @@
 			"ChoiceIndex": 1,
 			"SelectIndex": 1,
 			"Effect": "干劲提升，直线一气的Hint+2"
+		}
+		]
+	},
+	{
+		"Name": "オグリの大食い選手権",
+		"Choices": [
+		{
+			"ChoiceIndex": 1,
+			"SelectIndex": 1,
+			"Effect": "体力+30，パワー（力量）+10，スキルPt（技能点数）+10"
 		}
 		]
 	}

@@ -115,6 +115,51 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 下一回合: {0} {1} 的本地化字符串。
+        /// </summary>
+        public static string Events_NextTurnPrompting {
+            get {
+                return ResourceManager.GetString("Events_NextTurnPrompting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [mediumspringgreen]要跑{0}[/] 的本地化字符串。
+        /// </summary>
+        public static string Events_NextTurnRacePrompting {
+            get {
+                return ResourceManager.GetString("Events_NextTurnRacePrompting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 {0}年{1}月{2} 的本地化字符串。
+        /// </summary>
+        public static string Events_ParseSingleModeCheckEventResponse_Date {
+            get {
+                return ResourceManager.GetString("Events_ParseSingleModeCheckEventResponse_Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 下半 的本地化字符串。
+        /// </summary>
+        public static string Events_ParseSingleModeCheckEventResponse_Date_Lower {
+            get {
+                return ResourceManager.GetString("Events_ParseSingleModeCheckEventResponse_Date_Lower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 上半 的本地化字符串。
+        /// </summary>
+        public static string Events_ParseSingleModeCheckEventResponse_Date_Upper {
+            get {
+                return ResourceManager.GetString("Events_ParseSingleModeCheckEventResponse_Date_Upper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 启动菜单(用↑和↓切换选项,回车确认) 的本地化字符串。
         /// </summary>
         public static string LaunchMenu {
@@ -183,6 +228,24 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Options_Instruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Options_Instruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 设置历战赛程 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetRaceSchedule {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetRaceSchedule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入从http://jitaserver.com/smn选择的赛程代码 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetRaceScheduleInstruction {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetRaceScheduleInstruction", resourceCulture);
             }
         }
         

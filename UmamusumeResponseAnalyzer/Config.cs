@@ -12,7 +12,7 @@ namespace UmamusumeResponseAnalyzer
     {
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
         internal static Dictionary<string, string[]> ConfigSet { get; set; } = new();
-        internal static Dictionary<string, bool> Configuration { get; set; } = new();
+        internal static Dictionary<string, object> Configuration { get; private set; } = new();
         internal static void Initialize()
         {
             ConfigSet.Add(Resource.ConfigSet_Events, new[]
@@ -26,7 +26,7 @@ namespace UmamusumeResponseAnalyzer
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {
-                Configuration = MessagePackSerializer.Deserialize<Dictionary<string, bool>>(File.ReadAllBytes(CONFIG_FILEPATH));
+                Configuration = MessagePackSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllBytes(CONFIG_FILEPATH));
                 foreach (var i in ConfigSet)
                 {
                     if (i.Value == Array.Empty<string>())
@@ -62,6 +62,14 @@ namespace UmamusumeResponseAnalyzer
                 }
                 File.WriteAllBytes(CONFIG_FILEPATH, MessagePackSerializer.Serialize(Configuration));
             }
+        }
+        public static T Get<T>(string key) => (T)Configuration[key];
+        public static bool Get(string key) => Get<bool>(key);
+        public static void Set(string key, object value)
+        {
+            System.Diagnostics.Debug.WriteLine($"Set {key} to {value.GetType()}");
+            Configuration[key] = value;
+            System.Diagnostics.Debug.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Configuration));
         }
     }
 }
