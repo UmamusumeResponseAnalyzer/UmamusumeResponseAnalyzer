@@ -198,4 +198,31 @@
   <data name="LaunchMenu_Update_DownloadRacesInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的races.json</value>
   </data>
+  <data name="LaunchMenu_Start_Checking" xml:space="preserve">
+    <value>[yellow]正在检测umamusume.exe是否运行[/]</value>
+  </data>
+  <data name="LaunchMenu_Start_Checking_Log" xml:space="preserve">
+    <value>[grey]日志: [/] {0}</value>
+  </data>
+  <data name="LaunchMenu_Start_GetToken" xml:space="preserve">
+    <value>[bold blue]正在获取DMM Onetime Token[/]</value>
+  </data>
+  <data name="LaunchMenu_Start_Checking_Found" xml:space="preserve">
+    <value>检测到{0}个正在运行的umamusume.exe</value>
+  </data>
+  <data name="LaunchMenu_Start_TokenGot" xml:space="preserve">
+    <value>已获取DMM Onetime Token</value>
+  </data>
+  <data name="LaunchMenu_Start_TokenFailed" xml:space="preserve">
+    <value>获取DMM Onetime Token失败</value>
+  </data>
+  <data name="LaunchMenu_Start_Launching" xml:space="preserve">
+    <value>正在启动umamusume.exe</value>
+  </data>
+  <data name="LaunchMenu_Start_Started" xml:space="preserve">
+    <value>[bold green]已启动[/]</value>
+  </data>
+  <data name="LaunchMenu_Start_Checking_AlreadyRunning" xml:space="preserve">
+    <value>检测到umamusume.exe正在运行,直接启动服务器</value>
+  </data>
 </root>

@@ -67,9 +67,7 @@ namespace UmamusumeResponseAnalyzer
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)
         {
-            System.Diagnostics.Debug.WriteLine($"Set {key} to {value.GetType()}");
             Configuration[key] = value;
-            System.Diagnostics.Debug.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Configuration));
         }
     }
 }

@@ -1,5 +1,14 @@
-[{
+[
+	{
 		"Name": "レース勝利！",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 1,
+			"Effect": "体力-5"
+		}]
+	},
+	{
+		"Name": "レース勝利",
 		"Choices": [{
 			"ChoiceIndex": 2,
 			"SelectIndex": 1,

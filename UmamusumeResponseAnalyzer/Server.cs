@@ -25,20 +25,11 @@ namespace UmamusumeResponseAnalyzer
 
                     if (ctx.Request.RawUrl == "/notify/response")
                     {
-#if DEBUG
-                        if (!Directory.Exists("response")) Directory.CreateDirectory("response");
-                        var tick = DateTime.Now.Ticks;
-                        File.WriteAllBytes(@$"response/{tick}.msgpack", buffer);
-                        File.WriteAllText(@$"response/{tick}.json", JObject.Parse(MessagePack.MessagePackSerializer.ConvertToJson(buffer)).ToString());
-#endif
                         _ = Task.Run(() => ParseResponse(buffer));
                     }
                     else if (ctx.Request.RawUrl == "/notify/request")
                     {
-                        var msgpack = buffer[170..];
-                        File.WriteAllBytes(@$"request/{DateTime.Now.Ticks}.msgpack", msgpack);
-
-                        _ = Task.Run(() => ParseRequest(msgpack));
+                        _ = Task.Run(() => ParseRequest(buffer[170..]));
                     }
 
                     await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
@@ -68,8 +59,9 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                AnsiConsole.WriteException(e);
             }
         }
         static void ParseResponse(byte[] buffer)

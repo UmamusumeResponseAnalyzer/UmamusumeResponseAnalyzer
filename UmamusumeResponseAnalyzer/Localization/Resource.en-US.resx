@@ -198,4 +198,31 @@
   <data name="LaunchMenu_Update_DownloadRacesInstruction" xml:space="preserve">
     <value>Downloading races.json from github</value>
   </data>
+  <data name="LaunchMenu_Start_Checking" xml:space="preserve">
+    <value>[yellow]Check if umamusume.exe is running[/]</value>
+  </data>
+  <data name="LaunchMenu_Start_Checking_Log" xml:space="preserve">
+    <value>[grey]LOG: [/] {0}</value>
+  </data>
+  <data name="LaunchMenu_Start_GetToken" xml:space="preserve">
+    <value>[bold blue]Getting DMM Onetime Token[/]</value>
+  </data>
+  <data name="LaunchMenu_Start_Checking_Found" xml:space="preserve">
+    <value>Found {0} running umamusume.exe</value>
+  </data>
+  <data name="LaunchMenu_Start_TokenGot" xml:space="preserve">
+    <value>Get DMM Onetime Token Successfully</value>
+  </data>
+  <data name="LaunchMenu_Start_TokenFailed" xml:space="preserve">
+    <value>Failed to get DMM Onetime Token</value>
+  </data>
+  <data name="LaunchMenu_Start_Launching" xml:space="preserve">
+    <value>Launching umamusume.exe</value>
+  </data>
+  <data name="LaunchMenu_Start_Started" xml:space="preserve">
+    <value>[bold green]Start Finished[/]</value>
+  </data>
+  <data name="LaunchMenu_Start_Checking_AlreadyRunning" xml:space="preserve">
+    <value>umamusume.exe is detected, start server</value>
+  </data>
 </root>

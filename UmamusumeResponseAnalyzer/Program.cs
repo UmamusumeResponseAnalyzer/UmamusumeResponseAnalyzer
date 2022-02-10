@@ -193,8 +193,27 @@ namespace UmamusumeResponseAnalyzer
                 }
                 Console.Clear();
             } while (prompt != Resource.LaunchMenu_Start);
+            await AnsiConsole.Status().StartAsync(Resource.LaunchMenu_Start_Checking, async ctx =>
+             {
+                 var processes = Process.GetProcessesByName("umamusume");
+                 AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.Format(Resource.LaunchMenu_Start_Checking_Found, processes.Length)));
+                 if (!processes.Any())
+                 {
+                     ctx.Spinner(Spinner.Known.BouncingBar);
+                     ctx.Status(Resource.LaunchMenu_Start_GetToken);
+                     var dmmToken = await DMM.GetExecuteArgsAsync();
+                     AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.IsNullOrEmpty(dmmToken) ? Resource.LaunchMenu_Start_TokenFailed : Resource.LaunchMenu_Start_TokenGot));
+                     ctx.Status(Resource.LaunchMenu_Start_Launching);
+                     DMM.Launch(dmmToken);
+                 }
+                 else
+                 {
+                     ctx.Status(Resource.LaunchMenu_Start_Checking_AlreadyRunning);
+                 }
+             });
             Database.Initialize();
             Server.Start();
+            AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
             while (true)
             {
                 Console.ReadLine();

@@ -259,6 +259,87 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 [yellow]正在检测umamusume.exe是否运行[/] 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_Checking {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_Checking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 检测到umamusume.exe正在运行,直接启动服务器 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_Checking_AlreadyRunning {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_Checking_AlreadyRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 检测到{0}个正在运行的umamusume.exe 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_Checking_Found {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_Checking_Found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [grey]日志: [/] {0} 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_Checking_Log {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_Checking_Log", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [bold blue]正在获取DMM Onetime Token[/] 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_GetToken {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_GetToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 正在启动umamusume.exe 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_Launching {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_Launching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [bold green]已启动[/] 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_Started {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_Started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 获取DMM Onetime Token失败 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_TokenFailed {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_TokenFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 已获取DMM Onetime Token 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Start_TokenGot {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Start_TokenGot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 更新数据文件 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update {
