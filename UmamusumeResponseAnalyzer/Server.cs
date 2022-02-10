@@ -100,6 +100,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static void ParseSingleModeExecCommandRequest(byte[] buffer)
         {
+            if (!Config.Configuration.ContainsKey("Races")) return;
             var @event = TryDeserialize<Gallop.SingleModeExecCommandRequest>(buffer);
             if (@event != default)
             {
@@ -117,6 +118,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static void ParseRaceAnalyzeRequest(byte[] buffer)
         {
+            if (!Config.Configuration.ContainsKey("Races")) return;
             var @event = TryDeserialize<Gallop.RaceAnalyzeRequest>(buffer);
             if (@event != default)
             {
