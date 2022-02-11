@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -39,6 +40,9 @@
   <ItemGroup>
     <None Update="events.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\app.manifest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="successevent.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
