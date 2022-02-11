@@ -79,6 +79,24 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 解析练习赛 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_ParsePracticeRaceRaceStartResponse {
+            get {
+                return ResourceManager.GetString("ConfigSet_ParsePracticeRaceRaceStartResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 解析房间比赛 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_ParseRoomMatchRaceStartResponse {
+            get {
+                return ResourceManager.GetString("ConfigSet_ParseRoomMatchRaceStartResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 解析育成事件 的本地化字符串。
         /// </summary>
         public static string ConfigSet_ParseSingleModeCheckEventResponse {
@@ -241,7 +259,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 请输入从http://jitaserver.com/smn选择的赛程代码 的本地化字符串。
+        ///   查找类似 请输入从https://nijigen.cc/smn/选择的赛程代码 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_SetRaceScheduleInstruction {
             get {

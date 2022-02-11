@@ -20,7 +20,9 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ParseSingleModeCheckEventResponse,
                 Resource.ConfigSet_ParseTrainedCharaLoadResponse,
                 Resource.ConfigSet_ParseFriendSearchResponse,
-                Resource.ConfigSet_ParseTeamStadiumOpponentListResponse
+                Resource.ConfigSet_ParseTeamStadiumOpponentListResponse,
+                Resource.ConfigSet_ParsePracticeRaceRaceStartResponse,
+                Resource.ConfigSet_ParseRoomMatchRaceStartResponse
             });
             ConfigSet.Add(Resource.ConfigSet_Test, Array.Empty<string>());
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -39,7 +41,7 @@ namespace UmamusumeResponseAnalyzer
                         foreach (var j in i.Value)
                         {
                             if (!Configuration.ContainsKey(j))
-                                Configuration.Add(j, false);
+                                Configuration.Add(j, true);
                         }
                     }
                 }

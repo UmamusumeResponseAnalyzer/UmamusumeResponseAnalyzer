@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MessagePack;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Net;
 using UmamusumeResponseAnalyzer.Localization;
@@ -13,9 +15,13 @@ namespace UmamusumeResponseAnalyzer
         {
             httpListener.Prefixes.Add("http://127.0.0.1:4693/");
             httpListener.Start();
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                httpListener.Close();
+            };
             Task.Run(async () =>
             {
-                while (true)
+                while (httpListener.IsListening)
                 {
                     var ctx = await httpListener.GetContextAsync();
 
@@ -25,10 +31,18 @@ namespace UmamusumeResponseAnalyzer
 
                     if (ctx.Request.RawUrl == "/notify/response")
                     {
+#if DEBUG
+                        Directory.CreateDirectory("packets");
+                        File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
+#endif
                         _ = Task.Run(() => ParseResponse(buffer));
                     }
                     else if (ctx.Request.RawUrl == "/notify/request")
                     {
+#if DEBUG
+                        Directory.CreateDirectory("packets");
+                        File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer[170..])).ToString());
+#endif
                         _ = Task.Run(() => ParseRequest(buffer[170..]));
                     }
 
@@ -88,6 +102,14 @@ namespace UmamusumeResponseAnalyzer
                         case var TeamStadiumOpponentList when str.Contains("opponent_info_array"):
                             if (Config.Get(Resource.ConfigSet_ParseTeamStadiumOpponentListResponse))
                                 ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
+                            break;
+                        case var PracticeRaceRaceStartResponse when str.Contains("trained_chara_array") && str.Contains("race_result_info") && str.Contains("entry_info_array") && str.Contains("practice_race_id") && str.Contains("state") && str.Contains("practice_partner_owner_info_array"):
+                            if (Config.Get(Resource.ConfigSet_ParsePracticeRaceRaceStartResponse))
+                                ParsePracticeRaceRaceStartResponse(buffer);
+                            break;
+                        case var RoomMatchRaceStartResponse when str.Contains("race_scenario") && str.Contains("random_seed") && str.Contains("race_horse_data_array") && str.Contains("trained_chara_array") && str.Contains("season") && str.Contains("weather") && str.Contains("ground_condition"):
+                            if (Config.Get(Resource.ConfigSet_ParseRoomMatchRaceStartResponse))
+                                ParseRoomMatchRaceStartResponse(buffer);
                             break;
                         default:
                             return;
@@ -325,6 +347,55 @@ namespace UmamusumeResponseAnalyzer
                 8 => "S",
                 _ => "错误"
             };
+        }
+        static void ParsePracticeRaceRaceStartResponse(byte[] buffer) //练习赛
+        {
+            var @event = TryDeserialize<Gallop.PracticeRaceRaceStartResponse>(buffer);
+            if (@event != default)
+            {
+                var data = @event.data;
+
+                Directory.CreateDirectory("races");
+                var lines = new List<string>();
+                lines.Add($"Race Scenario:");
+                lines.Add(data.race_result_info.race_scenario);
+                lines.Add(string.Empty);
+                lines.Add($"Race Horse Data Array");
+                lines.Add(JsonConvert.SerializeObject(data.race_result_info.race_horse_data_array));
+                lines.Add(string.Empty);
+                lines.Add($"Trained Characters:");
+                foreach (var i in data.trained_chara_array)
+                {
+                    lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
+                    lines.Add(string.Empty);
+                }
+                File.WriteAllLines(@$"./races/{DateTime.Now:yy-MM-dd HH-mm-ss} PracticeRace.txt", lines);
+            }
+        }
+        static void ParseRoomMatchRaceStartResponse(byte[] buffer)
+        {
+            var @event = TryDeserialize<Gallop.RoomMatchRaceStartResponse>(buffer);
+            if (@event != default)
+            {
+                var data = @event.data;
+                if (data.trained_chara_array == null) return;
+
+                Directory.CreateDirectory("races");
+                var lines = new List<string>();
+                lines.Add($"Race Scenario:");
+                lines.Add(data.race_scenario);
+                lines.Add(string.Empty);
+                lines.Add($"Race Horse Data Array");
+                lines.Add(JsonConvert.SerializeObject(data.race_horse_data_array));
+                lines.Add(string.Empty);
+                lines.Add($"Trained Characters:");
+                foreach (var i in data.trained_chara_array)
+                {
+                    lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
+                    lines.Add(string.Empty);
+                }
+                File.WriteAllLines(@$"./races/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
+            }
         }
         internal static T TryDeserialize<T>(byte[] buffer)
         {

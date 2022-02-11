@@ -178,7 +178,7 @@
     <value>设置历战赛程</value>
   </data>
   <data name="LaunchMenu_SetRaceScheduleInstruction" xml:space="preserve">
-    <value>请输入从http://jitaserver.com/smn选择的赛程代码</value>
+    <value>请输入从https://nijigen.cc/smn/选择的赛程代码</value>
   </data>
   <data name="LaunchMenu_Start" xml:space="preserve">
     <value>启动！</value>
@@ -224,5 +224,11 @@
   </data>
   <data name="LaunchMenu_Start_Checking_AlreadyRunning" xml:space="preserve">
     <value>检测到umamusume.exe正在运行,直接启动服务器</value>
+  </data>
+  <data name="ConfigSet_ParsePracticeRaceRaceStartResponse" xml:space="preserve">
+    <value>解析练习赛</value>
+  </data>
+  <data name="ConfigSet_ParseRoomMatchRaceStartResponse" xml:space="preserve">
+    <value>解析房间比赛</value>
   </data>
 </root>

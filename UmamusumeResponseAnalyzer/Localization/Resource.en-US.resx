@@ -193,7 +193,7 @@
     <value>Set race schedule</value>
   </data>
   <data name="LaunchMenu_SetRaceScheduleInstruction" xml:space="preserve">
-    <value>Please input race codes from http://jitaserver.com/smn</value>
+    <value>Please input race codes from https://nijigen.cc/smn/</value>
   </data>
   <data name="LaunchMenu_Update_DownloadRacesInstruction" xml:space="preserve">
     <value>Downloading races.json from github</value>
@@ -224,5 +224,11 @@
   </data>
   <data name="LaunchMenu_Start_Checking_AlreadyRunning" xml:space="preserve">
     <value>umamusume.exe is detected, start server</value>
+  </data>
+  <data name="ConfigSet_ParsePracticeRaceRaceStartResponse" xml:space="preserve">
+    <value>ParsePracticeRaceRaceStartResponse</value>
+  </data>
+  <data name="ConfigSet_ParseRoomMatchRaceStartResponse" xml:space="preserve">
+    <value>ParseRoomMatchRaceStartResponse</value>
   </data>
 </root>
