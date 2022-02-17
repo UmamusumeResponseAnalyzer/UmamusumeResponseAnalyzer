@@ -1,5 +1,4 @@
-[
-	{
+[{
 		"Name": "レース勝利！",
 		"Choices": [{
 			"ChoiceIndex": 2,
@@ -84,6 +83,38 @@
 			"ChoiceIndex": 1,
 			"SelectIndex": 1,
 			"Effect": "体力+30，パワー（力量）+10，スキルPt（技能点数）+10"
+		}]
+	},
+	{
+		"Name": "鬼トレーニング",
+		"Choices": [{
+			"ChoiceIndex": 1,
+			"SelectIndex": 1,
+			"Effect": "体力-10，力量+20，技能点+10"
+		}]
+	},
+	{
+		"Name": "Love Ramen",
+		"Choices": [{
+			"ChoiceIndex": 1,
+			"SelectIndex": 2,
+			"Effect": "体力+30，技能点+15（待确认）"
+		}]
+	},
+	{
+		"Name": "みんなで作る特製ドリンク♪",
+		"Choices": [{
+			"ChoiceIndex": 1,
+			"SelectIndex": 1,
+			"Effect": "体力+10，速度+5,智力+5，技能点+10"
+		}]
+	},
+	{
+		"Name": "完全無欠のスイーツ",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 1,
+			"Effect": "体力+30，技能点+10"
 		}]
 	}
 ]
