@@ -102,7 +102,8 @@ namespace UmamusumeResponseAnalyzer
                 FileName = umamusume_file_path,
                 Arguments = args,
                 CreateNoWindow = false,
-                UseShellExecute = false
+                UseShellExecute = true,
+                Verb = "runas"
             };
             Proc.StartInfo = StartInfo;
             Proc.Start();

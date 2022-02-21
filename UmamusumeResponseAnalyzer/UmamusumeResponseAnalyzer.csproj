@@ -5,8 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,10 +15,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;CS8618</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="icon.ico" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="2.3.85" />
@@ -45,9 +40,6 @@
   <ItemGroup>
     <None Update="events.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Properties\app.manifest">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="successevent.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

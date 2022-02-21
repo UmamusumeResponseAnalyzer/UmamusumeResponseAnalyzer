@@ -355,7 +355,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 var data = @event.data;
 
-                Directory.CreateDirectory("races");
+                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races"));
                 var lines = new List<string>();
                 lines.Add($"Race Scenario:");
                 lines.Add(data.race_result_info.race_scenario);
@@ -369,7 +369,7 @@ namespace UmamusumeResponseAnalyzer
                     lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
                     lines.Add(string.Empty);
                 }
-                File.WriteAllLines(@$"./races/{DateTime.Now:yy-MM-dd HH-mm-ss} PracticeRace.txt", lines);
+                File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss} PracticeRace.txt", lines);
             }
         }
         static void ParseRoomMatchRaceStartResponse(byte[] buffer)
@@ -380,7 +380,7 @@ namespace UmamusumeResponseAnalyzer
                 var data = @event.data;
                 if (data.trained_chara_array == null) return;
 
-                Directory.CreateDirectory("races");
+                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races"));
                 var lines = new List<string>();
                 lines.Add($"Race Scenario:");
                 lines.Add(data.race_scenario);
@@ -394,7 +394,7 @@ namespace UmamusumeResponseAnalyzer
                     lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
                     lines.Add(string.Empty);
                 }
-                File.WriteAllLines(@$"./races/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
+                File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
             }
         }
         internal static T TryDeserialize<T>(byte[] buffer)

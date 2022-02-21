@@ -116,5 +116,29 @@
 			"SelectIndex": 1,
 			"Effect": "体力+30，技能点+10"
 		}]
+	},
+	{
+		"Name": "ふわっふわスイート",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 1,
+			"Effect": "体力+30，技能点+10"
+		}]
+	},
+	{
+		"Name": "アヤベさんのサンドウィッチ",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 1,
+			"Effect": "干劲提升，力量+15，直线一气的Hint+2"
+		}, {
+			"ChoiceIndex": 3,
+			"SelectIndex": 4,
+			"Effect": "干劲提升，智力+15，中距离直线的Hint+2"
+		}, {
+			"ChoiceIndex": 4,
+			"SelectIndex": 7,
+			"Effect": "干劲提升，速度+15，隠れ蓑的Hint+2"
+		}]
 	}
 ]
