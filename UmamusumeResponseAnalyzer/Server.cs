@@ -41,7 +41,7 @@ namespace UmamusumeResponseAnalyzer
                     {
 #if DEBUG
                         Directory.CreateDirectory("packets");
-                        File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer[170..])).ToString());
+                        File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
 #endif
                         _ = Task.Run(() => ParseRequest(buffer[170..]));
                     }

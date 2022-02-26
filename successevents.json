@@ -140,5 +140,13 @@
 			"SelectIndex": 7,
 			"Effect": "干劲提升，速度+15，隠れ蓑的Hint+2"
 		}]
+	},
+	{
+		"Name": "お大事に！",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 2,
+			"Effect": "获得练习上手"
+		}]
 	}
 ]

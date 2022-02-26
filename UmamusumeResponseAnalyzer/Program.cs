@@ -204,7 +204,7 @@ namespace UmamusumeResponseAnalyzer
                      var dmmToken = await DMM.GetExecuteArgsAsync();
                      AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.IsNullOrEmpty(dmmToken) ? Resource.LaunchMenu_Start_TokenFailed : Resource.LaunchMenu_Start_TokenGot));
                      ctx.Status(Resource.LaunchMenu_Start_Launching);
-                     DMM.Launch(dmmToken);
+                     if (!string.IsNullOrEmpty(dmmToken)) DMM.Launch(dmmToken);
                  }
                  else
                  {
