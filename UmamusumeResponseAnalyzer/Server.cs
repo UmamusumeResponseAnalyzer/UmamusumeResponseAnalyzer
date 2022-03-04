@@ -171,21 +171,24 @@ namespace UmamusumeResponseAnalyzer
                         var success = Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent);
                         for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                         {
-                            var tree = new Tree($"{Database.Events[i.story_id].Choices[j].Option} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
+                            var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? "无选项" : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
                             if (success)
                             {
                                 var successChoice = successEvent.Choices.FirstOrDefault(x => x.ChoiceIndex == j + 1);
                                 if (successChoice != default)
                                 {
                                     if (successChoice.SelectIndex == i.event_contents_info.choice_array[j].select_index)
-                                        tree.AddNode($"[mediumspringgreen on #081129]{successChoice.Effect.EscapeMarkup()}[/]");
+                                        tree.AddNode($"[mediumspringgreen on #081129]{Database.Events[i.story_id].Choices[j].SuccessEffect.EscapeMarkup()}[/]");
                                     else
-                                        tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].Effect.EscapeMarkup()}[/]");
+                                        tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].FailedEffect.EscapeMarkup()}[/]");
                                 }
                             }
                             else
                             {
-                                tree.AddNode($"{Database.Events[i.story_id].Choices[j].Effect}".EscapeMarkup());
+                                if (string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].FailedEffect) || Database.Events[i.story_id].Choices[j].FailedEffect == "-")
+                                    tree.AddNode($"{Database.Events[i.story_id].Choices[j].SuccessEffect}".EscapeMarkup());
+                                else
+                                    tree.AddNode($"{Database.Events[i.story_id].Choices[j].FailedEffect}".EscapeMarkup());
                             }
                             eventTree.AddNode(tree);
                         }

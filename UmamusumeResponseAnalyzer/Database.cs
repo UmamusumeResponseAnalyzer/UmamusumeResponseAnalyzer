@@ -39,12 +39,8 @@ public class Story
 public class Choice
 {
     public string Option { get; set; }
-    public string Effect { get; set; }
-    public Choice(string opt, string eff)
-    {
-        Option = opt;
-        Effect = eff;
-    }
+    public string SuccessEffect { get; set; }
+    public string FailedEffect { get; set; }
 }
 public class SuccessStory
 {
@@ -55,5 +51,4 @@ public class SuccessChoice
 {
     public int ChoiceIndex { get; set; }
     public int SelectIndex { get; set; }
-    public string Effect { get; set; }
 }

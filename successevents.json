@@ -2,70 +2,60 @@
 		"Name": "レース勝利！",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effect": "体力-5"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "レース勝利",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effect": "体力-5"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "レース入着",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effect": "体力-10"
+			"SelectIndex": 1
 		}]
 	}, {
 		"Name": "謎の儀式図で運試し！",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "全属性+7"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "仲間と一緒に笑福万来！",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "全属性+7"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "意外な一面",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "体力+15~19，耐力+10~13，ペースアップ的hint+3，解锁理事长的外出事件"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "あんし～ん笹針師、参☆上",
 		"Choices": [{
 				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effect": "全属性+20"
+				"SelectIndex": 1
 			},
 			{
 				"ChoiceIndex": 2,
-				"SelectIndex": 3,
-				"Effect": "直接习得コーナー回復◯、直線回復"
+				"SelectIndex": 3
 			},
 			{
 				"ChoiceIndex": 3,
-				"SelectIndex": 5,
-				"Effect": "体力最大值+12，体力+40，治愈所有负面效果"
+				"SelectIndex": 5
 			},
 			{
 				"ChoiceIndex": 4,
-				"SelectIndex": 7,
-				"Effect": "体力+20，干劲提升，获得爱娇"
+				"SelectIndex": 7
 			}
 		]
 	},
@@ -73,80 +63,69 @@
 		"Name": "気まぐれ天才魔法少女スイーピー☆",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "干劲提升，直线一气的Hint+2"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "オグリの大食い選手権",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "体力+30，パワー（力量）+10，スキルPt（技能点数）+10"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "鬼トレーニング",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "体力-10，力量+20，技能点+10"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "Love Ramen",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 2,
-			"Effect": "体力+30，技能点+15（待确认）"
+			"SelectIndex": 2
 		}]
 	},
 	{
 		"Name": "みんなで作る特製ドリンク♪",
 		"Choices": [{
 			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effect": "体力+10，速度+5,智力+5，技能点+10"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "完全無欠のスイーツ",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effect": "体力+30，技能点+10"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "ふわっふわスイート",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effect": "体力+30，技能点+10"
+			"SelectIndex": 1
 		}]
 	},
 	{
 		"Name": "アヤベさんのサンドウィッチ",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effect": "干劲提升，力量+15，直线一气的Hint+2"
+			"SelectIndex": 1
 		}, {
 			"ChoiceIndex": 3,
-			"SelectIndex": 4,
-			"Effect": "干劲提升，智力+15，中距离直线的Hint+2"
+			"SelectIndex": 4
 		}, {
 			"ChoiceIndex": 4,
-			"SelectIndex": 7,
-			"Effect": "干劲提升，速度+15，隠れ蓑的Hint+2"
+			"SelectIndex": 7
 		}]
 	},
 	{
 		"Name": "お大事に！",
 		"Choices": [{
 			"ChoiceIndex": 2,
-			"SelectIndex": 2,
-			"Effect": "获得练习上手"
+			"SelectIndex": 2
 		}]
 	}
 ]
