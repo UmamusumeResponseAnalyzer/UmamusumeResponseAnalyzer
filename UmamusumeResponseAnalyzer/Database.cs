@@ -13,9 +13,11 @@ namespace UmamusumeResponseAnalyzer
         internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.json");
         internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.json");
         internal static string RACE_CODES_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races.json");
+        internal static string ID_TO_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "id.json");
         public static Dictionary<long, Story> Events { get; set; } = new();
         public static Dictionary<string, SuccessStory> SuccessEvent { get; set; } = new();
         public static Dictionary<string, string> Races { get; set; } = new();
+        public static Dictionary<long, string> IdToName { get; set; } = new();
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -25,6 +27,8 @@ namespace UmamusumeResponseAnalyzer
                 SuccessEvent = JArray.Parse(File.ReadAllText(SUCCESS_EVENT_FILEPATH)).ToObject<List<SuccessStory>>().ToDictionary(x => x.Name, x => x);
             if (File.Exists(RACE_CODES_FILEPATH))
                 Races = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(RACE_CODES_FILEPATH));
+            if (File.Exists(ID_TO_NAME_FILEPATH))
+                IdToName = JsonConvert.DeserializeObject<Dictionary<long, string>>(File.ReadAllText(ID_TO_NAME_FILEPATH));
         }
     }
     public class Story
