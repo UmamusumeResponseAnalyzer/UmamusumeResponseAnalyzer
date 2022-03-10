@@ -231,4 +231,7 @@
   <data name="ConfigSet_ParseRoomMatchRaceStartResponse" xml:space="preserve">
     <value>解析房间比赛</value>
   </data>
+  <data name="LaunchMenu_Update_DownloadIdToNameInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的id.json</value>
+  </data>
 </root>
