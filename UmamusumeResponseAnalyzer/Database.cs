@@ -27,28 +27,37 @@ namespace UmamusumeResponseAnalyzer
                 Races = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(RACE_CODES_FILEPATH));
         }
     }
-}
-public class Story
-{
-    public long Id { get; set; }
-    public string Name { get; set; }
-    public string TriggerName { get; set; }
-    public List<Choice> Choices { get; set; }
+    public class Story
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+        public string TriggerName { get; set; }
+        public List<Choice> Choices { get; set; }
 
-}
-public class Choice
-{
-    public string Option { get; set; }
-    public string SuccessEffect { get; set; }
-    public string FailedEffect { get; set; }
-}
-public class SuccessStory
-{
-    public string Name { get; set; }
-    public List<SuccessChoice> Choices { get; set; } = new();
-}
-public class SuccessChoice
-{
-    public int ChoiceIndex { get; set; }
-    public int SelectIndex { get; set; }
+    }
+    public class Choice
+    {
+        public string Option { get; set; }
+        public string SuccessEffect { get; set; }
+        public string FailedEffect { get; set; }
+    }
+    public class SuccessStory
+    {
+        public string Name { get; set; }
+        public List<SuccessChoice> Choices { get; set; } = new();
+    }
+    public class SuccessChoice
+    {
+        public int ChoiceIndex { get; set; }
+        public int SelectIndex { get; set; }
+        public SuccessChoiceEffectDictionary Effects { get; set; } //ScenarioId-Effect
+    }
+    public class SuccessChoiceEffectDictionary : Dictionary<int, string>
+    {
+        public new string this[int key]
+        {
+            get => ContainsKey(key) ? base[key] : Values.First(); //如果有对应剧本的效果则返回，否则返回第一条
+            set => base[key] = value;
+        }
+    }
 }
