@@ -13,19 +13,19 @@ namespace UmamusumeResponseAnalyzer
         private static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
         private const string AcceptEncoding = "gzip, deflate, br";
         private const string AcceptLanguage = "zh-CN";
-        private const string UserAgent = "DMMGamePlayer5-Win/5.0.106 Electron/16.0.6";
+        private const string UserAgent = "DMMGamePlayer5-Win/5.0.119 Electron/17.2.0";
         private const string ClientApp = "DMMGamePlayer5";
-        private const string ClientVersion = "5.0.106";
+        private const string ClientVersion = "5.0.119";
         private const string SecFetchDest = "empty";
         private const string SecFetchMode = "no-cors";
         private const string SecFetchSite = "none";
         //User specific
-        private static string login_session_id { get; set; }
-        private static string login_secure_id { get; set; }
-        private static string mac_address { get; set; }
-        private static string hdd_serial { get; set; }
-        private static string motherboard { get; set; }
-        private static string user_os { get; set; }
+        private static string login_session_id { get; set; } = string.Empty;
+        private static string login_secure_id { get; set; } = string.Empty;
+        private static string mac_address { get; set; } = string.Empty;
+        private static string hdd_serial { get; set; } = string.Empty;
+        private static string motherboard { get; set; } = string.Empty;
+        private static string user_os { get; set; } = string.Empty;
         private static string umamusume_file_path { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Umamusume", "umamusume.exe");
 
         static DMM()
@@ -65,7 +65,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
-        public static async ValueTask<string> GetExecuteArgsAsync()
+        public static async ValueTask<string?> GetExecuteArgsAsync()
         {
             if (!File.Exists(DMM_CONFIG_FILEPATH)) return string.Empty;
             var cookies = new System.Net.CookieContainer();
@@ -84,15 +84,13 @@ namespace UmamusumeResponseAnalyzer
             cookies.Add(new System.Net.Cookie(nameof(login_session_id), login_session_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
             cookies.Add(new System.Net.Cookie(nameof(login_secure_id), login_secure_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
 
-            var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/gameinfo", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
-            response.EnsureSuccessStatusCode();
-            response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
+            await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/gameinfo", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
+            var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
             response.EnsureSuccessStatusCode();
             var json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/report", new StringContent("{\"type\":\"start\",\"product_id\":\"umamusume\",\"game_type\":\"GCL\"}", Encoding.UTF8, "application/json"));
-            response.EnsureSuccessStatusCode();
+            await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/report", new StringContent("{\"type\":\"start\",\"product_id\":\"umamusume\",\"game_type\":\"GCL\"}", Encoding.UTF8, "application/json"));
 
-            return json["data"]["execute_args"].ToString();
+            return json["data"]?["execute_args"]?.ToString();
         }
         public static void Launch(string args)
         {

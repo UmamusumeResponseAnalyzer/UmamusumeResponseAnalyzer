@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Net;
+using System.Runtime.InteropServices;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
@@ -10,7 +11,7 @@ namespace UmamusumeResponseAnalyzer
     internal static class Server
     {
         static readonly HttpListener httpListener = new();
-        static object _lock = new object();
+        static readonly object _lock = new();
         public static void Start()
         {
             httpListener.Prefixes.Add("http://127.0.0.1:4693/");
@@ -57,17 +58,9 @@ namespace UmamusumeResponseAnalyzer
             {
                 lock (_lock)
                 {
-                    var str = MessagePack.MessagePackSerializer.ConvertToJson(buffer);
+                    var str = MessagePackSerializer.ConvertToJson(buffer);
                     switch (str)
                     {
-                        case var SingleModeExecCommand when str.Contains("command_type") && str.Contains("command_id") && str.Contains("command_group_id"):
-                            //if (Config.Get(Resource.ConfigSet_ParseSingleModeExecCommandRequest))
-                            ParseSingleModeExecCommandRequest(buffer);
-                            break;
-                        case var RaceAnalyze when str.Contains("program_id") && str.Contains("current_turn"):
-                            //if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
-                            ParseRaceAnalyzeRequest(buffer);
-                            break;
                         default:
                             return;
                     }
@@ -120,42 +113,6 @@ namespace UmamusumeResponseAnalyzer
             {
             }
         }
-        static void ParseSingleModeExecCommandRequest(byte[] buffer)
-        {
-            if (!Config.Configuration.ContainsKey("Races")) return;
-            var @event = TryDeserialize<Gallop.SingleModeExecCommandRequest>(buffer);
-            if (@event != default)
-            {
-                var (Year, MDays) = Math.DivRem(@event.current_turn + 1, 24);
-                if (MDays == 0) MDays = 24;
-                var (Month, Days) = Math.DivRem(MDays + 1, 2);
-                var date = string.Format(Resource.Events_ParseSingleModeCheckEventResponse_Date, MDays == 24 ? Year : (Year + 1), Month, Days == 1 ? Resource.Events_ParseSingleModeCheckEventResponse_Date_Lower : Resource.Events_ParseSingleModeCheckEventResponse_Date_Upper);
-                var dateCode = $"{(MDays == 24 ? Year : Year + 1)}{(Month < 10 ? $"0{Month}" : Month)}{Days + 1}";
-                var race = Config.Get<List<string>>("Races").FirstOrDefault(x => x[..4] == dateCode);
-                if (race != default && Database.Races.ContainsKey(race)) race = Database.Races[race];
-                var rule = new Rule(string.Format(Resource.Events_NextTurnPrompting, date, race != default ? string.Format(Resource.Events_NextTurnRacePrompting, race) : string.Empty))
-                    .Alignment(Justify.Left);
-                AnsiConsole.Write(rule);
-            }
-        }
-        static void ParseRaceAnalyzeRequest(byte[] buffer)
-        {
-            if (!Config.Configuration.ContainsKey("Races")) return;
-            var @event = TryDeserialize<Gallop.RaceAnalyzeRequest>(buffer);
-            if (@event != default)
-            {
-                var (Year, MDays) = Math.DivRem(@event.current_turn + 1, 24);
-                if (MDays == 0) MDays = 24;
-                var (Month, Days) = Math.DivRem(MDays + 1, 2);
-                var date = string.Format(Resource.Events_ParseSingleModeCheckEventResponse_Date, MDays == 24 ? Year : (Year + 1), Month, Days == 1 ? Resource.Events_ParseSingleModeCheckEventResponse_Date_Lower : Resource.Events_ParseSingleModeCheckEventResponse_Date_Upper);
-                var dateCode = $"{(MDays == 24 ? Year : Year + 1)}{(Month < 10 ? $"0{Month}" : Month)}{Days + 1}";
-                var race = Config.Get<List<string>>("Races").FirstOrDefault(x => x[..4] == dateCode);
-                if (race != default && Database.Races.ContainsKey(race)) race = Database.Races[race];
-                var rule = new Rule(string.Format(Resource.Events_NextTurnPrompting, date, race != default ? string.Format(Resource.Events_NextTurnRacePrompting, race) : string.Empty))
-                    .Alignment(Justify.Left);
-                AnsiConsole.Write(rule);
-            }
-        }
         static void ParseSingleModeCheckEventResponse(byte[] buffer)
         {
             var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
@@ -168,7 +125,7 @@ namespace UmamusumeResponseAnalyzer
                         if (i.event_contents_info?.choice_array.Length == 0) continue;
                         var mainTree = new Tree(Database.Events[i.story_id].TriggerName.EscapeMarkup());
                         var eventTree = new Tree(Database.Events[i.story_id].Name.EscapeMarkup());
-                        for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
+                        for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
                         {
                             var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? "无选项" : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
                             if (Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent))
@@ -207,8 +164,8 @@ namespace UmamusumeResponseAnalyzer
         static void ParseTrainedCharaLoadResponse(byte[] buffer)
         {
             var @event = TryDeserialize<Gallop.TrainedCharaLoadResponse>(buffer);
-            var data = @event.data;
-            if (@event != default && data.trained_chara_array.Length > 0 && data.trained_chara_favorite_array.Length > 0)
+            var data = @event?.data;
+            if (@event != default && data?.trained_chara_array.Length > 0 && data.trained_chara_favorite_array.Length > 0)
             {
                 var fav_ids = data.trained_chara_favorite_array.Select(x => x.trained_chara_id).ToList();
                 var chara = data.trained_chara_array.Where(x => fav_ids.Contains(x.trained_chara_id));
@@ -217,8 +174,10 @@ namespace UmamusumeResponseAnalyzer
                     win_saddle_result.Add((Database.IdToName[i.card_id], i.win_saddle_id_array.Intersect(i.succession_chara_array[0].win_saddle_id_array).Count()
                     + i.win_saddle_id_array.Intersect(i.succession_chara_array[1].win_saddle_id_array).Count(), i.rank_score));
                 win_saddle_result.Sort((a, b) => b.WinSaddle.CompareTo(a.WinSaddle));
-                var table = new Table();
-                table.Border = TableBorder.Ascii;
+                var table = new Table
+                {
+                    Border = TableBorder.Ascii
+                };
                 table.AddColumns("种马名", "胜鞍加成", "分数");
                 foreach (var (Name, WinSaddle, Score) in win_saddle_result)
                     table.AddRow(Name.EscapeMarkup(), WinSaddle.ToString(), Score.ToString());
@@ -228,12 +187,12 @@ namespace UmamusumeResponseAnalyzer
         static void ParseFriendSearchResponse(byte[] buffer)
         {
             var @event = TryDeserialize<Gallop.FriendSearchResponse>(buffer);
-            var data = @event.data;
-            if (@event != default)
+            var data = @event?.data;
+            if (@event != default && data != default)
             {
                 var name = JObject.Parse("{\"100101\":\"[スペシャルドリーマー]スペシャルウィーク\",\"100102\":\"[ほっぴん♪ビタミンハート]スペシャルウィーク\",\"100201\":\"[サイレントイノセンス]サイレンススズカ\",\"100301\":\"[トップ・オブ・ジョイフル]トウカイテイオー\",\"100302\":\"[ビヨンド・ザ・ホライズン]トウカイテイオー\",\"100401\":\"[フォーミュラオブルージュ]マルゼンスキー\",\"100402\":\"[ぶっとび☆さまーナイト]マルゼンスキー\",\"100501\":\"[シューティンスタァ・ルヴュ]フジキセキ\",\"100601\":\"[スターライトビート]オグリキャップ\",\"100602\":\"[キセキの白星]オグリキャップ\",\"100701\":\"[レッドストライフ]ゴールドシップ\",\"100801\":\"[ワイルドトップギア]ウオッカ\",\"100901\":\"[トップ・オブ・ブルー]ダイワスカーレット\",\"101001\":\"[ワイルド・フロンティア]タイキシャトル\",\"101101\":\"[岩穿つ青]グラスワンダー\",\"101102\":\"[セイントジェード・ヒーラー]グラスワンダー\",\"101201\":\"[アマゾネス・ラピス]ヒシアマゾン\",\"101301\":\"[エレガンス・ライン]メジロマックイーン\",\"101302\":\"[エンド・オブ・スカイ]メジロマックイーン\",\"101401\":\"[エル☆Número 1]エルコンドルパサー\",\"101402\":\"[ククルカン・モンク]エルコンドルパサー\",\"101501\":\"[オー・ソレ・スーオ！]テイエムオペラオー\",\"101502\":\"[初晴・青き絢爛]テイエムオペラオー\",\"101601\":\"[Maverick]ナリタブライアン\",\"101701\":\"[ロード・オブ・エンペラー]シンボリルドルフ\",\"101702\":\"[皓月の弓取り]シンボリルドルフ\",\"101801\":\"[エンプレスロード]エアグルーヴ\",\"101802\":\"[クエルクス・キウィーリス]エアグルーヴ\",\"101901\":\"[超特急！フルカラー特殊PP]アグネスデジタル\",\"102001\":\"[あおぐもサミング]セイウンスカイ\",\"102101\":\"[疾風迅雷]タマモクロス\",\"102201\":\"[Noble Seamair]ファインモーション\",\"102301\":\"[pf.Victory formula...]ビワハヤヒデ\",\"102302\":\"[ノエルージュ・キャロル]ビワハヤヒデ\",\"102401\":\"[すくらんぶる☆ゾーン]マヤノトップガン\",\"102402\":\"[サンライト・ブーケ]マヤノトップガン\",\"102501\":\"[Creeping Black]マンハッタンカフェ\",\"102601\":\"[MB-19890425]ミホノブルボン\",\"102602\":\"[CODE：グラサージュ]ミホノブルボン\",\"102701\":\"[ストレート・ライン]メジロライアン\",\"102801\":\"[ボーノ☆アラモーダ]ヒシアケボノ\",\"103001\":\"[ローゼスドリーム]ライスシャワー\",\"103002\":\"[Make up Vampire!]ライスシャワー\",\"103201\":\"[tach-nology]アグネスタキオン\",\"103501\":\"[Go To Winning!]ウイニングチケット\",\"103701\":\"[Meisterschaft]エイシンフラッシュ\",\"103702\":\"[コレクト・ショコラティエ]エイシンフラッシュ\",\"103801\":\"[フィーユ・エクレール]カレンチャン\",\"103901\":\"[プリンセス・オブ・ピンク]カワカミプリンセス\",\"104001\":\"[オーセンティック/1928]ゴールドシチー\",\"104002\":\"[秋桜ダンツァトリーチェ]ゴールドシチー\",\"104101\":\"[サクラ、すすめ！]サクラバクシンオー\",\"104501\":\"[マーマリングストリーム]スーパークリーク\",\"104502\":\"[シフォンリボンマミー]スーパークリーク\",\"104601\":\"[あぶそりゅーと☆LOVE]スマートファルコン\",\"104801\":\"[ポップス☆ジョーカー]トーセンジョーダン\",\"105001\":\"[Nevertheless]ナリタタイシン\",\"105201\":\"[うららん一等賞♪]ハルウララ\",\"105202\":\"[初うらら♪さくさくら]ハルウララ\",\"105601\":\"[運気上昇☆幸福万来]マチカネフクキタル\",\"105602\":\"[吉兆・初あらし]マチカネフクキタル\",\"105801\":\"[ブルー/レイジング]メイショウドトウ\",\"105901\":\"[ツイステッド・ライン]メジロドーベル\",\"106001\":\"[ポインセチア・リボン]ナイスネイチャ\",\"106101\":\"[キング・オブ・エメラルド]キングヘイロー\",\"106901\":\"[日下開山・花あかり]サクラチヨノオー\"}").ToObject<Dictionary<int, string>>();
                 var i = data.practice_partner_info;
-                var (Name, WinSaddle, Score) = (name[i.card_id], i.win_saddle_id_array.Intersect(i.succession_chara_array[0].win_saddle_id_array).Count()
+                var (Name, WinSaddle, Score) = (name?[i.card_id], i.win_saddle_id_array.Intersect(i.succession_chara_array[0].win_saddle_id_array).Count()
                         + i.win_saddle_id_array.Intersect(i.succession_chara_array[1].win_saddle_id_array).Count(), i.rank_score);
                 AnsiConsole.Write(new Rule());
                 AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\t\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
@@ -244,9 +203,12 @@ namespace UmamusumeResponseAnalyzer
         static void ParseTeamStadiumOpponentListResponse(byte[] buffer)
         {
             var @event = TryDeserialize<Gallop.TeamStadiumOpponentListResponse>(buffer);
-            var data = @event.data;
-            var container = new Table();
-            container.Border = TableBorder.Double;
+            var data = @event?.data;
+            if (data == default) return;
+            var container = new Table
+            {
+                Border = TableBorder.Double
+            };
             container.AddColumn(new TableColumn(string.Empty).NoWrap());
             container.HideHeaders();
             foreach (var i in data.opponent_info_array.OrderByDescending(x => x.strength))
@@ -336,7 +298,7 @@ namespace UmamusumeResponseAnalyzer
                 table.AddRow(wizLine.Append(wizLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
                 container.AddRow(table);
             }
-            if (Console.BufferWidth < 160 || Console.WindowWidth < 160)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (Console.BufferWidth < 160 || Console.WindowWidth < 160))
             {
                 Console.BufferWidth = 160;
                 Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
@@ -364,14 +326,16 @@ namespace UmamusumeResponseAnalyzer
                 var data = @event.data;
 
                 Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races"));
-                var lines = new List<string>();
-                lines.Add($"Race Scenario:");
-                lines.Add(data.race_result_info.race_scenario);
-                lines.Add(string.Empty);
-                lines.Add($"Race Horse Data Array");
-                lines.Add(JsonConvert.SerializeObject(data.race_result_info.race_horse_data_array));
-                lines.Add(string.Empty);
-                lines.Add($"Trained Characters:");
+                var lines = new List<string>
+                {
+                    $"Race Scenario:",
+                    data.race_result_info.race_scenario,
+                    string.Empty,
+                    $"Race Horse Data Array",
+                    JsonConvert.SerializeObject(data.race_result_info.race_horse_data_array),
+                    string.Empty,
+                    $"Trained Characters:"
+                };
                 foreach (var i in data.trained_chara_array)
                 {
                     lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
@@ -389,14 +353,16 @@ namespace UmamusumeResponseAnalyzer
                 if (data.trained_chara_array == null) return;
 
                 Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races"));
-                var lines = new List<string>();
-                lines.Add($"Race Scenario:");
-                lines.Add(data.race_scenario);
-                lines.Add(string.Empty);
-                lines.Add($"Race Horse Data Array");
-                lines.Add(JsonConvert.SerializeObject(data.race_horse_data_array));
-                lines.Add(string.Empty);
-                lines.Add($"Trained Characters:");
+                var lines = new List<string>
+                {
+                    $"Race Scenario:",
+                    data.race_scenario,
+                    string.Empty,
+                    $"Race Horse Data Array",
+                    JsonConvert.SerializeObject(data.race_horse_data_array),
+                    string.Empty,
+                    $"Trained Characters:"
+                };
                 foreach (var i in data.trained_chara_array)
                 {
                     lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
@@ -405,16 +371,16 @@ namespace UmamusumeResponseAnalyzer
                 File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
             }
         }
-        internal static T TryDeserialize<T>(byte[] buffer)
+        internal static T? TryDeserialize<T>(byte[] buffer)
         {
             try
             {
-                return MessagePack.MessagePackSerializer.Deserialize<T>(buffer);
+                return MessagePackSerializer.Deserialize<T>(buffer);
             }
             catch (Exception)
             {
-                var json = MessagePack.MessagePackSerializer.ConvertToJson(buffer);
-                return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
+                var json = MessagePackSerializer.ConvertToJson(buffer);
+                return JsonConvert.DeserializeObject<T>(json);
             }
         }
     }

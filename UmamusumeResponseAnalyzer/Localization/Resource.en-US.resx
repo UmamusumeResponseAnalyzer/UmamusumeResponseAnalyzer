@@ -174,30 +174,6 @@
   <data name="LaunchMenu_Update_DownloadSuccessEventsInstruction" xml:space="preserve">
     <value>Downloading successevents.json from github</value>
   </data>
-  <data name="Events_NextTurnPrompting" xml:space="preserve">
-    <value>Next turn: {0} {1}</value>
-  </data>
-  <data name="Events_NextTurnRacePrompting" xml:space="preserve">
-    <value>[mediumspringgreen]Going to {0}[/]</value>
-  </data>
-  <data name="Events_ParseSingleModeCheckEventResponse_Date" xml:space="preserve">
-    <value>{0}年{1}月{2}</value>
-  </data>
-  <data name="Events_ParseSingleModeCheckEventResponse_Date_Lower" xml:space="preserve">
-    <value>後半</value>
-  </data>
-  <data name="Events_ParseSingleModeCheckEventResponse_Date_Upper" xml:space="preserve">
-    <value>前半</value>
-  </data>
-  <data name="LaunchMenu_SetRaceSchedule" xml:space="preserve">
-    <value>Set race schedule</value>
-  </data>
-  <data name="LaunchMenu_SetRaceScheduleInstruction" xml:space="preserve">
-    <value>Please input race codes from https://nijigen.cc/smn/</value>
-  </data>
-  <data name="LaunchMenu_Update_DownloadRacesInstruction" xml:space="preserve">
-    <value>Downloading races.json from github</value>
-  </data>
   <data name="LaunchMenu_Start_Checking" xml:space="preserve">
     <value>[yellow]Check if umamusume.exe is running[/]</value>
   </data>
@@ -233,5 +209,11 @@
   </data>
   <data name="LaunchMenu_Update_DownloadIdToNameInstruction" xml:space="preserve">
     <value>Downloading id.json from github</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadProgramInstruction" xml:space="preserve">
+    <value>Downloading program from github</value>
+  </data>
+  <data name="LaunchMenu_Update_BeginUpdateProgramInstruction" xml:space="preserve">
+    <value>Press enter to update program</value>
   </data>
 </root>

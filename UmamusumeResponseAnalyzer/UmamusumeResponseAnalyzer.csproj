@@ -6,20 +6,24 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWin32Manifest>true</NoWin32Manifest>
+    <AssemblyVersion></AssemblyVersion>
+    <FileVersion></FileVersion>
+    <Authors>$(AssemblyName)</Authors>
+    <Version>1.5.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;CS8618</NoWarn>
+    <NoWarn>1701;1702;CS8509;CS8618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;CS8618</NoWarn>
+    <NoWarn>1701;1702;CS8509;CS8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="2.3.85" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Spectre.Console" Version="0.43.0" />
+    <PackageReference Include="Spectre.Console" Version="0.44.0" />
   </ItemGroup>
 
   <ItemGroup>

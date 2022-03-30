@@ -9,16 +9,37 @@ using System.Text.RegularExpressions;
 using MessagePack;
 using System.Globalization;
 using UmamusumeResponseAnalyzer.Localization;
+using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
-        public static async Task Main()
+        public static async Task Main(string[] args)
         {
-            Console.BufferWidth = 160;
-            Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
-            Console.OutputEncoding = Encoding.UTF8;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Console.BufferWidth = 160;
+                Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
+                Console.OutputEncoding = Encoding.UTF8;
+            }
+            if (args?.Length > 1 && args[0] == "update")
+            {
+                var path = args[1];
+                File.Copy(Assembly.GetExecutingAssembly().Location, path, true);
+
+                using var Proc = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = path,
+                        UseShellExecute = true
+                    }
+                };
+                Proc.Start();
+                Environment.Exit(0);
+            }
             Config.Initialize();
             var prompt = string.Empty;
             do
@@ -30,7 +51,6 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Resource.LaunchMenu_Start,
                         Resource.LaunchMenu_Options,
-                        Resource.LaunchMenu_SetRaceSchedule,
                         Resource.LaunchMenu_Update,
                         Resource.LaunchMenu_Kill4693
                     }
@@ -76,104 +96,67 @@ namespace UmamusumeResponseAnalyzer
                             Config.Set(i, false);
                     }
                 }
-                else if (prompt == Resource.LaunchMenu_SetRaceSchedule)
-                {
-                    var races = AnsiConsole.Ask<string>(Resource.LaunchMenu_SetRaceScheduleInstruction);
-                    Config.Set("Races", races.Split(',').ToList());
-                }
                 else if (prompt == Resource.LaunchMenu_Update)
                 {
                     await AnsiConsole.Progress()
+                        .Columns(new ProgressColumn[]
+                        {
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn(),
+                            new SpinnerColumn()
+                        })
                         .StartAsync(async ctx =>
                         {
-                            var client = new HttpClient();
-                            { //events.json
-                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadEventsInstruction, false);
-                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/events.json", HttpCompletionOption.ResponseContentRead);
-                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                task.StartTask();
-                                using var contentStream = await response.Content.ReadAsStreamAsync();
-                                using var fileStream = new FileStream(Database.EVENT_NAME_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                var buffer = new byte[8192];
-                                while (true)
-                                {
-                                    var read = await contentStream.ReadAsync(buffer);
-                                    if (read == 0)
-                                        break;
-                                    task.Increment(read);
-                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                                }
-                            }
-                            { //successevent.json
-                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, false);
-                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/successevents.json", HttpCompletionOption.ResponseContentRead);
-                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                task.StartTask();
-                                using var contentStream = await response.Content.ReadAsStreamAsync();
-                                using var fileStream = new FileStream(Database.SUCCESS_EVENT_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                var buffer = new byte[8192];
-                                while (true)
-                                {
-                                    var read = await contentStream.ReadAsync(buffer);
-                                    if (read == 0)
-                                        break;
-                                    task.Increment(read);
-                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                                }
-                            }
-                            { //races.json
-                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadRacesInstruction, false);
-                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/races.json", HttpCompletionOption.ResponseContentRead);
-                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                task.StartTask();
-                                using var contentStream = await response.Content.ReadAsStreamAsync();
-                                using var fileStream = new FileStream(Database.RACE_CODES_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                var buffer = new byte[8192];
-                                while (true)
-                                {
-                                    var read = await contentStream.ReadAsync(buffer);
-                                    if (read == 0)
-                                        break;
-                                    task.Increment(read);
-                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                                }
-                            }
-                            { //id.json
-                                var task = ctx.AddTask(Resource.LaunchMenu_Update_DownloadIdToNameInstruction, false);
-                                using var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/EtherealAO/UmamusumeResponseAnalyzer@master/id.json", HttpCompletionOption.ResponseContentRead);
-                                task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-                                task.StartTask();
-                                using var contentStream = await response.Content.ReadAsStreamAsync();
-                                using var fileStream = new FileStream(Database.ID_TO_NAME_FILEPATH, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                                var buffer = new byte[8192];
-                                while (true)
-                                {
-                                    var read = await contentStream.ReadAsync(buffer);
-                                    if (read == 0)
-                                        break;
-                                    task.Increment(read);
-                                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                                }
-                            }
+                            var tasks = new Task[]
+                            {
+                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json"),
+                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevents.json"),
+                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json"),
+                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"), "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe")
+                            };
+                            await Task.WhenAll(tasks);
                         });
                     AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
-                    Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
-                    Console.ReadKey();
+                    if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe")))
+                    {
+                        Console.WriteLine(Resource.LaunchMenu_Update_BeginUpdateProgramInstruction);
+                        Console.ReadKey();
+                        using var Proc = new Process
+                        {
+                            StartInfo = new ProcessStartInfo
+                            {
+                                FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
+                                Arguments = $"update \"{Assembly.GetExecutingAssembly().Location}\"",
+                                UseShellExecute = true
+                            }
+                        };
+                        Proc.Start();
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
+                        Console.ReadKey();
+                    }
                 }
                 else if (prompt == Resource.LaunchMenu_Kill4693)
                 {
-                    using (var Proc = new Process())
+                    using (var Proc = new Process
                     {
-
-                        var StartInfo = new ProcessStartInfo();
-                        StartInfo.FileName = "netstat.exe";
-                        StartInfo.Arguments = "-a -n -o";
-                        StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                        StartInfo.UseShellExecute = false;
-                        StartInfo.RedirectStandardInput = true;
-                        StartInfo.RedirectStandardOutput = true;
-                        StartInfo.RedirectStandardError = true;
-                        Proc.StartInfo = StartInfo;
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "netstat.exe",
+                            Arguments = "-a -n -o",
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            UseShellExecute = false,
+                            RedirectStandardInput = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
+                        }
+                    })
+                    {
                         Proc.Start();
                         var NetStatRows = Regex.Split(Proc.StandardOutput.ReadToEnd() + Proc.StandardError.ReadToEnd(), "\r\n");
                         foreach (string NetStatRow in NetStatRows)
@@ -234,6 +217,32 @@ namespace UmamusumeResponseAnalyzer
             while (true)
             {
                 Console.ReadLine();
+            }
+        }
+        static async Task DownloadAssets(ProgressContext ctx, string instruction, string path, string url)
+        {
+            var client = new HttpClient(new HttpClientHandler
+            {
+                AllowAutoRedirect = false
+            });
+            var task = ctx.AddTask(instruction, false);
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
+            {
+                response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+            }
+            task.MaxValue(response.Content.Headers.ContentLength ?? 0);
+            task.StartTask();
+            using var contentStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+            var buffer = new byte[8192];
+            while (true)
+            {
+                var read = await contentStream.ReadAsync(buffer);
+                if (read == 0)
+                    break;
+                task.Increment(read);
+                await fileStream.WriteAsync(buffer.AsMemory(0, read));
             }
         }
     }
