@@ -1,16 +1,9 @@
-﻿
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Spectre.Console;
+﻿using Spectre.Console;
 using System.Diagnostics;
-using System.Text;
-using System;
-using System.Text.RegularExpressions;
-using MessagePack;
-using System.Globalization;
-using UmamusumeResponseAnalyzer.Localization;
 using System.Runtime.InteropServices;
-using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -24,10 +17,11 @@ namespace UmamusumeResponseAnalyzer
                 Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
                 Console.OutputEncoding = Encoding.UTF8;
             }
-            if (args?.Length > 1 && args[0] == "update")
+            if (args?.Length > 1 && args[0] == "--update")
             {
                 var path = args[1];
-                File.Copy(Assembly.GetExecutingAssembly().Location, path, true);
+                if (Environment.ProcessPath != default)
+                    File.Copy(Environment.ProcessPath, path, true);
 
                 using var Proc = new Process
                 {
@@ -40,6 +34,8 @@ namespace UmamusumeResponseAnalyzer
                 Proc.Start();
                 Environment.Exit(0);
             }
+            if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe")))
+                File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
             Config.Initialize();
             var prompt = string.Empty;
             do
@@ -109,13 +105,20 @@ namespace UmamusumeResponseAnalyzer
                         })
                         .StartAsync(async ctx =>
                         {
-                            var tasks = new Task[]
-                            {
-                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json"),
-                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevents.json"),
-                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json"),
-                                DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"), "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe")
-                            };
+                            var tasks = new List<Task>();
+
+                            var eventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json");
+                            tasks.Add(eventTask);
+
+                            var successEventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevents.json");
+                            tasks.Add(successEventTask);
+
+                            var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json");
+                            tasks.Add(idToNameTask);
+
+                            var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"), "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe");
+                            tasks.Add(programTask);
+
                             await Task.WhenAll(tasks);
                         });
                     AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
@@ -128,7 +131,7 @@ namespace UmamusumeResponseAnalyzer
                             StartInfo = new ProcessStartInfo
                             {
                                 FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
-                                Arguments = $"update \"{Assembly.GetExecutingAssembly().Location}\"",
+                                Arguments = $"--update \"{Environment.ProcessPath}\"",
                                 UseShellExecute = true
                             }
                         };
@@ -233,6 +236,11 @@ namespace UmamusumeResponseAnalyzer
             }
             task.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task.StartTask();
+            if (Environment.ProcessPath != default && response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length)
+            {
+                task.Increment(response.Content.Headers.ContentLength ?? 0);
+                return;
+            }
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
             var buffer = new byte[8192];
