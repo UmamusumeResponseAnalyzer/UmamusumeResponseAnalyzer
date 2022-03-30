@@ -216,4 +216,7 @@
   <data name="LaunchMenu_Update_BeginUpdateProgramInstruction" xml:space="preserve">
     <value>Press enter to update program</value>
   </data>
+  <data name="LaunchMenu_Update_AlreadyLatestInstruction" xml:space="preserve">
+    <value>Newer version of program not found</value>
+  </data>
 </root>

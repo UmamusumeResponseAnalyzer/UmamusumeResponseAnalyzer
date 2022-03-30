@@ -304,6 +304,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 未发现新版本程序 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Update_AlreadyLatestInstruction {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Update_AlreadyLatestInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 敲回车开始更新主程序 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_BeginUpdateProgramInstruction {

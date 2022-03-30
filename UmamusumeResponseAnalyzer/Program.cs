@@ -140,6 +140,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else
                     {
+                        Console.WriteLine(Resource.LaunchMenu_Update_AlreadyLatestInstruction);
                         Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
                         Console.ReadKey();
                     }

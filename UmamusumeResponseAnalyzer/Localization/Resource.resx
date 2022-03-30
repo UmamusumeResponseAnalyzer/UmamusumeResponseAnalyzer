@@ -216,4 +216,7 @@
   <data name="LaunchMenu_Update_BeginUpdateProgramInstruction" xml:space="preserve">
     <value>敲回车开始更新主程序</value>
   </data>
+  <data name="LaunchMenu_Update_AlreadyLatestInstruction" xml:space="preserve">
+    <value>未发现新版本程序</value>
+  </data>
 </root>
