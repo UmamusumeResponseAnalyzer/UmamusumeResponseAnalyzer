@@ -11,7 +11,7 @@
 			"ChoiceIndex": 2,
 			"SelectIndex": 2,
 			"Effects": {
-				"4": "体力-15"
+				"4": "体力-10"
 			}
 		}]
 	},
@@ -187,6 +187,16 @@
 	},
 	{
 		"Name": "お大事に！",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 2,
+			"Effects": {
+				"0": "获得练习上手"
+			}
+		}]
+	},
+	{
+		"Name": "無茶は厳禁！",
 		"Choices": [{
 			"ChoiceIndex": 2,
 			"SelectIndex": 2,
