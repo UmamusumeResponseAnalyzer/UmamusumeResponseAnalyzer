@@ -69951,5 +69951,29 @@
         "FailedEffect": "-"
       }
     ]
+  },
+  {
+    "Id": 820045001,
+    "Name": "What is ウマドル？",
+    "TriggerName": "",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 820045002,
+    "Name": "This is ウマドル！",
+    "TriggerName": "",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "",
+        "FailedEffect": ""
+      }
+    ]
   }
 ]
