@@ -40914,6 +40914,18 @@
     ]
   },
   {
+    "Id": 501051107,
+    "Name": "バレンタイン",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "固有スキルLv+1",
+        "FailedEffect": "スキルPt+20"
+      }
+    ]
+  },
+  {
     "Id": 501001108,
     "Name": "ファン感謝祭",
     "TriggerName": "共通",
@@ -41550,6 +41562,18 @@
     ]
   },
   {
+    "Id": 501051108,
+    "Name": "ファン感謝祭",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気↑、固有スキルLv+1",
+        "FailedEffect": "体力−5、スキルPt+25"
+      }
+    ]
+  },
+  {
     "Id": 501001109,
     "Name": "クリスマス",
     "TriggerName": "共通",
@@ -42175,6 +42199,18 @@
   },
   {
     "Id": 501074109,
+    "Name": "クリスマス",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "固有スキルLv+1<br>（ファン数が多いほど確率UP）",
+        "FailedEffect": "スキルPt+20"
+      }
+    ]
+  },
+  {
+    "Id": 501051109,
     "Name": "クリスマス",
     "TriggerName": "共通",
     "Choices": [
@@ -42823,6 +42859,18 @@
   },
   {
     "Id": 501074507,
+    "Name": "ファンレター",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、スキルPt+30",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051507,
     "Name": "ファンレター",
     "TriggerName": "共通",
     "Choices": [
@@ -45154,6 +45202,38 @@
     ]
   },
   {
+    "Id": 501051720,
+    "Name": "あんし～ん笹針師、参☆上",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "強いウマ娘になれる秘孔を狙う",
+        "SuccessEffect": "全ステータス+20",
+        "FailedEffect": "体力−20、全ステータス−15、やる気−2、「夜ふかし気味」獲得"
+      },
+      {
+        "Option": "レースで勝てる秘孔を狙う",
+        "SuccessEffect": "スキル「直線回復◯」習得、スキル「コーナー回復◯」習得",
+        "FailedEffect": "体力−20、やる気−2"
+      },
+      {
+        "Option": "元気で健康になれる秘孔を狙う",
+        "SuccessEffect": "体力の最大値+12、体力+40",
+        "FailedEffect": "やる気減少、「練習ベタ」獲得"
+      },
+      {
+        "Option": "魅力アップの秘孔を狙う",
+        "SuccessEffect": "体力+20、やる気上昇、「愛嬌◯」獲得",
+        "FailedEffect": "体力−10、やる気減少"
+      },
+      {
+        "Option": "不安なのでやめておく",
+        "SuccessEffect": "体力+10",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
     "Id": 501001701,
     "Name": "休息はバッチリ！",
     "TriggerName": "共通",
@@ -46391,6 +46471,18 @@
   },
   {
     "Id": 501074707,
+    "Name": "神社でお祈り！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "バッドコンディションが治る",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
+    "Id": 501051707,
     "Name": "神社でお祈り！",
     "TriggerName": "共通",
     "Choices": [
@@ -48722,6 +48814,38 @@
     ]
   },
   {
+    "Id": 501051302,
+    "Name": "福引チャンス！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "温泉旅行券",
+        "SuccessEffect": "体力+30、やる気↑、全ステータス+10、URA優勝で温泉旅行",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "特上にんじんハンバーグ",
+        "SuccessEffect": "体力+30、やる気+2、全ステータス+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "にんじん山盛り",
+        "SuccessEffect": "体力+20、やる気+1、全ステータス+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "にんじん1本",
+        "SuccessEffect": "体力+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ティッシュ",
+        "SuccessEffect": "やる気−1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001521,
     "Name": "夜ふかし気味で……",
     "TriggerName": "共通",
@@ -49370,6 +49494,18 @@
     ]
   },
   {
+    "Id": 501051521,
+    "Name": "夜ふかし気味で……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10",
+        "FailedEffect": "体力−10、やる気−1"
+      }
+    ]
+  },
+  {
     "Id": 501001717,
     "Name": "保健室にて",
     "TriggerName": "共通",
@@ -50006,6 +50142,18 @@
     ]
   },
   {
+    "Id": 501051717,
+    "Name": "保健室にて",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+20、バッドコンディションが治る",
+        "FailedEffect": "体力+20"
+      }
+    ]
+  },
+  {
     "Id": 501001722,
     "Name": "頭痛で憂鬱",
     "TriggerName": "共通",
@@ -50631,6 +50779,18 @@
   },
   {
     "Id": 501074722,
+    "Name": "頭痛で憂鬱",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、賢さ−5",
+        "FailedEffect": "やる気−1、賢さ−5、コンディション「片頭痛」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501051722,
     "Name": "頭痛で憂鬱",
     "TriggerName": "共通",
     "Choices": [
@@ -51914,6 +52074,30 @@
     ]
   },
   {
+    "Id": 501051728,
+    "Name": "クレーンゲーム成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気+1、「直線回復」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051731,
+    "Name": "クレーンゲーム成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気+1、「直線回復」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001727,
     "Name": "クレーンゲーム大成功！",
     "TriggerName": "共通",
@@ -53186,6 +53370,30 @@
     ]
   },
   {
+    "Id": 501051727,
+    "Name": "クレーンゲーム大成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気+1、「直線回復」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051730,
+    "Name": "クレーンゲーム大成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気+1、「直線回復」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001729,
     "Name": "クレーンゲーム失敗……",
     "TriggerName": "共通",
@@ -53811,6 +54019,18 @@
   },
   {
     "Id": 501074729,
+    "Name": "クレーンゲーム失敗……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+5、根性+3",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051729,
     "Name": "クレーンゲーム失敗……",
     "TriggerName": "共通",
     "Choices": [
@@ -54470,6 +54690,18 @@
     ]
   },
   {
+    "Id": 501051522,
+    "Name": "お肌の調子が……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "-",
+        "FailedEffect": "やる気−1"
+      }
+    ]
+  },
+  {
     "Id": 501001509,
     "Name": "連続出走で……",
     "TriggerName": "共通",
@@ -55106,6 +55338,18 @@
     ]
   },
   {
+    "Id": 501051509,
+    "Name": "連続出走で……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、ランダムな3つのステータス−10",
+        "FailedEffect": "やる気−1、ランダムな3つのステータス−10、「肌荒れ」習得"
+      }
+    ]
+  },
+  {
     "Id": 501001712,
     "Name": "不在の理由は……",
     "TriggerName": "共通",
@@ -55731,6 +55975,18 @@
   },
   {
     "Id": 501074712,
+    "Name": "不在の理由は……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気−1、秋川理事長の絆ゲージ−5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051712,
     "Name": "不在の理由は……",
     "TriggerName": "共通",
     "Choices": [
@@ -56379,6 +56635,18 @@
   },
   {
     "Id": 501074716,
+    "Name": "ダイエット成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "「太り気味」解消",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051716,
     "Name": "ダイエット成功！",
     "TriggerName": "共通",
     "Choices": [
@@ -57043,6 +57311,18 @@
     ]
   },
   {
+    "Id": 501051600,
+    "Name": "武者震い",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムなステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001601,
     "Name": "今度こそ！",
     "TriggerName": "共通",
@@ -57668,6 +57948,18 @@
   },
   {
     "Id": 501074601,
+    "Name": "今度こそ！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051601,
     "Name": "今度こそ！",
     "TriggerName": "共通",
     "Choices": [
@@ -58598,6 +58890,23 @@
   },
   {
     "Id": 501074711,
+    "Name": "今度こそ負けない！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "次こそ、絶対勝とう",
+        "SuccessEffect": "やる気+1、スキルPt+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "帰ってトレーニングしよう！",
+        "SuccessEffect": "体力−25、スキルPt+10、「伏兵◯」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051711,
     "Name": "今度こそ負けない！",
     "TriggerName": "共通",
     "Choices": [
@@ -69955,7 +70264,333 @@
   {
     "Id": 820045001,
     "Name": "What is ウマドル？",
-    "TriggerName": "",
+    "TriggerName": "[ギリギリ!?UMA♡DOL]スマートファルコン",
+    "Choices": [
+      {
+        "Option": "ウマドルと言えばかわいい！",
+        "SuccessEffect": "「先頭プライド」のヒントLv+1、スマートファルコンの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ウマドルと言えばパワー！",
+        "SuccessEffect": "体力+10、パワー+5、スマートファルコンの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 820045002,
+    "Name": "This is ウマドル！",
+    "TriggerName": "[ギリギリ!?UMA♡DOL]スマートファルコン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スキルPt+25、「レコメンド」のヒントLv+1、スマートファルコンの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051513,
+    "Name": "色形、重ねて私",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "モチーフに着目してみよう",
+        "SuccessEffect": "スピード+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "色使いに着目してみよう",
+        "SuccessEffect": "体力+10、賢さ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051514,
+    "Name": "お姉さんらしく",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "2人の本気の併走を見せよう",
+        "SuccessEffect": "パワー+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "2人で一緒に教えてみよう",
+        "SuccessEffect": "賢さ+10、スキルPt+15",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051515,
+    "Name": "小さな体に大きな愛",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "みんな喜んでたな",
+        "SuccessEffect": "スタミナ+20、「愛嬌◯」獲得",
+        "FailedEffect": "スタミナ+20"
+      },
+      {
+        "Option": "俺もフラワーに励まされたいって思ったよ",
+        "SuccessEffect": "根性+20、「愛嬌◯」獲得",
+        "FailedEffect": "根性+20"
+      }
+    ]
+  },
+  {
+    "Id": 830093001,
+    "Name": "届かない『キモチ』",
+    "TriggerName": "[Outfit as No.1]ダイワスカーレット",
+    "Choices": [
+      {
+        "Option": "買いもの帰り？",
+        "SuccessEffect": "スタミナ+10、「影打」のヒントLv+2、ダイワスカーレットの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "……どうかしたのか？",
+        "SuccessEffect": "パワー+10、「テンポアップ」のヒントLv+2、ダイワスカーレットの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830093002,
+    "Name": "大切な『サイン』",
+    "TriggerName": "[Outfit as No.1]ダイワスカーレット",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スキルPt+20、ダイワスカーレットの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830093003,
+    "Name": "伝えたい『アタシ』",
+    "TriggerName": "[Outfit as No.1]ダイワスカーレット",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "パワー+15、賢さ+15、「鍔迫り合い」のヒントLv+1、ダイワスカーレットの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051100,
+    "Name": "ニシノフラワー登場！",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スキルPt+120",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051101,
+    "Name": "新年の抱負",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "いっぱいジャンプしに行く？",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "おっきい子の話を聞こう！",
+        "SuccessEffect": "体力+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "大きくなる勉強をしようか",
+        "SuccessEffect": "スキルPt+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051102,
+    "Name": "初詣",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "あんみつを食べる",
+        "SuccessEffect": "体力+30",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "たくさんお願いをする",
+        "SuccessEffect": "全ステータス+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "絶景を見に行く",
+        "SuccessEffect": "スキルPt+35",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051104,
+    "Name": "夏合宿（2年目）にて",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "坂を駆け上がるパワー対策をしよう",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "最後まで頑張れる声かけ練習をしよう",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051300,
+    "Name": "夏合宿（2年目）終了",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051301,
+    "Name": "夏合宿（3年目）終了",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051303,
+    "Name": "デビュー戦の後に・種を蒔いて",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+3、スタミナ+3、賢さ+3、スキルPt+37、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051304,
+    "Name": "阪神JFの後に・天才少女",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051305,
+    "Name": "阪神JFの後に・芽吹く",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051306,
+    "Name": "桜花賞の後に・桜色のえがお",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～2、スキルPt+35～45、「先行コーナー◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051307,
+    "Name": "オークスの後に・樫の女王……？",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051308,
+    "Name": "オークスの後に・樫の花は……",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～2、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051309,
+    "Name": "スプリンターズSの後に・私の舞台",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051310,
+    "Name": "エリザベス女王杯の後に・わあ！",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力-15、スピード+20、パワー+10、スキルPt+45、「食い下がり」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051311,
+    "Name": "マイルCSの後に・チャンピオン！",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力-15、根性+12、スキルPt+45",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051312,
+    "Name": "マイルCSの後に・その風の名は",
+    "TriggerName": "ニシノフラワー",
     "Choices": [
       {
         "Option": "",
@@ -69965,13 +70600,501 @@
     ]
   },
   {
-    "Id": 820045002,
-    "Name": "This is ウマドル！",
-    "TriggerName": "",
+    "Id": 501051313,
+    "Name": "マイルCSの後に・想い、凪ぐ",
+    "TriggerName": "ニシノフラワー",
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "",
+        "SuccessEffect": "体力-15、パワー+5、スキルPt+31",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051314,
+    "Name": "高松宮記念の後に・あたらしい私と、夢",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051315,
+    "Name": "マイラーズCの後に・勇気をあげたい",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな4つのステータス+1～3、スキルPt+30～35、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051316,
+    "Name": "安田記念の後に・私なりの勇気",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051317,
+    "Name": "宝塚記念の後に・お姉さん！",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力-15、スタミナ+20、ランダムな1つのステータス+10、スキルPt+45、「真っ向勝負」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051318,
+    "Name": "スプリンターズSの後に・花",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051113,
+    "Name": "がんばりやさん、ふたり",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "パワー+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051114,
+    "Name": "あらたな“風”……？",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051115,
+    "Name": "ちょっぴり、曇り",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スタミナ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051116,
+    "Name": "ぐんぐん、だけど、ぐるぐる",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "根性+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051117,
+    "Name": "もっと、がんばりやさん",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051118,
+    "Name": "マイルも、がんばりやさん！",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+15、パワー+15、賢さ+15、「上昇気流」のヒントLv+2、「ギアシフト」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051111,
+    "Name": "花芽吹き、広がる『希望』",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+5、スキルPt+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051500,
+    "Name": "名指導",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051506,
+    "Name": "ダンスレッスン",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "サクラバクシンオー",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ヤマニンゼファー",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051517,
+    "Name": "お花にぬくもりを",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気-1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051518,
+    "Name": "あとちょっと……",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力-10、やる気-1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051519,
+    "Name": "迷子じゃないです",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気-1、パワー-5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051510,
+    "Name": "見習いお姉さん",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "君の勤勉さのおかげだ",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "困ったらいつでも言って",
+        "SuccessEffect": "体力+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051511,
+    "Name": "メイド・イン・フラワー",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "俺も手帳カバーが楽しみだ",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "もっと喜んでいいと思うよ！",
+        "SuccessEffect": "やる気+1、根性+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051520,
+    "Name": "凜と咲く",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "ああ、力強くてカッコよかった！",
+        "SuccessEffect": "体力+5、スタミナ+5、パワー+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "『よい結果は、よい環境から』いい言葉だ",
+        "SuccessEffect": "「良バ場◯」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051702,
+    "Name": "フラワーの知恵袋",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "程々に頑張るよ",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "でもまた梅昆布茶飲みたいしな～",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051703,
+    "Name": "フラワー・リラクゼーション",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "そんなことないよ",
+        "SuccessEffect": "体力+5、スピード+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "もらってばかりで悪い気がする",
+        "SuccessEffect": "体力+5、根性+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051704,
+    "Name": "フラワー日和",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "また行こう！",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "これくらいならいつでも付き合うよ",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "次はのんびりだけしてみる？",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051705,
+    "Name": "寄り添う花",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "見事なお姉さんっぷりだったね",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "お手玉、すごかったよ",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051706,
+    "Name": "近日公開予定",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "マジェガルのこと、もっと教えてほしいな",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "映画、一緒に見に行きたいな",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051524,
+    "Name": "夜に咲く想い",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "一緒にもう少しだけ頑張ってみようか",
+        "SuccessEffect": "スタミナ+10、根性+5",
+        "FailedEffect": "スタミナ+5"
+      },
+      {
+        "Option": "無理はよくないよ",
+        "SuccessEffect": "体力+15",
+        "FailedEffect": "体力+10"
+      }
+    ]
+  },
+  {
+    "Id": 501051523,
+    "Name": "新しい私に",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、全ステータス+5、スキルPt+30、「切れ者」獲得",
+        "FailedEffect": "やる気+1、全ステータス+5、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501051516,
+    "Name": "早く大きくなりたい",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "食べすぎはよくない",
+        "SuccessEffect": "体力+10、スキルPt+5",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "成長するのに食は大事",
+        "SuccessEffect": "体力+30、スキルPt+10",
+        "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501051719,
+    "Name": "眠気に襲われ……",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気-1、根性-5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501051708,
+    "Name": "レース勝利！",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "それほど最高の走りだった！",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−15、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次も笑顔で満開にしよう！",
+        "SuccessEffect": "【G1】、体力−5、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−5、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "【G1】、体力−20、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+5、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501051709,
+    "Name": "レース入着",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "この着順は立派だよ",
+        "SuccessEffect": "【G1】、体力−20、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次は勝とう！",
+        "SuccessEffect": "【G1】、体力−10、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−10、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "【G1】、体力−30、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【G3】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【OP】、体力−30、ランダムな1つのステータス+3、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501051710,
+    "Name": "レース敗北",
+    "TriggerName": "ニシノフラワー",
+    "Choices": [
+      {
+        "Option": "しっかり走れてたよ",
+        "SuccessEffect": "【G1】、体力−25、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−25、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "今日までの頑張りを次に繋げよう！",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−15、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "【G1】、体力−35、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−35、スキルPt+10、確率でマイナススキル獲得"
+      }
+    ]
+  },
+  {
+    "Id": 820046001,
+    "Name": "わがままの理由は……",
+    "TriggerName": "[おてんば魔女、修行中。]スイープトウショウ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スキルPt+30、「トリック（後）」のヒントLv+2、スイープトウショウの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 820046002,
+    "Name": "頑張れる秘訣は……！",
+    "TriggerName": "[おてんば魔女、修行中。]スイープトウショウ",
+    "Choices": [
+      {
+        "Option": "動画で縫い方を勉強してみたら？",
+        "SuccessEffect": "賢さ+10、「追込けん制」のヒントLv+2、スイープトウショウの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "あ～、魔法で早く直せたらな～！",
+        "SuccessEffect": "スピード+10、「追込直線◯」のヒントLv+2、スイープトウショウの絆ゲージ+5",
         "FailedEffect": ""
       }
     ]

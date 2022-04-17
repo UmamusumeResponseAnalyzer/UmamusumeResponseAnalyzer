@@ -11,6 +11,7 @@
 			"ChoiceIndex": 2,
 			"SelectIndex": 2,
 			"Effects": {
+				"2": "体力-20",
 				"4": "体力-10"
 			}
 		}]
