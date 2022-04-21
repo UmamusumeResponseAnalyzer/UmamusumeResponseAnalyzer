@@ -77,12 +77,14 @@ namespace UmamusumeResponseAnalyzer
             {
                 lock (_lock)
                 {
-                    var str = MessagePack.MessagePackSerializer.ConvertToJson(buffer);
+                    var str = MessagePackSerializer.ConvertToJson(buffer);
                     switch (str)
                     {
                         case var CheckEvent when (str.Contains("chara_info") && str.Contains("race_condition_array")) || str.Contains("unchecked_event_array"):
                             if (Config.Get(Resource.ConfigSet_ParseSingleModeCheckEventResponse))
                                 ParseSingleModeCheckEventResponse(buffer);
+                            if (str.Contains("skill_tips_array"))
+                                ParseSkillTipsResponse(buffer);
                             break;
                         case var TrainedCharaLoad when str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"):
                             if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
@@ -158,6 +160,105 @@ namespace UmamusumeResponseAnalyzer
                         mainTree.AddNode(eventTree);
                         AnsiConsole.Write(mainTree);
                     }
+                }
+            }
+        }
+        static void ParseSkillTipsResponse(byte[] buffer)
+        {
+            var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
+            if (@event != default && @event.data.unchecked_event_array?.Length == 0 && @event.data.chara_info.turn == 78)
+            {
+                var totalSP = @event.data.chara_info.skill_point;
+                var tips = @event.data.chara_info.skill_tips_array
+                    .Select(x => Database.Skills[(x.group_id, x.rarity)].Select(y => y.Apply(@event.data.chara_info, x.level)))
+                    .SelectMany(x => x)
+                    .Where(x => x.Rate > 0)
+                    .OrderByDescending(x => x.Grade / (double)x.TotalCost)
+                    .ToList();
+                var learn = new List<SkillManager.SkillData>();
+
+                int[][] Matrix = new int[tips.Count][];
+                int[][] Picks = new int[tips.Count][];
+                for (var i = 0; i < Matrix.Length; i++) { Matrix[i] = new int[totalSP + 1]; }
+                for (var i = 0; i < Picks.Length; i++) { Picks[i] = new int[totalSP + 1]; }
+                int MaxValue = Recursive(tips.Count - 1, totalSP, 1);
+                for (var i = tips.Count - 1; i >= 0 && totalSP >= 0; --i)
+                {
+                    if (Picks[i][totalSP] == 1)
+                    {
+                        totalSP -= tips[i].TotalCost;
+                        learn.Add(tips[i]);
+                    }
+                }
+                learn = learn.OrderBy(x => x.DisplayOrder).ToList();
+
+                var table = new Table();
+                table.Width = Console.BufferWidth;
+                table.Title($"总计技能点: {@event.data.chara_info.skill_point}, 使用技能点: {@event.data.chara_info.skill_point - totalSP}, 剩余技能点: {totalSP}");
+                table.AddColumns("技能名", "需要技能点数", "评价点");
+                table.Columns[0].Centered();
+                foreach (var i in learn)
+                {
+                    table.AddRow($"{i.Name}", $"{i.TotalCost}", $"{i.Grade}");
+                }
+                var statusPoint = Database.StatusToPoint[@event.data.chara_info.speed]
+                                + Database.StatusToPoint[@event.data.chara_info.stamina]
+                                + Database.StatusToPoint[@event.data.chara_info.power]
+                                + Database.StatusToPoint[@event.data.chara_info.guts]
+                                + Database.StatusToPoint[@event.data.chara_info.wiz];
+                var previousLearnPoint = 0;
+                foreach (var i in @event.data.chara_info.skill_array)
+                {
+                    if (i.skill_id.ToString()[..3] == "100") //3*固有
+                    {
+                        previousLearnPoint += 170 * i.level;
+                    }
+                    else if (i.skill_id.ToString().Length == 5) //2*固有
+                    {
+                        previousLearnPoint += 120 * i.level;
+                    }
+                    else
+                    {
+                        previousLearnPoint += Database.Skills[i.skill_id] == null ? Database.Skills[i.skill_id].Grade : 0;
+                    }
+                }
+                var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;
+                table.Caption($"预测总分: {previousLearnPoint}(已学习技能) + {learn.Sum(x => x.Grade)}(即将学习技能) + {statusPoint}(属性) = {totalPoint}({Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank})");
+                AnsiConsole.Write(table);
+
+                // 0/1 knapsack problem
+                int Recursive(int i, int w, int depth)
+                {
+                    var take = 0;
+                    if (Matrix[i][w] != 0) { return Matrix[i][w]; }
+
+                    if (i == 0)
+                    {
+                        if (tips[i].TotalCost <= w)
+                        {
+                            Picks[i][w] = 1;
+                            Matrix[i][w] = tips[0].Grade;
+                            return tips[i].Grade;
+                        }
+
+                        Picks[i][w] = -1;
+                        Matrix[i][w] = 0;
+                        return 0;
+                    }
+
+                    if (tips[i].TotalCost <= w)
+                    {
+                        take = tips[i].Grade + Recursive(i - 1, w - tips[i].TotalCost, depth + 1);
+                    }
+
+                    var dontTake = Recursive(i - 1, w, depth + 1);
+
+                    Matrix[i][w] = Math.Max(take, dontTake);
+
+                    if (take > dontTake) { Picks[i][w] = 1; }
+                    else { Picks[i][w] = -1; }
+
+                    return Matrix[i][w];
                 }
             }
         }
