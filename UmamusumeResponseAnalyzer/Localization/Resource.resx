@@ -237,4 +237,19 @@
   <data name="MaximiumGradeSkillRecommendation_Caption" xml:space="preserve">
     <value>预测总分: {0}(已学习技能) + {1}(即将学习技能) + {2}(属性) = {3}({4})</value>
   </data>
+  <data name="SingleModeCheckEvent_Event_UnknownSource" xml:space="preserve">
+    <value>未知来源</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownEvent" xml:space="preserve">
+    <value>未知事件</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownOption" xml:space="preserve">
+    <value>未知选项 @ {0}</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownEffect" xml:space="preserve">
+    <value>未知效果</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_NoOption" xml:space="preserve">
+    <value>无选项</value>
+  </data>
 </root>

@@ -132,7 +132,7 @@ namespace UmamusumeResponseAnalyzer
                             var eventTree = new Tree(Database.Events[i.story_id].Name.EscapeMarkup());
                             for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
                             {
-                                var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? "无选项" : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
+                                var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? Resource.SingleModeCheckEvent_Event_NoOption : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
                                 if (Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent))
                                     AddSuccessEvent(successEvent.Choices.Where(x => (x.ChoiceIndex == j + 1)));
                                 else
@@ -166,12 +166,12 @@ namespace UmamusumeResponseAnalyzer
                         else
                         {
                             File.AppendAllLines(Database.UNKNOWN_EVENT_FILEPATH, new string[] { i.story_id.ToString() });
-                            var mainTree = new Tree("未知来源");
-                            var eventTree = new Tree("未知事件");
+                            var mainTree = new Tree(Resource.SingleModeCheckEvent_Event_UnknownSource);
+                            var eventTree = new Tree(Resource.SingleModeCheckEvent_Event_UnknownEvent);
                             for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
                             {
-                                var tree = new Tree($"未知选项 @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                                tree.AddNode($"未知效果".EscapeMarkup());
+                                var tree = new Tree(string.Format(Resource.SingleModeCheckEvent_Event_UnknownOption, i.event_contents_info.choice_array[j].select_index));
+                                tree.AddNode(Resource.SingleModeCheckEvent_Event_UnknownEffect);
                                 eventTree.AddNode(tree);
                             }
                             mainTree.AddNode(eventTree);

@@ -419,5 +419,50 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("MaximiumGradeSkillRecommendation_Title", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   查找类似 无选项 的本地化字符串。
+        /// </summary>
+        public static string SingleModeCheckEvent_Event_NoOption {
+            get {
+                return ResourceManager.GetString("SingleModeCheckEvent_Event_NoOption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未知效果 的本地化字符串。
+        /// </summary>
+        public static string SingleModeCheckEvent_Event_UnknownEffect {
+            get {
+                return ResourceManager.GetString("SingleModeCheckEvent_Event_UnknownEffect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未知事件 的本地化字符串。
+        /// </summary>
+        public static string SingleModeCheckEvent_Event_UnknownEvent {
+            get {
+                return ResourceManager.GetString("SingleModeCheckEvent_Event_UnknownEvent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未知选项 @ {0} 的本地化字符串。
+        /// </summary>
+        public static string SingleModeCheckEvent_Event_UnknownOption {
+            get {
+                return ResourceManager.GetString("SingleModeCheckEvent_Event_UnknownOption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未知来源 的本地化字符串。
+        /// </summary>
+        public static string SingleModeCheckEvent_Event_UnknownSource {
+            get {
+                return ResourceManager.GetString("SingleModeCheckEvent_Event_UnknownSource", resourceCulture);
+            }
+        }
     }
 }
