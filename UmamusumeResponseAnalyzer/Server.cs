@@ -147,8 +147,8 @@ namespace UmamusumeResponseAnalyzer
                                         return;
                                     }
                                     var successChoice = successChoices.FirstOrDefault(x => x.SelectIndex == i.event_contents_info.choice_array[j].select_index);
-                                    if (successChoice != default)
-                                        tree.AddNode($"[mediumspringgreen on #081129]{successChoice.Effects[@event.data.chara_info.scenario_id].EscapeMarkup()}[/]");
+                                    if (successChoice != default && successChoice.Effects.ContainsKey(@event.data.chara_info.scenario_id))
+                                        tree.AddNode($"[mediumspringgreen on #081129]{(string.IsNullOrEmpty(successChoice.Effects[@event.data.chara_info.scenario_id]) ? Database.Events[i.story_id].Choices[j].SuccessEffect : successChoice.Effects[@event.data.chara_info.scenario_id]).EscapeMarkup()}[/]");
                                     else
                                         tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].FailedEffect.EscapeMarkup()}[/]");
                                 }

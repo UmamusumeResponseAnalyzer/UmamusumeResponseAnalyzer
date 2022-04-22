@@ -1,38 +1,42 @@
 [{
 		"Name": "レース勝利！",
 		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effects": {
-				"2": "体力-5",
-				"4": "体力-10"
+				"ChoiceIndex": 2,
+				"SelectIndex": 1,
+				"Effects": {
+					"2": "体力-5",
+					"4": "体力-10"
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 2,
+				"Effects": {
+					"4": "体力-10"
+				}
 			}
-		}, {
-			"ChoiceIndex": 2,
-			"SelectIndex": 2,
-			"Effects": {
-				"2": "体力-20",
-				"4": "体力-10"
-			}
-		}]
+		]
 	},
 	{
 		"Name": "レース入着",
 		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effects": {
-				"2": "体力-10",
-				"4": "体力-15"
+				"ChoiceIndex": 2,
+				"SelectIndex": 1,
+				"Effects": {
+					"2": "体力-10",
+					"4": "体力-15"
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 2,
+				"Effects": {
+					"4": "体力-15"
+				}
 			}
-		}, {
-			"ChoiceIndex": 2,
-			"SelectIndex": 2,
-			"Effects": {
-				"4": "体力-15"
-			}
-		}]
-	}, {
+		]
+	},
+	{
 		"Name": "謎の儀式図で運試し！",
 		"Choices": [{
 			"ChoiceIndex": 1,
@@ -167,24 +171,27 @@
 	{
 		"Name": "アヤベさんのサンドウィッチ",
 		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "干劲提升，力量+15，直线一气的Hint+2"
+				"ChoiceIndex": 2,
+				"SelectIndex": 1,
+				"Effects": {
+					"0": "干劲提升，力量+15，直线一气的Hint+2"
+				}
+			},
+			{
+				"ChoiceIndex": 3,
+				"SelectIndex": 4,
+				"Effects": {
+					"0": "干劲提升，智力+15，中距离直线的Hint+2"
+				}
+			},
+			{
+				"ChoiceIndex": 4,
+				"SelectIndex": 7,
+				"Effects": {
+					"0": "干劲提升，速度+15，隠れ蓑的Hint+2"
+				}
 			}
-		}, {
-			"ChoiceIndex": 3,
-			"SelectIndex": 4,
-			"Effects": {
-				"0": "干劲提升，智力+15，中距离直线的Hint+2"
-			}
-		}, {
-			"ChoiceIndex": 4,
-			"SelectIndex": 7,
-			"Effects": {
-				"0": "干劲提升，速度+15，隠れ蓑的Hint+2"
-			}
-		}]
+		]
 	},
 	{
 		"Name": "お大事に！",
@@ -205,5 +212,30 @@
 				"0": "获得练习上手"
 			}
 		}]
+	},
+	{
+		"Name": "三女神さまに願いを",
+		"Choices": [{
+				"ChoiceIndex": 1,
+				"SelectIndex": 1,
+				"Effects": {
+					"0": ""
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 3,
+				"Effects": {
+					"0": ""
+				}
+			},
+			{
+				"ChoiceIndex": 3,
+				"SelectIndex": 5,
+				"Effects": {
+					"0": ""
+				}
+			}
+		]
 	}
 ]

@@ -75,9 +75,10 @@ namespace UmamusumeResponseAnalyzer
     }
     public class SuccessChoiceEffectDictionary : Dictionary<int, string>
     {
+        public new bool ContainsKey(int key) => base.ContainsKey(key) || base.ContainsKey(0);
         public new string this[int key]
         {
-            get => ContainsKey(key) ? base[key] : Values.First(); //如果有对应剧本的效果则返回，否则返回第一条
+            get => ContainsKey(key) ? base[key] : base[0]; //如果有对应剧本的效果则返回，否则返回通用
             set => base[key] = value;
         }
     }
