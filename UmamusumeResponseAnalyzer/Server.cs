@@ -165,7 +165,17 @@ namespace UmamusumeResponseAnalyzer
                         }
                         else
                         {
-
+                            File.AppendAllLines(Database.UNKNOWN_EVENT_FILEPATH, new string[] { i.story_id.ToString() });
+                            var mainTree = new Tree("未知来源");
+                            var eventTree = new Tree("未知事件");
+                            for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
+                            {
+                                var tree = new Tree($"未知选项 @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
+                                tree.AddNode($"未知效果".EscapeMarkup());
+                                eventTree.AddNode(tree);
+                            }
+                            mainTree.AddNode(eventTree);
+                            AnsiConsole.Write(mainTree);
                         }
                     }
                 }
