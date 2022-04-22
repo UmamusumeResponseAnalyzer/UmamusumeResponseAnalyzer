@@ -47,8 +47,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Resource.LaunchMenu_Start,
                         Resource.LaunchMenu_Options,
-                        Resource.LaunchMenu_Update,
-                        Resource.LaunchMenu_Kill4693
+                        Resource.LaunchMenu_Update
                     }
                     ));
                 if (prompt == Resource.LaunchMenu_Options)
@@ -119,6 +118,9 @@ namespace UmamusumeResponseAnalyzer
                             var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/skilldata.json");
                             tasks.Add(skillTask);
 
+                            var translatedNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/name_cn.json");
+                            tasks.Add(translatedNameTask);
+
                             var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"), "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe");
                             tasks.Add(programTask);
 
@@ -147,56 +149,6 @@ namespace UmamusumeResponseAnalyzer
                         Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
                         Console.ReadKey();
                     }
-                }
-                else if (prompt == Resource.LaunchMenu_Kill4693)
-                {
-                    using (var Proc = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "netstat.exe",
-                            Arguments = "-a -n -o",
-                            WindowStyle = ProcessWindowStyle.Hidden,
-                            UseShellExecute = false,
-                            RedirectStandardInput = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        }
-                    })
-                    {
-                        Proc.Start();
-                        var NetStatRows = Regex.Split(Proc.StandardOutput.ReadToEnd() + Proc.StandardError.ReadToEnd(), "\r\n");
-                        foreach (string NetStatRow in NetStatRows)
-                        {
-                            string[] Tokens = Regex.Split(NetStatRow, "\\s+");
-                            if (Tokens.Length > 4 && (Tokens[1].Equals("UDP") || Tokens[1].Equals("TCP")))
-                            {
-                                string IpAddress = Regex.Replace(Tokens[2], @"\[(.*?)\]", "1.1.1.1");
-                                var port = Convert.ToInt32(IpAddress.Split(':')[1]);
-                                if (port != 4693) continue;
-                                var pid = Tokens[1] == "UDP" ? Convert.ToInt16(Tokens[4]) : Convert.ToInt16(Tokens[5]);
-                                var name = Tokens[1] == "UDP" ? Process.GetProcessById(pid).ProcessName : Process.GetProcessById(pid).ProcessName;
-
-                                var decision = AnsiConsole.Confirm(string.Format(Resource.LaunchMenu_Kill4693_Confirm, pid, name));
-                                if (decision)
-                                {
-                                    if (name == "System")
-                                    {
-                                        Console.WriteLine(Resource.LaunchMenu_Kill4693_KillSystemAlert);
-                                        break;
-                                    }
-                                    Process.GetProcessById(pid).Kill();
-                                }
-                                else
-                                {
-                                    Environment.Exit(1);
-                                }
-                            }
-                        }
-                    }
-                    Console.WriteLine(Resource.LaunchMenu_Kill4693_NotFound);
-                    Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
-                    Console.ReadKey();
                 }
                 Console.Clear();
             } while (prompt != Resource.LaunchMenu_Start);

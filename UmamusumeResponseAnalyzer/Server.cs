@@ -86,6 +86,8 @@ namespace UmamusumeResponseAnalyzer
                                 ParseSingleModeCheckEventResponse(buffer);
                             if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && str.Contains("skill_tips_array"))
                                 ParseSkillTipsResponse(buffer);
+                            if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
+                                ParseCommandInfo(buffer);
                             break;
                         case var TrainedCharaLoad when str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"):
                             if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
@@ -114,6 +116,84 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception)
             {
+            }
+        }
+        static void ParseCommandInfo(byte[] buffer)
+        {
+            var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
+            if (@event != default && @event.data.home_info != null && @event.data.home_info.command_info_array != null && @event.data.home_info.command_info_array.Length != 0)
+            {
+                if (@event.data.unchecked_event_array == null || @event.data.unchecked_event_array.Length > 0 | @event.data.race_start_info != null) return;
+                var failureRate = new Dictionary<int, int>
+                {
+                    {101,@event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601).failure_rate : @event.data.home_info.command_info_array.First(x => x.command_id == 101).failure_rate },
+                    {105,@event.data.home_info.command_info_array.Any(x => x.command_id == 602) ? @event.data.home_info.command_info_array.First(x => x.command_id == 602).failure_rate : @event.data.home_info.command_info_array.First(x => x.command_id == 105).failure_rate },
+                    {102,@event.data.home_info.command_info_array.Any(x => x.command_id == 603) ? @event.data.home_info.command_info_array.First(x => x.command_id == 603).failure_rate : @event.data.home_info.command_info_array.First(x => x.command_id == 102).failure_rate },
+                    {103,@event.data.home_info.command_info_array.Any(x => x.command_id == 604) ? @event.data.home_info.command_info_array.First(x => x.command_id == 604).failure_rate : @event.data.home_info.command_info_array.First(x => x.command_id == 103).failure_rate },
+                    {106,@event.data.home_info.command_info_array.Any(x => x.command_id == 605) ? @event.data.home_info.command_info_array.First(x => x.command_id == 605).failure_rate : @event.data.home_info.command_info_array.First(x => x.command_id == 106).failure_rate }
+                };
+                var table = new Table();
+                table.AddColumns(
+                    $"速({(failureRate[101] > 16 ? $"[red]{failureRate[101]}[/]" : failureRate[101])}%)"
+                    , $"耐({(failureRate[105] > 16 ? $"[red]{failureRate[105]}[/]" : failureRate[105])}%)"
+                    , $"力({(failureRate[102] > 16 ? $"[red]{failureRate[102]}[/]" : failureRate[102])}%)"
+                    , $"根({(failureRate[103] > 16 ? $"[red]{failureRate[103]}[/]" : failureRate[103])}%)"
+                    , $"智({(failureRate[106] > 16 ? $"[red]{failureRate[106]}[/]" : failureRate[106])}%)");
+                var supportCards = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id);
+                var commandInfo = new Dictionary<int, string[]>();
+                foreach (var command in @event.data.home_info.command_info_array)
+                {
+                    if (command.command_id != 101 && command.command_id != 105 && command.command_id != 102 && command.command_id != 103 && command.command_id != 106 &&
+                        command.command_id != 601 && command.command_id != 602 && command.command_id != 603 && command.command_id != 604 && command.command_id != 605) continue;
+                    var tips = command.tips_event_partner_array.Intersect(command.training_partner_array);
+                    commandInfo.Add(command.command_id, command.training_partner_array
+                        .Select(partner =>
+                        {
+                            var name = Database.SupportIdToShortName[(partner >= 1 && partner <= 7) ? supportCards[partner] : partner].EscapeMarkup();
+                            if (partner >= 1 && partner <= 7)
+                            {
+                                if (@event.data.chara_info.evaluation_info_array.First(x => x.target_id == partner).evaluation < 80)
+                                    name = $"[yellow]{name}[/]";
+                            }
+                            if (name.Contains("[友]"))
+                                name = $"[green]{name}[/]";
+                            return tips.Contains(partner) ? $"[red]![/]{name}" : name;
+                        }).ToArray());
+                }
+                if (!commandInfo.SelectMany(x => x.Value).Any()) return;
+                for (var i = 0; i < 5; ++i)
+                {
+                    var rows = new List<string>();
+                    foreach (var j in commandInfo)
+                        if (j.Value.Length > i)
+                        {
+
+                            rows.Add(IsShining(j.Key, j.Value[i]));
+                        }
+                        else
+                        {
+                            rows.Add(string.Empty);
+                        }
+                    table.AddRow(rows.ToArray());
+                }
+                AnsiConsole.Write(table);
+
+                static string IsShining(int commandId, string card)
+                {
+                    return card.Contains(commandId switch
+                    {
+                        101 => "[速]",
+                        105 => "[耐]",
+                        102 => "[力]",
+                        103 => "[根]",
+                        106 => "[智]",
+                        601 => "[速]",
+                        602 => "[耐]",
+                        603 => "[力]",
+                        604 => "[根]",
+                        605 => "[智]",
+                    }) ? $"[aqua]{card}[/]" : card;
+                }
             }
         }
         static void ParseSingleModeCheckEventResponse(byte[] buffer)
@@ -184,7 +264,7 @@ namespace UmamusumeResponseAnalyzer
         static void ParseSkillTipsResponse(byte[] buffer)
         {
             var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
-            if (@event != default && @event.data.unchecked_event_array?.Length == 0 && @event.data.chara_info.race_program_id == 0 && @event.data.chara_info.turn == 78)
+            if (@event != default && (@event.data.chara_info.state == 2 || @event.data.chara_info.state == 3) && @event.data.unchecked_event_array?.Length == 0)
             {
                 var totalSP = @event.data.chara_info.skill_point;
                 var tips = @event.data.chara_info.skill_tips_array

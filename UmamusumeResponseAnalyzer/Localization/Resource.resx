@@ -135,18 +135,6 @@
   <data name="LaunchMenu" xml:space="preserve">
     <value>启动菜单(用↑和↓切换选项,回车确认)</value>
   </data>
-  <data name="LaunchMenu_Kill4693" xml:space="preserve">
-    <value>终结占用4693端口的程序</value>
-  </data>
-  <data name="LaunchMenu_Kill4693_Confirm" xml:space="preserve">
-    <value>确定要关闭PID为{0}的{1}吗？</value>
-  </data>
-  <data name="LaunchMenu_Kill4693_KillSystemAlert" xml:space="preserve">
-    <value>你不能关闭System！请参考FAQ解决问题</value>
-  </data>
-  <data name="LaunchMenu_Kill4693_NotFound" xml:space="preserve">
-    <value>未找到占用4693端口的程序</value>
-  </data>
   <data name="LaunchMenu_Options" xml:space="preserve">
     <value>选项</value>
   </data>
@@ -251,5 +239,11 @@
   </data>
   <data name="SingleModeCheckEvent_Event_NoOption" xml:space="preserve">
     <value>无选项</value>
+  </data>
+  <data name="ConfigSet_ShowCommandInfo" xml:space="preserve">
+    <value>显示训练人头信息</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadTranslatedNameInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的name_cn.json</value>
   </data>
 </root>

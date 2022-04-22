@@ -133,47 +133,20 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 显示训练人头信息 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_ShowCommandInfo {
+            get {
+                return ResourceManager.GetString("ConfigSet_ShowCommandInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 启动菜单(用↑和↓切换选项,回车确认) 的本地化字符串。
         /// </summary>
         public static string LaunchMenu {
             get {
                 return ResourceManager.GetString("LaunchMenu", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 终结占用4693端口的程序 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Kill4693 {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Kill4693", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 确定要关闭PID为{0}的{1}吗？ 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Kill4693_Confirm {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Kill4693_Confirm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 你不能关闭System！请参考FAQ解决问题 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Kill4693_KillSystemAlert {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Kill4693_KillSystemAlert", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 未找到占用4693端口的程序 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Kill4693_NotFound {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Kill4693_NotFound", resourceCulture);
             }
         }
         
@@ -372,6 +345,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Update_DownloadSuccessEventsInstruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Update_DownloadSuccessEventsInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 正在从GitHub下载最新的name_cn.json 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Update_DownloadTranslatedNameInstruction {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Update_DownloadTranslatedNameInstruction", resourceCulture);
             }
         }
         

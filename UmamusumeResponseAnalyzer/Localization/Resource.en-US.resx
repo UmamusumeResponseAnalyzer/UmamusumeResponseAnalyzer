@@ -135,18 +135,6 @@
   <data name="LaunchMenu" xml:space="preserve">
     <value>Launch Menu(Use ↑&amp;↓ to select, enter to confirm)</value>
   </data>
-  <data name="LaunchMenu_Kill4693" xml:space="preserve">
-    <value>Kill process who occupied 4693 port</value>
-  </data>
-  <data name="LaunchMenu_Kill4693_Confirm" xml:space="preserve">
-    <value>Confirm to kill process {1} with pid {0}?</value>
-  </data>
-  <data name="LaunchMenu_Kill4693_KillSystemAlert" xml:space="preserve">
-    <value>YOU CAN'T KILL SYSTEM! Please follow FAQ to solve conflict problem</value>
-  </data>
-  <data name="LaunchMenu_Kill4693_NotFound" xml:space="preserve">
-    <value>Program using 4693 port not found</value>
-  </data>
   <data name="LaunchMenu_Options" xml:space="preserve">
     <value>Options</value>
   </data>
