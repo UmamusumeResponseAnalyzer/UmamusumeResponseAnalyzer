@@ -34,6 +34,7 @@ namespace UmamusumeResponseAnalyzer
                     {
 #if DEBUG
                         Directory.CreateDirectory("packets");
+                        File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.bin", buffer);
                         File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
                         _ = Task.Run(() => ParseResponse(buffer));
@@ -124,41 +125,48 @@ namespace UmamusumeResponseAnalyzer
                 {
                     foreach (var i in @event.data.unchecked_event_array)
                     {
-                        if (i.event_contents_info?.choice_array.Length == 0) continue;
-                        var mainTree = new Tree(Database.Events[i.story_id].TriggerName.EscapeMarkup());
-                        var eventTree = new Tree(Database.Events[i.story_id].Name.EscapeMarkup());
-                        for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
+                        //if (i.event_contents_info?.choice_array.Length == 0) continue;
+                        if (Database.Events.ContainsKey(i.story_id))
                         {
-                            var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? "无选项" : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                            if (Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent))
-                                AddSuccessEvent(successEvent.Choices.Where(x => (x.ChoiceIndex == j + 1)));
-                            else
-                                AddNormalEvent();
-                            eventTree.AddNode(tree);
-
-                            void AddSuccessEvent(IEnumerable<SuccessChoice> successChoices)
+                            var mainTree = new Tree(Database.Events[i.story_id].TriggerName.EscapeMarkup());
+                            var eventTree = new Tree(Database.Events[i.story_id].Name.EscapeMarkup());
+                            for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
                             {
-                                if (!successChoices.Any())
-                                {
+                                var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? "无选项" : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
+                                if (Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent))
+                                    AddSuccessEvent(successEvent.Choices.Where(x => (x.ChoiceIndex == j + 1)));
+                                else
                                     AddNormalEvent();
-                                    return;
+                                eventTree.AddNode(tree);
+
+                                void AddSuccessEvent(IEnumerable<SuccessChoice> successChoices)
+                                {
+                                    if (!successChoices.Any())
+                                    {
+                                        AddNormalEvent();
+                                        return;
+                                    }
+                                    var successChoice = successChoices.FirstOrDefault(x => x.SelectIndex == i.event_contents_info.choice_array[j].select_index);
+                                    if (successChoice != default)
+                                        tree.AddNode($"[mediumspringgreen on #081129]{successChoice.Effects[@event.data.chara_info.scenario_id].EscapeMarkup()}[/]");
+                                    else
+                                        tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].FailedEffect.EscapeMarkup()}[/]");
                                 }
-                                var successChoice = successChoices.FirstOrDefault(x => x.SelectIndex == i.event_contents_info.choice_array[j].select_index);
-                                if (successChoice != default)
-                                    tree.AddNode($"[mediumspringgreen on #081129]{successChoice.Effects[@event.data.chara_info.scenario_id].EscapeMarkup()}[/]");
-                                else
-                                    tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].FailedEffect.EscapeMarkup()}[/]");
+                                void AddNormalEvent()
+                                {
+                                    if (string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].FailedEffect) || Database.Events[i.story_id].Choices[j].FailedEffect == "-")
+                                        tree.AddNode($"{Database.Events[i.story_id].Choices[j].SuccessEffect}".EscapeMarkup());
+                                    else
+                                        tree.AddNode($"{Database.Events[i.story_id].Choices[j].FailedEffect}".EscapeMarkup());
+                                }
                             }
-                            void AddNormalEvent()
-                            {
-                                if (string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].FailedEffect) || Database.Events[i.story_id].Choices[j].FailedEffect == "-")
-                                    tree.AddNode($"{Database.Events[i.story_id].Choices[j].SuccessEffect}".EscapeMarkup());
-                                else
-                                    tree.AddNode($"{Database.Events[i.story_id].Choices[j].FailedEffect}".EscapeMarkup());
-                            }
+                            mainTree.AddNode(eventTree);
+                            AnsiConsole.Write(mainTree);
                         }
-                        mainTree.AddNode(eventTree);
-                        AnsiConsole.Write(mainTree);
+                        else
+                        {
+
+                        }
                     }
                 }
             }
@@ -166,7 +174,7 @@ namespace UmamusumeResponseAnalyzer
         static void ParseSkillTipsResponse(byte[] buffer)
         {
             var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
-            if (@event != default && @event.data.unchecked_event_array?.Length == 0 && @event.data.chara_info.turn == 78)
+            if (@event != default && @event.data.unchecked_event_array?.Length == 0 && @event.data.chara_info.race_program_id == 0 && @event.data.chara_info.turn == 78)
             {
                 var totalSP = @event.data.chara_info.skill_point;
                 var tips = @event.data.chara_info.skill_tips_array
@@ -176,24 +184,79 @@ namespace UmamusumeResponseAnalyzer
                     .OrderByDescending(x => x.Grade / (double)x.TotalCost)
                     .ToList();
                 var learn = new List<SkillManager.SkillData>();
-
-                int[][] Matrix = new int[tips.Count][];
-                int[][] Picks = new int[tips.Count][];
-                for (var i = 0; i < Matrix.Length; i++) { Matrix[i] = new int[totalSP + 1]; }
-                for (var i = 0; i < Picks.Length; i++) { Picks[i] = new int[totalSP + 1]; }
-                int MaxValue = Recursive(tips.Count - 1, totalSP, 1);
-                for (var i = tips.Count - 1; i >= 0 && totalSP >= 0; --i)
+                do
                 {
-                    if (Picks[i][totalSP] == 1)
+                    if (learn.Any()) { learn.Clear(); totalSP = @event.data.chara_info.skill_point; }
+                    int[][] Matrix = new int[tips.Count][];
+                    int[][] Picks = new int[tips.Count][];
+                    for (var i = 0; i < Matrix.Length; i++) { Matrix[i] = new int[totalSP + 1]; }
+                    for (var i = 0; i < Picks.Length; i++) { Picks[i] = new int[totalSP + 1]; }
+                    Recursive(tips.Count - 1, totalSP, 1);
+                    for (var i = tips.Count - 1; i >= 0 && totalSP >= 0; --i)
                     {
-                        totalSP -= tips[i].TotalCost;
-                        learn.Add(tips[i]);
+                        if (Picks[i][totalSP] == 1)
+                        {
+                            totalSP -= tips[i].TotalCost;
+                            Console.WriteLine($"Add {tips[i].Name}");
+                            learn.Add(tips[i]);
+                        }
                     }
-                }
+                    foreach (var i in learn.GroupBy(x => x.GroupId).Where(x => x.Count() > 1))
+                    {
+                        var duplicated = learn.Where(x => x.GroupId == i.Key);
+                        foreach (var j in duplicated)
+                        {
+                            if (j.Superior != null)
+                            {
+                                Console.WriteLine($"Remove {j.Name}");
+                                Console.WriteLine(tips.Remove(j));
+                            }
+                        }
+                    }
+
+                    // 0/1 knapsack problem
+                    int Recursive(int i, int w, int depth)
+                    {
+                        var take = 0;
+                        if (Matrix[i][w] != 0) { return Matrix[i][w]; }
+
+                        if (i == 0)
+                        {
+                            if (tips[i].TotalCost <= w)
+                            {
+                                Picks[i][w] = 1;
+                                Matrix[i][w] = tips[0].Grade;
+                                return tips[i].Grade;
+                            }
+
+                            Picks[i][w] = -1;
+                            Matrix[i][w] = 0;
+                            return 0;
+                        }
+
+                        if (tips[i].TotalCost <= w)
+                        {
+                            take = tips[i].Grade + Recursive(i - 1, w - tips[i].TotalCost, depth + 1);
+                        }
+
+                        var dontTake = Recursive(i - 1, w, depth + 1);
+
+                        Matrix[i][w] = Math.Max(take, dontTake);
+                        if (take > dontTake)
+                        {
+                            Picks[i][w] = 1;
+                        }
+                        else
+                        {
+                            Picks[i][w] = -1;
+                        }
+
+                        return Matrix[i][w];
+                    }
+                } while (learn.GroupBy(x => x.GroupId).Any(x => x.Count() > 1)); //懒
                 learn = learn.OrderBy(x => x.DisplayOrder).ToList();
 
                 var table = new Table();
-                table.Width = Console.BufferWidth;
                 table.Title($"总计技能点: {@event.data.chara_info.skill_point}, 使用技能点: {@event.data.chara_info.skill_point - totalSP}, 剩余技能点: {totalSP}");
                 table.AddColumns("技能名", "需要技能点数", "评价点");
                 table.Columns[0].Centered();
@@ -209,7 +272,8 @@ namespace UmamusumeResponseAnalyzer
                 var previousLearnPoint = 0;
                 foreach (var i in @event.data.chara_info.skill_array)
                 {
-                    if (i.skill_id.ToString()[..3] == "100") //3*固有
+                    if (i.skill_id >= 1000000) continue; // Carnival bonus
+                    if (i.skill_id.ToString()[..1] == "1" && i.skill_id > 100000) //3*固有
                     {
                         previousLearnPoint += 170 * i.level;
                     }
@@ -225,41 +289,6 @@ namespace UmamusumeResponseAnalyzer
                 var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;
                 table.Caption($"预测总分: {previousLearnPoint}(已学习技能) + {learn.Sum(x => x.Grade)}(即将学习技能) + {statusPoint}(属性) = {totalPoint}({Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank})");
                 AnsiConsole.Write(table);
-
-                // 0/1 knapsack problem
-                int Recursive(int i, int w, int depth)
-                {
-                    var take = 0;
-                    if (Matrix[i][w] != 0) { return Matrix[i][w]; }
-
-                    if (i == 0)
-                    {
-                        if (tips[i].TotalCost <= w)
-                        {
-                            Picks[i][w] = 1;
-                            Matrix[i][w] = tips[0].Grade;
-                            return tips[i].Grade;
-                        }
-
-                        Picks[i][w] = -1;
-                        Matrix[i][w] = 0;
-                        return 0;
-                    }
-
-                    if (tips[i].TotalCost <= w)
-                    {
-                        take = tips[i].Grade + Recursive(i - 1, w - tips[i].TotalCost, depth + 1);
-                    }
-
-                    var dontTake = Recursive(i - 1, w, depth + 1);
-
-                    Matrix[i][w] = Math.Max(take, dontTake);
-
-                    if (take > dontTake) { Picks[i][w] = 1; }
-                    else { Picks[i][w] = -1; }
-
-                    return Matrix[i][w];
-                }
             }
         }
         static void ParseTrainedCharaLoadResponse(byte[] buffer)

@@ -152,6 +152,7 @@ namespace UmamusumeResponseAnalyzer
             get => idMap.ContainsKey(Id) ? idMap[Id] : null!;
             set => idMap[Id] = value;
         }
+        public SkillData[] GetAllByGroupId(int groupId) => idMap.Where(x => x.Value.GroupId == groupId).Select(x => x.Value).ToArray();
 
         public class SkillData
         {
