@@ -132,9 +132,6 @@
   <data name="ConfigSet_ParseTrainedCharaLoadResponse" xml:space="preserve">
     <value>ParseTrainedCharaLoadResponse</value>
   </data>
-  <data name="ConfigSet_Test" xml:space="preserve">
-    <value>Test</value>
-  </data>
   <data name="LaunchMenu" xml:space="preserve">
     <value>Launch Menu(Use ↑&amp;↓ to select, enter to confirm)</value>
   </data>
@@ -218,5 +215,11 @@
   </data>
   <data name="LaunchMenu_Update_AlreadyLatestInstruction" xml:space="preserve">
     <value>Newer version of program not found</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadSkillDataInstruction" xml:space="preserve">
+    <value>Downloading skilldata.json from GitHub</value>
+  </data>
+  <data name="ConfigSet_MaximiumGradeSkillRecommendation" xml:space="preserve">
+    <value>MaximiumGradeSkillRecommendation</value>
   </data>
 </root>

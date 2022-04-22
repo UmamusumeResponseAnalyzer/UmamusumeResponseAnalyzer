@@ -84,7 +84,7 @@ namespace UmamusumeResponseAnalyzer
                         case var CheckEvent when (str.Contains("chara_info") && str.Contains("race_condition_array")) || str.Contains("unchecked_event_array"):
                             if (Config.Get(Resource.ConfigSet_ParseSingleModeCheckEventResponse))
                                 ParseSingleModeCheckEventResponse(buffer);
-                            if (str.Contains("skill_tips_array"))
+                            if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && str.Contains("skill_tips_array"))
                                 ParseSkillTipsResponse(buffer);
                             break;
                         case var TrainedCharaLoad when str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"):
@@ -207,7 +207,6 @@ namespace UmamusumeResponseAnalyzer
                         if (Picks[i][totalSP] == 1)
                         {
                             totalSP -= tips[i].TotalCost;
-                            Console.WriteLine($"Add {tips[i].Name}");
                             learn.Add(tips[i]);
                         }
                     }
@@ -218,8 +217,7 @@ namespace UmamusumeResponseAnalyzer
                         {
                             if (j.Superior != null)
                             {
-                                Console.WriteLine($"Remove {j.Name}");
-                                Console.WriteLine(tips.Remove(j));
+                                tips.Remove(j);
                             }
                         }
                     }
@@ -267,8 +265,8 @@ namespace UmamusumeResponseAnalyzer
                 learn = learn.OrderBy(x => x.DisplayOrder).ToList();
 
                 var table = new Table();
-                table.Title($"总计技能点: {@event.data.chara_info.skill_point}, 使用技能点: {@event.data.chara_info.skill_point - totalSP}, 剩余技能点: {totalSP}");
-                table.AddColumns("技能名", "需要技能点数", "评价点");
+                table.Title(string.Format(Resource.MaximiumGradeSkillRecommendation_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
+                table.AddColumns(Resource.MaximiumGradeSkillRecommendation_Columns_SkillName, Resource.MaximiumGradeSkillRecommendation_Columns_RequireSP, Resource.MaximiumGradeSkillRecommendation_Columns_Grade);
                 table.Columns[0].Centered();
                 foreach (var i in learn)
                 {
@@ -297,7 +295,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
                 var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;
-                table.Caption($"预测总分: {previousLearnPoint}(已学习技能) + {learn.Sum(x => x.Grade)}(即将学习技能) + {statusPoint}(属性) = {totalPoint}({Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank})");
+                table.Caption(string.Format(Resource.MaximiumGradeSkillRecommendation_Caption, previousLearnPoint, learn.Sum(x => x.Grade), statusPoint, totalPoint, Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank));
                 AnsiConsole.Write(table);
             }
         }

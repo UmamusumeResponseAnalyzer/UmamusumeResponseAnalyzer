@@ -22,9 +22,9 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ParseFriendSearchResponse,
                 Resource.ConfigSet_ParseTeamStadiumOpponentListResponse,
                 Resource.ConfigSet_ParsePracticeRaceRaceStartResponse,
-                Resource.ConfigSet_ParseRoomMatchRaceStartResponse
+                Resource.ConfigSet_ParseRoomMatchRaceStartResponse,
+                Resource.ConfigSet_MaximiumGradeSkillRecommendation
             });
-            ConfigSet.Add(Resource.ConfigSet_Test, Array.Empty<string>());
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {

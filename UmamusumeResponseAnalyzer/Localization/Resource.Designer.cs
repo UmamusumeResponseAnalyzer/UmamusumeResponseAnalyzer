@@ -70,6 +70,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 给出评价点最大化的技能学习建议 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_MaximiumGradeSkillRecommendation {
+            get {
+                return ResourceManager.GetString("ConfigSet_MaximiumGradeSkillRecommendation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 解析好友种马胜鞍 的本地化字符串。
         /// </summary>
         public static string ConfigSet_ParseFriendSearchResponse {
@@ -120,15 +129,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string ConfigSet_ParseTrainedCharaLoadResponse {
             get {
                 return ResourceManager.GetString("ConfigSet_ParseTrainedCharaLoadResponse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 测试用 的本地化字符串。
-        /// </summary>
-        public static string ConfigSet_Test {
-            get {
-                return ResourceManager.GetString("ConfigSet_Test", resourceCulture);
             }
         }
         
@@ -358,11 +358,65 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 正在从GitHub下载最新的skilldata.json 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Update_DownloadSkillDataInstruction {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Update_DownloadSkillDataInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 正在从GitHub下载最新的successevents.json 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadSuccessEventsInstruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Update_DownloadSuccessEventsInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 预测总分: {0}(已学习技能) + {1}(即将学习技能) + {2}(属性) = {3}({4}) 的本地化字符串。
+        /// </summary>
+        public static string MaximiumGradeSkillRecommendation_Caption {
+            get {
+                return ResourceManager.GetString("MaximiumGradeSkillRecommendation_Caption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 评价点 的本地化字符串。
+        /// </summary>
+        public static string MaximiumGradeSkillRecommendation_Columns_Grade {
+            get {
+                return ResourceManager.GetString("MaximiumGradeSkillRecommendation_Columns_Grade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 需要技能点数 的本地化字符串。
+        /// </summary>
+        public static string MaximiumGradeSkillRecommendation_Columns_RequireSP {
+            get {
+                return ResourceManager.GetString("MaximiumGradeSkillRecommendation_Columns_RequireSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 技能名 的本地化字符串。
+        /// </summary>
+        public static string MaximiumGradeSkillRecommendation_Columns_SkillName {
+            get {
+                return ResourceManager.GetString("MaximiumGradeSkillRecommendation_Columns_SkillName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 总计技能点: {0}, 使用技能点: {1}, 剩余技能点: {2} 的本地化字符串。
+        /// </summary>
+        public static string MaximiumGradeSkillRecommendation_Title {
+            get {
+                return ResourceManager.GetString("MaximiumGradeSkillRecommendation_Title", resourceCulture);
             }
         }
     }

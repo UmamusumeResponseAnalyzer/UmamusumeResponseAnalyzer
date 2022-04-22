@@ -116,6 +116,9 @@ namespace UmamusumeResponseAnalyzer
                             var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json");
                             tasks.Add(idToNameTask);
 
+                            var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/skilldata.json");
+                            tasks.Add(skillTask);
+
                             var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"), "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe");
                             tasks.Add(programTask);
 

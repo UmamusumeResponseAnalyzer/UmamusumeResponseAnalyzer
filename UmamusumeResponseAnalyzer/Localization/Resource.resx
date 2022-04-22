@@ -132,9 +132,6 @@
   <data name="ConfigSet_ParseTrainedCharaLoadResponse" xml:space="preserve">
     <value>解析萝卜马胜鞍</value>
   </data>
-  <data name="ConfigSet_Test" xml:space="preserve">
-    <value>测试用</value>
-  </data>
   <data name="LaunchMenu" xml:space="preserve">
     <value>启动菜单(用↑和↓切换选项,回车确认)</value>
   </data>
@@ -218,5 +215,26 @@
   </data>
   <data name="LaunchMenu_Update_AlreadyLatestInstruction" xml:space="preserve">
     <value>未发现新版本程序</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadSkillDataInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的skilldata.json</value>
+  </data>
+  <data name="ConfigSet_MaximiumGradeSkillRecommendation" xml:space="preserve">
+    <value>给出评价点最大化的技能学习建议</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Title" xml:space="preserve">
+    <value>总计技能点: {0}, 使用技能点: {1}, 剩余技能点: {2}</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Columns_SkillName" xml:space="preserve">
+    <value>技能名</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Columns_RequireSP" xml:space="preserve">
+    <value>需要技能点数</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Columns_Grade" xml:space="preserve">
+    <value>评价点</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Caption" xml:space="preserve">
+    <value>预测总分: {0}(已学习技能) + {1}(即将学习技能) + {2}(属性) = {3}({4})</value>
   </data>
 </root>
