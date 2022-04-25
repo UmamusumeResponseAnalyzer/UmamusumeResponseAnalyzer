@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using Newtonsoft.Json;
+using Spectre.Console;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;

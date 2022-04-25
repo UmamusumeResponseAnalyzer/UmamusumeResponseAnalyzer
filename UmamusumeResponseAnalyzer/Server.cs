@@ -79,38 +79,42 @@ namespace UmamusumeResponseAnalyzer
                 lock (_lock)
                 {
                     var str = MessagePackSerializer.ConvertToJson(buffer);
-                    switch (str)
+                    if (str.Contains("chara_info") && str.Contains("home_info") && str.Contains("command_info_array") && !str.Contains("race_reward_info"))
                     {
-                        case var CheckEvent when (str.Contains("chara_info") && str.Contains("race_condition_array")) || str.Contains("unchecked_event_array"):
-                            if (Config.Get(Resource.ConfigSet_ParseSingleModeCheckEventResponse))
-                                ParseSingleModeCheckEventResponse(buffer);
-                            if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && str.Contains("skill_tips_array"))
-                                ParseSkillTipsResponse(buffer);
-                            if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
-                                ParseCommandInfo(buffer);
-                            break;
-                        case var TrainedCharaLoad when str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"):
-                            if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
-                                ParseTrainedCharaLoadResponse(buffer);
-                            break;
-                        case var FriendSearch when str.Contains("friend_info") && str.Contains("user_info_summary") && str.Contains("practice_partner_info") && str.Contains("directory_card_array") && str.Contains("support_card_data") && str.Contains("release_num_info") && str.Contains("trophy_num_info") && str.Contains("team_stadium_user") && str.Contains("follower_num") && str.Contains("own_follow_num") && str.Contains("enable_circle_scout"):
-                            if (Config.Get(Resource.ConfigSet_ParseFriendSearchResponse))
-                                ParseFriendSearchResponse(buffer);
-                            break;
-                        case var TeamStadiumOpponentList when str.Contains("opponent_info_array"):
-                            if (Config.Get(Resource.ConfigSet_ParseTeamStadiumOpponentListResponse))
-                                ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
-                            break;
-                        case var PracticeRaceRaceStartResponse when str.Contains("trained_chara_array") && str.Contains("race_result_info") && str.Contains("entry_info_array") && str.Contains("practice_race_id") && str.Contains("state") && str.Contains("practice_partner_owner_info_array"):
-                            if (Config.Get(Resource.ConfigSet_ParsePracticeRaceRaceStartResponse))
-                                ParsePracticeRaceRaceStartResponse(buffer);
-                            break;
-                        case var RoomMatchRaceStartResponse when str.Contains("race_scenario") && str.Contains("random_seed") && str.Contains("race_horse_data_array") && str.Contains("trained_chara_array") && str.Contains("season") && str.Contains("weather") && str.Contains("ground_condition"):
-                            if (Config.Get(Resource.ConfigSet_ParseRoomMatchRaceStartResponse))
-                                ParseRoomMatchRaceStartResponse(buffer);
-                            break;
-                        default:
-                            return;
+                        if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
+                            ParseCommandInfo(buffer);
+                    }
+                    if ((str.Contains("chara_info") && str.Contains("race_condition_array")) || str.Contains("unchecked_event_array"))
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParseSingleModeCheckEventResponse))
+                            ParseSingleModeCheckEventResponse(buffer);
+                        if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && str.Contains("skill_tips_array"))
+                            ParseSkillTipsResponse(buffer);
+                    }
+                    if (str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"))
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
+                            ParseTrainedCharaLoadResponse(buffer);
+                    }
+                    if (str.Contains("friend_info") && str.Contains("user_info_summary") && str.Contains("practice_partner_info") && str.Contains("directory_card_array") && str.Contains("support_card_data") && str.Contains("release_num_info") && str.Contains("trophy_num_info") && str.Contains("team_stadium_user") && str.Contains("follower_num") && str.Contains("own_follow_num") && str.Contains("enable_circle_scout"))
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParseFriendSearchResponse))
+                            ParseFriendSearchResponse(buffer);
+                    }
+                    if (str.Contains("opponent_info_array"))
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParseTeamStadiumOpponentListResponse))
+                            ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
+                    }
+                    if (str.Contains("trained_chara_array") && str.Contains("race_result_info") && str.Contains("entry_info_array") && str.Contains("practice_race_id") && str.Contains("state") && str.Contains("practice_partner_owner_info_array"))
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParsePracticeRaceRaceStartResponse))
+                            ParsePracticeRaceRaceStartResponse(buffer);
+                    }
+                    if (str.Contains("race_scenario") && str.Contains("random_seed") && str.Contains("race_horse_data_array") && str.Contains("trained_chara_array") && str.Contains("season") && str.Contains("weather") && str.Contains("ground_condition"))
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParseRoomMatchRaceStartResponse))
+                            ParseRoomMatchRaceStartResponse(buffer);
                     }
                 }
             }
@@ -123,7 +127,7 @@ namespace UmamusumeResponseAnalyzer
             var @event = TryDeserialize<Gallop.SingleModeCheckEventResponse>(buffer);
             if (@event != default && @event.data.home_info != null && @event.data.home_info.command_info_array != null && @event.data.home_info.command_info_array.Length != 0)
             {
-                if (@event.data.unchecked_event_array == null || @event.data.unchecked_event_array.Length > 0 | @event.data.race_start_info != null) return;
+                if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
                 var failureRate = new Dictionary<int, int>
                 {
                     {101,@event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601).failure_rate : @event.data.home_info.command_info_array.First(x => x.command_id == 101).failure_rate },
@@ -371,7 +375,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else
                     {
-                        previousLearnPoint += Database.Skills[i.skill_id] == null ? Database.Skills[i.skill_id].Grade : 0;
+                        previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Grade;
                     }
                 }
                 var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;
