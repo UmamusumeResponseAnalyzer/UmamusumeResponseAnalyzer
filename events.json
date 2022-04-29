@@ -1995,71 +1995,13 @@
     ]
   },
   {
-    "Id": 501019705,
-    "Name": "ヲタク最高すぎるんだが？",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "友情って素晴らしい！",
-        "SuccessEffect": "スピード+10",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "これもウマ娘への愛……なのかな？",
-        "SuccessEffect": "根性+10",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019524,
-    "Name": "ウマ娘ちゃんクイズ☆～関係性編～",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "エイシンフラッシュ",
-        "SuccessEffect": "スピード+15、「末脚」のヒントLv+1",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "ミホノブルボン",
-        "SuccessEffect": "スピード+5",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019303,
-    "Name": "デビュー戦の後に・新緑の旨味",
+    "Id": 501019100,
+    "Name": "アグネスデジタル登場！",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019517,
-    "Name": "厳正なる抽選の結果……",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "やる気−1",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019113,
-    "Name": "助言スベカラズ？",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "賢さ+5",
+        "SuccessEffect": "スキルPt+120",
         "FailedEffect": ""
       }
     ]
@@ -2087,100 +2029,23 @@
     ]
   },
   {
-    "Id": 501019114,
-    "Name": "触れ合いの先に",
+    "Id": 501019102,
+    "Name": "初詣",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
-        "Option": "",
-        "SuccessEffect": "パワー+5",
+        "Option": "養分",
+        "SuccessEffect": "体力+30",
         "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019719,
-    "Name": "あと1曲！　あと1曲だけ……！",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "体力+15、やる気−1、根性−5",
-        "FailedEffect": "体力+15、やる気−1、根性−5、「なまけ癖」獲得"
-      }
-    ]
-  },
-  {
-    "Id": 501019708,
-    "Name": "レース勝利！",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "君が1番輝いてたぞ",
-        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−15、ランダムな1つのステータス+5、スキルPt+30",
-        "FailedEffect": "-"
       },
       {
-        "Option": "次のレースも頑張ろう",
-        "SuccessEffect": "【G1】、体力−5、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−5、ランダムな1つのステータス+5、スキルPt+30",
-        "FailedEffect": "【G1】、体力−20、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+5、スキルPt+30"
-      }
-    ]
-  },
-  {
-    "Id": 501019709,
-    "Name": "レース入着",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "入着おめでとう！",
-        "SuccessEffect": "【G1】、体力−20、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+3、スキルPt+30",
-        "FailedEffect": "-"
-      },
-      {
-        "Option": "次は自分が1着を取ろうな",
-        "SuccessEffect": "【G1】、体力−10、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−10、ランダムな1つのステータス+3、スキルPt+30",
-        "FailedEffect": "【G1】、体力−30、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【G3】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【OP】、体力−30、ランダムな1つのステータス+3、スキルPt+30"
-      }
-    ]
-  },
-  {
-    "Id": 501019710,
-    "Name": "レース敗北",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "次こそ頑張ろう！",
-        "SuccessEffect": "【G1】、体力−25、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−25、スキルPt+10、確率でマイナススキル獲得",
-        "FailedEffect": "-"
-      },
-      {
-        "Option": "悔しくないのか？",
-        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−15、スキルPt+10、確率でマイナススキル獲得",
-        "FailedEffect": "【G1】、体力−35、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−35、スキルPt+10、確率でマイナススキル獲得"
-      }
-    ]
-  },
-  {
-    "Id": 501019305,
-    "Name": "NHKマイルCの後に・遠い光",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "Option": "友情パワー",
+        "SuccessEffect": "全ステータス+5",
         "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019307,
-    "Name": "ジャパンダートダービーの後に・立心",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
+      },
       {
-        "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "Option": "多様性",
+        "SuccessEffect": "スキルPt+35",
         "FailedEffect": ""
       }
     ]
@@ -2215,13 +2080,61 @@
     ]
   },
   {
-    "Id": 501019116,
-    "Name": "一流の条件",
+    "Id": 501019301,
+    "Name": "夏合宿（3年目）終了",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "根性+5",
+        "SuccessEffect": "ランダムな3つのステータス+3",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019303,
+    "Name": "デビュー戦の後に・新緑の旨味",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019304,
+    "Name": "ヒヤシンスSの後に・勝者の影に",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019305,
+    "Name": "NHKマイルCの後に・遠い光",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019307,
+    "Name": "ジャパンダートダービーの後に・立心",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -2239,52 +2152,25 @@
     ]
   },
   {
-    "Id": 501019102,
-    "Name": "初詣",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "養分",
-        "SuccessEffect": "体力+30",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "友情パワー",
-        "SuccessEffect": "全ステータス+5",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "多様性",
-        "SuccessEffect": "スキルPt+35",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019506,
-    "Name": "ダンスレッスン",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "難度の高いダンスに挑戦してみよう",
-        "SuccessEffect": "パワー+10",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "得意なダンスでGO！",
-        "SuccessEffect": "賢さ+10",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019117,
-    "Name": "後輩ちゃんキタコレ！",
+    "Id": 501019306,
+    "Name": "宝塚記念の後に・見知らぬ灼熱",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "スピード+5",
+        "SuccessEffect": "体力−15、ランダムな1つのステータス+13、スキルPt+50",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019115,
+    "Name": "宝塚決戦！",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "-",
         "FailedEffect": ""
       }
     ]
@@ -2302,13 +2188,109 @@
     ]
   },
   {
-    "Id": 501019301,
-    "Name": "夏合宿（3年目）終了",
+    "Id": 501019310,
+    "Name": "天皇賞（秋）の後に・道なき道の果て",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+3",
+        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019119,
+    "Name": "万能を超えて",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+30、パワー+30、スキルPt+45、「負けん気」のスキルLv+1、「上昇気流」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019111,
+    "Name": "世界のオールラウンダー",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+5、スキルPt+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019517,
+    "Name": "厳正なる抽選の結果……",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019113,
+    "Name": "助言スベカラズ？",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "賢さ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019114,
+    "Name": "触れ合いの先に",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "パワー+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019719,
+    "Name": "あと1曲！　あと1曲だけ……！",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気−1、根性−5",
+        "FailedEffect": "体力+15、やる気−1、根性−5、「なまけ癖」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501019116,
+    "Name": "一流の条件",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "根性+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019117,
+    "Name": "後輩ちゃんキタコレ！",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+5",
         "FailedEffect": ""
       }
     ]
@@ -2326,13 +2308,71 @@
     ]
   },
   {
-    "Id": 501019100,
-    "Name": "アグネスデジタル登場！",
+    "Id": 501019519,
+    "Name": "応募は公式リウマート",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "スキルPt+120",
+        "SuccessEffect": "やる気−1、賢さ−5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019523,
+    "Name": "仰げば尊死！　幽体離脱！？",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、全ステータス+5、スキルPt+30、「切れ者」獲得",
+        "FailedEffect": "やる気+1、全ステータス+5、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501019518,
+    "Name": "今そこにある萌え",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10、やる気−1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019524,
+    "Name": "ウマ娘ちゃんクイズ☆～関係性編～",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "エイシンフラッシュ",
+        "SuccessEffect": "スピード+15、「末脚」のヒントLv+1",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ミホノブルボン",
+        "SuccessEffect": "スピード+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019506,
+    "Name": "ダンスレッスン",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "難度の高いダンスに挑戦してみよう",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "得意なダンスでGO！",
+        "SuccessEffect": "賢さ+10",
         "FailedEffect": ""
       }
     ]
@@ -2389,23 +2429,6 @@
     ]
   },
   {
-    "Id": 501019715,
-    "Name": "追加の自主トレ",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "こっそりとね",
-        "SuccessEffect": "体力−5、直前のトレーニングに応じたステータス+5、バッドコンディションが解消、秋川理事長の絆ゲージ+5",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "オーバーワークはダメ",
-        "SuccessEffect": "体力+5",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
     "Id": 501019520,
     "Name": "毎日がコラボカフェ",
     "TriggerName": "アグネスデジタル",
@@ -2440,83 +2463,6 @@
     ]
   },
   {
-    "Id": 501019519,
-    "Name": "応募は公式リウマート",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "やる気−1、賢さ−5",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019304,
-    "Name": "ヒヤシンスSの後に・勝者の影に",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+3、スキルPt+30、秋川理事長の絆ゲージ+4",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019706,
-    "Name": "推し接近アラート、発令！？",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "A賞が取れれば、興奮するかも‥‥‥",
-        "SuccessEffect": "パワー+10",
-        "FailedEffect": ""
-      },
-      {
-        "Option": "これ以上無理をさせないでくれ！",
-        "SuccessEffect": "体力+10",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019523,
-    "Name": "仰げば尊死！　幽体離脱！？",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "やる気+1、全ステータス+5、スキルPt+30、「切れ者」獲得",
-        "FailedEffect": "やる気+1、全ステータス+5、スキルPt+30"
-      }
-    ]
-  },
-  {
-    "Id": 501019310,
-    "Name": "天皇賞（秋）の後に・道なき道の果て",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501019111,
-    "Name": "世界のオールラウンダー",
-    "TriggerName": "アグネスデジタル",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "全ステータス+5、スキルPt+20",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
     "Id": 501019525,
     "Name": "ウマ娘ちゃんクイズ☆～嗜好編～",
     "TriggerName": "アグネスデジタル",
@@ -2534,13 +2480,30 @@
     ]
   },
   {
-    "Id": 501019518,
-    "Name": "今そこにある萌え",
+    "Id": 501019705,
+    "Name": "ヲタク最高すぎるんだが？",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
         "Option": "",
         "SuccessEffect": "体力−10、やる気−1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501019706,
+    "Name": "推し接近アラート、発令！？",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "A賞が取れれば、興奮するかも‥‥‥",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "これ以上無理をさせないでくれ！",
+        "SuccessEffect": "体力+10",
         "FailedEffect": ""
       }
     ]
@@ -2602,37 +2565,69 @@
     ]
   },
   {
-    "Id": 501019306,
-    "Name": "宝塚記念の後に・見知らぬ灼熱",
+    "Id": 501019708,
+    "Name": "レース勝利！",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
-        "Option": "",
-        "SuccessEffect": "体力−15、ランダムな1つのステータス+13、スキルPt+50",
-        "FailedEffect": ""
+        "Option": "君が1番輝いてたぞ",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−15、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次のレースも頑張ろう",
+        "SuccessEffect": "【G1】、体力−5、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−5、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "【G1】、体力−20、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+5、スキルPt+30"
       }
     ]
   },
   {
-    "Id": 501019115,
-    "Name": "宝塚決戦！",
+    "Id": 501019709,
+    "Name": "レース入着",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
-        "Option": "",
-        "SuccessEffect": "-",
-        "FailedEffect": ""
+        "Option": "入着おめでとう！",
+        "SuccessEffect": "【G1】、体力−20、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次は自分が1着を取ろうな",
+        "SuccessEffect": "【G1】、体力−10、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−10、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "【G1】、体力−30、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【G3】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【OP】、体力−30、ランダムな1つのステータス+3、スキルPt+30"
       }
     ]
   },
   {
-    "Id": 501019119,
-    "Name": "万能を超えて",
+    "Id": 501019710,
+    "Name": "レース敗北",
     "TriggerName": "アグネスデジタル",
     "Choices": [
       {
-        "Option": "",
-        "SuccessEffect": "スピード+30、パワー+30、スキルPt+45、「負けん気」のスキルLv+1、「上昇気流」のヒントLv+1",
+        "Option": "次こそ頑張ろう！",
+        "SuccessEffect": "【G1】、体力−25、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−25、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "悔しくないのか？",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−15、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "【G1】、体力−35、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−35、スキルPt+10、確率でマイナススキル獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501019715,
+    "Name": "追加の自主トレ",
+    "TriggerName": "アグネスデジタル",
+    "Choices": [
+      {
+        "Option": "こっそりとね",
+        "SuccessEffect": "体力−5、直前のトレーニングに応じたステータス+5、バッドコンディションが解消、秋川理事長の絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "オーバーワークはダメ",
+        "SuccessEffect": "体力+5",
         "FailedEffect": ""
       }
     ]
@@ -40926,6 +40921,18 @@
     ]
   },
   {
+    "Id": 501072107,
+    "Name": "バレンタイン",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "固有スキルLv+1",
+        "FailedEffect": "スキルPt+20"
+      }
+    ]
+  },
+  {
     "Id": 501001108,
     "Name": "ファン感謝祭",
     "TriggerName": "共通",
@@ -41574,6 +41581,18 @@
     ]
   },
   {
+    "Id": 501072108,
+    "Name": "ファン感謝祭",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気↑、固有スキルLv+1",
+        "FailedEffect": "体力−5、スキルPt+25"
+      }
+    ]
+  },
+  {
     "Id": 501001109,
     "Name": "クリスマス",
     "TriggerName": "共通",
@@ -42211,6 +42230,18 @@
   },
   {
     "Id": 501051109,
+    "Name": "クリスマス",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "固有スキルLv+1<br>（ファン数が多いほど確率UP）",
+        "FailedEffect": "スキルPt+20"
+      }
+    ]
+  },
+  {
+    "Id": 501072109,
     "Name": "クリスマス",
     "TriggerName": "共通",
     "Choices": [
@@ -42871,6 +42902,18 @@
   },
   {
     "Id": 501051507,
+    "Name": "ファンレター",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、スキルPt+30",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072507,
     "Name": "ファンレター",
     "TriggerName": "共通",
     "Choices": [
@@ -45234,6 +45277,38 @@
     ]
   },
   {
+    "Id": 501072720,
+    "Name": "あんし～ん笹針師、参☆上",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "強いウマ娘になれる秘孔を狙う",
+        "SuccessEffect": "全ステータス+20",
+        "FailedEffect": "体力−20、全ステータス−15、やる気−2、「夜ふかし気味」獲得"
+      },
+      {
+        "Option": "レースで勝てる秘孔を狙う",
+        "SuccessEffect": "スキル「直線回復◯」習得、スキル「コーナー回復◯」習得",
+        "FailedEffect": "体力−20、やる気−2"
+      },
+      {
+        "Option": "元気で健康になれる秘孔を狙う",
+        "SuccessEffect": "体力の最大値+12、体力+40",
+        "FailedEffect": "やる気減少、「練習ベタ」獲得"
+      },
+      {
+        "Option": "魅力アップの秘孔を狙う",
+        "SuccessEffect": "体力+20、やる気上昇、「愛嬌◯」獲得",
+        "FailedEffect": "体力−10、やる気減少"
+      },
+      {
+        "Option": "不安なのでやめておく",
+        "SuccessEffect": "体力+10",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
     "Id": 501001701,
     "Name": "休息はバッチリ！",
     "TriggerName": "共通",
@@ -46483,6 +46558,18 @@
   },
   {
     "Id": 501051707,
+    "Name": "神社でお祈り！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "バッドコンディションが治る",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
+    "Id": 501072707,
     "Name": "神社でお祈り！",
     "TriggerName": "共通",
     "Choices": [
@@ -48846,6 +48933,38 @@
     ]
   },
   {
+    "Id": 501072302,
+    "Name": "福引チャンス！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "温泉旅行券",
+        "SuccessEffect": "体力+30、やる気↑、全ステータス+10、URA優勝で温泉旅行",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "特上にんじんハンバーグ",
+        "SuccessEffect": "体力+30、やる気+2、全ステータス+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "にんじん山盛り",
+        "SuccessEffect": "体力+20、やる気+1、全ステータス+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "にんじん1本",
+        "SuccessEffect": "体力+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ティッシュ",
+        "SuccessEffect": "やる気−1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001521,
     "Name": "夜ふかし気味で……",
     "TriggerName": "共通",
@@ -49506,6 +49625,18 @@
     ]
   },
   {
+    "Id": 501072521,
+    "Name": "夜ふかし気味で……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10",
+        "FailedEffect": "体力−10、やる気−1"
+      }
+    ]
+  },
+  {
     "Id": 501001717,
     "Name": "保健室にて",
     "TriggerName": "共通",
@@ -50154,6 +50285,18 @@
     ]
   },
   {
+    "Id": 501072717,
+    "Name": "保健室にて",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+20、バッドコンディションが治る",
+        "FailedEffect": "体力+20"
+      }
+    ]
+  },
+  {
     "Id": 501001722,
     "Name": "頭痛で憂鬱",
     "TriggerName": "共通",
@@ -50791,6 +50934,18 @@
   },
   {
     "Id": 501051722,
+    "Name": "頭痛で憂鬱",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、賢さ−5",
+        "FailedEffect": "やる気−1、賢さ−5、コンディション「片頭痛」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501072722,
     "Name": "頭痛で憂鬱",
     "TriggerName": "共通",
     "Choices": [
@@ -52098,6 +52253,30 @@
     ]
   },
   {
+    "Id": 501072728,
+    "Name": "クレーンゲーム成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気+1、「直線回復」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072731,
+    "Name": "クレーンゲーム成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気+1、「直線回復」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001727,
     "Name": "クレーンゲーム大成功！",
     "TriggerName": "共通",
@@ -53394,6 +53573,30 @@
     ]
   },
   {
+    "Id": 501072727,
+    "Name": "クレーンゲーム大成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気+1、「直線回復」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072730,
+    "Name": "クレーンゲーム大成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気+1、「直線回復」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001729,
     "Name": "クレーンゲーム失敗……",
     "TriggerName": "共通",
@@ -54031,6 +54234,18 @@
   },
   {
     "Id": 501051729,
+    "Name": "クレーンゲーム失敗……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+5、根性+3",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072729,
     "Name": "クレーンゲーム失敗……",
     "TriggerName": "共通",
     "Choices": [
@@ -54702,6 +54917,18 @@
     ]
   },
   {
+    "Id": 501072522,
+    "Name": "お肌の調子が……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "-",
+        "FailedEffect": "やる気−1"
+      }
+    ]
+  },
+  {
     "Id": 501001509,
     "Name": "連続出走で……",
     "TriggerName": "共通",
@@ -55350,6 +55577,18 @@
     ]
   },
   {
+    "Id": 501072509,
+    "Name": "連続出走で……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、ランダムな3つのステータス−10",
+        "FailedEffect": "やる気−1、ランダムな3つのステータス−10、「肌荒れ」習得"
+      }
+    ]
+  },
+  {
     "Id": 501001712,
     "Name": "不在の理由は……",
     "TriggerName": "共通",
@@ -55987,6 +56226,18 @@
   },
   {
     "Id": 501051712,
+    "Name": "不在の理由は……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気−1、秋川理事長の絆ゲージ−5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072712,
     "Name": "不在の理由は……",
     "TriggerName": "共通",
     "Choices": [
@@ -56647,6 +56898,18 @@
   },
   {
     "Id": 501051716,
+    "Name": "ダイエット成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "「太り気味」解消",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072716,
     "Name": "ダイエット成功！",
     "TriggerName": "共通",
     "Choices": [
@@ -57323,6 +57586,18 @@
     ]
   },
   {
+    "Id": 501072600,
+    "Name": "武者震い",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムなステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001601,
     "Name": "今度こそ！",
     "TriggerName": "共通",
@@ -57960,6 +58235,18 @@
   },
   {
     "Id": 501051601,
+    "Name": "今度こそ！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072601,
     "Name": "今度こそ！",
     "TriggerName": "共通",
     "Choices": [
@@ -58907,6 +59194,23 @@
   },
   {
     "Id": 501051711,
+    "Name": "今度こそ負けない！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "次こそ、絶対勝とう",
+        "SuccessEffect": "やる気+1、スキルPt+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "帰ってトレーニングしよう！",
+        "SuccessEffect": "体力−25、スキルPt+10、「伏兵◯」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072711,
     "Name": "今度こそ負けない！",
     "TriggerName": "共通",
     "Choices": [
@@ -71015,7 +71319,7 @@
       {
         "Option": "",
         "SuccessEffect": "体力+15、やる気-1、根性-5",
-        "FailedEffect": ""
+        "FailedEffect": "体力+15、やる気−1、根性−5、「なまけ癖」獲得"
       }
     ]
   },
@@ -71095,6 +71399,912 @@
       {
         "Option": "あ～、魔法で早く直せたらな～！",
         "SuccessEffect": "スピード+10、「追込直線◯」のヒントLv+2、スイープトウショウの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072513,
+    "Name": "“允許”の重み",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "……見事！",
+        "SuccessEffect": "根性+10、賢さ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "金剛八重垣流の強さを垣間見た",
+        "SuccessEffect": "スタミナ+10、パワー+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072514,
+    "Name": "ただ、成すべきを成すのみ",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "言葉よりも走りで魅せたな！",
+        "SuccessEffect": "スピード+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "金剛八重垣流の教えが身になってるな",
+        "SuccessEffect": "賢さ+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072515,
+    "Name": "成るか成らぬか“不動心”",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "……今は気持ちを解放しよう",
+        "SuccessEffect": "スピード+20、「愛嬌◯」獲得",
+        "FailedEffect": "スピード+20"
+      },
+      {
+        "Option": "修行の日々を思い出せ！",
+        "SuccessEffect": "根性+20、「愛嬌◯」獲得",
+        "FailedEffect": "根性+20"
+      }
+    ]
+  },
+  {
+    "Id": 501072100,
+    "Name": "ヤエノムテキ登場！",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スキルPt+120",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072101,
+    "Name": "新年の抱負",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "バランスよくトレーニングしよう！",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "休息を大事に",
+        "SuccessEffect": "体力+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "必殺技を会得したいな……",
+        "SuccessEffect": "スキルPt+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072102,
+    "Name": "初詣",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "ヤエノムテキが健康でありますように",
+        "SuccessEffect": "体力+30",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "努力が実りますように",
+        "SuccessEffect": "全ステータス+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "打倒オグリキャップ！！",
+        "SuccessEffect": "スキルPt+35",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072104,
+    "Name": "夏合宿（2年目）にて",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "スイカ割りをしよう！",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "靴下をはいてビーチ・フラッグス",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072300,
+    "Name": "夏合宿（2年目）終了",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072301,
+    "Name": "夏合宿（3年目）終了",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072303,
+    "Name": "デビュー戦の後に・賑々しく狂おしき",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072304,
+    "Name": "毎日杯の後に・行雲流水",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな4つステータス+1~3、スキルpt+40~48、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072307,
+    "Name": "皐月賞の後に・師に捧げる栄冠",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072308,
+    "Name": "皐月賞の後に・桜したたか",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1、スキルPt+36、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072309,
+    "Name": "皐月賞の後に・難きゆえに尊し",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力-15、ランダムな1つのステータス+4~11、スキルPt+26~46",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072310,
+    "Name": "日本ダービーの後に・昇り炎舞",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072314,
+    "Name": "菊花賞の後に・虚ろなる焔",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072322,
+    "Name": "大阪杯の後に・眼光炯々",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072323,
+    "Name": "安田記念の後に・故に、怪物",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072324,
+    "Name": "宝塚記念の後に・恐れぬ者は斯く語り",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072326,
+    "Name": "有馬記念の後に・好敵手、相成り",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力-15、ランダムな1つのステータス+4~11、スキルPt+26~46",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072113,
+    "Name": "正しきを為すが義",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "根性+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072114,
+    "Name": "敬愛を抱きて誠意尽くすが礼",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072115,
+    "Name": "導きの標となりしは智",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "賢さ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072116,
+    "Name": "克己復礼即ち仁",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072117,
+    "Name": "八重の勝利は無敵の証",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072111,
+    "Name": "焔よ、剛毅なれ",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+5、スキルPt+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072506,
+    "Name": "ダンスレッスン",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "敵の攻撃を受け流すイメージで",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "想定する敵を……100倍に増やそう！",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072517,
+    "Name": "先は長い……",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気-1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072518,
+    "Name": "ある日の決闘",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気-1、体力-10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072519,
+    "Name": "隙だらけだ！",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気-1、根性-5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072510,
+    "Name": "ムテキなモーニングルーティン",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "帳消しにするほどの全力を見せよう！",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "気合いで紙に書こう！",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072511,
+    "Name": "第1回耕作ステークス開催？",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "行けヤエノ、この勢いを止めずに！",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "修行に大事なのは持続すること！",
+        "SuccessEffect": "やる気+1、スタミナ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072520,
+    "Name": "無心の理由",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "とっさにあれだけ動けるなんてすごい！",
+        "SuccessEffect": "スピード+10、スキルPt+15",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "根っこに優しさがあるからできることだな",
+        "SuccessEffect": "「根幹距離◯」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072702,
+    "Name": "道の果て、その先へ",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "みんなで走れば怖くない、か",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "姉弟子さんの心を救うヒントかもな",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072703,
+    "Name": "“我が弟子”へ",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "いつか、師弟対決ができるといいな",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "……君こそもう、”本物”じゃないか？",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072704,
+    "Name": "常に、誰かの“師”たれ",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "なら、俺にとっても君は”師”だよ",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "先輩はこれから大丈夫だろうか？",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "もはや自分の流派を開けそうだな……",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072705,
+    "Name": "伝説の書を求めて",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "これが古流の鍛錬……",
+        "SuccessEffect": "スピード+5、根性+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "じゃあ、例の本はどこへ？",
+        "SuccessEffect": "スタミナ+5、パワー+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072706,
+    "Name": "刃武流の真髄",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "……達人だな！",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "それが、バブル流か……",
+        "SuccessEffect": "スピード+5、賢さ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072524,
+    "Name": "極限の修行",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "……じゃあ、せめて命綱をつけてくれ",
+        "SuccessEffect": "スタミナ+10、パワー+10、「遊びはおしまいっ！」のヒントLv+1",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "またの機会に……",
+        "SuccessEffect": "体力+10、やる気+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072523,
+    "Name": "建設現場にて",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、全ステータス+5、スキルPt+30、「切れ者」獲得",
+        "FailedEffect": "やる気+1、全ステータス+5、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501072708,
+    "Name": "レース勝利！",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "今は目の前の勝利を喜んでいいよ",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−15、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "さっそく次の準備に入ろう！",
+        "SuccessEffect": "【G1】、体力−5、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−5、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "【G1】、体力−20、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+5、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501072709,
+    "Name": "レース入着",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "積み重ねが大事、今のベストは尽くせた",
+        "SuccessEffect": "【G1】、体力−20、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "反省を活かして次は勝とう！",
+        "SuccessEffect": "【G1】、体力−10、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−10、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "【G1】、体力−30、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【G3】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【OP】、体力−30、ランダムな1つのステータス+3、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501072710,
+    "Name": "レース敗北",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "君は絶対強くなれる",
+        "SuccessEffect": "【G1】、体力−25、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−25、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "強敵ばかりでワクワクするな",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−15、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "【G1】、体力−35、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−35、スキルPt+10、確率でマイナススキル獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501072713,
+    "Name": "お大事に！",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "大事を取って休もう",
+        "SuccessEffect": "やる気−1、直前のトレーニング能力−5",
+        "FailedEffect": "やる気−1、直前のトレーニング能力−5、「練習ベタ」獲得"
+      },
+      {
+        "Option": "無理のない範囲で再開しよう",
+        "SuccessEffect": "「練習上手◯」獲得",
+        "FailedEffect": "やる気−1、直前のトレーニング能力−10、確率で「練習ベタ」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501072714,
+    "Name": "無茶は厳禁！",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "治ってからしっかりトレーニングしよう",
+        "SuccessEffect": "体力+10、やる気−3、直前のトレーニング能力−10、ランダムな2つのステータス−10",
+        "FailedEffect": "体力+10、やる気−3、直前のトレーニング能力−10、ランダムな2つのステータス−10、「練習ベタ」獲得"
+      },
+      {
+        "Option": "無理のない範囲でやろう",
+        "SuccessEffect": "体力+10、低確率で「練習上手◯」獲得",
+        "FailedEffect": "やる気−3、直前のトレーニング能力−20、ランダムな1つのステータス−10、「練習ベタ」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501072715,
+    "Name": "追加の自主トレ",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "正体を突き止めてきて",
+        "SuccessEffect": "体力−5、直前のトレーニングに応じたステータス+5、バッドコンディションが解消、秋川理事長の絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ここで待っていれば、そのうち通るのでは？",
+        "SuccessEffect": "体力+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072516,
+    "Name": "大食いの免許皆伝",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "食事は適量が1番だよ",
+        "SuccessEffect": "体力+10、スキルPt+5",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "大食いを極めよう",
+        "SuccessEffect": "体力+30、スキルPt+10",
+        "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501072719,
+    "Name": "ヤエノムテキの見取り稽古",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気−1、根性−5",
+        "FailedEffect": "体力+15、やる気−1、根性−5、「なまけ癖」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 830094001,
+    "Name": "猛特訓！オムレツマスターを狙え！",
+    "TriggerName": "[届け、このオモイ！]バンブーメモリー",
+    "Choices": [
+      {
+        "Option": "上の選択肢",
+        "SuccessEffect": "やる気+1、体力−5、根性+15、「位置取り押し上げ」のヒントLv+1、バンブーメモリーの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "下の選択肢",
+        "SuccessEffect": "スキルPt+30、バンブーメモリーの絆ゲージ+5、**進行イベント打ち切り**",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830094002,
+    "Name": "立てバンブー！汗と友情の闘拳修行！",
+    "TriggerName": "[届け、このオモイ！]バンブーメモリー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10、パワー+15、根性+15、バンブーメモリーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830094003,
+    "Name": "奇跡を起こせ！伝説の熱血エール！",
+    "TriggerName": "[届け、このオモイ！]バンブーメモリー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10、スタミナ+20、根性+20、「破竹の勢い」のヒントLv+3、バンブーメモリーの絆ゲージ+5",
+        "FailedEffect": "体力−10、スタミナ+15、根性+15、「気合十分」のヒントLv+1、バンブーメモリーの絆ゲージ+5"
+      }
+    ]
+  },
+  {
+    "Id": 830095001,
+    "Name": "It will be fine",
+    "TriggerName": "[そのエールは世界を変えた]シーキングザパール",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+10、賢さ+10、最大体力値+4、シーキングザパールの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830095002,
+    "Name": "Re:START！",
+    "TriggerName": "[そのエールは世界を変えた]シーキングザパール",
+    "Choices": [
+      {
+        "Option": "上の選択肢",
+        "SuccessEffect": "体力+10、賢さ+10、「上昇気流」のヒントLv+2、シーキングザパールの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "下の選択肢",
+        "SuccessEffect": "パワー+20、スキルPt+10、「軽い足取り」のヒントLv+2、シーキングザパールの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830095003,
+    "Name": "You are Me",
+    "TriggerName": "[そのエールは世界を変えた]シーキングザパール",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+14、根性+7、賢さ+7、「大胆不敵」のヒントLv+1、シーキングザパールの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830096001,
+    "Name": "ドキッ！バキッ！噂のおばけ退治！？",
+    "TriggerName": "[フレフレ☆プリンセス]カワカミプリンセス",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−5、パワー+10、カワカミプリンセスの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830096002,
+    "Name": "仲間集結！プリンセスなら優雅たれ！",
+    "TriggerName": "[フレフレ☆プリンセス]カワカミプリンセス",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10、パワー+20、カワカミプリンセスの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830096003,
+    "Name": "繋がれリレー！おばけ退治で大団円！",
+    "TriggerName": "[フレフレ☆プリンセス]カワカミプリンセス",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−15、パワー+30、「勝利への執念」のヒントLv+1、カワカミプリンセスの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501060800,
+    "Name": "動画でエール！",
+    "TriggerName": "新衣装ナイスネイチャ",
+    "Choices": [
+      {
+        "Option": "お姉ちゃんらしい応援",
+        "SuccessEffect": "パワー+10、スキルPt+15",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "かわいく元気な応援",
+        "SuccessEffect": "「がんばり屋」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501060801,
+    "Name": "草野球でエール！",
+    "TriggerName": "新衣装ナイスネイチャ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、スタミナ+20、スキルPt+20、「恐れぬ心」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501060802,
+    "Name": "君のエール",
+    "TriggerName": "新衣装ナイスネイチャ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501061800,
+    "Name": "応援行脚",
+    "TriggerName": "新衣装キングヘイロー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気↑、パワー+20、スキルPt+20、「気合十分」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501061801,
+    "Name": "To Be Continued?",
+    "TriggerName": "新衣装キングヘイロー",
+    "Choices": [
+      {
+        "Option": "帰ってドラマ見ていいぞ",
+        "SuccessEffect": "「負けん気」のヒントLv+2",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "………夜ふかしはダメだぞ？",
+        "SuccessEffect": "体力+15",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501061802,
+    "Name": "ウララの恩返し",
+    "TriggerName": "新衣装キングヘイロー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+10",
         "FailedEffect": ""
       }
     ]
