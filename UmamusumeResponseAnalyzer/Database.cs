@@ -244,8 +244,7 @@ namespace UmamusumeResponseAnalyzer
             }
             private void ApplyHint(Gallop.SingleModeChara chara_info, int level)
             {
-                if (chara_info.chara_effect_id_array.Contains(7)) //切者
-                    Cost = Cost * 90 / 100;
+                var cutted = chara_info.chara_effect_id_array.Contains(7) ? 10 : 0; //切者
                 var off = level switch //打折等级
                 {
                     1 => 10,
@@ -254,7 +253,7 @@ namespace UmamusumeResponseAnalyzer
                     4 => 35,
                     5 => 40
                 };
-                Cost = Cost * (100 - off) / 100;
+                Cost = Cost * (100 - off - cutted) / 100;
             }
             private void ApplyProper(Gallop.SingleModeChara chara_info)
             {
