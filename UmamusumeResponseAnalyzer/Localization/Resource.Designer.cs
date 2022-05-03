@@ -169,7 +169,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 [grey](用[blue]&lt;空格&gt;[/]切换选项,按下[green]&lt;回车&gt;[/]保存并返回)[/] 的本地化字符串。
+        ///   查找类似 [grey](用[blue]&lt;空格&gt;[/]切换选项,按下[green]&lt;回车&gt;[/]保存并返回,[[X]]为选中状态)[/] 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Options_Instruction {
             get {

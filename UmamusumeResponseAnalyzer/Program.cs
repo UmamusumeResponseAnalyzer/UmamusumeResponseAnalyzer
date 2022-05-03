@@ -6,19 +6,19 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Localization;
 
-//设置宽度，Windows的CMD在大小<160时无法正常显示竞技场对手属性，会死循环
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-{
-    Console.BufferWidth = 160;
-    Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight + 3);
-    Console.OutputEncoding = Encoding.UTF8;
-}
 namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
         public static async Task Main(string[] args)
         {
+            //设置宽度，Windows的CMD在大小<160时无法正常显示竞技场对手属性，会死循环
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Console.BufferWidth = 160;
+                Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
+                Console.OutputEncoding = Encoding.UTF8;
+            }
             //尝试更新程序本体
             TryUpdate(args);
             //加载设置

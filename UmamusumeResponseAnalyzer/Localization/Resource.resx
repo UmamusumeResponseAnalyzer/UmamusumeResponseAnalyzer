@@ -142,7 +142,7 @@
     <value>按任意键返回主菜单</value>
   </data>
   <data name="LaunchMenu_Options_Instruction" xml:space="preserve">
-    <value>[grey](用[blue]&lt;空格&gt;[/]切换选项,按下[green]&lt;回车&gt;[/]保存并返回)[/]</value>
+    <value>[grey](用[blue]&lt;空格&gt;[/]切换选项,按下[green]&lt;回车&gt;[/]保存并返回,[[X]]为选中状态)[/]</value>
   </data>
   <data name="LaunchMenu_Start" xml:space="preserve">
     <value>启动！</value>
