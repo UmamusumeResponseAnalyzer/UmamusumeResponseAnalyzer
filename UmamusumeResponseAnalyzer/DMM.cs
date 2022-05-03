@@ -33,6 +33,7 @@ namespace UmamusumeResponseAnalyzer
 
         static DMM()
         {
+            if (!File.Exists(DMM_CONFIG_FILEPATH)) return;
             var lines = File.ReadAllLines(DMM_CONFIG_FILEPATH).Where(x => !string.IsNullOrEmpty(x));
             foreach (var i in lines)
             {
