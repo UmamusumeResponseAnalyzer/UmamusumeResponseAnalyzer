@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer
 {
+    /// <summary>
+    /// 直接从Beta抓的包，然后重放
+    /// </summary>
     internal static class DMM
     {
-        private static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
+        internal static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
         private const string AcceptEncoding = "gzip, deflate, br";
         private const string AcceptLanguage = "zh-CN";
         private const string UserAgent = "DMMGamePlayer5-Win/5.0.119 Electron/17.2.0";
@@ -30,44 +33,40 @@ namespace UmamusumeResponseAnalyzer
 
         static DMM()
         {
-            if (File.Exists(DMM_CONFIG_FILEPATH))
+            var lines = File.ReadAllLines(DMM_CONFIG_FILEPATH).Where(x => !string.IsNullOrEmpty(x));
+            foreach (var i in lines)
             {
-                var lines = File.ReadAllLines(DMM_CONFIG_FILEPATH).Where(x => !string.IsNullOrEmpty(x));
-                foreach (var i in lines)
+                var split = i.Split('=');
+                switch (split[0])
                 {
-                    var split = i.Split('=');
-                    switch (split[0])
-                    {
-                        case nameof(login_session_id):
-                            login_session_id = split[1];
-                            break;
-                        case nameof(login_secure_id):
-                            login_secure_id = split[1];
-                            break;
-                        case nameof(mac_address):
-                            mac_address = split[1];
-                            break;
-                        case nameof(hdd_serial):
-                            hdd_serial = split[1];
-                            break;
-                        case nameof(motherboard):
-                            motherboard = split[1];
-                            break;
-                        case nameof(user_os):
-                            user_os = split[1];
-                            break;
-                        case nameof(umamusume_file_path):
-                            umamusume_file_path = split[1];
-                            break;
-                        default:
-                            throw new Exception($"Unknown .token key {split[0]}");
-                    }
+                    case nameof(login_session_id):
+                        login_session_id = split[1];
+                        break;
+                    case nameof(login_secure_id):
+                        login_secure_id = split[1];
+                        break;
+                    case nameof(mac_address):
+                        mac_address = split[1];
+                        break;
+                    case nameof(hdd_serial):
+                        hdd_serial = split[1];
+                        break;
+                    case nameof(motherboard):
+                        motherboard = split[1];
+                        break;
+                    case nameof(user_os):
+                        user_os = split[1];
+                        break;
+                    case nameof(umamusume_file_path):
+                        umamusume_file_path = split[1];
+                        break;
+                    default:
+                        throw new Exception($"Unknown .token key {split[0]}");
                 }
             }
         }
         public static async ValueTask<string?> GetExecuteArgsAsync()
         {
-            if (!File.Exists(DMM_CONFIG_FILEPATH)) return string.Empty;
             var cookies = new System.Net.CookieContainer();
             var client = new HttpClient(new HttpClientHandler
             {

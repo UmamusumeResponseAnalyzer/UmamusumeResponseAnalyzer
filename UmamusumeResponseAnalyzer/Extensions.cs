@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer
 {
+    public enum SystemVersion
+    {
+        Default = 0,
+        Windows7 = 1
+    }
     public static class Extensions
     {
         public static byte[] Replace(this byte[] input, byte[] pattern, byte[] replacement)
@@ -48,6 +53,12 @@ namespace UmamusumeResponseAnalyzer
             }
 
             return result.ToArray();
+        }
+        public static SystemVersion GetSystemVersion(this OperatingSystem os)
+        {
+            if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 1)
+                return SystemVersion.Windows7;
+            return SystemVersion.Default;
         }
     }
 }
