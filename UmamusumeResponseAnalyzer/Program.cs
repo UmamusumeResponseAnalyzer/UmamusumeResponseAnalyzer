@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Spectre.Console;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -131,22 +132,22 @@ namespace UmamusumeResponseAnalyzer
                     {
                         var tasks = new List<Task>();
 
-                        var eventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json");
+                        var eventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
                         tasks.Add(eventTask);
 
-                        var successEventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevents.json");
+                        var successEventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
                         tasks.Add(successEventTask);
 
-                        var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json");
+                        var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH);
                         tasks.Add(idToNameTask);
 
-                        var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/skilldata.json");
+                        var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
                         tasks.Add(skillTask);
 
-                        var translatedNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH, "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/name_cn.json");
+                        var translatedNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH);
                         tasks.Add(translatedNameTask);
 
-                        var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"), "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe");
+                        var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
                         tasks.Add(programTask);
 
                         await Task.WhenAll(tasks);
@@ -223,14 +224,31 @@ namespace UmamusumeResponseAnalyzer
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //删除临时文件
                 File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
         }
-        static async Task DownloadAssets(ProgressContext ctx, string instruction, string path, string url)
+        static string GetDownloadUrl(string filepath)
+        {
+            var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
+            if (Resource.LaunchMenu_Update_DownloadEventsInstruction == filepath)
+                return isCN ? "https://assets.shuise.net/events.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json";
+            if (Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction == filepath)
+                return isCN ? "https://assets.shuise.net/successevents.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevents.json";
+            if (Resource.LaunchMenu_Update_DownloadIdToNameInstruction == filepath)
+                return isCN ? "https://assets.shuise.net/id.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json";
+            if (Resource.LaunchMenu_Update_DownloadSkillDataInstruction == filepath)
+                return isCN ? "https://assets.shuise.net/skilldata.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/skilldata.json";
+            if (Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction == filepath)
+                return isCN ? "https://assets.shuise.net/name_cn.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/name_cn.json";
+            if (Resource.LaunchMenu_Update_DownloadProgramInstruction == filepath)
+                return isCN ? "https://assets.shuise.net/UmamusumeResponseAnalyzer.exe" : "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe";
+            throw new Exception("当前文件没有国内优化地址");
+        }
+        static async Task DownloadAssets(ProgressContext ctx, string instruction, string path)
         {
             var client = new HttpClient(new HttpClientHandler
             {
                 AllowAutoRedirect = false
             });
             var task = ctx.AddTask(instruction, false);
-            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            var response = await client.GetAsync(GetDownloadUrl(instruction), HttpCompletionOption.ResponseHeadersRead);
             while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
             {
                 response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
