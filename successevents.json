@@ -1,37 +1,101 @@
 [{
 		"Name": "レース勝利！",
-		"Choices": [{
+		"Choices": [
+			{
+				"ChoiceIndex": 1,
+				"SelectIndex": 1,
+				"Effects": {
+					"4": "体力-20,不刷新道具"
+				}	
+			},
+			{
+				"ChoiceIndex": 1,
+				"SelectIndex": 2,
+				"Effects": {
+					"4": "体力-20,刷新道具"
+				}	
+			},			
+			{
 				"ChoiceIndex": 2,
 				"SelectIndex": 1,
 				"Effects": {
 					"2": "体力-5",
-					"4": "体力-10"
+					"4": "体力-10,刷新道具"
 				}
 			},
 			{
 				"ChoiceIndex": 2,
 				"SelectIndex": 2,
 				"Effects": {
-					"4": "体力-10"
+					"4": "体力-10,不刷新道具"
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 3,
+				"Effects": {
+					"2": "体力-5",
+					"4": "体力-25,刷新道具"
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 4,
+				"Effects": {
+					"2": "体力-5",
+					"4": "体力-25,不刷新道具"
 				}
 			}
 		]
 	},
 	{
 		"Name": "レース入着",
-		"Choices": [{
+		"Choices": [
+			{
+				"ChoiceIndex": 1,
+				"SelectIndex": 1,
+				"Effects": {
+					"2": "体力-10",
+					"4": "体力-25,不刷新道具"
+				}
+			},		
+			{
+				"ChoiceIndex": 1,
+				"SelectIndex": 2,
+				"Effects": {
+					"2": "体力-10",
+					"4": "体力-25,刷新道具"
+				}
+			},		
+			{
 				"ChoiceIndex": 2,
 				"SelectIndex": 1,
 				"Effects": {
 					"2": "体力-10",
-					"4": "体力-15"
+					"4": "体力-15,刷新道具"
 				}
 			},
 			{
 				"ChoiceIndex": 2,
 				"SelectIndex": 2,
 				"Effects": {
-					"4": "体力-15"
+					"4": "体力-15,不刷新道具"
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 3,
+				"Effects": {
+					"2": "体力-10",
+					"4": "体力-35,刷新道具"
+				}
+			},
+			{
+				"ChoiceIndex": 2,
+				"SelectIndex": 4,
+				"Effects": {
+					"2": "体力-10",
+					"4": "体力-35,不刷新道具"
 				}
 			}
 		]
@@ -56,6 +120,26 @@
 			}
 		}]
 	},
+	{
+		"Name": "踏み出す、一歩",
+		"Choices": [{
+			"ChoiceIndex": 1,
+			"SelectIndex": 1,
+			"Effects": {
+				"0": "体力-10,PT+45"
+			}
+		}]
+	},
+	{
+		"Name": "晴天の攻防",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 3,
+			"Effects": {
+				"0": "体力+20,获得【深呼吸】"
+			}
+		}]
+	},	
 	{
 		"Name": "意外な一面",
 		"Choices": [{
@@ -169,6 +253,16 @@
 		}]
 	},
 	{
+		"Name": "食いしん坊は伊達じゃない",
+		"Choices": [{
+			"ChoiceIndex": 2,
+			"SelectIndex": 1,
+			"Effects": {
+				"0": "体力+30，技能点+10"
+			}
+		}]
+	},
+	{
 		"Name": "アヤベさんのサンドウィッチ",
 		"Choices": [{
 				"ChoiceIndex": 2,
@@ -195,23 +289,41 @@
 	},
 	{
 		"Name": "お大事に！",
-		"Choices": [{
+		"Choices": [
+			{
+				"ChoiceIndex": 1,
+				"SelectIndex": 1,
+				"Effects": {
+					"0": "心情-1 上次训练属性-5"
+				}
+			},
+			{
 			"ChoiceIndex": 2,
 			"SelectIndex": 2,
 			"Effects": {
-				"0": "获得练习上手"
+				"0": "获得【练习上手】"
 			}
-		}]
+		}
+	]
 	},
 	{
 		"Name": "無茶は厳禁！",
-		"Choices": [{
+		"Choices": [
+			{
+				"ChoiceIndex": 1,
+				"SelectIndex": 1,
+				"Effects": {
+					"0": "体力+10 心情-3 上次训练属性-10 随机2属性-10"
+				}
+			},
+			{
 			"ChoiceIndex": 2,
 			"SelectIndex": 2,
 			"Effects": {
-				"0": "获得练习上手"
+				"0": "体力+10 获得【练习上手】"
 			}
-		}]
+		}
+	]
 	},
 	{
 		"Name": "三女神さまに願いを",
