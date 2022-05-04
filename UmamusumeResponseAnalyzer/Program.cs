@@ -13,15 +13,9 @@ namespace UmamusumeResponseAnalyzer
     {
         public static async Task Main(string[] args)
         {
-            //设置宽度，Windows的CMD在大小<160时无法正常显示竞技场对手属性，会死循环
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Console.BufferWidth = 160;
-                Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
-                Console.OutputEncoding = Encoding.UTF8;
-            }
+            Console.OutputEncoding = Encoding.UTF8;
             //尝试更新程序本体
-            TryUpdate(args);
+            TryUpdateProgram(args);
             //加载设置
             Config.Initialize();
 
@@ -31,8 +25,16 @@ namespace UmamusumeResponseAnalyzer
                 case SystemVersion.Windows7: //Windows7的终端不支持Prompt，只能简单选择
                     {
                         AnsiConsole.WriteLine("检测到Windows 7");
-                        var str = AnsiConsole.Ask<string>("输入y更新数据，输入其他任意字符启动");
-                        Console.WriteLine(str);
+                        AnsiConsole.WriteLine("按下Y更新数据，按其他任意键启动");
+                        if (Console.ReadKey().Key == ConsoleKey.Y)
+                        {
+                            AnsiConsole.WriteLine("正在更新......");
+                            await Update();
+                        }
+                        foreach (var i in Config.Configuration)
+                        {
+                            Config.Set(i.Key, true);
+                        }
                         break;
                     }
                 default:
@@ -119,63 +121,7 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (prompt == Resource.LaunchMenu_Update)
             {
-                await AnsiConsole.Progress()
-                    .Columns(new ProgressColumn[]
-                    {
-                            new TaskDescriptionColumn(),
-                            new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn(),
-                            new SpinnerColumn()
-                    })
-                    .StartAsync(async ctx =>
-                    {
-                        var tasks = new List<Task>();
-
-                        var eventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
-                        tasks.Add(eventTask);
-
-                        var successEventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
-                        tasks.Add(successEventTask);
-
-                        var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH);
-                        tasks.Add(idToNameTask);
-
-                        var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
-                        tasks.Add(skillTask);
-
-                        var translatedNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH);
-                        tasks.Add(translatedNameTask);
-
-                        var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
-                        tasks.Add(programTask);
-
-                        await Task.WhenAll(tasks);
-                    });
-                AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
-
-                if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
-                {
-                    Console.WriteLine(Resource.LaunchMenu_Update_BeginUpdateProgramInstruction);
-                    Console.ReadKey();
-                    using var Proc = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
-                            Arguments = $"--update \"{Environment.ProcessPath}\"",
-                            UseShellExecute = true
-                        }
-                    };
-                    Proc.Start();
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    Console.WriteLine(Resource.LaunchMenu_Update_AlreadyLatestInstruction);
-                    Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
-                    Console.ReadKey();
-                }
+                await Update();
             }
             Console.Clear();
 
@@ -202,7 +148,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             });
         }
-        static void TryUpdate(string[] args)
+        static void TryUpdateProgram(string[] args)
         {
             if (args?.Length > 1 && args[0] == "--update")
             {
@@ -223,6 +169,66 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //删除临时文件
                 File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+        }
+        static async Task Update()
+        {
+            await AnsiConsole.Progress()
+                .Columns(new ProgressColumn[]
+                {
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn(),
+                            new SpinnerColumn()
+                })
+                .StartAsync(async ctx =>
+                {
+                    var tasks = new List<Task>();
+
+                    var eventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
+                    tasks.Add(eventTask);
+
+                    var successEventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
+                    tasks.Add(successEventTask);
+
+                    var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH);
+                    tasks.Add(idToNameTask);
+
+                    var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
+                    tasks.Add(skillTask);
+
+                    var translatedNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH);
+                    tasks.Add(translatedNameTask);
+
+                    var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                    tasks.Add(programTask);
+
+                    await Task.WhenAll(tasks);
+                });
+            AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
+
+            if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
+            {
+                Console.WriteLine(Resource.LaunchMenu_Update_BeginUpdateProgramInstruction);
+                Console.ReadKey();
+                using var Proc = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
+                        Arguments = $"--update \"{Environment.ProcessPath}\"",
+                        UseShellExecute = true
+                    }
+                };
+                Proc.Start();
+                Environment.Exit(0);
+            }
+            else
+            {
+                Console.WriteLine(Resource.LaunchMenu_Update_AlreadyLatestInstruction);
+                Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
+                Console.ReadKey();
+            }
         }
         static string GetDownloadUrl(string filepath)
         {

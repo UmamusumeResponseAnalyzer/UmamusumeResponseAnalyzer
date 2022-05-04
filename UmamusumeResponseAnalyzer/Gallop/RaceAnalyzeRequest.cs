@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Gallop
 {
     [MessagePackObject]
-    public  class RaceAnalyzeRequest
+    public class RaceAnalyzeRequest
     {
         [Key("program_id")]
         public int program_id; // 0x70

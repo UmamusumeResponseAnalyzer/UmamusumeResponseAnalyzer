@@ -112,6 +112,8 @@ namespace Gallop
 		public int scenario_id; // 0xE4
 		[Key("route_id")]
 		public int route_id; // 0xE8
+		[Key("start_time")]
+		public string start_time; // 0xF0
 		[Key("evaluation_info_array")]
 		public EvaluationInfo[] evaluation_info_array; // 0xF0
 		[Key("training_level_info_array")]

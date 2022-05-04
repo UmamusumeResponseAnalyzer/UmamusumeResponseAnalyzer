@@ -100,5 +100,7 @@ namespace Gallop
 		public int frame_order_change_flag; // 0xE4
 		[Key("team_rank")]
 		public int team_rank; // 0xE8
+		[Key("single_mode_win_count")]
+		public int single_mode_win_count;
 	}
 }

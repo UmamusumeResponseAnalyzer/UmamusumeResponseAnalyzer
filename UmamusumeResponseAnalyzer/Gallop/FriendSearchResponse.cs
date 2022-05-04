@@ -119,6 +119,8 @@ namespace Gallop
 		public int support_event_num; // 0x34
 		[Key("scenario_event_num")]
 		public int scenario_event_num; // 0x38
+		[Key("home_event_num")]
+		public int home_event_num; // 0x3C
 	}
 	[MessagePackObject]
 	public class TeamStadiumUser

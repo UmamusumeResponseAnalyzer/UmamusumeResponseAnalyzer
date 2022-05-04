@@ -1,5 +1,6 @@
 ﻿using MessagePack;
 using System;
+using UmamusumeResponseAnalyzer.Gallop;
 
 namespace Gallop
 {
@@ -30,6 +31,8 @@ namespace Gallop
             public SingleModeRaceCondition[] race_condition_array;
             [Key("race_start_info")]
             public SingleRaceStartInfo race_start_info;
+            [Key("free_data_set")]
+            public SingleModeFreeDataSet free_data_set; // 0x90
         }
     }
     [MessagePackObject]
