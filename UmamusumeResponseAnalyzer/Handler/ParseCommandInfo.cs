@@ -27,11 +27,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var table = new Table();
                 //失败率＞16%就标红
                 table.AddColumns(
-                    $"速({(failureRate[101] > 16 ? $"[red]{failureRate[101]}[/]" : failureRate[101])}%)"
-                    , $"耐({(failureRate[105] > 16 ? $"[red]{failureRate[105]}[/]" : failureRate[105])}%)"
-                    , $"力({(failureRate[102] > 16 ? $"[red]{failureRate[102]}[/]" : failureRate[102])}%)"
-                    , $"根({(failureRate[103] > 16 ? $"[red]{failureRate[103]}[/]" : failureRate[103])}%)"
-                    , $"智({(failureRate[106] > 16 ? $"[red]{failureRate[106]}[/]" : failureRate[106])}%)");
+                    new TableColumn($"速({(failureRate[101] > 16 ? $"[red]{failureRate[101]}[/]" : failureRate[101])}%)").Width(15)
+                    , new TableColumn($"耐({(failureRate[105] > 16 ? $"[red]{failureRate[105]}[/]" : failureRate[105])}%)").Width(15)
+                    , new TableColumn($"力({(failureRate[102] > 16 ? $"[red]{failureRate[102]}[/]" : failureRate[102])}%)").Width(15)
+                    , new TableColumn($"根({(failureRate[103] > 16 ? $"[red]{failureRate[103]}[/]" : failureRate[103])}%)").Width(15)
+                    , new TableColumn($"智({(failureRate[106] > 16 ? $"[red]{failureRate[106]}[/]" : failureRate[106])}%)").Width(15));
 
                 var supportCards = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
                 var commandInfo = new Dictionary<int, string[]>();
@@ -63,6 +63,27 @@ namespace UmamusumeResponseAnalyzer.Handler
                         rows.Add(j.Value.Length > i ? IsShining(j.Key, j.Value[i]) : string.Empty);
                     }
                     table.AddRow(rows.ToArray());
+                }
+
+                if (@event.data.chara_info.scenario_id == 4)
+                {
+                    var freeDataSet = @event.data.free_data_set;
+                    var coinNum = freeDataSet.coin_num;
+                    var inventory = freeDataSet.user_item_info_array.ToDictionary(x => x.item_id, x => x.item_id);
+                    var currentTurn = @event.data.chara_info.turn;
+
+                    var rows = new List<List<string>> { new(), new(), new(), new(), new() };
+                    {
+                        var k = 0;
+                        foreach (var j in freeDataSet.pick_up_item_info_array.OrderByDescending(x => x.limit_turn).GroupBy(x => x.item_id))
+                        {
+                            if (k == 5) k = 0;
+                            rows[k].Add($"{Database.ClimaxItem[j.First().item_id]}:{j.Count()}/{(j.First().limit_turn == 0 ? ((currentTurn - 1) / 6 + 1) * 6 - currentTurn : j.First().limit_turn + 1 - currentTurn)}T");
+                            k++;
+                        }
+                    }
+                    for (var i = 0; i < 5; ++i)
+                        table.Columns[i].Footer = new Rows(rows[i].Select(x => new Text(x)));
                 }
                 AnsiConsole.Write(table);
 

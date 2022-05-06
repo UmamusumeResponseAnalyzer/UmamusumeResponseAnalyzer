@@ -37,7 +37,7 @@ namespace Gallop
         [Key("command_info_array")]
         public SingleModeFreeCommandInfo[] command_info_array; // 0x58
         [Key("unchecked_event_achievement_id")]
-        public int unchecked_event_achievement_id; // 0x60
+        public int? unchecked_event_achievement_id; // 0x60
     }
     [MessagePackObject]
     public class SingleModeFreeUserItem // TypeDefIndex: 8226

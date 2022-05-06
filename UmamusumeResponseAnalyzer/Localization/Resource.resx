@@ -246,4 +246,7 @@
   <data name="LaunchMenu_Update_DownloadTranslatedNameInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的name_cn.json</value>
   </data>
+  <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的climaxitems.json</value>
+  </data>
 </root>

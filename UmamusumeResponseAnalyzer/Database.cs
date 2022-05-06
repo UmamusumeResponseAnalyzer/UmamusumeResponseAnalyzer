@@ -12,6 +12,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skilldata.json");
         internal static string UNKNOWN_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "unknownevents.txt");
         internal static string SUPPORT_ID_SHORTNAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "name_cn.json");
+        internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.json");
         /// <summary>
         /// index为属性，value为对应属性的评价点
         /// </summary>
@@ -40,6 +41,7 @@ namespace UmamusumeResponseAnalyzer
         /// S卡ID到马娘名的Dictionary，用于显示训练时的人头信息
         /// </summary>
         public static Dictionary<int, string> SupportIdToShortName { get; set; } = new();
+        public static Dictionary<int, string> ClimaxItem { get; set; } = new();
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -74,6 +76,12 @@ namespace UmamusumeResponseAnalyzer
                 var supportIdToShortName = JsonConvert.DeserializeObject<Dictionary<int, string>>(File.ReadAllText(SUPPORT_ID_SHORTNAME_FILEPATH));
                 if (supportIdToShortName != default)
                     SupportIdToShortName = supportIdToShortName;
+            }
+            if (File.Exists(CLIMAX_ITEM_FILEPATH))
+            {
+                var climaxItem = JsonConvert.DeserializeObject<Dictionary<int, string>>(File.ReadAllText(CLIMAX_ITEM_FILEPATH));
+                if (climaxItem != default)
+                    ClimaxItem = climaxItem;
             }
         }
     }

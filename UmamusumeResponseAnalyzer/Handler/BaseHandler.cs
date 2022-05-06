@@ -16,8 +16,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 return MessagePackSerializer.Deserialize<T>(buffer);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 var json = MessagePackSerializer.ConvertToJson(buffer);
                 return JsonConvert.DeserializeObject<T>(json);
             }
