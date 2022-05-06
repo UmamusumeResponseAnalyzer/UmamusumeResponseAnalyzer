@@ -31,7 +31,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 //显示选项
                                 var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? Resource.SingleModeCheckEvent_Event_NoOption : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
                                 if (Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent)) //是可以成功的事件且已在数据库中
-                                    AddSuccessEvent(successEvent.Choices.Where(x => (x.ChoiceIndex == j + 1)));
+                                    AddSuccessEvent(successEvent.Choices.Where(x => x.ChoiceIndex == j + 1));
                                 else
                                     AddNormalEvent();
                                 eventTree.AddNode(tree);
@@ -46,6 +46,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                                     var successChoice = successChoices.FirstOrDefault(x => x.SelectIndex == i.event_contents_info.choice_array[j].select_index);
                                     if (successChoice != default && successChoice.Effects.ContainsKey(@event.data.chara_info.scenario_id))
                                         tree.AddNode($"[mediumspringgreen on #081129]{(string.IsNullOrEmpty(successChoice.Effects[@event.data.chara_info.scenario_id]) ? Database.Events[i.story_id].Choices[j].SuccessEffect : successChoice.Effects[@event.data.chara_info.scenario_id]).EscapeMarkup()}[/]");
+                                    else if (string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].FailedEffect) || Database.Events[i.story_id].Choices[j].FailedEffect == "-")
+                                        tree.AddNode($"{Database.Events[i.story_id].Choices[j].SuccessEffect}".EscapeMarkup());
                                     else
                                         tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].FailedEffect.EscapeMarkup()}[/]");
                                 }

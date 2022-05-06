@@ -108,7 +108,7 @@ namespace UmamusumeResponseAnalyzer
     public class SuccessChoice
     {
         /// <summary>
-        /// 服务器下发的ChoiceIndex
+        /// 服务器下发的choice_array的index，从0开始
         /// </summary>
         public int ChoiceIndex { get; set; }
         /// <summary>
