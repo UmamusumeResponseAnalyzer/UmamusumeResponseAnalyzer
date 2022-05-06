@@ -465,18 +465,6 @@
     ]
   },
   {
-    "Name": "食いしん坊は伊達じゃない",
-    "Choices": [
-      {
-        "ChoiceIndex": 2,
-        "SelectIndex": 1,
-        "Effects": {
-          "0": "体力+30、スキルPt+10"
-        }
-      }
-    ]
-  },
-  {
     "Name": "いっしょに、食べよ？",
     "Choices": [
       {
@@ -837,18 +825,6 @@
     ]
   },
   {
-    "Name": "完全無欠のスイーツ",
-    "Choices": [
-      {
-        "ChoiceIndex": 2,
-        "SelectIndex": 1,
-        "Effects": {
-          "0": "体力+30、スキルPt+10"
-        }
-      }
-    ]
-  },
-  {
     "Name": "そびえ立つカロリー",
     "Choices": [
       {
@@ -934,18 +910,6 @@
   },
   {
     "Name": "良薬は口に苦し",
-    "Choices": [
-      {
-        "ChoiceIndex": 2,
-        "SelectIndex": 1,
-        "Effects": {
-          "0": "体力+30、スキルPt+10"
-        }
-      }
-    ]
-  },
-  {
-    "Name": "ふわっふわスイート",
     "Choices": [
       {
         "ChoiceIndex": 2,
