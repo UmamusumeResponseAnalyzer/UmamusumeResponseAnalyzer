@@ -46,11 +46,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                             var name = Database.SupportIdToShortName[(partner >= 1 && partner <= 7) ? supportCards[partner] : partner].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                             if (partner >= 1 && partner <= 7)
                             {
+                                if (name.Contains("[友]")) //友人单独标绿
+                                    name = $"[green]{name}[/]";
                                 if (@event.data.chara_info.evaluation_info_array.First(x => x.target_id == partner).evaluation < 80) //羁绊不满80，无法触发友情训练标黄
                                     name = $"[yellow]{name}[/]";
                             }
-                            if (name.Contains("[友]")) //友人单独标绿
-                                name = $"[green]{name}[/]";
                             return tips.Contains(partner) ? $"[red]![/]{name}" : name; //有Hint就加个红感叹号，和游戏内表现一样
                         }).ToArray());
                 }
@@ -59,15 +59,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     var rows = new List<string>();
                     foreach (var j in commandInfo)
-                        if (j.Value.Length > i)
-                        {
-
-                            rows.Add(IsShining(j.Key, j.Value[i]));
-                        }
-                        else
-                        {
-                            rows.Add(string.Empty);
-                        }
+                    {
+                        rows.Add(j.Value.Length > i ? IsShining(j.Key, j.Value[i]) : string.Empty);
+                    }
                     table.AddRow(rows.ToArray());
                 }
                 AnsiConsole.Write(table);
