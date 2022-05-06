@@ -1,6 +1,5 @@
 ﻿using MessagePack;
 using System;
-using UmamusumeResponseAnalyzer.Gallop;
 
 namespace Gallop
 {

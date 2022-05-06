@@ -1,353 +1,1403 @@
-[{
-		"Name": "レース勝利！",
-		"Choices": [
-			{
-				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effects": {
-					"4": "体力-20,不刷新道具"
-				}	
-			},
-			{
-				"ChoiceIndex": 1,
-				"SelectIndex": 2,
-				"Effects": {
-					"4": "体力-20,刷新道具"
-				}	
-			},			
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 1,
-				"Effects": {
-					"2": "体力-5",
-					"4": "体力-10,刷新道具"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 2,
-				"Effects": {
-					"4": "体力-10,不刷新道具"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 3,
-				"Effects": {
-					"2": "体力-5",
-					"4": "体力-25,刷新道具"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 4,
-				"Effects": {
-					"2": "体力-5",
-					"4": "体力-25,不刷新道具"
-				}
-			}
-		]
-	},
-	{
-		"Name": "レース入着",
-		"Choices": [
-			{
-				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effects": {
-					"2": "体力-10",
-					"4": "体力-25,不刷新道具"
-				}
-			},		
-			{
-				"ChoiceIndex": 1,
-				"SelectIndex": 2,
-				"Effects": {
-					"2": "体力-10",
-					"4": "体力-25,刷新道具"
-				}
-			},		
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 1,
-				"Effects": {
-					"2": "体力-10",
-					"4": "体力-15,刷新道具"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 2,
-				"Effects": {
-					"4": "体力-15,不刷新道具"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 3,
-				"Effects": {
-					"2": "体力-10",
-					"4": "体力-35,刷新道具"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 4,
-				"Effects": {
-					"2": "体力-10",
-					"4": "体力-35,不刷新道具"
-				}
-			}
-		]
-	},
-	{
-		"Name": "謎の儀式図で運試し！",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "全属性+7"
-			}
-		}]
-	},
-	{
-		"Name": "仲間と一緒に笑福万来！",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "全属性+7"
-			}
-		}]
-	},
-	{
-		"Name": "踏み出す、一歩",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力-10,PT+45"
-			}
-		}]
-	},
-	{
-		"Name": "晴天の攻防",
-		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 3,
-			"Effects": {
-				"0": "体力+20,获得【深呼吸】"
-			}
-		}]
-	},	
-	{
-		"Name": "意外な一面",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力+15~19，耐力+10~13，ペースアップ的hint+3，解锁理事长的外出事件"
-			}
-		}]
-	},
-	{
-		"Name": "あんし～ん笹針師、参☆上",
-		"Choices": [{
-				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effects": {
-					"0": "全属性+20"
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 3,
-				"Effects": {
-					"0": "直接习得コーナー回復◯、直線回復"
-				}
-			},
-			{
-				"ChoiceIndex": 3,
-				"SelectIndex": 5,
-				"Effects": {
-					"0": "体力最大值+12，体力+40，治愈所有负面效果"
-				}
-			},
-			{
-				"ChoiceIndex": 4,
-				"SelectIndex": 7,
-				"Effects": {
-					"0": "体力+20，干劲提升，获得爱娇"
-				}
-			}
-		]
-	},
-	{
-		"Name": "気まぐれ天才魔法少女スイーピー☆",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "干劲提升，直线一气的Hint+2"
-			}
-		}]
-	},
-	{
-		"Name": "オグリの大食い選手権",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力+30，パワー（力量）+10，スキルPt（技能点数）+10"
-			}
-		}]
-	},
-	{
-		"Name": "鬼トレーニング",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力-10，力量+20，技能点+10"
-			}
-		}]
-	},
-	{
-		"Name": "Love Ramen",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 2,
-			"Effects": {
-				"0": "体力+30，技能点+15（待确认）"
-			}
-		}]
-	},
-	{
-		"Name": "みんなで作る特製ドリンク♪",
-		"Choices": [{
-			"ChoiceIndex": 1,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力+10，速度+5,智力+5，技能点+10"
-			}
-		}]
-	},
-	{
-		"Name": "完全無欠のスイーツ",
-		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力+30，技能点+10"
-			}
-		}]
-	},
-	{
-		"Name": "ふわっふわスイート",
-		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力+30，技能点+10"
-			}
-		}]
-	},
-	{
-		"Name": "食いしん坊は伊達じゃない",
-		"Choices": [{
-			"ChoiceIndex": 2,
-			"SelectIndex": 1,
-			"Effects": {
-				"0": "体力+30，技能点+10"
-			}
-		}]
-	},
-	{
-		"Name": "アヤベさんのサンドウィッチ",
-		"Choices": [{
-				"ChoiceIndex": 2,
-				"SelectIndex": 1,
-				"Effects": {
-					"0": "干劲提升，力量+15，直线一气的Hint+2"
-				}
-			},
-			{
-				"ChoiceIndex": 3,
-				"SelectIndex": 4,
-				"Effects": {
-					"0": "干劲提升，智力+15，中距离直线的Hint+2"
-				}
-			},
-			{
-				"ChoiceIndex": 4,
-				"SelectIndex": 7,
-				"Effects": {
-					"0": "干劲提升，速度+15，隠れ蓑的Hint+2"
-				}
-			}
-		]
-	},
-	{
-		"Name": "お大事に！",
-		"Choices": [
-			{
-				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effects": {
-					"0": "心情-1 上次训练属性-5"
-				}
-			},
-			{
-			"ChoiceIndex": 2,
-			"SelectIndex": 2,
-			"Effects": {
-				"0": "获得【练习上手】"
-			}
-		}
-	]
-	},
-	{
-		"Name": "無茶は厳禁！",
-		"Choices": [
-			{
-				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effects": {
-					"0": "体力+10 心情-3 上次训练属性-10 随机2属性-10"
-				}
-			},
-			{
-			"ChoiceIndex": 2,
-			"SelectIndex": 2,
-			"Effects": {
-				"0": "体力+10 获得【练习上手】"
-			}
-		}
-	]
-	},
-	{
-		"Name": "三女神さまに願いを",
-		"Choices": [{
-				"ChoiceIndex": 1,
-				"SelectIndex": 1,
-				"Effects": {
-					"0": ""
-				}
-			},
-			{
-				"ChoiceIndex": 2,
-				"SelectIndex": 3,
-				"Effects": {
-					"0": ""
-				}
-			},
-			{
-				"ChoiceIndex": 3,
-				"SelectIndex": 5,
-				"Effects": {
-					"0": ""
-				}
-			}
-		]
-	}
+[
+  {
+    "Name": "レース勝利！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "4": "体力-20,不刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "4": "体力-20,刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "2": "体力-5",
+          "4": "体力-10,刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 2,
+        "Effects": {
+          "4": "体力-10,不刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 3,
+        "Effects": {
+          "2": "体力-5",
+          "4": "体力-25,刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 4,
+        "Effects": {
+          "2": "体力-5",
+          "4": "体力-25,不刷新道具"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "レース入着",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "2": "体力-10",
+          "4": "体力-25,不刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "2": "体力-10",
+          "4": "体力-25,刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "2": "体力-10",
+          "4": "体力-15,刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 2,
+        "Effects": {
+          "4": "体力-15,不刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 3,
+        "Effects": {
+          "2": "体力-10",
+          "4": "体力-35,刷新道具"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 4,
+        "Effects": {
+          "2": "体力-10",
+          "4": "体力-35,不刷新道具"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "謎の儀式図で運試し！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "全属性+7"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "仲間と一緒に笑福万来！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "全属性+7"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "踏み出す、一歩",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力-10,PT+45"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "晴天の攻防",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 3,
+        "Effects": {
+          "0": "体力+20,获得【深呼吸】"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "意外な一面",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+15~19，耐力+10~13，ペースアップ的hint+3，解锁理事长的外出事件"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "あんし～ん笹針師、参☆上",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "全属性+20"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 3,
+        "Effects": {
+          "0": "直接习得コーナー回復◯、直線回復"
+        }
+      },
+      {
+        "ChoiceIndex": 3,
+        "SelectIndex": 5,
+        "Effects": {
+          "0": "体力最大值+12，体力+40，治愈所有负面效果"
+        }
+      },
+      {
+        "ChoiceIndex": 4,
+        "SelectIndex": 7,
+        "Effects": {
+          "0": "体力+20，干劲提升，获得爱娇"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "気まぐれ天才魔法少女スイーピー☆",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "干劲提升，直线一气的Hint+2"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "オグリの大食い選手権",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30，パワー（力量）+10，スキルPt（技能点数）+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "鬼トレーニング",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力-10，力量+20，技能点+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "Love Ramen",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "体力+30，技能点+15（待确认）"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "みんなで作る特製ドリンク♪",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+10，速度+5,智力+5，技能点+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "完全無欠のスイーツ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30，技能点+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ふわっふわスイート",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30，技能点+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "食いしん坊は伊達じゃない",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30，技能点+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "アヤベさんのサンドウィッチ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "干劲提升，力量+15，直线一气的Hint+2"
+        }
+      },
+      {
+        "ChoiceIndex": 3,
+        "SelectIndex": 4,
+        "Effects": {
+          "0": "干劲提升，智力+15，中距离直线的Hint+2"
+        }
+      },
+      {
+        "ChoiceIndex": 4,
+        "SelectIndex": 7,
+        "Effects": {
+          "0": "干劲提升，速度+15，隠れ蓑的Hint+2"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "お大事に！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "心情-1 上次训练属性-5"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "获得【练习上手】"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "無茶は厳禁！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+10 心情-3 上次训练属性-10 随机2属性-10"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "体力+10 获得【练习上手】"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "三女神さまに願いを",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": ""
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 3,
+        "Effects": {
+          "0": ""
+        }
+      },
+      {
+        "ChoiceIndex": 3,
+        "SelectIndex": 5,
+        "Effects": {
+          "0": ""
+        }
+      }
+    ]
+  },
+  {
+    "Name": "お手伝いハンバーガー！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "トレードさせていただきますっ！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ごはんも全力！！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "甘くなれない素直さ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "努力の味見",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "揚げたてのサクサクを！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ホット＆フライ！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "食いしん坊は伊達じゃない",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "いっしょに、食べよ？",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "リトルプリンセスたちの夢",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "甘党の誘惑",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "みんなで野点傘の下",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "差し入れは甘いワナ？",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "食べすぎ御免！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "白い誘惑",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "粋か！　バクシンか！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "バ・ナ・ナ・先・輩♪",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "皇帝の飽食",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "友だちのために",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "キュート☆リサーチ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "外でもくつろぎ上手？",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "肉の空へ！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "1番は見逃せない！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "王者の戦い～ラーメン編～",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "力のヒミツ！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "テンアゲ☆全サイズキャンペーン！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "よいではないか？",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "栄養食品は希望の食品？",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "肉食",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ラスボスはスぺ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "甘くて真っ赤な1ページ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ボーノな試食会☆",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "スイーツの魔法？",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "愛情はほどほどに……",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "食い倒れ！　七福神グルメめぐり",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "目指せ！　大人のちゃんこ鍋☆",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "思い出の味でフィーバー☆",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "お腹いっぱいの優しさを",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "完全無欠のスイーツ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "そびえ立つカロリー",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "想いの重さ＞砂糖の重さ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "栗祭り襲来！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "筋肉の休息日",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "懐かしのアイルランド料理",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "イカ焼きの誘惑",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "おいしすぎるお饅頭",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "良薬は口に苦し",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ふわっふわスイート",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "祭りを食せ！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "定食パーティー",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "憧れの人の待つ高みへ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "いざ、覚悟のお茶会へ",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "早く大きくなりたい",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "大食いの免許皆伝",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、スキルPt+10"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "目指せ、きらめく瞬間！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、根性+20、賢さ+5、「じゃじゃウマ娘」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "チーム総合力アップ・最高の差し入れ",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "全ステータス+6、「アガッてきた！」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "樫に咲け",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スタミナ+5、パワー+5、根性+10、「直線加速」のヒントLv+3、エアグルーヴの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "#カレンらしく",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "賢さ+10、スキルPt+20、「準備万全！」のヒントLv+3、カレンチャンの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "2人で行くこの花道",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スピード+10，パワー+10、「弧線のプロフェッサー」のヒントLv+3、キタサンブラックの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "舞踏会の綺羅星",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、パワー+40、「電撃の煌めき」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "秘すれば、花なり",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スピード+15、根性+15、賢さ+15、「豪脚」のヒントLv+3、グラスワンダーの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "私たちの、ビクトリースタンド！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スピード+15、スタミナ+15、根性+15、「全身全霊」のヒントLv+3、スペシャルウィークの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "憧れのカタチ",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+10、スピード+10、スキルPt+10、「食いしん坊」のヒントLv+1"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "すべては勝つために",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+10、やる気+1、スピード+10、スタミナ+10、賢さ+10、スキルPt+30、「脱出術」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "笑顔は続くよどこまでも",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スピード+20、パワー+20、「脱出術」のヒントLv+3、ダイタクヘリオスの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ハジけろ☆プールサイド",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−5、パワー+10、「レースプランナー」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ミイラハント～最恐スイート・マミー～",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スピード+15、パワー+15、「百万バリキ」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "『せんでん』最高！！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、根性+15、「キラーチューン」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "真っ直ぐ届け、この気持ち！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スタミナ+10、賢さ+10、「眠れる獅子」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "たいせつなのは！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スピード+10、賢さ+10、「ハヤテ一文字」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "いつか強敵と呼べる日のために！っス！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力の最大値+4、体力−5、スタミナ+15、パワー+20、「昇り龍」のヒントLv+3、バンブーメモリーの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "あなたにボーノ、あたしもボーノ☆",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スタミナ+10、根性+20、「シックスセンス」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "トレーニングは理論的に",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スタミナ+5、パワー+15、「追い上げ」のヒントLv+3、ビワハヤヒデの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "素敵な♪レース日和",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、根性+5、賢さ+10、スキルPt+5、「スピードスター」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "白銀のマーベラス☆",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スピード+5、スキルPt+10、「迅速果断」のヒントLv+3、マーベラスサンデーの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "個性的な走り方？",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "パワー+10、スキルPt+15、「どこ吹く風」のヒントLv+3、マチカネタンホイザの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "なかよし☆こよしちゃん　～実践編～",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スタミナ+10、「逃亡者」のヒントLv+3、ミホノブルボンの絆ゲージ+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ヤエノムテキ恋歌地獄変",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スピード+5、スタミナ+5、パワー+10、「アガッてきた！」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "胸の内を少しだけ",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、やる気+1、スタミナ+12、根性+12、「一陣の風」のヒントLv+3、樫本理子の絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ひと休みサプライズ",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+49、やる気+2、スキルPt+37、「コンセントレーション」のヒントLv+1"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "貴方らしく",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スピード+15、根性+15、「意気衝天」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "すげー娘はすげーし",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スピード+15、「好転一息」のヒントLv+3"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "九九の名を持つ星々たち",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "スピード+19、パワー+19、スキルpt+19、「追込直線◯」のヒントLv+2、「追込コーナー◯」のヒントLv+2"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "みんなとみる夢",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "賢さ+30、「潜伏態勢」のヒントLv+3、サトノダイヤモンドの絆ゲージ+5"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "奇跡を起こせ！伝説の熱血エール！",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力−10、スタミナ+20、根性+20、「破竹の勢い」のヒントLv+3、バンブーメモリーの絆ゲージ+5"
+        }
+      }
+    ]
+  }
 ]

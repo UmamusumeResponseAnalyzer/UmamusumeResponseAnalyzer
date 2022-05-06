@@ -1,12 +1,11 @@
-﻿using Gallop;
-using MessagePack;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UmamusumeResponseAnalyzer
+namespace Gallop
 {
     [MessagePackObject]
     public class SingleModeFreeDataSet // TypeDefIndex: 8220
