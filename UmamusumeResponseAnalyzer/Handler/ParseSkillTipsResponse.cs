@@ -47,7 +47,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var duplicated = learn.Where(x => x.GroupId == i.Key);
                         foreach (var j in duplicated)
                         {
-                            var super = learn.FirstOrDefault(x => x.Rarity < j.Rarity || x.Rate < j.Rate);
+                            var super = learn.FirstOrDefault(x => x.GroupId == j.GroupId && (x.Rarity < j.Rarity || x.Rate < j.Rate));
                             if (super != default)
                             {
                                 tips.Remove(super);
