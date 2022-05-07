@@ -15,7 +15,7 @@ namespace UmamusumeResponseAnalyzer
         {
             Console.OutputEncoding = Encoding.UTF8;
             //尝试更新程序本体
-            TryUpdateProgram(args);
+            await TryUpdateProgram(args);
             //加载设置
             Config.Initialize();
 
@@ -148,7 +148,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             });
         }
-        static void TryUpdateProgram(string[] args)
+        static async Task TryUpdateProgram(string[] args)
         {
             if (args?.Length > 1 && args[0] == "--update")
             {
@@ -168,7 +168,10 @@ namespace UmamusumeResponseAnalyzer
                 Environment.Exit(0);
             }
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //删除临时文件
+            {
+                await Update(); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
                 File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+            }
         }
         static async Task Update()
         {
@@ -267,7 +270,7 @@ namespace UmamusumeResponseAnalyzer
             }
             task.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task.StartTask();
-            if (Environment.ProcessPath != default && response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length) //服务器返回的文件长度和程序文件大小一致，即没有新的可用版本，直接返回
+            if (Environment.ProcessPath != default && (response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length || response.Content.Headers.ContentLength == new FileInfo(path).Length)) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
             {
                 task.Increment(response.Content.Headers.ContentLength ?? 0);
                 return;
