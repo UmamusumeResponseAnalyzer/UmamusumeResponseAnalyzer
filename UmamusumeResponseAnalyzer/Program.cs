@@ -187,7 +187,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 while (Config.Get(Resource.ConfigSet_AutoUpdate))
                 {
-                    //await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
+                    await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
                     Console.Title = "正在检查更新......";
 
                     var client = new HttpClient(new HttpClientHandler
