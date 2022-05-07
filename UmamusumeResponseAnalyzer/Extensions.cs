@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -59,6 +60,11 @@ namespace UmamusumeResponseAnalyzer
             if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 1)
                 return SystemVersion.Windows7;
             return SystemVersion.Default;
+        }
+        public static byte[] GetContentMD5(this HttpContentHeaders headers)
+        {
+            headers.TryGetValues("content-md5", out var values);
+            return Convert.FromBase64String(values!.First());
         }
     }
 }

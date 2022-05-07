@@ -3,6 +3,7 @@ using Spectre.Console;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Localization;
@@ -151,9 +152,11 @@ namespace UmamusumeResponseAnalyzer
         }
         static async Task TryUpdateProgram(string[] args)
         {
+            var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
+            var exist = File.Exists(path);
             if (args?.Length > 1 && args[0] == "--update")
             {
-                var path = args[1];
+                path = args[1];
                 if (Environment.ProcessPath != default)
                     File.Copy(Environment.ProcessPath, path, true);
 
@@ -168,23 +171,23 @@ namespace UmamusumeResponseAnalyzer
                 Proc.Start(); //把新程序复制到原来的目录后就启动
                 Environment.Exit(0);
             }
-            else if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
+            else if (exist && !(Environment.ProcessPath != default && MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新
             {
                 CloseToUpdate();
             }
 
-            if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //删除临时文件
+            if (exist) //删除临时文件
             {
-                File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                File.Delete(path);
                 await Update(true); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
                 AnsiConsole.Clear();
             }
+#if RELEASE //只在Release里启用自动更新
             _ = Task.Run(async () =>
             {
-                var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
                 while (Config.Get(Resource.ConfigSet_AutoUpdate))
                 {
-                    await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
+                    //await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
                     Console.Title = "正在检查更新......";
 
                     var client = new HttpClient(new HttpClientHandler
@@ -196,12 +199,13 @@ namespace UmamusumeResponseAnalyzer
                     {
                         response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
                     }
-                    if (Environment.ProcessPath != default && response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length
-                        || File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+                    if (Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)))
+                    || File.Exists(path) && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(path)))) //服务器返回的hash和当前文件一致，即没有新的可用版本，直接返回
                     {
                         Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
                         continue;
                     }
+                    Console.Title = "正在下载更新......";
                     using var contentStream = await response.Content.ReadAsStreamAsync();
                     using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                     var buffer = new byte[8192];
@@ -212,10 +216,13 @@ namespace UmamusumeResponseAnalyzer
                             break;
                         await fileStream.WriteAsync(buffer.AsMemory(0, read));
                     }
-                    Console.Title = $"重启程序后将从v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}更新至v{System.Reflection.AssemblyName.GetAssemblyName(path).Version}";
+                    fileStream.Flush();
+                    fileStream.Close();
+                    Console.Title = $"重启程序后将进行自动更新";
                     break;
                 }
             });
+#endif
         }
         static void CloseToUpdate()
         {
@@ -322,7 +329,7 @@ namespace UmamusumeResponseAnalyzer
             }
             task.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task.StartTask();
-            if (Environment.ProcessPath != default && response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length
+            if (Path.GetExtension(path) == "exe" && Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)))
                 || File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
             {
                 task.Increment(response.Content.Headers.ContentLength ?? 0);
