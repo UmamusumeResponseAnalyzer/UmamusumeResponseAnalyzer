@@ -61,6 +61,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 自动更新 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_AutoUpdate {
+            get {
+                return ResourceManager.GetString("ConfigSet_AutoUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 事件 的本地化字符串。
         /// </summary>
         public static string ConfigSet_Events {

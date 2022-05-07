@@ -24,7 +24,8 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ParsePracticeRaceRaceStartResponse,
                 Resource.ConfigSet_ParseRoomMatchRaceStartResponse,
                 Resource.ConfigSet_MaximiumGradeSkillRecommendation,
-                Resource.ConfigSet_ShowCommandInfo
+                Resource.ConfigSet_ShowCommandInfo,
+                Resource.ConfigSet_AutoUpdate
             });
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))

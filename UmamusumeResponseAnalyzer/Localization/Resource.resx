@@ -249,4 +249,7 @@
   <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的climaxitems.json</value>
   </data>
+  <data name="ConfigSet_AutoUpdate" xml:space="preserve">
+    <value>自动更新</value>
+  </data>
 </root>

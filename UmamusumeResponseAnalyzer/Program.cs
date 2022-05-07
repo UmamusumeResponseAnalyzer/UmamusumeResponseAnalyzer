@@ -13,6 +13,7 @@ namespace UmamusumeResponseAnalyzer
     {
         public static async Task Main(string[] args)
         {
+            Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             //尝试更新程序本体
             await TryUpdateProgram(args);
@@ -167,12 +168,68 @@ namespace UmamusumeResponseAnalyzer
                 Proc.Start(); //把新程序复制到原来的目录后就启动
                 Environment.Exit(0);
             }
+            else if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
+            {
+                CloseToUpdate();
+            }
+
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //删除临时文件
             {
                 File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
                 await Update(true); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
                 AnsiConsole.Clear();
             }
+            _ = Task.Run(async () =>
+            {
+                var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
+                while (Config.Get(Resource.ConfigSet_AutoUpdate))
+                {
+                    await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
+                    Console.Title = "正在检查更新......";
+
+                    var client = new HttpClient(new HttpClientHandler
+                    {
+                        AllowAutoRedirect = false
+                    });
+                    var response = await client.GetAsync(GetDownloadUrl(Resource.LaunchMenu_Update_DownloadProgramInstruction), HttpCompletionOption.ResponseHeadersRead);
+                    while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
+                    {
+                        response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+                    }
+                    if (Environment.ProcessPath != default && response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length
+                        || File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+                    {
+                        Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
+                        continue;
+                    }
+                    using var contentStream = await response.Content.ReadAsStreamAsync();
+                    using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                    var buffer = new byte[8192];
+                    while (true)
+                    {
+                        var read = await contentStream.ReadAsync(buffer);
+                        if (read == 0)
+                            break;
+                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                    }
+                    Console.Title = $"重启程序后将从v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}更新至v{System.Reflection.AssemblyName.GetAssemblyName(path).Version}";
+                    break;
+                }
+            });
+        }
+        static void CloseToUpdate()
+        {
+            using var Proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
+                    Arguments = $"--update \"{Environment.ProcessPath}\"",
+                    UseShellExecute = true
+                }
+            };
+            Proc.Start();
+            Environment.Exit(0);
         }
         static async Task Update(bool dataOnly = false)
         {
@@ -222,24 +279,14 @@ namespace UmamusumeResponseAnalyzer
             {
                 Console.WriteLine(Resource.LaunchMenu_Update_BeginUpdateProgramInstruction);
                 Console.ReadKey();
-                using var Proc = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
-                        Arguments = $"--update \"{Environment.ProcessPath}\"",
-                        UseShellExecute = true
-                    }
-                };
-                Proc.Start();
-                Environment.Exit(0);
+                CloseToUpdate();
             }
             else
             {
                 Console.WriteLine(Resource.LaunchMenu_Update_AlreadyLatestInstruction);
-                Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
-                Console.ReadKey();
             }
+            Console.WriteLine(Resource.LaunchMenu_Options_BackToMenuInstruction);
+            Console.ReadKey();
         }
         static string GetDownloadUrl(string filepath)
         {
