@@ -169,11 +169,12 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //删除临时文件
             {
-                await Update(); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
                 File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                await Update(true); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
+                AnsiConsole.Clear();
             }
         }
-        static async Task Update()
+        static async Task Update(bool dataOnly = false)
         {
             await AnsiConsole.Progress()
                 .Columns(new ProgressColumn[]
@@ -206,13 +207,17 @@ namespace UmamusumeResponseAnalyzer
                     var climaxItemTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadClimaxItemInstruction, Database.CLIMAX_ITEM_FILEPATH);
                     tasks.Add(climaxItemTask);
 
-                    var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
-                    tasks.Add(programTask);
+                    if (!dataOnly)
+                    {
+                        var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                        tasks.Add(programTask);
+                    }
 
                     await Task.WhenAll(tasks);
                 });
             AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
 
+            if (dataOnly) return;
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
             {
                 Console.WriteLine(Resource.LaunchMenu_Update_BeginUpdateProgramInstruction);
@@ -270,7 +275,8 @@ namespace UmamusumeResponseAnalyzer
             }
             task.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task.StartTask();
-            if (Environment.ProcessPath != default && (response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length || response.Content.Headers.ContentLength == new FileInfo(path).Length)) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+            if (Environment.ProcessPath != default && response.Content.Headers.ContentLength == new FileInfo(Environment.ProcessPath).Length
+                || File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
             {
                 task.Increment(response.Content.Headers.ContentLength ?? 0);
                 return;
