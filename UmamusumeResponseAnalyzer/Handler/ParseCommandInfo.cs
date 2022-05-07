@@ -65,20 +65,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                     table.AddRow(rows.ToArray());
                 }
 
-                if (@event.data.chara_info.scenario_id == 4)
+                if (@event.data.chara_info.scenario_id == 4 && @event.data.free_data_set.pick_up_item_info_array != null)
                 {
                     var freeDataSet = @event.data.free_data_set;
                     var coinNum = freeDataSet.coin_num;
-                    var inventory = freeDataSet.user_item_info_array.ToDictionary(x => x.item_id, x => x.item_id);
+                    var inventory = freeDataSet.user_item_info_array?.ToDictionary(x => x.item_id, x => x.item_id);
                     var currentTurn = @event.data.chara_info.turn;
 
                     var rows = new List<List<string>> { new(), new(), new(), new(), new() };
                     {
                         var k = 0;
-                        foreach (var j in freeDataSet.pick_up_item_info_array.OrderByDescending(x => x.limit_turn).GroupBy(x => x.item_id))
+                        foreach (var j in freeDataSet.pick_up_item_info_array.Where(x => x.item_buy_num != 1).OrderByDescending(x => x.limit_turn).GroupBy(x => x.item_id))
                         {
                             if (k == 5) k = 0;
-                            rows[k].Add($"{Database.ClimaxItem[j.First().item_id]}:{j.Count()}/{(j.First().limit_turn == 0 ? ((currentTurn - 1) / 6 + 1) * 6 - currentTurn : j.First().limit_turn + 1 - currentTurn)}T");
+                            rows[k].Add($"{Database.ClimaxItem[j.First().item_id]}:{j.Count()}/{(j.First().limit_turn == 0 ? ((currentTurn - 1) / 6 + 1) * 6 + 1 - currentTurn : j.First().limit_turn + 1 - currentTurn)}T");
                             k++;
                         }
                     }
