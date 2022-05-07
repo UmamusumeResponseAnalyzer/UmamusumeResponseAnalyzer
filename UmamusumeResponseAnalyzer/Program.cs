@@ -15,10 +15,10 @@ namespace UmamusumeResponseAnalyzer
         {
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
-            //尝试更新程序本体
-            await TryUpdateProgram(args);
             //加载设置
             Config.Initialize();
+            //尝试更新程序本体
+            await TryUpdateProgram(args);
 
             //根据操作系统显示启动菜单
             switch (Environment.OSVersion.GetSystemVersion())
