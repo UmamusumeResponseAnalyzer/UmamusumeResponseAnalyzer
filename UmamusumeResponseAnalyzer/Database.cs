@@ -246,9 +246,10 @@ namespace UmamusumeResponseAnalyzer
 
             public SkillData Apply(Gallop.SingleModeChara chara_info, int level)
             {
-                ApplyHint(chara_info, level);
-                ApplyProper(chara_info);
-                return this;
+                var instance = Clone();
+                instance.ApplyHint(chara_info, level);
+                instance.ApplyProper(chara_info);
+                return instance;
             }
             private void ApplyHint(Gallop.SingleModeChara chara_info, int level)
             {
@@ -313,7 +314,23 @@ namespace UmamusumeResponseAnalyzer
                     1 => (int)Math.Round(grade * 0.7), //G
                     _ => 0,
                 };
+
             }
+            public SkillData Clone()
+                => new()
+                {
+                    Name = Name,
+                    Id = Id,
+                    GroupId = GroupId,
+                    Rarity = Rarity,
+                    Rate = Rate,
+                    Grade = Grade,
+                    Cost = Cost,
+                    DisplayOrder = DisplayOrder,
+                    Ground = Ground,
+                    Distance = Distance,
+                    Style = Style
+                };
             public enum GroundType
             {
                 None,
