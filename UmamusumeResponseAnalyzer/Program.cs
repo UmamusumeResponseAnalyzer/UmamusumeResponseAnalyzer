@@ -196,7 +196,7 @@ namespace UmamusumeResponseAnalyzer
                         {
                             AllowAutoRedirect = false
                         });
-                        var response = await client.GetAsync(GetDownloadUrl(Resource.LaunchMenu_Update_DownloadProgramInstruction), HttpCompletionOption.ResponseHeadersRead);
+                        var response = await client.GetAsync(GetDownloadUrl(path), HttpCompletionOption.ResponseHeadersRead);
                         while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
                         {
                             response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
@@ -313,6 +313,7 @@ namespace UmamusumeResponseAnalyzer
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
             var host = isCN ? CNHost : GithubHost;
+            Console.WriteLine(filepath);
             return ext switch
             {
                 ".json" => $"{host}/{filename}",
@@ -326,7 +327,7 @@ namespace UmamusumeResponseAnalyzer
                 AllowAutoRedirect = false
             });
             var task = ctx.AddTask(instruction, false);
-            var response = await client.GetAsync(GetDownloadUrl(instruction), HttpCompletionOption.ResponseHeadersRead);
+            var response = await client.GetAsync(GetDownloadUrl(path), HttpCompletionOption.ResponseHeadersRead);
             while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
             {
                 response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
