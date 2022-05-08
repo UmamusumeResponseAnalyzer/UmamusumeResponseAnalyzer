@@ -317,10 +317,10 @@ namespace UmamusumeResponseAnalyzer
 
                 static int applyProperLevel(int grade, int level) => level switch
                 {
-                    8 or 7 => (int)Math.Round(grade * 1.1), //S,A
-                    6 or 5 => (int)Math.Round(grade * 0.9), //B,C
-                    4 or 3 or 2 => (int)Math.Round(grade * 0.8), //D,E,F
-                    1 => (int)Math.Round(grade * 0.7), //G
+                    8 or 7 => (int)Math.Ceiling(grade * 1.1), //S,A
+                    6 or 5 => (int)Math.Ceiling(grade * 0.9), //B,C
+                    4 or 3 or 2 => (int)Math.Ceiling(grade * 0.8), //D,E,F
+                    1 => (int)Math.Ceiling(grade * 0.7), //G
                     _ => 0,
                 };
 
