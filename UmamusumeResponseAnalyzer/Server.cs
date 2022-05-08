@@ -105,6 +105,7 @@ namespace UmamusumeResponseAnalyzer
                     if (str.Contains("opponent_info_array"))
                     {
                         if (Config.Get(Resource.ConfigSet_ParseTeamStadiumOpponentListResponse))
+                            // https://github.com/CNA-Bld/EXNOA-CarrotJuicer/issues/2
                             Handlers.ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
                     }
                     if (str.Contains("trained_chara_array") && str.Contains("race_result_info") && str.Contains("entry_info_array") && str.Contains("practice_race_id") && str.Contains("state") && str.Contains("practice_partner_owner_info_array"))

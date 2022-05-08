@@ -3135,5 +3135,41 @@
         }
       }
     ]
+  },
+  {
+    "Name": "バレンタイン",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "固有スキルLv+1"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "ファン感謝祭",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "やる気↑、固有スキルLv+1"
+        }
+      }
+    ]
+  },
+  {
+    "Name": "クリスマス",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "固有スキルLv+1<br>（ファン数が多いほど確率UP）"
+        }
+      }
+    ]
   }
 ]
