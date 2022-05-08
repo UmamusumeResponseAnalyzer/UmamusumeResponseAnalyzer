@@ -65,9 +65,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
                         else //未知事件，直接显示ChoiceIndex
                         {
-                            File.AppendAllLines(Database.UNKNOWN_EVENT_FILEPATH, new string[] { i.story_id.ToString() });
                             var mainTree = new Tree(Resource.SingleModeCheckEvent_Event_UnknownSource);
-                            var eventTree = new Tree(Resource.SingleModeCheckEvent_Event_UnknownEvent);
+                            var eventTree = new Tree($"{Resource.SingleModeCheckEvent_Event_UnknownEvent}({i?.story_id})");
                             for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
                             {
                                 var tree = new Tree(string.Format(Resource.SingleModeCheckEvent_Event_UnknownOption, i.event_contents_info.choice_array[j].select_index));
