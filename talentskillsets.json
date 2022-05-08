@@ -1,0 +1,2342 @@
+{
+  "100101": [
+    {
+      "SkillId": 200512,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200732,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200162,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201351,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200612,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200511,
+      "Rank": 5
+    }
+  ],
+  "100201": [
+    {
+      "SkillId": 200432,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200552,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200712,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200022,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200431,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200542,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200551,
+      "Rank": 5
+    }
+  ],
+  "100301": [
+    {
+      "SkillId": 200452,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201132,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201332,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200502,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201331,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201142,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201131,
+      "Rank": 5
+    }
+  ],
+  "100401": [
+    {
+      "SkillId": 200362,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201052,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200532,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201062,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201051,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200432,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201061,
+      "Rank": 5
+    }
+  ],
+  "100501": [
+    {
+      "SkillId": 200771,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201072,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201052,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201071,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201042,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200571,
+      "Rank": 5
+    }
+  ],
+  "100601": [
+    {
+      "SkillId": 200342,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201062,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200222,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201351,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200492,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200341,
+      "Rank": 5
+    }
+  ],
+  "100701": [
+    {
+      "SkillId": 201591,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201212,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201472,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201482,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201471,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200622,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201481,
+      "Rank": 5
+    }
+  ],
+  "100801": [
+    {
+      "SkillId": 200382,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200702,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200602,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200372,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200381,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201032,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200701,
+      "Rank": 5
+    }
+  ],
+  "100901": [
+    {
+      "SkillId": 200282,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200722,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200721,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200582,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200571,
+      "Rank": 5
+    }
+  ],
+  "101001": [
+    {
+      "SkillId": 200362,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201052,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201532,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200682,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201051,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201032,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200681,
+      "Rank": 5
+    }
+  ],
+  "101101": [
+    {
+      "SkillId": 200871,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200602,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200512,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201151,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200592,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200601,
+      "Rank": 5
+    }
+  ],
+  "101201": [
+    {
+      "SkillId": 200502,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200632,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200732,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201452,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200731,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201462,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200631,
+      "Rank": 5
+    }
+  ],
+  "101301": [
+    {
+      "SkillId": 200172,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201192,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201182,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201191,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200561,
+      "Rank": 5
+    }
+  ],
+  "101401": [
+    {
+      "SkillId": 200362,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201122,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201312,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201121,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200722,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200561,
+      "Rank": 5
+    }
+  ],
+  "101501": [
+    {
+      "SkillId": 200582,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200722,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200142,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200362,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200581,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200721,
+      "Rank": 5
+    }
+  ],
+  "101701": [
+    {
+      "SkillId": 200332,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200891,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201151,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201322,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200331,
+      "Rank": 5
+    }
+  ],
+  "101801": [
+    {
+      "SkillId": 200502,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200722,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201372,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200941,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201371,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200931,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200501,
+      "Rank": 5
+    }
+  ],
+  "102001": [
+    {
+      "SkillId": 200881,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201192,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200542,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201522,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201191,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201611,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200541,
+      "Rank": 5
+    }
+  ],
+  "102401": [
+    {
+      "SkillId": 200382,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201272,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200742,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200492,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200381,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200502,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200491,
+      "Rank": 5
+    }
+  ],
+  "102701": [
+    {
+      "SkillId": 200232,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200722,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200612,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200472,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200721,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200611,
+      "Rank": 5
+    }
+  ],
+  "103001": [
+    {
+      "SkillId": 200861,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201342,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200742,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201581,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201341,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200741,
+      "Rank": 5
+    }
+  ],
+  "103201": [
+    {
+      "SkillId": 200132,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201151,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201112,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200571,
+      "Rank": 5
+    }
+  ],
+  "103501": [
+    {
+      "SkillId": 200152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200732,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201402,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200592,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201401,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201392,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200591,
+      "Rank": 5
+    }
+  ],
+  "104001": [
+    {
+      "SkillId": 200052,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200692,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200602,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201651,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200691,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201062,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200601,
+      "Rank": 5
+    }
+  ],
+  "104101": [
+    {
+      "SkillId": 200841,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201312,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200652,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200982,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200651,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200992,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200981,
+      "Rank": 5
+    }
+  ],
+  "104501": [
+    {
+      "SkillId": 200352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200742,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201372,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200462,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201371,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200881,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200351,
+      "Rank": 5
+    }
+  ],
+  "105201": [
+    {
+      "SkillId": 200442,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200652,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201412,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200472,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200441,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200302,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200471,
+      "Rank": 5
+    }
+  ],
+  "105601": [
+    {
+      "SkillId": 201562,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201422,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201232,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201571,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201231,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200781,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201561,
+      "Rank": 5
+    }
+  ],
+  "106001": [
+    {
+      "SkillId": 200122,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201162,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201442,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200911,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201161,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201422,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201441,
+      "Rank": 5
+    }
+  ],
+  "106101": [
+    {
+      "SkillId": 200262,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200672,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201432,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201142,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200671,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201072,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201431,
+      "Rank": 5
+    }
+  ],
+  "102301": [
+    {
+      "SkillId": 200162,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200742,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200262,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200561,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200821,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200741,
+      "Rank": 5
+    }
+  ],
+  "104601": [
+    {
+      "SkillId": 200452,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201522,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201672,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200162,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200451,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200952,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201671,
+      "Rank": 5
+    }
+  ],
+  "105001": [
+    {
+      "SkillId": 201641,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200622,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201162,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200642,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200621,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201452,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200641,
+      "Rank": 5
+    }
+  ],
+  "102601": [
+    {
+      "SkillId": 200232,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200532,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200712,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201242,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200531,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201252,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200711,
+      "Rank": 5
+    }
+  ],
+  "100302": [
+    {
+      "SkillId": 200452,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201142,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200172,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200571,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200352,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201141,
+      "Rank": 5
+    }
+  ],
+  "101302": [
+    {
+      "SkillId": 200362,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200742,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200192,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200741,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200462,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200361,
+      "Rank": 5
+    }
+  ],
+  "103801": [
+    {
+      "SkillId": 200462,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201372,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201012,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201002,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201371,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200582,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201011,
+      "Rank": 5
+    }
+  ],
+  "101601": [
+    {
+      "SkillId": 200362,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200512,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200361,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201641,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200511,
+      "Rank": 5
+    }
+  ],
+  "102402": [
+    {
+      "SkillId": 200352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201332,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201162,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200432,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201161,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200332,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200351,
+      "Rank": 5
+    }
+  ],
+  "101802": [
+    {
+      "SkillId": 200342,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201072,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201322,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201532,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201071,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200462,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200341,
+      "Rank": 5
+    }
+  ],
+  "101102": [
+    {
+      "SkillId": 200472,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200742,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201422,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200771,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200741,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201542,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201421,
+      "Rank": 5
+    }
+  ],
+  "101402": [
+    {
+      "SkillId": 200512,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200702,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200612,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201072,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200701,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201412,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200611,
+      "Rank": 5
+    }
+  ],
+  "100102": [
+    {
+      "SkillId": 200462,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200592,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201132,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200212,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200591,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201611,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200461,
+      "Rank": 5
+    }
+  ],
+  "100402": [
+    {
+      "SkillId": 200352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200682,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201282,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201571,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201281,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201082,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200681,
+      "Rank": 5
+    }
+  ],
+  "105801": [
+    {
+      "SkillId": 200472,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201112,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200582,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200142,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200581,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200861,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200471,
+      "Rank": 5
+    }
+  ],
+  "103701": [
+    {
+      "SkillId": 200502,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201542,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201112,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200512,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200501,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200432,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200511,
+      "Rank": 5
+    }
+  ],
+  "105602": [
+    {
+      "SkillId": 200012,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200602,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201212,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200752,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201211,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200062,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200751,
+      "Rank": 5
+    }
+  ],
+  "102801": [
+    {
+      "SkillId": 200212,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201002,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201362,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201001,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201012,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201351,
+      "Rank": 5
+    }
+  ],
+  "101901": [
+    {
+      "SkillId": 201591,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201682,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201382,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200162,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201592,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201681,
+      "Rank": 5
+    }
+  ],
+  "103002": [
+    {
+      "SkillId": 200771,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201172,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200352,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200561,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200851,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200772,
+      "Rank": 5
+    }
+  ],
+  "104502": [
+    {
+      "SkillId": 200332,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201162,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201322,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200331,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201161,
+      "Rank": 5
+    }
+  ],
+  "103901": [
+    {
+      "SkillId": 200492,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201072,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200612,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201382,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200491,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200132,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200611,
+      "Rank": 5
+    }
+  ],
+  "102501": [
+    {
+      "SkillId": 200232,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201222,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201422,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201581,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201421,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201202,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201221,
+      "Rank": 5
+    }
+  ],
+  "101702": [
+    {
+      "SkillId": 200192,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200752,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200562,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201342,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200561,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201312,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200194,
+      "Rank": 5
+    }
+  ],
+  "104002": [
+    {
+      "SkillId": 200232,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201092,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201692,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201542,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201091,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201392,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201691,
+      "Rank": 5
+    }
+  ],
+  "104801": [
+    {
+      "SkillId": 200302,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200602,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200601,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201702,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200571,
+      "Rank": 5
+    }
+  ],
+  "105901": [
+    {
+      "SkillId": 200062,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201442,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201142,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201382,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201441,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200722,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200064,
+      "Rank": 5
+    }
+  ],
+  "100602": [
+    {
+      "SkillId": 201621,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200752,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201422,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201351,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201571,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200751,
+      "Rank": 5
+    }
+  ],
+  "102302": [
+    {
+      "SkillId": 200512,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201202,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201532,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201201,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201312,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200511,
+      "Rank": 5
+    }
+  ],
+  "102201": [
+    {
+      "SkillId": 200192,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200582,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201112,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201342,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200581,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200012,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201341,
+      "Rank": 5
+    }
+  ],
+  "102101": [
+    {
+      "SkillId": 201611,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201132,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200592,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200591,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200642,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201612,
+      "Rank": 5
+    }
+  ],
+  "101502": [
+    {
+      "SkillId": 201312,
+      "Rank": 0
+    },
+    {
+      "SkillId": 202012,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200352,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200252,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200351,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200202,
+      "Rank": 4
+    },
+    {
+      "SkillId": 202011,
+      "Rank": 5
+    }
+  ],
+  "105202": [
+    {
+      "SkillId": 200452,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201072,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201402,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201621,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200451,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200242,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201401,
+      "Rank": 5
+    }
+  ],
+  "106901": [
+    {
+      "SkillId": 200172,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200582,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201112,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200342,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200581,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201532,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200174,
+      "Rank": 5
+    }
+  ],
+  "102602": [
+    {
+      "SkillId": 200432,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200542,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200762,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201522,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200541,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201601,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200431,
+      "Rank": 5
+    }
+  ],
+  "103702": [
+    {
+      "SkillId": 200302,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200592,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201151,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201392,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201103,
+      "Rank": 5
+    }
+  ],
+  "107101": [
+    {
+      "SkillId": 200022,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200572,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201702,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201322,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200571,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201142,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201701,
+      "Rank": 5
+    }
+  ],
+  "103301": [
+    {
+      "SkillId": 200492,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201492,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200632,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201491,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200861,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200631,
+      "Rank": 5
+    }
+  ],
+  "106801": [
+    {
+      "SkillId": 200432,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201172,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200532,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200531,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201272,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201173,
+      "Rank": 5
+    }
+  ],
+  "106201": [
+    {
+      "SkillId": 200482,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201212,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200602,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201621,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200481,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200512,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201211,
+      "Rank": 5
+    }
+  ],
+  "106701": [
+    {
+      "SkillId": 200012,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201692,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201102,
+      "Rank": 0
+    },
+    {
+      "SkillId": 202012,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201691,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200152,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200014,
+      "Rank": 5
+    }
+  ],
+  "107401": [
+    {
+      "SkillId": 200472,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201462,
+      "Rank": 0
+    },
+    {
+      "SkillId": 202072,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201212,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200471,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201222,
+      "Rank": 4
+    },
+    {
+      "SkillId": 202071,
+      "Rank": 5
+    }
+  ],
+  "100502": [
+    {
+      "SkillId": 200771,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201042,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200582,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201332,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200772,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201902,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200581,
+      "Rank": 5
+    }
+  ],
+  "102002": [
+    {
+      "SkillId": 200172,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200712,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200542,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201272,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200541,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200532,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201271,
+      "Rank": 5
+    }
+  ],
+  "105101": [
+    {
+      "SkillId": 200362,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201062,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201342,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200652,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200361,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201392,
+      "Rank": 4
+    },
+    {
+      "SkillId": 201341,
+      "Rank": 5
+    }
+  ],
+  "107201": [
+    {
+      "SkillId": 200462,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200732,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201322,
+      "Rank": 0
+    },
+    {
+      "SkillId": 202092,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200461,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200342,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200731,
+      "Rank": 5
+    }
+  ],
+  "106002": [
+    {
+      "SkillId": 200492,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201152,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201542,
+      "Rank": 0
+    },
+    {
+      "SkillId": 202082,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201151,
+      "Rank": 3
+    },
+    {
+      "SkillId": 200302,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200491,
+      "Rank": 5
+    }
+  ],
+  "106102": [
+    {
+      "SkillId": 200172,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200672,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200612,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200692,
+      "Rank": 2
+    },
+    {
+      "SkillId": 200611,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201382,
+      "Rank": 4
+    },
+    {
+      "SkillId": 200174,
+      "Rank": 5
+    }
+  ]
+}
