@@ -252,4 +252,7 @@
   <data name="ConfigSet_AutoUpdate" xml:space="preserve">
     <value>自动更新</value>
   </data>
+  <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的talentskillsets.json</value>
+  </data>
 </root>

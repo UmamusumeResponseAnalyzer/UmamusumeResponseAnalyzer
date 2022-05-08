@@ -13,6 +13,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string UNKNOWN_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "unknownevents.txt");
         internal static string SUPPORT_ID_SHORTNAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "name_cn.json");
         internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.json");
+        internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talentskillsets.json");
         /// <summary>
         /// index为属性，value为对应属性的评价点
         /// </summary>
@@ -42,6 +43,7 @@ namespace UmamusumeResponseAnalyzer
         /// </summary>
         public static Dictionary<int, string> SupportIdToShortName { get; set; } = new();
         public static Dictionary<int, string> ClimaxItem { get; set; } = new();
+        public static Dictionary<int, TalentSkillData[]> TalentSkill { get; set; } = new();
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -82,6 +84,12 @@ namespace UmamusumeResponseAnalyzer
                 var climaxItem = JsonConvert.DeserializeObject<Dictionary<int, string>>(File.ReadAllText(CLIMAX_ITEM_FILEPATH));
                 if (climaxItem != default)
                     ClimaxItem = climaxItem;
+            }
+            if (File.Exists(TALENT_SKILLS_FILEPATH))
+            {
+                var talentSkill = JsonConvert.DeserializeObject<Dictionary<int, TalentSkillData[]>>(File.ReadAllText(TALENT_SKILLS_FILEPATH));
+                if (talentSkill != default)
+                    TalentSkill = talentSkill;
             }
         }
     }
@@ -256,6 +264,7 @@ namespace UmamusumeResponseAnalyzer
                 var cutted = chara_info.chara_effect_id_array.Contains(7) ? 10 : 0; //切者
                 var off = level switch //打折等级
                 {
+                    0 => 0,
                     1 => 10,
                     2 => 20,
                     3 => 30,
@@ -384,5 +393,10 @@ namespace UmamusumeResponseAnalyzer
                 Oikomi
             }
         }
+    }
+    public class TalentSkillData
+    {
+        public int SkillId { get; set; }
+        public int Rank { get; set; }
     }
 }

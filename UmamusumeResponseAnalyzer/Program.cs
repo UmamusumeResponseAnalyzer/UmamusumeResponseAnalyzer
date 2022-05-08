@@ -271,6 +271,9 @@ namespace UmamusumeResponseAnalyzer
                     var climaxItemTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadClimaxItemInstruction, Database.CLIMAX_ITEM_FILEPATH);
                     tasks.Add(climaxItemTask);
 
+                    var talentSkillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
+                    tasks.Add(talentSkillTask);
+
                     if (!dataOnly)
                     {
                         var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
@@ -298,22 +301,16 @@ namespace UmamusumeResponseAnalyzer
         static string GetDownloadUrl(string filepath)
         {
             const string CNHost = "https://assets.shuise.net";
+            const string GithubHost = "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master";
             var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
-            if (Resource.LaunchMenu_Update_DownloadEventsInstruction == filepath)
-                return isCN ? $"{CNHost}/events.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/events.json";
-            if (Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction == filepath)
-                return isCN ? $"{CNHost}/successevents.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/successevents.json";
-            if (Resource.LaunchMenu_Update_DownloadIdToNameInstruction == filepath)
-                return isCN ? $"{CNHost}/id.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/id.json";
-            if (Resource.LaunchMenu_Update_DownloadSkillDataInstruction == filepath)
-                return isCN ? $"{CNHost}/skilldata.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/skilldata.json";
-            if (Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction == filepath)
-                return isCN ? $"{CNHost}/name_cn.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/name_cn.json";
-            if (Resource.LaunchMenu_Update_DownloadProgramInstruction == filepath)
-                return isCN ? $"{CNHost}/UmamusumeResponseAnalyzer.exe" : "https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe";
-            if (Resource.LaunchMenu_Update_DownloadClimaxItemInstruction == filepath)
-                return isCN ? $"{CNHost}/climaxitems.json" : "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master/climaxitems.json";
-            throw new Exception("当前文件没有国内优化地址");
+            var ext = Path.GetExtension(filepath);
+            var filename = Path.GetFileName(filepath);
+            var host = isCN ? CNHost : GithubHost;
+            return ext switch
+            {
+                "json" => $"{host}/{filename}",
+                "exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/{filename}"
+            };
         }
         static async Task DownloadAssets(ProgressContext ctx, string instruction, string path)
         {
