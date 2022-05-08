@@ -17,12 +17,12 @@
     "TriggerName": "URAファイナルズ",
     "Choices": [
       {
-        "Option": "[共に同じ道を！]桐生院葵編成有り",
+        "Option": "桐生院葵編成有り",
         "SuccessEffect": "賢さ+20、スキルPt+20、「鋼の意志」のヒントLv+3",
         "FailedEffect": ""
       },
       {
-        "Option": "[共に同じ道を！]桐生院葵編成無し",
+        "Option": "桐生院葵編成無し",
         "SuccessEffect": "賢さ+20、スキルPt+20、「鋼の意志」のヒントLv+1",
         "FailedEffect": ""
       }
@@ -94,12 +94,12 @@
     "TriggerName": "URAファイナルズ",
     "Choices": [
       {
-        "Option": "[共に同じ道を！]桐生院葵編成有り",
+        "Option": "桐生院葵編成有り",
         "SuccessEffect": "パワー+20",
         "FailedEffect": ""
       },
       {
-        "Option": "[共に同じ道を！]桐生院葵編成無し",
+        "Option": "桐生院葵編成無し",
         "SuccessEffect": "パワー+10",
         "FailedEffect": ""
       }
@@ -128,12 +128,12 @@
     "TriggerName": "URAファイナルズ",
     "Choices": [
       {
-        "Option": "[共に同じ道を！]桐生院葵編成有り",
+        "Option": "桐生院葵編成有り",
         "SuccessEffect": "スピード+20",
         "FailedEffect": ""
       },
       {
-        "Option": "[共に同じ道を！]桐生院葵編成無し",
+        "Option": "桐生院葵編成無し",
         "SuccessEffect": "スピード+10",
         "FailedEffect": ""
       }
@@ -695,6 +695,18 @@
       {
         "Option": "",
         "SuccessEffect": "全ステータス+8、スキルPt+40",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 400002031,
+    "Name": "秋川理事長のご褒美！",
+    "TriggerName": "アオハル杯",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+10、スキルPt+50、「マイルの支配者」のヒントLv+3",
         "FailedEffect": ""
       }
     ]
@@ -1435,8 +1447,8 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+42、秋川理事長の絆ゲージ+4、「ささやき」のヒントLv+1",
-        "FailedEffect": "全ステータス+1～3、スキルPt+42、秋川理事長の絆ゲージ+4"
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+42、秋川理事長の絆ゲージ+4、「ささやき」のヒントLv+1",
+        "FailedEffect": "全ステータス+1〜3、スキルPt+42、秋川理事長の絆ゲージ+4"
       }
     ]
   },
@@ -1447,7 +1459,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、確率で「根幹距離◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、確率で「根幹距離◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -1459,7 +1471,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+39、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+39、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -1471,7 +1483,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -2098,7 +2110,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+2〜3、スキルPt+30、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -2122,7 +2134,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -3376,7 +3388,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "こうなったら力づくで…….！",
+        "Option": "こうなったら力づくで.......！",
         "SuccessEffect": "やる気↑、パワー+5",
         "FailedEffect": ""
       }
@@ -3970,7 +3982,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+37、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+37、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4006,7 +4018,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1、スキルPt+37～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1、スキルPt+37〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4018,7 +4030,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+58、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+58、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4030,7 +4042,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "スピード+2、スタミナ+2、パワー+2、根性+2、賢さ+2、スキルPt+51～52、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "スピード+2、スタミナ+2、パワー+2、根性+2、賢さ+2、スキルPt+51〜52、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4042,7 +4054,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+52、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+52、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4066,7 +4078,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "体力−15、やる気+1、ランダムな1つのステータス+9～12、スキルPt+53～54",
+        "SuccessEffect": "体力−15、やる気+1、ランダムな1つのステータス+9〜12、スキルPt+53〜54",
         "FailedEffect": ""
       }
     ]
@@ -4090,7 +4102,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4114,7 +4126,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4138,7 +4150,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "パワー+20、全ステータス+1～3（着順で変化）、スキルPt+58、確率で「垂れウマ回避」のヒントLv+1、確率で「練習上手◯」獲得、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "パワー+20、全ステータス+1〜3（着順で変化）、スキルPt+58、確率で「垂れウマ回避」のヒントLv+1、確率で「練習上手◯」獲得、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4544,7 +4556,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "この量をさばくなら、相当急がないと……",
+        "Option": "この量をさばくなら、相当急がないと......",
         "SuccessEffect": "スピード+10、スタミナ+5、エアグルーヴの絆ゲージ+5",
         "FailedEffect": ""
       }
@@ -4798,7 +4810,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "みんな大変なんだな……",
+        "Option": "みんな大変なんだな......",
         "SuccessEffect": "体力−10、やる気+1、パワー+10",
         "FailedEffect": ""
       }
@@ -4828,7 +4840,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "スピード・スタミナ・根性+1～3（着順で変化）、スキルPt+33、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "スピード・スタミナ・根性+1〜3（着順で変化）、スキルPt+33、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4864,7 +4876,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+51～59、「差し切り体勢」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+51〜59、「差し切り体勢」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -4948,7 +4960,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+43～46、「札幌レース場○」のヒントLv+1（確率）、「対抗意識○」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+43〜46、「札幌レース場○」のヒントLv+1（確率）、「対抗意識○」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -5448,7 +5460,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "もう戦うしかない……",
+        "Option": "もう戦うしかない......",
         "SuccessEffect": "スタミナ+20",
         "FailedEffect": ""
       }
@@ -6017,7 +6029,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+1～3、スキルPt+35、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+1〜3、スキルPt+35、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6053,7 +6065,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+35~45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+35~45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6089,7 +6101,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt＋35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt＋35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6101,7 +6113,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6524,7 +6536,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6536,7 +6548,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6548,7 +6560,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6560,7 +6572,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6572,7 +6584,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6584,7 +6596,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -6596,7 +6608,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順）、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -7323,6 +7335,18 @@
     ]
   },
   {
+    "Id": 501006118,
+    "Name": "天皇賞（春）にて",
+    "TriggerName": "オグリキャップ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−15、やる気+1、パワー+13、スキルPt+60",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501006310,
     "Name": "天皇賞（秋）の後に・最後の大一番",
     "TriggerName": "オグリキャップ",
@@ -7759,7 +7783,7 @@
         "FailedEffect": "-"
       },
       {
-        "Option": "食って食って……全てを食い尽くせ！",
+        "Option": "食って食って......全てを食い尽くせ！",
         "SuccessEffect": "体力が全回復、スピード−20、パワー+20、スキルPt+20、「太り気味」獲得",
         "FailedEffect": "-"
       }
@@ -8067,7 +8091,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40～42、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40〜42、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -8079,7 +8103,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40～42、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40〜42、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -8103,7 +8127,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40～42、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40〜42、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -8115,7 +8139,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+2、スキルPt+51～54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+2、スキルPt+51〜54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -8127,7 +8151,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40～42、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+40〜42、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -8307,7 +8331,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "なるほどね～！",
+        "Option": "なるほどね〜！",
         "SuccessEffect": "賢さ+10",
         "FailedEffect": ""
       }
@@ -9655,7 +9679,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "地獄のコールに付き合う覚悟はあるか……？",
+        "Option": "地獄のコールに付き合う覚悟はあるか......？",
         "SuccessEffect": "根性+10",
         "FailedEffect": ""
       }
@@ -9692,7 +9716,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+1～3、スキルPt+27～36、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+1〜3、スキルPt+27〜36、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -9704,7 +9728,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+55～62、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+55〜62、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -9728,7 +9752,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1、スキルPt+43～62、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1、スキルPt+43〜62、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -10521,7 +10545,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全スタータス+1～3、スキルPt49、秋川理事長の絆+4",
+        "SuccessEffect": "全スタータス+1〜3、スキルPt49、秋川理事長の絆+4",
         "FailedEffect": ""
       }
     ]
@@ -10545,7 +10569,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+49、秋川理事長の絆+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+49、秋川理事長の絆+4",
         "FailedEffect": ""
       }
     ]
@@ -10569,7 +10593,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -10581,7 +10605,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、 スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、 スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -10617,7 +10641,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+62、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+62、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -10629,7 +10653,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+1～3、スキルPt+40～48、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+1〜3、スキルPt+40〜48、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -11081,7 +11105,7 @@
     "TriggerName": "ゴールドシチー",
     "Choices": [
       {
-        "Option": "もうすぐ始業時間なんじゃ……",
+        "Option": "もうすぐ始業時間なんじゃ......",
         "SuccessEffect": "やる気−1、スキルPt+45、ゴールドシチーの絆ゲージ+5",
         "FailedEffect": ""
       },
@@ -11232,7 +11256,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+2〜3、スキルPt+30、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -11285,8 +11309,8 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+2～3、スキルPt+45、「上昇気流」のヒントLv+1、秋川理事長の絆ゲージ+4",
-        "FailedEffect": "全ステータス+2～3、スキルPt+45、秋川理事長の絆ゲージ+4"
+        "SuccessEffect": "全ステータス+2〜3、スキルPt+45、「上昇気流」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "FailedEffect": "全ステータス+2〜3、スキルPt+45、秋川理事長の絆ゲージ+4"
       }
     ]
   },
@@ -11336,7 +11360,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、「集中力」のヒントLv+1、「上昇気流」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、「集中力」のヒントLv+1、「上昇気流」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -11435,7 +11459,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -11476,7 +11500,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -11604,7 +11628,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12189,7 +12213,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+3、スキルPt+31～39、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+3、スキルPt+31〜39、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12201,7 +12225,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+46～58、「後方待機」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+46〜58、「後方待機」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12213,7 +12237,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+46～55、「春ウマ娘〇」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+46〜55、「春ウマ娘〇」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12225,7 +12249,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3（着順で変化）、スキルPt+55～58、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3（着順で変化）、スキルPt+55〜58、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12237,7 +12261,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+55～58、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+55〜58、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12249,7 +12273,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+55～58、「追い上げ」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+55〜58、「追い上げ」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -12285,7 +12309,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+55～58、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+55〜58、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -14006,7 +14030,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+46～55、「勢い任せ」のヒントLv+1、 秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+46〜55、「勢い任せ」のヒントLv+1、 秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -14030,7 +14054,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+46～55、秋川理事長の絆ゲージ+5、「外枠得意◯」のヒントLv+1（確率）",
+        "SuccessEffect": "全ステータス+3、スキルPt+46〜55、秋川理事長の絆ゲージ+5、「外枠得意◯」のヒントLv+1（確率）",
         "FailedEffect": ""
       }
     ]
@@ -15500,7 +15524,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "たまには叱られたところも見てみたいな～",
+        "Option": "たまには叱られたところも見てみたいな〜",
         "SuccessEffect": "パワー+20",
         "FailedEffect": ""
       }
@@ -15779,7 +15803,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+43～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+3、スキルPt+43〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -17407,8 +17431,8 @@
     ]
   },
   {
-    "Id": 501001113,
-    "Name": "『ダービートレーナー』",
+    "Id": 501001114,
+    "Name": "ダービー記者会見！",
     "TriggerName": "スペシャルウィーク",
     "Choices": [
       {
@@ -17431,18 +17455,6 @@
       {
         "Option": "こっちこそ甘すぎた",
         "SuccessEffect": "根性+20",
-        "FailedEffect": ""
-      }
-    ]
-  },
-  {
-    "Id": 501001114,
-    "Name": "ダービー記者会見！",
-    "TriggerName": "スペシャルウィーク",
-    "Choices": [
-      {
-        "Option": "",
-        "SuccessEffect": "根性+5",
         "FailedEffect": ""
       }
     ]
@@ -17616,7 +17628,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -17628,7 +17640,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+2～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+2〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -17652,7 +17664,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+2～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+2〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -18084,7 +18096,7 @@
     "TriggerName": "スマートファルコン",
     "Choices": [
       {
-        "Option": "ファ・ル・子～～～っ！",
+        "Option": "ファ・ル・子〜〜〜っ！",
         "SuccessEffect": "スタミナ+5、根性+10、スマートファルコンの絆ゲージ+5",
         "FailedEffect": "-"
       },
@@ -19630,7 +19642,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "……にゃ～！",
+        "Option": "……にゃ〜！",
         "SuccessEffect": "パワー+10",
         "FailedEffect": ""
       }
@@ -19947,7 +19959,7 @@
   {
     "Id": 801010001,
     "Name": "イエス！　レッツ・ハグ☆",
-    "TriggerName": "[トレセン学園]タイキシャトル",
+    "TriggerName": "タイキシャトル",
     "Choices": [
       {
         "Option": "スピードかな",
@@ -19964,7 +19976,7 @@
   {
     "Id": 801010002,
     "Name": "オゥ！　トゥナイト・パーティー☆",
-    "TriggerName": "[トレセン学園]タイキシャトル",
+    "TriggerName": "タイキシャトル",
     "Choices": [
       {
         "Option": "遠回りして全力ダッシュだ！",
@@ -21089,7 +21101,7 @@
     "TriggerName": "ダイワスカーレット",
     "Choices": [
       {
-        "Option": "まずはここで栄養補給を……",
+        "Option": "まずはここで栄養補給を......",
         "SuccessEffect": "体力+30",
         "FailedEffect": ""
       },
@@ -21116,7 +21128,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "お母さんみたい……",
+        "Option": "お母さんみたい......",
         "SuccessEffect": "根性+10",
         "FailedEffect": ""
       }
@@ -21321,7 +21333,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+50～54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+50〜54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -21333,7 +21345,19 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+50～52、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+50〜52、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501009321,
+    "Name": "天皇賞（秋）の後に・いつもの二人",
+    "TriggerName": "ダイワスカーレット",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+3、 スタミナ+3、パワー+3、根性+3、賢さ+3、スキルPt+50、『食い下がり』のヒントLv1",
         "FailedEffect": ""
       }
     ]
@@ -21433,12 +21457,12 @@
     "TriggerName": "ダイワスカーレット",
     "Choices": [
       {
-        "Option": "満腹感を覚える前に一気に食べ切ろう……！",
+        "Option": "満腹感を覚える前に一気に食べ切ろう......！",
         "SuccessEffect": "スピード+5、パワー+5",
         "FailedEffect": ""
       },
       {
-        "Option": "野菜から順番に、確実に攻めよう…… ！",
+        "Option": "野菜から順番に、確実に攻めよう...... ！",
         "SuccessEffect": "やる気↑、根性+5",
         "FailedEffect": ""
       }
@@ -21472,7 +21496,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "……1番、諦める？",
+        "Option": "......1番、諦める？",
         "SuccessEffect": "「負けん気」のヒントLv1",
         "FailedEffect": ""
       }
@@ -21963,7 +21987,7 @@
   {
     "Id": 801015001,
     "Name": "勝者へ至るエチュード",
-    "TriggerName": "[トレセン学園]テイエムオペラオー",
+    "TriggerName": "テイエムオペラオー",
     "Choices": [
       {
         "Option": "普通にウイニングランした方が……",
@@ -21980,7 +22004,7 @@
   {
     "Id": 801015002,
     "Name": "有限の時を越えて",
-    "TriggerName": "[トレセン学園]テイエムオペラオー",
+    "TriggerName": "テイエムオペラオー",
     "Choices": [
       {
         "Option": "限られた時間に全力をぶつける方が...",
@@ -23105,7 +23129,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3～4、スキルPt+50～60、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3〜4、スキルPt+50〜60、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -23129,7 +23153,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3～4、スキルPt+50～60、「垂れ馬回避」のヒントLv1，秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3〜4、スキルPt+50〜60、「垂れ馬回避」のヒントLv1，秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -23153,7 +23177,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3～4、スキルPt+50～60，秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3〜4、スキルPt+50〜60，秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -23425,7 +23449,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "甘いものが食べたくなってきたな～",
+        "Option": "甘いものが食べたくなってきたな〜",
         "SuccessEffect": "賢さ+10",
         "FailedEffect": ""
       }
@@ -24821,7 +24845,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "体力−20、ランダムな1つのステータス+7～12、スキルPt+50~60、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "体力−20、ランダムな1つのステータス+7〜12、スキルPt+50~60、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -25205,7 +25229,7 @@
         "FailedEffect": "-"
       },
       {
-        "Option": "よいではないか～、よいではないか～",
+        "Option": "よいではないか〜、よいではないか〜",
         "SuccessEffect": "体力+30、スキルPt+10",
         "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
       }
@@ -25629,7 +25653,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+56～60、「徹底マーク◯」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+56〜60、「徹底マーク◯」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -25641,7 +25665,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+58～60、「根幹距離◯」のヒントLv+1（確率）、「中距離直線◯」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+58〜60、「根幹距離◯」のヒントLv+1（確率）、「中距離直線◯」のヒントLv+1（確率）、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -25725,7 +25749,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1、スキルPt+45～47、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1、スキルPt+45〜47、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -25737,7 +25761,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "やる気+3、全ステータス+19～27、スキルPt+78～94、「練習上手◎」獲得、秋川理事長の絆ゲージ+4 ※練習ベタがないとき<br>やる気+3、全ステータス+19～20、スキルPt+78～81、「練習ベタ」が治った、秋川理事長の絆ゲージ+4※練習ベタ状態のとき",
+        "SuccessEffect": "やる気+3、全ステータス+19〜27、スキルPt+78〜94、「練習上手◎」獲得、秋川理事長の絆ゲージ+4 ※練習ベタがないとき<br>やる気+3、全ステータス+19〜20、スキルPt+78〜81、「練習ベタ」が治った、秋川理事長の絆ゲージ+4※練習ベタ状態のとき",
         "FailedEffect": ""
       }
     ]
@@ -26329,7 +26353,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "う～ん、しびれる……！",
+        "Option": "う〜ん、しびれる……！",
         "SuccessEffect": "パワー+20",
         "FailedEffect": ""
       }
@@ -26586,7 +26610,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54～56、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54〜56、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -26610,7 +26634,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+42～54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+42〜54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -26718,7 +26742,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+54～56、秋川理事長の絆ゲージ+4、「右回り◯」のヒントLv+1（確率）、「別腹タンク」のヒントLv+1（確率）",
+        "SuccessEffect": "全ステータス+3、スキルPt+54〜56、秋川理事長の絆ゲージ+4、「右回り◯」のヒントLv+1（確率）、「別腹タンク」のヒントLv+1（確率）",
         "FailedEffect": ""
       }
     ]
@@ -27728,7 +27752,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "4つのランダムなステータス+1～2、スキルPt+40、秋川理事長の絆ゲージ+5",
+        "SuccessEffect": "4つのランダムなステータス+1〜2、スキルPt+40、秋川理事長の絆ゲージ+5",
         "FailedEffect": ""
       }
     ]
@@ -27776,7 +27800,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+1～3、スキルPt+39、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+1〜3、スキルPt+39、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -28378,7 +28402,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "力が欲しい……！",
+        "Option": "力が欲しい......！",
         "SuccessEffect": "スキルPt+35",
         "FailedEffect": ""
       }
@@ -30156,7 +30180,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+40～51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+40〜51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -30168,7 +30192,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+40～51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+40～51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -30192,8 +30216,8 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+51、「後方待機」のヒントLV+1、秋川理事長の絆ゲージ+4",
-        "FailedEffect": "全ステータス+1～3、スキルPt+51、秋川理事長の絆ゲージ+4"
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+51、「後方待機」のヒントLV+1、秋川理事長の絆ゲージ+4",
+        "FailedEffect": "全ステータス+1〜3、スキルPt+51、秋川理事長の絆ゲージ+4"
       }
     ]
   },
@@ -30228,7 +30252,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -30240,7 +30264,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -30252,7 +30276,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+51、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+51、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -30264,8 +30288,8 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+51、「策士」のヒントLv+1、「晴れの日」のヒントLv+1、秋川理事長の絆ゲージ+4",
-        "FailedEffect": "全ステータス+1～3、スキルPt+51、秋川理事長の絆ゲージ+4"
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+51、「策士」のヒントLv+1、「晴れの日」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "FailedEffect": "全ステータス+1〜3、スキルPt+51、秋川理事長の絆ゲージ+4"
       }
     ]
   },
@@ -30277,7 +30301,7 @@
       {
         "Option": "",
         "SuccessEffect": "全ステータス+3、スキルPt+51、秋川理事長の絆ゲージ+4",
-        "FailedEffect": "全ステータス+1～2、スキルPt+51、秋川理事長の絆ゲージ+4"
+        "FailedEffect": "全ステータス+1〜2、スキルPt+51、秋川理事長の絆ゲージ+4"
       }
     ]
   },
@@ -31084,7 +31108,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+2〜3、スキルPt+30、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -31096,7 +31120,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -31108,7 +31132,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+1～3、スキルPt+30～35、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+1〜3、スキルPt+30〜35、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -31120,7 +31144,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -31132,7 +31156,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+2～3、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+2〜3、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -31144,7 +31168,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -33158,7 +33182,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+52、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+52、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -33570,7 +33594,7 @@
         "FailedEffect": "-"
       },
       {
-        "Option": "……マヤの次第かも？",
+        "Option": "......マヤの次第かも？",
         "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−15、スキルPt+10、確率でマイナススキル獲得",
         "FailedEffect": "【G1】、体力−35、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−35、スキルPt+10、確率でマイナススキル獲得"
       }
@@ -33659,7 +33683,7 @@
   {
     "Id": 801004001,
     "Name": "可愛い後輩ちゃんのためだもの",
-    "TriggerName": "[トレセン学園]マルゼンスキー",
+    "TriggerName": "マルゼンスキー",
     "Choices": [
       {
         "Option": "膝の使い方を教える",
@@ -33676,7 +33700,7 @@
   {
     "Id": 801004002,
     "Name": "マブいドライブだっちゅ～の",
-    "TriggerName": "[トレセン学園]マルゼンスキー",
+    "TriggerName": "マルゼンスキー",
     "Choices": [
       {
         "Option": "海岸",
@@ -34965,7 +34989,7 @@
         "FailedEffect": "体力‐15、スピード+10、スタミナ+10"
       },
       {
-        "Option": "……断る！",
+        "Option": "......断る！",
         "SuccessEffect": "スピード+10、賢さ+10",
         "FailedEffect": "スピード+5"
       }
@@ -35171,7 +35195,7 @@
     "TriggerName": "ミホノブルボン",
     "Choices": [
       {
-        "Option": "すごく重そうだ……",
+        "Option": "すごく重そうだ......",
         "SuccessEffect": "体力−10、スタミナ+5、パワー+15、ミホノブルボンの絆ゲージ+5",
         "FailedEffect": ""
       },
@@ -35537,7 +35561,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+51～57、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+51〜57、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -35549,7 +35573,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+2～3、スキルPt+39、「上昇気流」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+2〜3、スキルPt+39、「上昇気流」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -35561,7 +35585,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+51～57、ランダムで「右回り○」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+51〜57、ランダムで「右回り○」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -35585,7 +35609,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+55～57、「押し切り準備」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+55〜57、「押し切り準備」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -35657,7 +35681,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+55～57、ランダムで「東京レース場◯」、秋川理事長の絆ゲージ↑",
+        "SuccessEffect": "全ステータス+3、スキルPt+55〜57、ランダムで「東京レース場◯」、秋川理事長の絆ゲージ↑",
         "FailedEffect": ""
       }
     ]
@@ -36347,7 +36371,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+1～3（着順で変化）、スキルPt+35、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+1〜3（着順で変化）、スキルPt+35、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -39065,7 +39089,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+3、スキルPt+51～53、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+3、スキルPt+51〜53、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -39213,7 +39237,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "もう筋トレは十分じゃ……？",
+        "Option": "もう筋トレは十分じゃ......？",
         "SuccessEffect": "スピード+10",
         "FailedEffect": ""
       }
@@ -40263,7 +40287,7 @@
   {
     "Id": 830036001,
     "Name": "胸の内を少しだけ",
-    "TriggerName": "[徹底管理主義]樫本理子",
+    "TriggerName": "樫本理子",
     "Choices": [
       {
         "Option": "",
@@ -59245,7 +59269,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "やる気+1、スキルPt+16～19、桐生院トレーナーの絆ゲージ+5",
+        "SuccessEffect": "やる気+1、スキルPt+16〜19、桐生院トレーナーの絆ゲージ+5",
         "FailedEffect": ""
       }
     ]
@@ -59262,7 +59286,7 @@
       },
       {
         "Option": "『トレーナー白書』見てみたいです",
-        "SuccessEffect": "スピード+6、賢さ+6、[共に同じ道を！]桐生院葵の絆ゲージ+5",
+        "SuccessEffect": "スピード+6、賢さ+6、桐生院葵の絆ゲージ+5",
         "FailedEffect": ""
       }
     ]
@@ -59286,7 +59310,7 @@
     "Choices": [
       {
         "Option": "ございます！",
-        "SuccessEffect": "体力+28～30、やる気+1、スキルPt+18～19、桐生院トレーナーの絆ゲージ+5、桐生院トレーナーとお出かけできるようになる",
+        "SuccessEffect": "体力+28〜30、やる気+1、スキルPt+18〜19、桐生院トレーナーの絆ゲージ+5、桐生院トレーナーとお出かけできるようになる",
         "FailedEffect": ""
       },
       {
@@ -59327,7 +59351,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "やる気+1、賢さ+19、スキルPt+19、「ふり絞り」のヒントLv+3、[共に同じ道を！]桐生院葵の絆ゲージ+5",
+        "SuccessEffect": "やる気+1、賢さ+19、スキルPt+19、「ふり絞り」のヒントLv+3、桐生院葵の絆ゲージ+5",
         "FailedEffect": ""
       }
     ]
@@ -59368,7 +59392,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "体力+25、やる気+1、スキルPt+37～39、桐生院トレーナーの絆ゲージ+5",
+        "SuccessEffect": "体力+25、やる気+1、スキルPt+37〜39、桐生院トレーナーの絆ゲージ+5",
         "FailedEffect": ""
       }
     ]
@@ -59380,7 +59404,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "やる気+1、パワー+12～13、スキルPt+57～58、桐生院トレーナーの絆ゲージ+5",
+        "SuccessEffect": "やる気+1、パワー+12〜13、スキルPt+57〜58、桐生院トレーナーの絆ゲージ+5",
         "FailedEffect": ""
       }
     ]
@@ -59388,7 +59412,7 @@
   {
     "Id": 820021001,
     "Name": "夢を追い続ける限り",
-    "TriggerName": "[共に同じ道を！]桐生院トレーナー",
+    "TriggerName": "桐生院トレーナー",
     "Choices": [
       {
         "Option": "",
@@ -59499,7 +59523,7 @@
   {
     "Id": 830021001,
     "Name": "ひと休みサプライズ",
-    "TriggerName": "[ようこそ、トレセン学園へ！]駿川たづな",
+    "TriggerName": "駿川たづな",
     "Choices": [
       {
         "Option": "",
@@ -61167,7 +61191,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -61299,7 +61323,7 @@
     "Choices": [
       {
         "Option": "祝賀会をしようか",
-        "SuccessEffect": "体力−20、ランダムな1つのステータス+8～12、スキルPt+37～54",
+        "SuccessEffect": "体力−20、ランダムな1つのステータス+8〜12、スキルPt+37〜54",
         "FailedEffect": ""
       },
       {
@@ -62087,7 +62111,7 @@
         "FailedEffect": "体力−10、やる気−1、安心沢刺々美の絆ゲージ+5"
       },
       {
-        "Option": "あんし～ん第一でお願いします………！",
+        "Option": "あんし〜ん第一でお願いします………！",
         "SuccessEffect": "体力全回復、やる気「絶好調」、「博打うち」のヒントLv+1、安心沢刺々美の絆ゲージ+5",
         "FailedEffect": "体力+20、「あやしげな作戦」のヒントLv+1、安心沢刺々美の絆ゲージ+5"
       }
@@ -62432,7 +62456,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+48、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+48、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -63452,7 +63476,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+1～3、スキルPt+48、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+1〜3、スキルPt+48、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -63572,7 +63596,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+60、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+60、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -64312,7 +64336,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+58、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+58、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -64348,7 +64372,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+43～58、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+43〜58、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -64469,7 +64493,7 @@
       {
         "Option": "",
         "SuccessEffect": "スピード+19、パワー+19、スキルpt+19、「追込直線◯」のヒントLv+2、「追込コーナー◯」のヒントLv+2",
-        "FailedEffect": "パワー+13、「追込コーナー◯」のヒントLv+1～2"
+        "FailedEffect": "パワー+13、「追込コーナー◯」のヒントLv+1〜2"
       }
     ]
   },
@@ -65338,8 +65362,8 @@
     ]
   },
   {
-    "Id": 501068313,
-    "Name": "ジャパンCの後に・重なり合う源流",
+    "Id": 501068208,
+    "Name": "ジャパンCにむけて",
     "TriggerName": "キタサンブラック",
     "Choices": [
       {
@@ -65810,7 +65834,7 @@
     "TriggerName": "クライマックス",
     "Choices": [
       {
-        "Option": "癒やされたい……",
+        "Option": "癒やされたい......",
         "SuccessEffect": "体力+10",
         "FailedEffect": ""
       },
@@ -66382,12 +66406,12 @@
     "TriggerName": "クライマックス",
     "Choices": [
       {
-        "Option": "どこまでも優しいね……",
+        "Option": "どこまでも優しいね......",
         "SuccessEffect": "根性+6、賢さ+6",
         "FailedEffect": ""
       },
       {
-        "Option": "もう少し世間勉強が必要かも……",
+        "Option": "もう少し世間勉強が必要かも......",
         "SuccessEffect": "「臨機応変」のヒントLv+1",
         "FailedEffect": ""
       }
@@ -67403,7 +67427,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "ふ、『普通』でお願いします……",
+        "Option": "ふ、『普通』でお願いします......",
         "SuccessEffect": "「がんばり屋」のヒントLv+1",
         "FailedEffect": ""
       }
@@ -67796,7 +67820,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "アドマイヤベガの話が聞きたい……",
+        "Option": "アドマイヤベガの話が聞きたい......",
         "SuccessEffect": "「ウマ好み」のヒントLv+1",
         "FailedEffect": ""
       }
@@ -68034,7 +68058,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "2人が幽霊平気なのはすごい……",
+        "Option": "2人が幽霊平気なのはすごい......",
         "SuccessEffect": "「冷静」のヒントLv+1",
         "FailedEffect": ""
       }
@@ -68522,7 +68546,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -68534,7 +68558,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4、確率で「抜け出し準備」のヒントLv+1",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4、確率で「抜け出し準備」のヒントLv+1",
         "FailedEffect": ""
       }
     ]
@@ -68546,7 +68570,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -68558,7 +68582,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4、「長距離直線◯」のヒントLv+1",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4、「長距離直線◯」のヒントLv+1",
         "FailedEffect": ""
       }
     ]
@@ -68570,7 +68594,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69235,7 +69259,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "パワー+18～21、「差し切り体勢」のヒントLv+2",
+        "SuccessEffect": "パワー+18〜21、「差し切り体勢」のヒントLv+2",
         "FailedEffect": ""
       }
     ]
@@ -69348,7 +69372,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "体力+5～50、ランダムな1つのステータス+5～25",
+        "SuccessEffect": "体力+5〜50、ランダムな1つのステータス+5〜25",
         "FailedEffect": ""
       }
     ]
@@ -69609,7 +69633,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69621,7 +69645,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69633,7 +69657,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、「根幹距離◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、「根幹距離◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69657,7 +69681,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+54、秋川理事長の絆ゲージ+4、確率で「抜け出し準備」のヒントLv+1",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+54、秋川理事長の絆ゲージ+4、確率で「抜け出し準備」のヒントLv+1",
         "FailedEffect": ""
       }
     ]
@@ -69681,7 +69705,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、「京都レース場◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、「京都レース場◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69693,7 +69717,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69705,7 +69729,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+54、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -69928,7 +69952,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "お世話されるのも君のスキルかも……",
+        "Option": "お世話されるのも君のスキルかも......",
         "SuccessEffect": "「道悪◯」のヒントLv+1",
         "FailedEffect": ""
       }
@@ -70207,7 +70231,7 @@
         "FailedEffect": "スピード+4、チーム<シリウス>の絆ゲージ+5"
       },
       {
-        "Option": "……休息にもなるし食べ放題かな？",
+        "Option": "......休息にもなるし食べ放題かな？",
         "SuccessEffect": "体力+3、スキルPt+4、チーム<シリウス>の絆ゲージ+5",
         "FailedEffect": "スキルPt+4、チーム<シリウス>の絆ゲージ+5"
       }
@@ -70353,7 +70377,7 @@
   {
     "Id": 830090001,
     "Name": "熱は交わらない",
-    "TriggerName": "[Enchainement]シンボリルドルフ",
+    "TriggerName": "[Enchaînement]シンボリルドルフ",
     "Choices": [
       {
         "Option": "",
@@ -70365,7 +70389,7 @@
   {
     "Id": 830090002,
     "Name": "熱が生むもの",
-    "TriggerName": "[Enchainement]シンボリルドルフ",
+    "TriggerName": "[Enchaînement]シンボリルドルフ",
     "Choices": [
       {
         "Option": "だったらそれを示してみては？",
@@ -70382,7 +70406,7 @@
   {
     "Id": 830090003,
     "Name": "熱が導く",
-    "TriggerName": "[Enchainement]シンボリルドルフ",
+    "TriggerName": "[Enchaînement]シンボリルドルフ",
     "Choices": [
       {
         "Option": "",
@@ -70394,7 +70418,7 @@
   {
     "Id": 830091001,
     "Name": "シンボリの名を持つ者",
-    "TriggerName": "[Escorte etoile]シリウスシンボリ",
+    "TriggerName": "[Escorte étoile]シリウスシンボリ",
     "Choices": [
       {
         "Option": "1着おめでとう！",
@@ -70411,7 +70435,7 @@
   {
     "Id": 830091002,
     "Name": "もしもその身が自由なら",
-    "TriggerName": "[Escorte etoile]シリウスシンボリ",
+    "TriggerName": "[Escorte étoile]シリウスシンボリ",
     "Choices": [
       {
         "Option": "",
@@ -70423,7 +70447,7 @@
   {
     "Id": 830091003,
     "Name": "天秤は釣り合わない",
-    "TriggerName": "[Escorte etoile]シリウスシンボリ",
+    "TriggerName": "[Escorte étoile]シリウスシンボリ",
     "Choices": [
       {
         "Option": "",
@@ -70476,7 +70500,7 @@
   {
     "Id": 501020800,
     "Name": "『リーニュ・ドロワット』の前に",
-    "TriggerName": "新衣装セイウンスカイ",
+    "TriggerName": "[ソワレ・ド・シャトン]セイウンスカイ",
     "Choices": [
       {
         "Option": "君らしい衣装だと思う",
@@ -70493,7 +70517,7 @@
   {
     "Id": 501020801,
     "Name": "思い出には花を添えて",
-    "TriggerName": "新衣装セイウンスカイ",
+    "TriggerName": "[ソワレ・ド・シャトン]セイウンスカイ",
     "Choices": [
       {
         "Option": "",
@@ -70505,7 +70529,7 @@
   {
     "Id": 501020802,
     "Name": "みんなには、一応秘密で",
-    "TriggerName": "新衣装セイウンスカイ",
+    "TriggerName": "[ソワレ・ド・シャトン]セイウンスカイ",
     "Choices": [
       {
         "Option": "体を支えるから手を伸ばして！",
@@ -70522,7 +70546,7 @@
   {
     "Id": 501005800,
     "Name": "キセキのカタチ",
-    "TriggerName": "新衣装フジキセキ",
+    "TriggerName": "[シュクセ・エトワーレ]フジキセキ",
     "Choices": [
       {
         "Option": "最高の\"キセキ\"を見せないと！",
@@ -70539,7 +70563,7 @@
   {
     "Id": 501005801,
     "Name": "差し出す手の光",
-    "TriggerName": "新衣装フジキセキ",
+    "TriggerName": "[シュクセ・エトワーレ]フジキセキ",
     "Choices": [
       {
         "Option": "",
@@ -70551,7 +70575,7 @@
   {
     "Id": 501005802,
     "Name": "目に映る君は",
-    "TriggerName": "新衣装フジキセキ",
+    "TriggerName": "[シュクセ・エトワーレ]フジキセキ",
     "Choices": [
       {
         "Option": "楽しかったよ",
@@ -70656,7 +70680,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "……どうかしたのか？",
+        "Option": "......どうかしたのか？",
         "SuccessEffect": "パワー+10、「テンポアップ」のヒントLv+2、ダイワスカーレットの絆ゲージ+5",
         "FailedEffect": ""
       }
@@ -70826,7 +70850,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+35～45、「先行コーナー◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+35〜45、「先行コーナー◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -70850,7 +70874,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～2、スキルPt+45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -70862,7 +70886,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -70922,7 +70946,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -70934,7 +70958,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな4つのステータス+1～3、スキルPt+30～35、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな4つのステータス+1〜3、スキルPt+30〜35、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -70946,7 +70970,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -70970,7 +70994,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71186,7 +71210,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "でもまた梅昆布茶飲みたいしな～",
+        "Option": "でもまた梅昆布茶飲みたいしな〜",
         "SuccessEffect": "賢さ+10",
         "FailedEffect": ""
       }
@@ -71397,7 +71421,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "あ～、魔法で早く直せたらな～！",
+        "Option": "あ〜、魔法で早く直せたらな〜！",
         "SuccessEffect": "スピード+10、「追込直線◯」のヒントLv+2、スイープトウショウの絆ゲージ+5",
         "FailedEffect": ""
       }
@@ -71409,7 +71433,7 @@
     "TriggerName": "ヤエノムテキ",
     "Choices": [
       {
-        "Option": "……見事！",
+        "Option": "......見事！",
         "SuccessEffect": "根性+10、賢さ+10",
         "FailedEffect": ""
       },
@@ -71443,7 +71467,7 @@
     "TriggerName": "ヤエノムテキ",
     "Choices": [
       {
-        "Option": "……今は気持ちを解放しよう",
+        "Option": "......今は気持ちを解放しよう",
         "SuccessEffect": "スピード+20、「愛嬌◯」獲得",
         "FailedEffect": "スピード+20"
       },
@@ -71482,7 +71506,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "必殺技を会得したいな……",
+        "Option": "必殺技を会得したいな......",
         "SuccessEffect": "スキルPt+20",
         "FailedEffect": ""
       }
@@ -71558,7 +71582,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "ランダムな3つのステータス+2～3、スキルPt+30、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "ランダムな3つのステータス+2〜3、スキルPt+30、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71618,7 +71642,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71630,7 +71654,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71642,7 +71666,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71654,7 +71678,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71666,7 +71690,19 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "全ステータス+1～3、スキルPt+35～45、秋川理事長の絆ゲージ+4",
+        "SuccessEffect": "全ステータス+1〜3、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501072325,
+    "Name": "天皇賞（秋）の後に・烈火轟轟",
+    "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+45、「抜け出し準備」のヒントLv+1、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -71766,7 +71802,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "想定する敵を……100倍に増やそう！",
+        "Option": "想定する敵を......100倍に増やそう！",
         "SuccessEffect": "スタミナ+10",
         "FailedEffect": ""
       }
@@ -71887,7 +71923,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "……君こそもう、”本物”じゃないか？",
+        "Option": "......君こそもう、”本物”じゃないか？",
         "SuccessEffect": "根性+10",
         "FailedEffect": ""
       }
@@ -71909,7 +71945,7 @@
         "FailedEffect": ""
       },
       {
-        "Option": "もはや自分の流派を開けそうだな……",
+        "Option": "もはや自分の流派を開けそうだな......",
         "SuccessEffect": "根性+10",
         "FailedEffect": ""
       }
@@ -71921,7 +71957,7 @@
     "TriggerName": "ヤエノムテキ",
     "Choices": [
       {
-        "Option": "これが古流の鍛錬……",
+        "Option": "これが古流の鍛錬......",
         "SuccessEffect": "スピード+5、根性+5",
         "FailedEffect": ""
       },
@@ -71938,12 +71974,12 @@
     "TriggerName": "ヤエノムテキ",
     "Choices": [
       {
-        "Option": "……達人だな！",
+        "Option": "......達人だな！",
         "SuccessEffect": "パワー+10",
         "FailedEffect": ""
       },
       {
-        "Option": "それが、バブル流か……",
+        "Option": "それが、バブル流か......",
         "SuccessEffect": "スピード+5、賢さ+5",
         "FailedEffect": ""
       }
@@ -71955,12 +71991,12 @@
     "TriggerName": "ヤエノムテキ",
     "Choices": [
       {
-        "Option": "……じゃあ、せめて命綱をつけてくれ",
+        "Option": "......じゃあ、せめて命綱をつけてくれ",
         "SuccessEffect": "スタミナ+10、パワー+10、「遊びはおしまいっ！」のヒントLv+1",
         "FailedEffect": ""
       },
       {
-        "Option": "またの機会に……",
+        "Option": "またの機会に......",
         "SuccessEffect": "体力+10、やる気+1",
         "FailedEffect": ""
       }
@@ -72194,7 +72230,7 @@
   {
     "Id": 830096001,
     "Name": "ドキッ！バキッ！噂のおばけ退治！？",
-    "TriggerName": "[フレフレ☆プリンセス]カワカミプリンセス",
+    "TriggerName": "[フレフレ☆プリンセス！]カワカミプリンセス",
     "Choices": [
       {
         "Option": "",
@@ -72206,7 +72242,7 @@
   {
     "Id": 830096002,
     "Name": "仲間集結！プリンセスなら優雅たれ！",
-    "TriggerName": "[フレフレ☆プリンセス]カワカミプリンセス",
+    "TriggerName": "[フレフレ☆プリンセス！]カワカミプリンセス",
     "Choices": [
       {
         "Option": "",
@@ -72218,7 +72254,7 @@
   {
     "Id": 830096003,
     "Name": "繋がれリレー！おばけ退治で大団円！",
-    "TriggerName": "[フレフレ☆プリンセス]カワカミプリンセス",
+    "TriggerName": "[フレフレ☆プリンセス！]カワカミプリンセス",
     "Choices": [
       {
         "Option": "",
@@ -72230,7 +72266,7 @@
   {
     "Id": 501060800,
     "Name": "動画でエール！",
-    "TriggerName": "新衣装ナイスネイチャ",
+    "TriggerName": "[RUN＆WIN]ナイスネイチャ",
     "Choices": [
       {
         "Option": "お姉ちゃんらしい応援",
@@ -72247,7 +72283,7 @@
   {
     "Id": 501060801,
     "Name": "草野球でエール！",
-    "TriggerName": "新衣装ナイスネイチャ",
+    "TriggerName": "[RUN＆WIN]ナイスネイチャ",
     "Choices": [
       {
         "Option": "",
@@ -72259,7 +72295,7 @@
   {
     "Id": 501060802,
     "Name": "君のエール",
-    "TriggerName": "新衣装ナイスネイチャ",
+    "TriggerName": "[RUN＆WIN]ナイスネイチャ",
     "Choices": [
       {
         "Option": "",
@@ -72271,7 +72307,7 @@
   {
     "Id": 501061800,
     "Name": "応援行脚",
-    "TriggerName": "新衣装キングヘイロー",
+    "TriggerName": "[白く気高き激励の装]キングヘイロー",
     "Choices": [
       {
         "Option": "",
@@ -72283,7 +72319,7 @@
   {
     "Id": 501061801,
     "Name": "To Be Continued?",
-    "TriggerName": "新衣装キングヘイロー",
+    "TriggerName": "[白く気高き激励の装]キングヘイロー",
     "Choices": [
       {
         "Option": "帰ってドラマ見ていいぞ",
@@ -72300,7 +72336,7 @@
   {
     "Id": 501061802,
     "Name": "ウララの恩返し",
-    "TriggerName": "新衣装キングヘイロー",
+    "TriggerName": "[白く気高き激励の装]キングヘイロー",
     "Choices": [
       {
         "Option": "",
@@ -74734,6 +74770,18 @@
     ]
   },
   {
+    "Id": 501001113,
+    "Name": "『ダービートレーナー』",
+    "TriggerName": "スペシャルウィーク",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
     "Id": 501001200,
     "Name": "デビュー戦にむけて",
     "TriggerName": "スペシャルウィーク",
@@ -74940,18 +74988,6 @@
   {
     "Id": 501006203,
     "Name": "有馬記念にむけて",
-    "TriggerName": "オグリキャップ",
-    "Choices": [
-      {
-        "Option": "未知选项",
-        "SuccessEffect": "未知效果",
-        "FailedEffect": "未知效果"
-      }
-    ]
-  },
-  {
-    "Id": 501006118,
-    "Name": "天皇賞（春）にて",
     "TriggerName": "オグリキャップ",
     "Choices": [
       {
@@ -75204,18 +75240,6 @@
   {
     "Id": 501009320,
     "Name": "大阪杯の後に・“1番”にむけて",
-    "TriggerName": "ダイワスカーレット",
-    "Choices": [
-      {
-        "Option": "未知选项",
-        "SuccessEffect": "未知效果",
-        "FailedEffect": "未知效果"
-      }
-    ]
-  },
-  {
-    "Id": 501009321,
-    "Name": "天皇賞（秋）の後に・いつもの二人",
     "TriggerName": "ダイワスカーレット",
     "Choices": [
       {
@@ -85820,18 +85844,6 @@
     ]
   },
   {
-    "Id": 501068208,
-    "Name": "ジャパンCにむけて",
-    "TriggerName": "キタサンブラック",
-    "Choices": [
-      {
-        "Option": "未知选项",
-        "SuccessEffect": "未知效果",
-        "FailedEffect": "未知效果"
-      }
-    ]
-  },
-  {
     "Id": 501068209,
     "Name": "有馬記念にむけて",
     "TriggerName": "キタサンブラック",
@@ -85846,6 +85858,18 @@
   {
     "Id": 501068210,
     "Name": "有馬記念にむけて",
+    "TriggerName": "キタサンブラック",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501068313,
+    "Name": "ジャパンCの後に・重なり合う源流",
     "TriggerName": "キタサンブラック",
     "Choices": [
       {
@@ -87738,18 +87762,6 @@
     ]
   },
   {
-    "Id": 501072325,
-    "Name": "天皇賞（秋）の後に・烈火轟轟",
-    "TriggerName": "ヤエノムテキ",
-    "Choices": [
-      {
-        "Option": "未知选项",
-        "SuccessEffect": "未知效果",
-        "FailedEffect": "未知效果"
-      }
-    ]
-  },
-  {
     "Id": 501072327,
     "Name": "目覚め呼ぶ灯明",
     "TriggerName": "ヤエノムテキ",
@@ -87908,18 +87920,6 @@
   {
     "Id": 400002029,
     "Name": "アオハル杯5戦目・決戦を終えて",
-    "TriggerName": "系统",
-    "Choices": [
-      {
-        "Option": "未知选项",
-        "SuccessEffect": "未知效果",
-        "FailedEffect": "未知效果"
-      }
-    ]
-  },
-  {
-    "Id": 400002031,
-    "Name": "秋川理事長のご褒美！",
     "TriggerName": "系统",
     "Choices": [
       {
