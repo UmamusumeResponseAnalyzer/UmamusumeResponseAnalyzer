@@ -313,7 +313,6 @@ namespace UmamusumeResponseAnalyzer
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
             var host = isCN ? CNHost : GithubHost;
-            Console.WriteLine(filepath);
             return ext switch
             {
                 ".json" => $"{host}/{filename}",
