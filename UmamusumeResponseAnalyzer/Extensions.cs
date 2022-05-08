@@ -21,7 +21,7 @@ namespace UmamusumeResponseAnalyzer
                 return input;
             }
 
-            List<byte> result = new List<byte>();
+            var result = new List<byte>();
 
             int i;
 
@@ -55,7 +55,7 @@ namespace UmamusumeResponseAnalyzer
 
             return result.ToArray();
         }
-        public static SystemVersion GetSystemVersion(this OperatingSystem os)
+        public static SystemVersion GetSystemVersion(this OperatingSystem _)
         {
             if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 1)
                 return SystemVersion.Windows7;
