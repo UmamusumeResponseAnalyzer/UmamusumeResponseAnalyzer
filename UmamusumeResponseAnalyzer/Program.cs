@@ -333,8 +333,8 @@ namespace UmamusumeResponseAnalyzer
             }
             task.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task.StartTask();
-            if (Path.GetExtension(path) == "exe" && Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)))
-                || File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+            if ((Path.GetExtension(path) == "exe" && Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath))))
+                || (File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length)) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
             {
                 task.Increment(response.Content.Headers.ContentLength ?? 0);
                 return;
