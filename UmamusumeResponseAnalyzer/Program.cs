@@ -187,39 +187,46 @@ namespace UmamusumeResponseAnalyzer
             {
                 while (Config.Get(Resource.ConfigSet_AutoUpdate))
                 {
-                    await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
-                    Console.Title = "正在检查更新......";
+                    try
+                    {
+                        await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
+                        Console.Title = "正在检查更新......";
 
-                    var client = new HttpClient(new HttpClientHandler
-                    {
-                        AllowAutoRedirect = false
-                    });
-                    var response = await client.GetAsync(GetDownloadUrl(Resource.LaunchMenu_Update_DownloadProgramInstruction), HttpCompletionOption.ResponseHeadersRead);
-                    while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
-                    {
-                        response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+                        var client = new HttpClient(new HttpClientHandler
+                        {
+                            AllowAutoRedirect = false
+                        });
+                        var response = await client.GetAsync(GetDownloadUrl(Resource.LaunchMenu_Update_DownloadProgramInstruction), HttpCompletionOption.ResponseHeadersRead);
+                        while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
+                        {
+                            response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+                        }
+                        if (Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)))
+                        || File.Exists(path) && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(path)))) //服务器返回的hash和当前文件一致，即没有新的可用版本，直接返回
+                        {
+                            Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
+                            continue;
+                        }
+                        Console.Title = "正在下载更新......";
+                        using var contentStream = await response.Content.ReadAsStreamAsync();
+                        using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                        var buffer = new byte[8192];
+                        while (true)
+                        {
+                            var read = await contentStream.ReadAsync(buffer);
+                            if (read == 0)
+                                break;
+                            await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                        }
+                        fileStream.Flush();
+                        fileStream.Close();
+                        Console.Title = $"重启程序后将进行自动更新";
+                        break;
                     }
-                    if (Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)))
-                    || File.Exists(path) && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(path)))) //服务器返回的hash和当前文件一致，即没有新的可用版本，直接返回
+                    catch (Exception e)
                     {
-                        Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
-                        continue;
+                        Console.Title = $"检查更新失败: {e.Message}";
                     }
-                    Console.Title = "正在下载更新......";
-                    using var contentStream = await response.Content.ReadAsStreamAsync();
-                    using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                    var buffer = new byte[8192];
-                    while (true)
-                    {
-                        var read = await contentStream.ReadAsync(buffer);
-                        if (read == 0)
-                            break;
-                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                    }
-                    fileStream.Flush();
-                    fileStream.Close();
-                    Console.Title = $"重启程序后将进行自动更新";
-                    break;
                 }
             });
 #endif
@@ -308,8 +315,8 @@ namespace UmamusumeResponseAnalyzer
             var host = isCN ? CNHost : GithubHost;
             return ext switch
             {
-                "json" => $"{host}/{filename}",
-                "exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/{filename}"
+                ".json" => $"{host}/{filename}",
+                ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/{filename}"
             };
         }
         static async Task DownloadAssets(ProgressContext ctx, string instruction, string path)
