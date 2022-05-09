@@ -64,9 +64,11 @@ namespace UmamusumeResponseAnalyzer
                         }
                     }
                 }
-                File.WriteAllBytes(CONFIG_FILEPATH, MessagePackSerializer.Serialize(Configuration));
+                Save();
             }
         }
+        public static void Save() =>
+                File.WriteAllBytes(CONFIG_FILEPATH, MessagePackSerializer.Serialize(Configuration));
         public static T Get<T>(string key) => (T)Configuration[key];
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)

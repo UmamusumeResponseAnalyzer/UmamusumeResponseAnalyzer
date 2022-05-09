@@ -120,6 +120,7 @@ namespace UmamusumeResponseAnalyzer
                     else
                         Config.Set(i, false);
                 }
+                Config.Save();
             }
             else if (prompt == Resource.LaunchMenu_Update)
             {

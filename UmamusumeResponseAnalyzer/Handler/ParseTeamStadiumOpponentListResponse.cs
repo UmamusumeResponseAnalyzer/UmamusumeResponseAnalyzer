@@ -11,11 +11,9 @@ namespace UmamusumeResponseAnalyzer.Handler
     public static partial class Handlers
     {
 
-        public static void ParseTeamStadiumOpponentListResponse(byte[] buffer)
+        public static void ParseTeamStadiumOpponentListResponse(Gallop.TeamStadiumOpponentListResponse @event)
         {
-            var @event = TryDeserialize<Gallop.TeamStadiumOpponentListResponse>(buffer);
-            var data = @event?.data;
-            if (data == default) return;
+            var data = @event.data;
             var container = new Table
             {
                 Border = TableBorder.Double

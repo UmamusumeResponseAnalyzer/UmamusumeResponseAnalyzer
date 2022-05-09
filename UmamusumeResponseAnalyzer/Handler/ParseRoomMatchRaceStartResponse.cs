@@ -9,16 +9,11 @@ namespace UmamusumeResponseAnalyzer.Handler
 {
     public static partial class Handlers
     {
-        public static void ParseRoomMatchRaceStartResponse(byte[] buffer)
+        public static void ParseRoomMatchRaceStartResponse(Gallop.RoomMatchRaceStartResponse @event)
         {
-            var @event = TryDeserialize<Gallop.RoomMatchRaceStartResponse>(buffer);
-            if (@event != default)
-            {
-                var data = @event.data;
-                if (data.trained_chara_array == null) return;
-
-                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races"));
-                var lines = new List<string>
+            var data = @event.data;
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races"));
+            var lines = new List<string>
                 {
                     $"Race Scenario:",
                     data.race_scenario,
@@ -28,13 +23,12 @@ namespace UmamusumeResponseAnalyzer.Handler
                     string.Empty,
                     $"Trained Characters:"
                 };
-                foreach (var i in data.trained_chara_array)
-                {
-                    lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
-                    lines.Add(string.Empty);
-                }
-                File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
+            foreach (var i in data.trained_chara_array)
+            {
+                lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
+                lines.Add(string.Empty);
             }
+            File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
         }
     }
 }

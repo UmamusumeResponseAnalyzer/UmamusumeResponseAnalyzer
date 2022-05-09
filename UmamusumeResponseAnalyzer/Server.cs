@@ -17,10 +17,6 @@ namespace UmamusumeResponseAnalyzer
         {
             httpListener.Prefixes.Add("http://127.0.0.1:4693/");
             httpListener.Start();
-            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
-            {
-                httpListener.Close();
-            };
             Task.Run(async () =>
             {
                 while (httpListener.IsListening)
@@ -75,53 +71,57 @@ namespace UmamusumeResponseAnalyzer
         }
         static void ParseResponse(byte[] buffer)
         {
-            try
+            lock (_lock)
             {
-                lock (_lock)
+                try
                 {
-                    var str = MessagePackSerializer.ConvertToJson(buffer);
-                    if (str.Contains("chara_info") && str.Contains("home_info") && str.Contains("command_info_array") && !str.Contains("race_reward_info")) //根据文本简单过滤防止重复、异常输出
+                    var dyn = JsonConvert.DeserializeObject<dynamic>(MessagePackSerializer.ConvertToJson(buffer));
+                    if (dyn == default(dynamic)) return;
+                    var data = dyn.data;
+                    if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
-                            Handlers.ParseCommandInfo(buffer);
+                            Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                     }
-                    if ((str.Contains("chara_info") && str.Contains("race_condition_array")) || str.Contains("unchecked_event_array"))
+                    if (data.chara_info != null && data.unchecked_event_array?.Count > 0)
                     {
                         if (Config.Get(Resource.ConfigSet_ParseSingleModeCheckEventResponse))
-                            Handlers.ParseSingleModeCheckEventResponse(buffer);
-                        if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && str.Contains("skill_tips_array"))
-                            Handlers.ParseSkillTipsResponse(buffer);
+                            Handlers.ParseSingleModeCheckEventResponse(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                     }
-                    if (str.Contains("trained_chara_array") && str.Contains("trained_chara_favorite_array") && str.Contains("room_match_entry_chara_id_array"))
+                    if (data.chara_info != null && (data.chara_info.state == 2 || data.chara_info.state == 3) && data.unchecked_event_array?.Count == 0)
+                    {
+                        if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && data.chara_info.skill_tips_array != null)
+                            Handlers.ParseSkillTipsResponse(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                    }
+                    if (data.trained_chara_array != null && data.trained_chara_favorite_array != null && data.room_match_entry_chara_id_array != null)
                     {
                         if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
-                            Handlers.ParseTrainedCharaLoadResponse(buffer);
+                            Handlers.ParseTrainedCharaLoadResponse(dyn.ToObject<Gallop.TrainedCharaLoadResponse>());
                     }
-                    if (str.Contains("friend_info") && str.Contains("user_info_summary") && str.Contains("practice_partner_info") && str.Contains("directory_card_array") && str.Contains("support_card_data") && str.Contains("release_num_info") && str.Contains("trophy_num_info") && str.Contains("team_stadium_user") && str.Contains("follower_num") && str.Contains("own_follow_num") && str.Contains("enable_circle_scout"))
+                    if (data.user_info_summary != null && data.practice_partner_info != null && data.support_card_data != null && data.follower_num != null && data.own_follow_num != null)
                     {
                         if (Config.Get(Resource.ConfigSet_ParseFriendSearchResponse))
-                            Handlers.ParseFriendSearchResponse(buffer);
+                            Handlers.ParseFriendSearchResponse(dyn.ToObject<Gallop.FriendSearchResponse>());
                     }
-                    if (str.Contains("opponent_info_array"))
+                    if (data.opponent_info_array?.Count == 3)
                     {
                         if (Config.Get(Resource.ConfigSet_ParseTeamStadiumOpponentListResponse))
-                            // https://github.com/CNA-Bld/EXNOA-CarrotJuicer/issues/2
-                            Handlers.ParseTeamStadiumOpponentListResponse(buffer.Replace(new byte[] { 0x88, 0xC0, 0x01 }, new byte[] { 0x87 }));
+                            Handlers.ParseTeamStadiumOpponentListResponse(dyn.ToObject<Gallop.TeamStadiumOpponentListResponse>()); //https://github.com/CNA-Bld/EXNOA-CarrotJuicer/issues/2
                     }
-                    if (str.Contains("trained_chara_array") && str.Contains("race_result_info") && str.Contains("entry_info_array") && str.Contains("practice_race_id") && str.Contains("state") && str.Contains("practice_partner_owner_info_array"))
+                    if (data.trained_chara_array != null && data.race_result_info != null && data.entry_info_array != null && data.practice_race_id != null && data.state != null && data.practice_partner_owner_info_array != null)
                     {
                         if (Config.Get(Resource.ConfigSet_ParsePracticeRaceRaceStartResponse))
                             Handlers.ParsePracticeRaceRaceStartResponse(buffer);
                     }
-                    if (str.Contains("race_scenario") && str.Contains("random_seed") && str.Contains("race_horse_data_array") && str.Contains("trained_chara_array") && str.Contains("season") && str.Contains("weather") && str.Contains("ground_condition"))
+                    if (data.race_scenario != null && data.random_seed != null && data.race_horse_data_array != null && data.trained_chara_array != null && data.season != null && data.weather != null && data.ground_condition != null)
                     {
                         if (Config.Get(Resource.ConfigSet_ParseRoomMatchRaceStartResponse))
-                            Handlers.ParseRoomMatchRaceStartResponse(buffer);
+                            Handlers.ParseRoomMatchRaceStartResponse(dyn.ToObject<Gallop.RoomMatchRaceStartResponse>());
                     }
                 }
-            }
-            catch (Exception)
-            {
+                catch (Exception)
+                {
+                }
             }
         }
     }
