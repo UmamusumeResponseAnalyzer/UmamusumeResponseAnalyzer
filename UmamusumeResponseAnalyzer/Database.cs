@@ -223,6 +223,7 @@ namespace UmamusumeResponseAnalyzer
         {
             public SkillData Superior => Database.Skills[(GroupId, Rarity, Rate + 1)] ?? Database.Skills[(GroupId, Rarity + 1, Rate + 1)];
             public SkillData Inferior => Database.Skills[(GroupId, Rarity, Rate - 1)] ?? Database.Skills[(GroupId, Rarity - 1, Rate - 1)];
+            private int _totalCost = 0;
             /// <summary>
             /// 学会该技能所需的总技能点（包括下位技能）
             /// </summary>
@@ -230,6 +231,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 get
                 {
+                    if (_totalCost != 0) return _totalCost;
                     var total = Cost;
                     var inferior = Inferior;
                     while (inferior != null && inferior.Rate > 0)
@@ -239,6 +241,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                     return total;
                 }
+                set => _totalCost = value;
             }
             public string Name;
             public int Id;
@@ -317,10 +320,10 @@ namespace UmamusumeResponseAnalyzer
 
                 static int applyProperLevel(int grade, int level) => level switch
                 {
-                    8 or 7 => (int)Math.Ceiling(grade * 1.1), //S,A
-                    6 or 5 => (int)Math.Ceiling(grade * 0.9), //B,C
-                    4 or 3 or 2 => (int)Math.Ceiling(grade * 0.8), //D,E,F
-                    1 => (int)Math.Ceiling(grade * 0.7), //G
+                    8 or 7 => (int)Math.Round(grade * 1.1), //S,A
+                    6 or 5 => (int)Math.Round(grade * 0.9), //B,C
+                    4 or 3 or 2 => (int)Math.Round(grade * 0.8), //D,E,F
+                    1 => (int)Math.Round(grade * 0.7), //G
                     _ => 0,
                 };
 
