@@ -2338,5 +2338,35 @@
       "SkillId": 200174,
       "Rank": 5
     }
+  ],
+  "103101": [
+    {
+      "SkillId": 201651,
+      "Rank": 0
+    },
+    {
+      "SkillId": 201282,
+      "Rank": 0
+    },
+    {
+      "SkillId": 202132,
+      "Rank": 0
+    },
+    {
+      "SkillId": 200032,
+      "Rank": 2
+    },
+    {
+      "SkillId": 201281,
+      "Rank": 3
+    },
+    {
+      "SkillId": 201082,
+      "Rank": 4
+    },
+    {
+      "SkillId": 202131,
+      "Rank": 5
+    }
   ]
 }

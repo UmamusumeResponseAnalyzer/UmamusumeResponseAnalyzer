@@ -598,6 +598,19 @@
     "Style": 0
   },
   {
+    "Name": "チャージ完了！全速前進！",
+    "Id": 100311,
+    "GroupId": 10031,
+    "Rarity": 5,
+    "Rate": 1,
+    "Grade": 340,
+    "Cost": 0,
+    "DisplayOrder": 10,
+    "Ground": 0,
+    "Distance": 0,
+    "Style": 0
+  },
+  {
     "Name": "U=ma2",
     "Id": 100321,
     "GroupId": 10032,
@@ -6019,6 +6032,32 @@
     "Style": 3
   },
   {
+    "Name": "荒ぶる旋風",
+    "Id": 202131,
+    "GroupId": 20213,
+    "Rarity": 2,
+    "Rate": 2,
+    "Grade": 508,
+    "Cost": 160,
+    "DisplayOrder": 21690,
+    "Ground": 0,
+    "Distance": 3,
+    "Style": 0
+  },
+  {
+    "Name": "気迫を込めて",
+    "Id": 202132,
+    "GroupId": 20213,
+    "Rarity": 1,
+    "Rate": 1,
+    "Grade": 217,
+    "Cost": 160,
+    "DisplayOrder": 21700,
+    "Ground": 0,
+    "Distance": 3,
+    "Style": 0
+  },
+  {
     "Name": "アオハル燃焼・速",
     "Id": 210011,
     "GroupId": 21001,
@@ -6698,6 +6737,19 @@
     "Name": "ブルーローズチェイサー",
     "Id": 900301,
     "GroupId": 90030,
+    "Rarity": 1,
+    "Rate": 2,
+    "Grade": 180,
+    "Cost": 200,
+    "DisplayOrder": 30,
+    "Ground": 0,
+    "Distance": 0,
+    "Style": 0
+  },
+  {
+    "Name": "チャージ完了！全速前進！",
+    "Id": 900311,
+    "GroupId": 90031,
     "Rarity": 1,
     "Rate": 2,
     "Grade": 180,

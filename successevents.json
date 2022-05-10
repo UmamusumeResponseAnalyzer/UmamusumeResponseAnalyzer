@@ -2829,6 +2829,25 @@
     ]
   },
   {
+    "Name": "新たな魅力を……",
+    "Choices": [
+      {
+        "ChoiceIndex": 1,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "「束縛」のヒントLv+1、「愛嬌◯」獲得"
+        }
+      },
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 2,
+        "Effects": {
+          "0": "パワー+10、「愛嬌◯」獲得"
+        }
+      }
+    ]
+  },
+  {
     "Name": "全ての道は笹針に通じる",
     "Choices": [
       {

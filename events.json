@@ -14295,9 +14295,19 @@
     "TriggerName": "サクラバクシンオー",
     "Choices": [
       {
-        "Option": "",
+        "Option": "大成功",
+        "SuccessEffect": "賢さ+20、体力+10、「愛嬌○」獲得",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "成功",
         "SuccessEffect": "賢さ+10、「愛嬌○」獲得",
-        "FailedEffect": "やる気↑"
+        "FailedEffect": ""
+      },
+      {
+        "Option": "失敗",
+        "SuccessEffect": "やる気+1",
+        "FailedEffect": ""
       }
     ]
   },
@@ -40957,6 +40967,18 @@
     ]
   },
   {
+    "Id": 501031107,
+    "Name": "バレンタイン",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "固有スキルLv+1",
+        "FailedEffect": "スキルPt+20"
+      }
+    ]
+  },
+  {
     "Id": 501001108,
     "Name": "ファン感謝祭",
     "TriggerName": "共通",
@@ -41617,6 +41639,18 @@
     ]
   },
   {
+    "Id": 501031108,
+    "Name": "ファン感謝祭",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気↑、固有スキルLv+1",
+        "FailedEffect": "体力−5、スキルPt+25"
+      }
+    ]
+  },
+  {
     "Id": 501001109,
     "Name": "クリスマス",
     "TriggerName": "共通",
@@ -42266,6 +42300,18 @@
   },
   {
     "Id": 501072109,
+    "Name": "クリスマス",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "固有スキルLv+1<br>（ファン数が多いほど確率UP）",
+        "FailedEffect": "スキルPt+20"
+      }
+    ]
+  },
+  {
+    "Id": 501031109,
     "Name": "クリスマス",
     "TriggerName": "共通",
     "Choices": [
@@ -42938,6 +42984,18 @@
   },
   {
     "Id": 501072507,
+    "Name": "ファンレター",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1、スキルPt+30",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031507,
     "Name": "ファンレター",
     "TriggerName": "共通",
     "Choices": [
@@ -45333,6 +45391,38 @@
     ]
   },
   {
+    "Id": 501031720,
+    "Name": "あんし～ん笹針師、参☆上",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "強いウマ娘になれる秘孔を狙う",
+        "SuccessEffect": "全ステータス+20",
+        "FailedEffect": "体力−20、全ステータス−15、やる気−2、「夜ふかし気味」獲得"
+      },
+      {
+        "Option": "レースで勝てる秘孔を狙う",
+        "SuccessEffect": "スキル「直線回復◯」習得、スキル「コーナー回復◯」習得",
+        "FailedEffect": "体力−20、やる気−2"
+      },
+      {
+        "Option": "元気で健康になれる秘孔を狙う",
+        "SuccessEffect": "体力の最大値+12、体力+40",
+        "FailedEffect": "やる気減少、「練習ベタ」獲得"
+      },
+      {
+        "Option": "魅力アップの秘孔を狙う",
+        "SuccessEffect": "体力+20、やる気上昇、「愛嬌◯」獲得",
+        "FailedEffect": "体力−10、やる気減少"
+      },
+      {
+        "Option": "不安なのでやめておく",
+        "SuccessEffect": "体力+10",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
     "Id": 501001701,
     "Name": "休息はバッチリ！",
     "TriggerName": "共通",
@@ -46594,6 +46684,18 @@
   },
   {
     "Id": 501072707,
+    "Name": "神社でお祈り！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "バッドコンディションが治る",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
+    "Id": 501031707,
     "Name": "神社でお祈り！",
     "TriggerName": "共通",
     "Choices": [
@@ -48989,6 +49091,38 @@
     ]
   },
   {
+    "Id": 501031302,
+    "Name": "福引チャンス！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "温泉旅行券",
+        "SuccessEffect": "体力+30、やる気↑、全ステータス+10、URA優勝で温泉旅行",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "特上にんじんハンバーグ",
+        "SuccessEffect": "体力+30、やる気+2、全ステータス+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "にんじん山盛り",
+        "SuccessEffect": "体力+20、やる気+1、全ステータス+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "にんじん1本",
+        "SuccessEffect": "体力+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ティッシュ",
+        "SuccessEffect": "やる気−1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001521,
     "Name": "夜ふかし気味で……",
     "TriggerName": "共通",
@@ -49661,6 +49795,18 @@
     ]
   },
   {
+    "Id": 501031521,
+    "Name": "夜ふかし気味で……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−10",
+        "FailedEffect": "体力−10、やる気−1"
+      }
+    ]
+  },
+  {
     "Id": 501001717,
     "Name": "保健室にて",
     "TriggerName": "共通",
@@ -50321,6 +50467,18 @@
     ]
   },
   {
+    "Id": 501031717,
+    "Name": "保健室にて",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+20、バッドコンディションが治る",
+        "FailedEffect": "体力+20"
+      }
+    ]
+  },
+  {
     "Id": 501001722,
     "Name": "頭痛で憂鬱",
     "TriggerName": "共通",
@@ -50970,6 +51128,18 @@
   },
   {
     "Id": 501072722,
+    "Name": "頭痛で憂鬱",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、賢さ−5",
+        "FailedEffect": "やる気−1、賢さ−5、コンディション「片頭痛」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501031722,
     "Name": "頭痛で憂鬱",
     "TriggerName": "共通",
     "Choices": [
@@ -52301,6 +52471,30 @@
     ]
   },
   {
+    "Id": 501031728,
+    "Name": "クレーンゲーム成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気+1、「直線回復」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031731,
+    "Name": "クレーンゲーム成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気+1、「直線回復」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001727,
     "Name": "クレーンゲーム大成功！",
     "TriggerName": "共通",
@@ -53621,6 +53815,30 @@
     ]
   },
   {
+    "Id": 501031727,
+    "Name": "クレーンゲーム大成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気+1、「直線回復」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031730,
+    "Name": "クレーンゲーム大成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気+1、「直線回復」のヒントLv+2",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001729,
     "Name": "クレーンゲーム失敗……",
     "TriggerName": "共通",
@@ -54270,6 +54488,18 @@
   },
   {
     "Id": 501072729,
+    "Name": "クレーンゲーム失敗……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+5、根性+3",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031729,
     "Name": "クレーンゲーム失敗……",
     "TriggerName": "共通",
     "Choices": [
@@ -54953,6 +55183,18 @@
     ]
   },
   {
+    "Id": 501031522,
+    "Name": "お肌の調子が……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "-",
+        "FailedEffect": "やる気−1"
+      }
+    ]
+  },
+  {
     "Id": 501001509,
     "Name": "連続出走で……",
     "TriggerName": "共通",
@@ -55613,6 +55855,18 @@
     ]
   },
   {
+    "Id": 501031509,
+    "Name": "連続出走で……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、ランダムな3つのステータス−10",
+        "FailedEffect": "やる気−1、ランダムな3つのステータス−10、「肌荒れ」習得"
+      }
+    ]
+  },
+  {
     "Id": 501001712,
     "Name": "不在の理由は……",
     "TriggerName": "共通",
@@ -56262,6 +56516,18 @@
   },
   {
     "Id": 501072712,
+    "Name": "不在の理由は……",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+10、やる気−1、秋川理事長の絆ゲージ−5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031712,
     "Name": "不在の理由は……",
     "TriggerName": "共通",
     "Choices": [
@@ -56934,6 +57200,18 @@
   },
   {
     "Id": 501072716,
+    "Name": "ダイエット成功！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "「太り気味」解消",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031716,
     "Name": "ダイエット成功！",
     "TriggerName": "共通",
     "Choices": [
@@ -57622,6 +57900,18 @@
     ]
   },
   {
+    "Id": 501031600,
+    "Name": "武者震い",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムなステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
     "Id": 501001601,
     "Name": "今度こそ！",
     "TriggerName": "共通",
@@ -58271,6 +58561,18 @@
   },
   {
     "Id": 501072601,
+    "Name": "今度こそ！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031601,
     "Name": "今度こそ！",
     "TriggerName": "共通",
     "Choices": [
@@ -59235,6 +59537,23 @@
   },
   {
     "Id": 501072711,
+    "Name": "今度こそ負けない！",
+    "TriggerName": "共通",
+    "Choices": [
+      {
+        "Option": "次こそ、絶対勝とう",
+        "SuccessEffect": "やる気+1、スキルPt+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "帰ってトレーニングしよう！",
+        "SuccessEffect": "体力−25、スキルPt+10、「伏兵◯」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031711,
     "Name": "今度こそ負けない！",
     "TriggerName": "共通",
     "Choices": [
@@ -61773,13 +62092,13 @@
     "Choices": [
       {
         "Option": "ドトウの真似をするとか",
-        "SuccessEffect": "「束縛」のヒントLv+1",
-        "FailedEffect": ""
+        "SuccessEffect": "「束縛」のヒントLv+1、「愛嬌◯」獲得",
+        "FailedEffect": "「束縛」のヒントLv+1"
       },
       {
         "Option": "じっくり観察してみたら？",
-        "SuccessEffect": "パワー+10",
-        "FailedEffect": ""
+        "SuccessEffect": "パワー+10、「愛嬌◯」獲得",
+        "FailedEffect": "パワー+10"
       }
     ]
   },
@@ -72341,6 +72660,792 @@
       {
         "Option": "",
         "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 801057001,
+    "Name": "旅路は弾む",
+    "TriggerName": "ミスターシービー",
+    "Choices": [
+      {
+        "Option": "帰って休むよう説得する",
+        "SuccessEffect": "体力+10、スキルPt+10、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "朝ご飯に付き合う",
+        "SuccessEffect": "パワー+20、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 801057002,
+    "Name": "たとえタブーに触れても",
+    "TriggerName": "ミスターシービー",
+    "Choices": [
+      {
+        "Option": "酔いが落ち着くまでもう少し休む",
+        "SuccessEffect": "賢さ+15、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "タクシーを呼んでさっさと帰る",
+        "SuccessEffect": "「早仕掛け」のヒントLv+1、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830097001,
+    "Name": "饗宴エスケープ",
+    "TriggerName": "[Dear Mr. C.B.]ミスターシービー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "賢さ+10、スキルPt+10、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 830097002,
+    "Name": "見解マイルール",
+    "TriggerName": "[Dear Mr. C.B.]ミスターシービー",
+    "Choices": [
+      {
+        "Option": "自分のスタイルを貫けるってすごい",
+        "SuccessEffect": "体力+20、「コーナー回復◯」のヒントLv+2、ミスターシービーの絆ゲージ+10",
+        "FailedEffect": "体力+15、ミスターシービーの絆ゲージ+5"
+      },
+      {
+        "Option": "……無理はしていないか？",
+        "SuccessEffect": "-",
+        "FailedEffect": "パワー+10、「まなざし」のヒントLv+1、ミスターシービーの絆ゲージ+5"
+      }
+    ]
+  },
+  {
+    "Id": 830097003,
+    "Name": "席巻フリーダム",
+    "TriggerName": "[Dear Mr. C.B.]ミスターシービー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "パワー+10、賢さ+20、「強攻策」のヒントLv+1、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 820047001,
+    "Name": "わがまま？ステップ",
+    "TriggerName": "[Step! Smile! Wink!]トウカイテイオー",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力の最大値+4、スキルPt+10、トウカイテイオーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 820047002,
+    "Name": "広がる！ステップ",
+    "TriggerName": "[Step! Smile! Wink!]トウカイテイオー",
+    "Choices": [
+      {
+        "Option": "別の子にもプレイしてもらうとか？",
+        "SuccessEffect": "スキルPt+15、「中距離コーナー◯」のヒントLv+1、トウカイテイオーの絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "テイオーが観客と一緒に踊るのは？",
+        "SuccessEffect": "体力+20、トウカイテイオーの絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031513,
+    "Name": "お姉ちゃんと一緒に！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未来の後輩は見込みアリだった？",
+        "SuccessEffect": "スピード+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "さすが、お姉ちゃんだな！",
+        "SuccessEffect": "賢さ+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031514,
+    "Name": "見せたい『あたし』",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "最高の写真が撮れたな！",
+        "SuccessEffect": "スタミナ+10、スキルPt+15",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "せっかくだし、撮った写真は全部送ろう",
+        "SuccessEffect": "根性+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031515,
+    "Name": "バイトならおまかせ！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "なんでもできそうだな",
+        "SuccessEffect": "全ステ+4",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "すごすぎる・・・・・・！",
+        "SuccessEffect": "パワー+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031100,
+    "Name": "アイネスフウジン登場！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スキルPt+120",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031101,
+    "Name": "新年の抱負",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "スピードアップする方法をとにかく試す！",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "俺、しんきゅう院でバイトを始めようと思う",
+        "SuccessEffect": "体力+20",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ポスティング中にコース取りの意識を！",
+        "SuccessEffect": "スキルPt+20",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031102,
+    "Name": "初詣",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "健康第一",
+        "SuccessEffect": "体力+30",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "大願成就",
+        "SuccessEffect": "全ステータス+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "技能向上",
+        "SuccessEffect": "スキルPt+30",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031104,
+    "Name": "夏合宿（2年目）にて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "力がつくご飯を食べよう！",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "リフレッシュしよう！海で！",
+        "SuccessEffect": "根性+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031300,
+    "Name": "夏合宿（2年目）終了",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031301,
+    "Name": "夏合宿（3年目）終了",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031303,
+    "Name": "デビュー戦の後に・胸に残る芝の香り",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな3つのステータス+3、スキルPt+36、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031304,
+    "Name": "朝日杯FSの後に・目を見開いて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031305,
+    "Name": "皐月賞の後に・君は強い",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031308,
+    "Name": "日本ダービーの後に・夢つかめずとも",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031306,
+    "Name": "日本ダービーの後に・アイネスコール",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、「逃げコーナー◯」のヒントLv+1、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031310,
+    "Name": "菊花賞の後に・名家の秘蔵っ子",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+1、スキルPt+42、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031315,
+    "Name": "有馬記念の後に・お願い",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力−15、根性+6、スキルPt+42",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031317,
+    "Name": "大阪杯の後に・空に向け、両手を広げて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、秋川理事長の絆ゲージ+4",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031323,
+    "Name": "宝塚記念の後に・帆船導け、舵を取れ",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、秋川理事長の絆ゲージ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031325,
+    "Name": "天皇賞（秋）の後に・夢の重ね方",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、秋川理事長の絆ゲージ+6",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031326,
+    "Name": "ジャパンCの後に・心軽やかに",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+3、スキルPt+54、秋川理事長の絆ゲージ+7",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031113,
+    "Name": "それがこの子の日常",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スタミナ+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031114,
+    "Name": "応援、してるよ",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スタミナ+5、パワー+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031115,
+    "Name": "風が運ぶ、春の音",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "根性+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031116,
+    "Name": "次の一歩へと",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031506,
+    "Name": "ダンスレッスン",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "ヒーローショー仕立てのダンスはどう？",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "アイネスらしさを押し出したダンスがいい",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031519,
+    "Name": "お姉ちゃんの苦悩",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "やる気−1、根性−5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031705,
+    "Name": "お姉ちゃんにも弱点はある",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "無理なものは無理って言っていいんだ",
+        "SuccessEffect": "根性+10\r",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "珍しい反応が見られた",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031511,
+    "Name": "どっちのお姉ちゃんでしょう！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "お茶会でのんびりトーク！",
+        "SuccessEffect": "体力+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "……握手会とか？",
+        "SuccessEffect": "根性+5、スキルPt+15",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031702,
+    "Name": "バイト紹介なの！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "さすが、ハイパーアルバイターだな",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "俺も興味でてきたな～",
+        "SuccessEffect": "賢さ+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031703,
+    "Name": "バイト実演なの！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "君らしいな",
+        "SuccessEffect": "パワー+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "素敵な考え方だな",
+        "SuccessEffect": "スピード+10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031708,
+    "Name": "レース勝利！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "素晴らしい走りだった",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−15、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−15、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次のレースも勝とう",
+        "SuccessEffect": "【G1】、体力−5、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−5、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−5、ランダムな1つのステータス+5、スキルPt+30",
+        "FailedEffect": "【G1】、体力−20、ランダムな1つのステータス+10、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+8、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+5、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501031709,
+    "Name": "レース入着",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "悪くない走りはできてたよ",
+        "SuccessEffect": "【G1】、体力−20、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−20、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−20、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次は必ず勝とう！",
+        "SuccessEffect": "【G1】、体力−10、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【G3】、体力−10、ランダムな1つのステータス+5、スキルPt+35<br>【OP】、体力−10、ランダムな1つのステータス+3、スキルPt+30",
+        "FailedEffect": "【G1】、体力−30、ランダムな1つのステータス+8、スキルPt+45<br>【G2】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【G3】、体力−30、ランダムな1つのステータス+6、スキルPt+35<br>【OP】、体力−30、ランダムな1つのステータス+3、スキルPt+30"
+      }
+    ]
+  },
+  {
+    "Id": 501031710,
+    "Name": "レース敗北",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "君は絶対に強くなれる",
+        "SuccessEffect": "【G1】、体力−25、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−25、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−25、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "次は勝とう",
+        "SuccessEffect": "【G1】、体力−15、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−15、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−15、スキルPt+10、確率でマイナススキル獲得",
+        "FailedEffect": "【G1】、体力−35、ランダムな1つのステータス+4、スキルPt+25、確率でマイナススキル獲得<br>【G2】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【G3】、体力−35、ランダムな1つのステータス+3、スキルPt+20、確率でマイナススキル獲得<br>【OP】、体力−35、スキルPt+10、確率でマイナススキル獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501031713,
+    "Name": "お大事に！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "上の選択肢",
+        "SuccessEffect": "やる気−1、直前のトレーニング能力−5",
+        "FailedEffect": "やる気−1、直前のトレーニング能力−5、「練習ベタ」獲得"
+      },
+      {
+        "Option": "下の選択肢",
+        "SuccessEffect": "「練習上手◯」獲得",
+        "FailedEffect": "やる気−1、直前のトレーニング能力−10、確率で「練習ベタ」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501031714,
+    "Name": "無茶は厳禁！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "上の選択肢",
+        "SuccessEffect": "体力+10、やる気−3、直前のトレーニング能力−10、ランダムな2つのステータス−10",
+        "FailedEffect": "体力+10、やる気−3、直前のトレーニング能力−10、ランダムな2つのステータス−10、「練習ベタ」獲得"
+      },
+      {
+        "Option": "下の選択肢",
+        "SuccessEffect": "体力+10、低確率で「練習上手◯」獲得",
+        "FailedEffect": "やる気−3、直前のトレーニング能力−20、ランダムな1つのステータス−10、「練習ベタ」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501031715,
+    "Name": "追加の自主トレ",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "頑張ってきて！",
+        "SuccessEffect": "体力−5、直前のトレーニングに応じたステータス+5、バッドコンディションが解消、秋川理事長の絆ゲージ+5",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "オーバーワークになるから自転車で",
+        "SuccessEffect": "体力+5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031524,
+    "Name": "大量タフネスバー事件！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "もう、一気に食べてしまおう！",
+        "SuccessEffect": "体力+30、スキルPt+10",
+        "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
+      },
+      {
+        "Option": "半分食べようか？",
+        "SuccessEffect": "体力+10、スキルPt+5",
+        "FailedEffect": "-"
+      }
+    ]
+  },
+  {
+    "Id": 501031719,
+    "Name": "しょんぼりしてる子はほっとけない！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "体力+15、やる気−1、根性−5",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031704,
+    "Name": "バイトに感謝なの！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "大成功みたいだな！",
+        "SuccessEffect": "",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "内緒にしてごめんな・・・・・・！",
+        "SuccessEffect": "",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "君の気持ちがわかった気がする",
+        "SuccessEffect": "根性＋10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031706,
+    "Name": "誰にでも、誰とでも",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "徹底的に『お姉ちゃん』をしよう！\r",
+        "SuccessEffect": "スタミナ＋10\r",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "今日はシービーと自由にやってみよう",
+        "SuccessEffect": "スピード＋10",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031516,
+    "Name": "たい焼きパーティー！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "カロリーは大丈夫・・・・・・？\r",
+        "SuccessEffect": "体力+10、スキルpt+5\r",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "頑張った分、たくさん食べて",
+        "SuccessEffect": "体力+30、スキルpt+10",
+        "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
+      }
+    ]
+  },
+  {
+    "Id": 501031520,
+    "Name": "優しいだけじゃいられない！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "勉強になった",
+        "SuccessEffect": "スピード+10、賢さ+5\r",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "ちょっと寂しい・・・・・・？",
+        "SuccessEffect": "「遊びはおしまいっ！」のヒントLv+１",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031510,
+    "Name": "お呼びとあらば！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "かなり持久力がつきそうだな",
+        "SuccessEffect": "スタミナ+10",
+        "FailedEffect": ""
+      },
+      {
+        "Option": "学びも多そうだな",
+        "SuccessEffect": "-",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031500,
+    "Name": "名指導",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "ランダムな1つのステータス+10、「練習上手◯」獲得",
+        "FailedEffect": "ランダムな1つのステータス+10"
+      }
+    ]
+  },
+  {
+    "Id": 501031117,
+    "Name": "キミガ風",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "スピード+12、根性+12、「逃げ直線◯」のヒントLv+1",
+        "FailedEffect": ""
+      }
+    ]
+  },
+  {
+    "Id": 501031111,
+    "Name": "これからもあたしは",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "",
+        "SuccessEffect": "全ステータス+5、スキルPt+20",
         "FailedEffect": ""
       }
     ]
@@ -87765,6 +88870,510 @@
     "Id": 501072327,
     "Name": "目覚め呼ぶ灯明",
     "TriggerName": "ヤエノムテキ",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 801057003,
+    "Name": "成長のヒント",
+    "TriggerName": "系统",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031900,
+    "Name": "自己紹介",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031103,
+    "Name": "夏合宿（2年目）スタート！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031105,
+    "Name": "夏合宿（3年目）スタート！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031110,
+    "Name": "エンディング（ノーマル）",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031112,
+    "Name": "温泉旅行",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031517,
+    "Name": "僅かでもお得に",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031518,
+    "Name": "前輪注意",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031523,
+    "Name": "新しい挑戦！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031508,
+    "Name": "レース疲れ",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031700,
+    "Name": "寝不足で……",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031718,
+    "Name": "リフレッシュ完了",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031701,
+    "Name": "休息はバッチリ！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031726,
+    "Name": "クレーンゲームに挑戦！",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031732,
+    "Name": "想いの継承",
+    "TriggerName": "系统",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031733,
+    "Name": "想いの継承",
+    "TriggerName": "系统",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031200,
+    "Name": "デビュー戦にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031201,
+    "Name": "朝日杯FSにむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031202,
+    "Name": "皐月賞にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031203,
+    "Name": "日本ダービーにむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031204,
+    "Name": "菊花賞にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031205,
+    "Name": "有馬記念にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031206,
+    "Name": "大阪杯にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031207,
+    "Name": "天皇賞（春）にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031208,
+    "Name": "宝塚記念にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031209,
+    "Name": "天皇賞（秋）にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031210,
+    "Name": "ジャパンCにむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031211,
+    "Name": "有馬記念にむけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031307,
+    "Name": "日本ダービーの後に・君を包む声の中に",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031309,
+    "Name": "菊花賞の後に・いっぱいいっぱい",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031311,
+    "Name": "菊花賞の後に・菊の舞台で見せし背中",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031312,
+    "Name": "菊花賞の後に・守りたくとも",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031313,
+    "Name": "有馬記念の後に・かけられた声",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031314,
+    "Name": "有馬記念の後に・夢を追いかけて",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031316,
+    "Name": "見つけた夢",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031318,
+    "Name": "天皇賞（春）の後に・応える姿",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031319,
+    "Name": "天皇賞（春）の後に・負けた後でも",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031320,
+    "Name": "天皇賞（春）の後に・見習うべき背中",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031321,
+    "Name": "天皇賞（春）の後に・噛みしめる前に",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031322,
+    "Name": "名門を背負う者たち",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031324,
+    "Name": "天皇賞（秋）の後に・心のままに",
+    "TriggerName": "アイネスフウジン",
+    "Choices": [
+      {
+        "Option": "未知选项",
+        "SuccessEffect": "未知效果",
+        "FailedEffect": "未知效果"
+      }
+    ]
+  },
+  {
+    "Id": 501031327,
+    "Name": "有馬記念の後に・そして風が吹いた",
+    "TriggerName": "アイネスフウジン",
     "Choices": [
       {
         "Option": "未知选项",
