@@ -78,6 +78,24 @@ namespace UmamusumeResponseAnalyzer
                     var dyn = JsonConvert.DeserializeObject<dynamic>(MessagePackSerializer.ConvertToJson(buffer));
                     if (dyn == default(dynamic)) return;
                     var data = dyn.data;
+                    if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
+                    {
+                        var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                        if (Directory.Exists(directory))
+                        {
+                            foreach (var i in Directory.GetFiles(directory))
+                            {
+                                var fileInfo = new FileInfo(i);
+                                if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
+                                    fileInfo.Delete();
+                            }
+                        }
+                        else
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+                        File.WriteAllText($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.json", data.ToString());
+                    }
                     if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))

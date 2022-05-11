@@ -27,6 +27,7 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ShowCommandInfo
             });
             ConfigSet.Add(Resource.ConfigSet_AutoUpdate, Array.Empty<string>());
+            ConfigSet.Add(Resource.ConfigSet_SaveResponseForDebug, Array.Empty<string>());
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {

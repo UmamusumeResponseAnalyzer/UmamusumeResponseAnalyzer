@@ -142,6 +142,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 保存用于调试的通讯包 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_SaveResponseForDebug {
+            get {
+                return ResourceManager.GetString("ConfigSet_SaveResponseForDebug", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 显示训练人头信息 的本地化字符串。
         /// </summary>
         public static string ConfigSet_ShowCommandInfo {

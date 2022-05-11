@@ -993,6 +993,18 @@
     ]
   },
   {
+    "Name": "たい焼きパーティー！",
+    "Choices": [
+      {
+        "ChoiceIndex": 2,
+        "SelectIndex": 1,
+        "Effects": {
+          "0": "体力+30、技能点+10"
+        }
+      }
+    ]
+  },
+  {
     "Name": "目指せ、きらめく瞬間！",
     "Choices": [
       {

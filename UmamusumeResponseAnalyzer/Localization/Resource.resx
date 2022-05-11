@@ -255,4 +255,7 @@
   <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的talentskillsets.json</value>
   </data>
+  <data name="ConfigSet_SaveResponseForDebug" xml:space="preserve">
+    <value>保存用于调试的通讯包</value>
+  </data>
 </root>

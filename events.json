@@ -11524,12 +11524,12 @@
     "Choices": [
       {
         "Option": "公園の芝生で横になる！",
-        "SuccessEffect": "体力+30\r",
+        "SuccessEffect": "体力+30",
         "FailedEffect": ""
       },
       {
         "Option": "ゲームでもしようか？",
-        "SuccessEffect": "全ステータス+5\r",
+        "SuccessEffect": "全ステータス+5",
         "FailedEffect": ""
       },
       {
@@ -32361,7 +32361,7 @@
     "TriggerName": "[吉兆・初あらし]マチカネフクキタル",
     "Choices": [
       {
-        "Option": "よし、ダメ元だ！\r",
+        "Option": "よし、ダメ元だ！",
         "SuccessEffect": "パワー+10",
         "FailedEffect": ""
       },
@@ -39567,7 +39567,7 @@
     "TriggerName": "メジロライアン",
     "Choices": [
       {
-        "Option": "半分もらおうか？\r",
+        "Option": "半分もらおうか？",
         "SuccessEffect": "体力+10、スキルPt+5",
         "FailedEffect": "-"
       },
@@ -39631,7 +39631,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "スピード+5、パワー+5、スキルPt+10",
+        "SuccessEffect": "スピード+5、パワー+5、スキルPt+10、「差しけん制」のヒントLv+1、「差しためらい」のヒントLv+1",
         "FailedEffect": ""
       }
     ]
@@ -72523,12 +72523,12 @@
     "TriggerName": "[そのエールは世界を変えた]シーキングザパール",
     "Choices": [
       {
-        "Option": "上の選択肢",
+        "Option": "色んな人の心に響きそう！",
         "SuccessEffect": "体力+10、賢さ+10、「上昇気流」のヒントLv+2、シーキングザパールの絆ゲージ+5",
         "FailedEffect": ""
       },
       {
-        "Option": "下の選択肢",
+        "Option": "ファンになった......！",
         "SuccessEffect": "パワー+20、スキルPt+10、「軽い足取り」のヒントLv+2、シーキングザパールの絆ゲージ+5",
         "FailedEffect": ""
       }
@@ -72722,8 +72722,8 @@
       },
       {
         "Option": "……無理はしていないか？",
-        "SuccessEffect": "-",
-        "FailedEffect": "パワー+10、「まなざし」のヒントLv+1、ミスターシービーの絆ゲージ+5"
+        "SuccessEffect": "パワー+10、「まなざし」のヒントLv+1、ミスターシービーの絆ゲージ+5",
+        "FailedEffect": "-"
       }
     ]
   },
@@ -72959,7 +72959,7 @@
     "Choices": [
       {
         "Option": "",
-        "SuccessEffect": "",
+        "SuccessEffect": "全ステータス+1〜2、スキルPt+35〜45、秋川理事長の絆ゲージ+4",
         "FailedEffect": ""
       }
     ]
@@ -73132,7 +73132,7 @@
     "Choices": [
       {
         "Option": "無理なものは無理って言っていいんだ",
-        "SuccessEffect": "根性+10\r",
+        "SuccessEffect": "根性+10",
         "FailedEffect": ""
       },
       {
@@ -73302,12 +73302,17 @@
     "Choices": [
       {
         "Option": "もう、一気に食べてしまおう！",
-        "SuccessEffect": "体力+30、スキルPt+10",
+        "SuccessEffect": "体力+30、スタミナ+10、スキルPt+10",
         "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
       },
       {
         "Option": "半分食べようか？",
-        "SuccessEffect": "体力+10、スキルPt+5",
+        "SuccessEffect": "体力+10、スタミナ+5、スキルPt+5",
+        "FailedEffect": "-"
+      },
+      {
+        "Option": "やめておこう",
+        "SuccessEffect": "スピード+10、「危険回避」のヒントLv+2",
         "FailedEffect": "-"
       }
     ]
@@ -73331,17 +73336,17 @@
     "Choices": [
       {
         "Option": "大成功みたいだな！",
-        "SuccessEffect": "",
+        "SuccessEffect": "根性+10",
         "FailedEffect": ""
       },
       {
         "Option": "内緒にしてごめんな・・・・・・！",
-        "SuccessEffect": "",
+        "SuccessEffect": "パワー+10",
         "FailedEffect": ""
       },
       {
         "Option": "君の気持ちがわかった気がする",
-        "SuccessEffect": "根性＋10",
+        "SuccessEffect": "スピード+10",
         "FailedEffect": ""
       }
     ]
@@ -73352,13 +73357,13 @@
     "TriggerName": "アイネスフウジン",
     "Choices": [
       {
-        "Option": "徹底的に『お姉ちゃん』をしよう！\r",
-        "SuccessEffect": "スタミナ＋10\r",
+        "Option": "徹底的に『お姉ちゃん』をしよう！",
+        "SuccessEffect": "スタミナ+10",
         "FailedEffect": ""
       },
       {
         "Option": "今日はシービーと自由にやってみよう",
-        "SuccessEffect": "スピード＋10",
+        "SuccessEffect": "スピード+10",
         "FailedEffect": ""
       }
     ]
@@ -73369,13 +73374,13 @@
     "TriggerName": "アイネスフウジン",
     "Choices": [
       {
-        "Option": "カロリーは大丈夫・・・・・・？\r",
-        "SuccessEffect": "体力+10、スキルpt+5\r",
+        "Option": "カロリーは大丈夫・・・・・・？",
+        "SuccessEffect": "体力+10、スキルPt+5",
         "FailedEffect": "-"
       },
       {
         "Option": "頑張った分、たくさん食べて",
-        "SuccessEffect": "体力+30、スキルpt+10",
+        "SuccessEffect": "体力+30、スキルPt+10",
         "FailedEffect": "体力+30、スピード−5、パワー+5、スキルPt+10、「太り気味」獲得"
       }
     ]
@@ -73387,12 +73392,12 @@
     "Choices": [
       {
         "Option": "勉強になった",
-        "SuccessEffect": "スピード+10、賢さ+5\r",
+        "SuccessEffect": "スピード+10、賢さ+5",
         "FailedEffect": ""
       },
       {
         "Option": "ちょっと寂しい・・・・・・？",
-        "SuccessEffect": "「遊びはおしまいっ！」のヒントLv+１",
+        "SuccessEffect": "「遊びはおしまいっ！」のヒントLv+1",
         "FailedEffect": ""
       }
     ]
@@ -73409,7 +73414,7 @@
       },
       {
         "Option": "学びも多そうだな",
-        "SuccessEffect": "-",
+        "SuccessEffect": "賢さ+10",
         "FailedEffect": ""
       }
     ]
