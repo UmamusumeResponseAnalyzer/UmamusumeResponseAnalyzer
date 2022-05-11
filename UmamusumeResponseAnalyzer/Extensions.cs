@@ -63,8 +63,8 @@ namespace UmamusumeResponseAnalyzer
         }
         public static byte[] GetContentMD5(this HttpContentHeaders headers)
         {
-            var success = headers.TryGetValues("content-md5", out var values);
-            return success && values != null ? Convert.FromBase64String(values.First()) : Array.Empty<byte>();
+            headers.TryGetValues("content-md5", out var values);
+            return Convert.FromBase64String(values!.First());
         }
     }
 }
