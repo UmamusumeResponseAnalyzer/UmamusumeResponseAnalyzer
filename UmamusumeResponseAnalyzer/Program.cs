@@ -317,7 +317,7 @@ namespace UmamusumeResponseAnalyzer
             return ext switch
             {
                 ".json" => $"{host}/{filename}",
-                ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/{filename}"
+                ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
         static async Task DownloadAssets(ProgressContext ctx, string instruction, string path)
