@@ -17,11 +17,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             var tips = @event.data.chara_info.skill_tips_array
                 .Select(x => Database.Skills[(x.group_id, x.rarity)].Select(y => y.Apply(@event.data.chara_info, x.level)))
                 .SelectMany(x => x)
-                .Where(x => x.Rate > 0 && @event.data.chara_info.skill_array.FirstOrDefault(y => y.skill_id == x.Id) == default)
+                .Where(x => x.Rate > 0 && !@event.data.chara_info.skill_array.Any(y => y.skill_id == x.Id))
                 .ToList();
             foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id])
             {
-                if (tips.FirstOrDefault(x => x.Id == i.SkillId) == default)
+                if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
                 {
                     tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info, 0));
                 }
@@ -137,7 +137,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 else
                 {
-                    previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Apply(@event.data.chara_info, 0).Grade;
+                    var (GroupId, Rarity, Rate) = Database.Skills.Deconstruction(i.skill_id);
+                    if (!learn.Any(x => x.GroupId == GroupId))
+                        previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Apply(@event.data.chara_info, 0).Grade;
                 }
             }
             var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;

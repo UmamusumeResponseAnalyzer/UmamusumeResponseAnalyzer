@@ -217,6 +217,7 @@ namespace UmamusumeResponseAnalyzer
             get => idMap.ContainsKey(Id) ? idMap[Id] : null!;
             set => idMap[Id] = value;
         }
+        public (int GroupId, int Rarity, int Rate) Deconstruction(int Id) => (this[Id].GroupId, this[Id].Rarity, this[Id].Rate);
         public SkillData[] GetAllByGroupId(int groupId) => idMap.Where(x => x.Value.GroupId == groupId).Select(x => x.Value).ToArray();
 
         public class SkillData

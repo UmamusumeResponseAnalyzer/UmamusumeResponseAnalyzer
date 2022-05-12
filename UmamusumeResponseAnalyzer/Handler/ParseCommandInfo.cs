@@ -69,8 +69,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var inventory = freeDataSet.user_item_info_array?.ToDictionary(x => x.item_id, x => x.num);
                 var shouldPromoteTea = (inventory?.ContainsKey(2301) ?? false) ||  //包里或者商店里有加干劲的道具
                     (inventory?.ContainsKey(2302) ?? false) ||
-                    freeDataSet.pick_up_item_info_array.FirstOrDefault(x => x.item_id == 2301) != default ||
-                    freeDataSet.pick_up_item_info_array.FirstOrDefault(x => x.item_id == 2302) != default;
+                    freeDataSet.pick_up_item_info_array.Any(x => x.item_id == 2301) ||
+                    freeDataSet.pick_up_item_info_array.Any(x => x.item_id == 2302);
                 var currentTurn = @event.data.chara_info.turn;
 
                 var rows = new List<List<string>> { new(), new(), new(), new(), new() };

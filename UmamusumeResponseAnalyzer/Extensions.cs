@@ -66,5 +66,17 @@ namespace UmamusumeResponseAnalyzer
             headers.TryGetValues("content-md5", out var values);
             return Convert.FromBase64String(values!.First());
         }
+        public static bool Contains<T>(this IEnumerable<T> list, Predicate<T> predicate)
+        {
+            if (list == default || !list.Any()) return false;
+            foreach (var i in list)
+            {
+                if (EqualityComparer<T>.Default.Equals(i, default))
+                    continue;
+                if (predicate(i))
+                    return true;
+            }
+            return false;
+        }
     }
 }
