@@ -36,78 +36,164 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
-            var learn = new List<SkillManager.SkillData>();
-            do
+            
+            // 保证技能列表中的列表都是最上位技能（有下位技能则去除），避免引入判断是否获取了上位技能的数组
+            // 不知道dp时通过Skill.Inferior/Superior读到的技能cost是否apply了hint，姑且认为是apply了
+            // 理想中tips里边应该是只保留最上位技能，下位技能去除
+            for (int i = 0; i < tips.Count; i++)
             {
-                if (learn.Any()) { learn.Clear(); totalSP = @event.data.chara_info.skill_point; }
-                int[][] Matrix = new int[tips.Count][];
-                int[][] Picks = new int[tips.Count][];
-                for (var i = 0; i < Matrix.Length; i++) { Matrix[i] = new int[totalSP + 1]; }
-                for (var i = 0; i < Picks.Length; i++) { Picks[i] = new int[totalSP + 1]; }
-                Recursive(tips.Count - 1, totalSP, 1);
-                for (var i = tips.Count - 1; i >= 0 && totalSP >= 0; --i)
+                var s = tips[i];
+                if (s.Inferior != null)
                 {
-                    if (Picks[i][totalSP] == 1)
+                    // 如果此技能有下位, 在列表中去除该下位技能
+                    for (int j = 0; j < tips.Count; j++)
                     {
-                        totalSP -= tips[i].TotalCost;
-                        learn.Add(tips[i]);
-                    }
-                }
-
-                //如果上位和下位技能同时学习，则删除下位技能后重新计算，偷鸡做法。
-                foreach (var i in learn.GroupBy(x => x.GroupId).Where(x => x.Count() > 1))
-                {
-                    var duplicated = learn.Where(x => x.GroupId == i.Key);
-                    foreach (var j in duplicated)
-                    {
-                        var super = learn.FirstOrDefault(x => x.GroupId == j.GroupId && (x.Rarity < j.Rarity || x.Rate < j.Rate));
-                        if (super != default)
+                        if (tips[j].Id == s.Inferior.Id)
                         {
-                            tips.Remove(super);
+                            tips.RemoveAt(j);
+                            i = 0;  // 不从头重新来无法遍历tips全部技能，暂且不知为何
                         }
                     }
                 }
-
-                // 0/1 knapsack problem
-                int Recursive(int i, int w, int depth)
+                if (s.Superior != null && s.Name.Contains("○") && s.Superior.Name.Contains("◎"))
                 {
-                    var take = 0;
-                    if (Matrix[i][w] != 0) { return Matrix[i][w]; }
-
-                    if (i == 0)
-                    {
-                        if (tips[i].TotalCost <= w)
-                        {
-                            Picks[i][w] = 1;
-                            Matrix[i][w] = tips[0].Grade;
-                            return tips[i].Grade;
-                        }
-
-                        Picks[i][w] = -1;
-                        Matrix[i][w] = 0;
-                        return 0;
-                    }
-
-                    if (tips[i].TotalCost <= w)
-                    {
-                        take = tips[i].Grade + Recursive(i - 1, w - tips[i].TotalCost, depth + 1);
-                    }
-
-                    var dontTake = Recursive(i - 1, w, depth + 1);
-
-                    Matrix[i][w] = Math.Max(take, dontTake);
-                    if (take > dontTake)
-                    {
-                        Picks[i][w] = 1;
-                    }
-                    else
-                    {
-                        Picks[i][w] = -1;
-                    }
-
-                    return Matrix[i][w];
+                    // 保证有单双圈之分的技能为双圈
+                    tips.RemoveAt(i);
+                    tips.Add(s.Superior);
+                    i = 0;
                 }
-            } while (learn.GroupBy(x => x.GroupId).Any(x => x.Count() > 1));
+            }
+            AnsiConsole.WriteLine("--- finishDeDuplicate ---");   //debug
+            for (int i = 0; i < tips.Count; i++)    //debug
+            {
+                var s = tips[i];
+                var info = string.Format("{0} cost:{1} value:{2}", s.Name, s.Cost, s.Grade); //debug
+                if (s.Inferior != null)
+                {
+                    info = info + " " + s.Inferior.Name + " " + s.Inferior.Cost;    //debug
+                }
+                if (s.Superior != null)
+                {
+                    info = info + " " + s.Superior.Name + " " + s.Superior.Cost;    //debug
+                }
+                AnsiConsole.WriteLine(info);    //debug
+            }
+            
+            // 01背包变种
+            var dp = new int[totalSP + 1];
+            var dpLog = new List<int>[totalSP + 1]; // 记录dp时所选的技能，存技能Id
+
+            for (int i = 0; i < totalSP + 1; i++)
+            {
+                dp[i] = 0;
+                dpLog[i] = new List<int>();
+            }
+            for (int i = 0; i < tips.Count; i++)
+            {
+                var s = tips[i];
+                // 读取此技能可以点的所有情况
+                int[] SuperiorCost = { 10000, 10000 };
+                int[] SuperiorGrade = { -1, -1 };
+                if (s.Inferior != null)
+                {
+                    // 绝大多数金技能
+                    SuperiorCost[0] = s.TotalCost;
+                    SuperiorGrade[0] = s.Grade;
+                    s = s.Inferior;
+                    AnsiConsole.WriteLine(string.Format("{0} {1} {2} | {3} {4} {5} |{6} {7} ", s.Name, s.Cost, s.Grade, s.Superior.Name, SuperiorCost[0], SuperiorGrade[0], SuperiorCost[1], SuperiorGrade[1])); //debug
+                    if (s.Inferior != null)
+                    {
+                        // 绝大多数金绿技能
+                        SuperiorCost[1] = SuperiorCost[0];
+                        SuperiorGrade[1] = SuperiorGrade[0];
+                        SuperiorCost[0] = s.TotalCost;
+                        SuperiorGrade[0] = s.Grade;
+                        s = s.Inferior;
+                    }
+                    // 退化技能到最低级，方便选择
+                }
+                else
+                    AnsiConsole.WriteLine(string.Format("{0} {1} {2}", s.Name, s.Cost, s.Grade)); //debug
+
+                for (int j = totalSP; j >= s.Cost; j--)
+                {
+                    // 背包四种选法
+                    // 1-不选
+                    // 2-只选此技能
+                    // 3-选这个技能和它的上一级技能
+                    // 4-选这个技能的最高位技（全点）
+                    int[] choice =
+                    {
+                        dp[j],
+                        dp[j - s.Cost] + s.Grade,
+
+                        j  - SuperiorCost[0] >= 0 ?
+                            dp[j - SuperiorCost[0]] + SuperiorGrade[0] :
+                            -1,
+
+                        j  - SuperiorCost[1] >= 0 ?
+                            dp[j - SuperiorCost[1]] + SuperiorGrade[1] :
+                            -1
+                    };
+                    // 判断是否为四种选法中的最优选择
+                    if (IsBestOption(0))
+                    {
+                        dp[j] = choice[0];
+                    }
+                    else if (IsBestOption(1))
+                    {
+                        dp[j] = choice[1];
+                        dpStatusSucceed(j - s.Cost);
+                        dpLog[j].Add(s.Id);
+                    }
+                    else if (IsBestOption(2))
+                    {
+                        dp[j] = choice[2];
+                        dpStatusSucceed(j - SuperiorCost[0]);
+                        dpLog[j].Add(s.Superior.Id);
+                    }
+                    else if (IsBestOption(3))
+                    {
+                        dp[j] = choice[3];
+                        dpStatusSucceed(j - SuperiorCost[1]);
+                        dpLog[j].Add(s.Superior.Superior.Id);
+                    }
+
+                    bool IsBestOption(int index)
+                    {
+                        bool IsBest = true;
+                        for (int k = 0; k < 4; k++)
+                            IsBest = choice[index] >= choice[k] && IsBest;
+                        return IsBest;
+                    };
+
+                    void dpStatusSucceed(int index)
+                    {
+                        dpLog[j] = new List<int>();
+                        for (int k = 0; k < dpLog[index].Count; k++)
+                            dpLog[j].Add(dpLog[index][k]);
+                    }
+                }
+            }
+
+            // 读取最终选择的技能
+            var learnSkillId = dpLog[totalSP];
+            var learn = new List<SkillManager.SkillData>();
+            foreach (var id in learnSkillId)
+            {
+                foreach (var skill in tips)
+                {
+                    if (skill.Id == id) { learn.Add(skill); continue; }
+                    else if (skill.Inferior != null)
+                    {
+                        if (skill.Inferior.Id == id) { learn.Add(skill.Inferior); continue; }
+                        else if (skill.Inferior.Inferior != null)
+                        {
+                            if (skill.Inferior.Inferior.Id == id) { learn.Add(skill.Inferior.Inferior); continue; }
+                        }
+                    }
+                }
+            }
             learn = learn.OrderBy(x => x.DisplayOrder).ToList();
 
             var table = new Table();
