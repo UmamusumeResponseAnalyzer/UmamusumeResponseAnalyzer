@@ -10,7 +10,6 @@ namespace UmamusumeResponseAnalyzer.Handler
 {
     public static partial class Handlers
     {
-
         public static void ParseSkillTipsResponse(Gallop.SingleModeCheckEventResponse @event)
         {
             var totalSP = @event.data.chara_info.skill_point;
@@ -23,7 +22,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
                 {
-                    tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info, 0));
+                    tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info));
                 }
             }
             foreach (var i in tips.GroupBy(x => x.GroupId))
@@ -36,78 +35,139 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
+
             var learn = new List<SkillManager.SkillData>();
-            do
+            // 保证技能列表中的列表都是最上位技能（有下位技能则去除）
+            // 理想中tips里应只保留最上位技能，其所有的下位技能都去除
+            var inferiors = tips
+                    .SelectMany(x => Database.Skills.GetAllByGroupId(x.GroupId))
+                    .DistinctBy(x => x.Id)
+                    .OrderByDescending(x => x.Rarity)
+                    .ThenByDescending(x => x.Rate)
+                    .GroupBy(x => x.GroupId)
+                    .Where(x => x.Count() > 1)
+                    .SelectMany(x => tips.Where(y => y.GroupId == x.Key)
+                        .OrderByDescending(y => y.Rarity)
+                        .ThenByDescending(y => y.Rate)
+                        .Skip(1) //跳过当前有的最高级的hint
+                        .Select(y => y.Id));
+            tips.RemoveAll(x => inferiors.Contains(x.Id)); //只保留最上位技能，下位技能去除
+
+            // 01背包变种
+            var dp = new int[totalSP + 1];
+            var dpLog = Enumerable.Range(0, totalSP + 1).Select(x => new List<int>()).ToList(); // 记录dp时所选的技能，存技能Id
+
+            for (int i = 0; i < tips.Count; i++)
             {
-                if (learn.Any()) { learn.Clear(); totalSP = @event.data.chara_info.skill_point; }
-                int[][] Matrix = new int[tips.Count][];
-                int[][] Picks = new int[tips.Count][];
-                for (var i = 0; i < Matrix.Length; i++) { Matrix[i] = new int[totalSP + 1]; }
-                for (var i = 0; i < Picks.Length; i++) { Picks[i] = new int[totalSP + 1]; }
-                Recursive(tips.Count - 1, totalSP, 1);
-                for (var i = tips.Count - 1; i >= 0 && totalSP >= 0; --i)
+                var s = tips[i];
+                // 读取此技能可以点的所有情况
+                int[] SuperiorCost = { int.MaxValue, int.MaxValue };
+                int[] SuperiorGrade = { int.MinValue, int.MinValue };
+                if (s.Inferior != null)
                 {
-                    if (Picks[i][totalSP] == 1)
+                    // 绝大多数金技能
+                    SuperiorCost[0] = s.TotalCost;
+                    SuperiorGrade[0] = s.Grade;
+                    s = s.Inferior.Apply(@event.data.chara_info);
+                    if (s.Inferior != null)
                     {
-                        totalSP -= tips[i].TotalCost;
-                        learn.Add(tips[i]);
+                        // 绝大多数金绿技能
+                        SuperiorCost[1] = SuperiorCost[0];
+                        SuperiorGrade[1] = SuperiorGrade[0];
+                        SuperiorCost[0] = s.TotalCost;
+                        SuperiorGrade[0] = s.Grade;
+                        s = s.Inferior.Apply(@event.data.chara_info);
                     }
+                    // 退化技能到最低级，方便选择
                 }
 
-                //如果上位和下位技能同时学习，则删除下位技能后重新计算，偷鸡做法。
-                foreach (var i in learn.GroupBy(x => x.GroupId).Where(x => x.Count() > 1))
+                for (int j = totalSP; j >= s.Cost; j--)
                 {
-                    var duplicated = learn.Where(x => x.GroupId == i.Key);
-                    foreach (var j in duplicated)
+                    // 背包四种选法
+                    // 0-不选
+                    // 1-只选此技能
+                    // 2-选这个技能和它的上一级技能
+                    // 3-选这个技能的最高位技（全点）
+                    int[] choice =
                     {
-                        var super = learn.FirstOrDefault(x => x.GroupId == j.GroupId && (x.Rarity < j.Rarity || x.Rate < j.Rate));
-                        if (super != default)
+                        dp[j],
+                        dp[j - s.Cost] + s.Grade,
+
+                        j  - SuperiorCost[0] >= 0 ?
+                            dp[j - SuperiorCost[0]] + SuperiorGrade[0] :
+                            -1,
+
+                        j  - SuperiorCost[1] >= 0 ?
+                            dp[j - SuperiorCost[1]] + SuperiorGrade[1] :
+                            -1
+                    };
+                    // 判断是否为四种选法中的最优选择
+                    if (IsBestOption(0))
+                    {
+                        dp[j] = choice[0];
+                    }
+                    else if (IsBestOption(1))
+                    {
+                        dp[j] = choice[1];
+                        dpLog[j] = new(dpLog[j - s.Cost])
                         {
-                            tips.Remove(super);
-                        }
+                            s.Id
+                        };
                     }
-                }
-
-                // 0/1 knapsack problem
-                int Recursive(int i, int w, int depth)
-                {
-                    var take = 0;
-                    if (Matrix[i][w] != 0) { return Matrix[i][w]; }
-
-                    if (i == 0)
+                    else if (IsBestOption(2))
                     {
-                        if (tips[i].TotalCost <= w)
+                        dp[j] = choice[2];
+                        dpLog[j] = new(dpLog[j - SuperiorCost[0]])
                         {
-                            Picks[i][w] = 1;
-                            Matrix[i][w] = tips[0].Grade;
-                            return tips[i].Grade;
-                        }
-
-                        Picks[i][w] = -1;
-                        Matrix[i][w] = 0;
-                        return 0;
+                            s.Superior.Id
+                        };
                     }
-
-                    if (tips[i].TotalCost <= w)
+                    else if (IsBestOption(3))
                     {
-                        take = tips[i].Grade + Recursive(i - 1, w - tips[i].TotalCost, depth + 1);
+                        dp[j] = choice[3];
+                        dpLog[j] = new(dpLog[j - SuperiorCost[1]])
+                        {
+                            s.Superior.Superior.Id
+                        };
                     }
 
-                    var dontTake = Recursive(i - 1, w, depth + 1);
-
-                    Matrix[i][w] = Math.Max(take, dontTake);
-                    if (take > dontTake)
+                    bool IsBestOption(int index)
                     {
-                        Picks[i][w] = 1;
-                    }
-                    else
-                    {
-                        Picks[i][w] = -1;
-                    }
-
-                    return Matrix[i][w];
+                        bool IsBest = true;
+                        for (int k = 0; k < 4; k++)
+                            IsBest = choice[index] >= choice[k] && IsBest;
+                        return IsBest;
+                    };
                 }
-            } while (learn.GroupBy(x => x.GroupId).Any(x => x.Count() > 1));
+            }
+
+            // 读取最终选择的技能
+            var learnSkillId = dpLog[totalSP];
+            foreach (var id in learnSkillId)
+            {
+                foreach (var skill in tips)
+                {
+                    var inferior = skill.Inferior?.Apply(@event.data.chara_info);
+                    var inferiorest = inferior?.Inferior?.Apply(@event.data.chara_info);
+                    if (skill.Id == id)
+                    {
+                        learn.Add(skill);
+                        totalSP -= skill.TotalCost;
+                        continue;
+                    }
+                    else if (inferior != null && inferior.Id == id)
+                    {
+                        learn.Add(inferior);
+                        totalSP -= inferior.TotalCost;
+                        continue;
+                    }
+                    else if (inferiorest != null && inferiorest.Id == id)
+                    {
+                        learn.Add(inferiorest);
+                        totalSP -= inferiorest.TotalCost;
+                    }
+                }
+            }
             learn = learn.OrderBy(x => x.DisplayOrder).ToList();
 
             var table = new Table();
