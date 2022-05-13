@@ -217,7 +217,7 @@ namespace UmamusumeResponseAnalyzer
             get => idMap.ContainsKey(Id) ? idMap[Id] : null!;
             set => idMap[Id] = value;
         }
-        public (int GroupId, int Rarity, int Rate) Deconstruction(int Id) => (this[Id].GroupId, this[Id].Rarity, this[Id].Rate);
+        public (int GroupId, int Rarity, int Rate) Deconstruction(int Id) => this[Id].Deconstruction();
         public SkillData[] GetAllByGroupId(int groupId) => idMap.Where(x => x.Value.GroupId == groupId).Select(x => x.Value).ToArray();
 
         public class SkillData
@@ -256,8 +256,12 @@ namespace UmamusumeResponseAnalyzer
             public DistanceType Distance;
             public StyleType Style;
 
-            public SkillData Apply(Gallop.SingleModeChara chara_info, int level)
+            public SkillData Apply(Gallop.SingleModeChara chara_info, int level = int.MinValue)
             {
+                if (level == int.MinValue)
+                {
+                    level = chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == GroupId && x.rarity == Rarity)?.level ?? 0;
+                }
                 var instance = Clone();
                 instance.ApplyHint(chara_info, level);
                 instance.ApplyProper(chara_info);
@@ -329,6 +333,7 @@ namespace UmamusumeResponseAnalyzer
                 };
 
             }
+            public (int GroupId, int Rarity, int Rate) Deconstruction() => (GroupId, Rarity, Rate);
             public SkillData Clone()
                 => new()
                 {
