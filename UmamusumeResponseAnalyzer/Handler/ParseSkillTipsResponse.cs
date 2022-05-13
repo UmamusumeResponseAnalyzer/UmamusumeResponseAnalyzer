@@ -23,7 +23,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
                 {
-                    tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info, 0));
+                    tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info));
                 }
             }
             foreach (var i in tips.GroupBy(x => x.GroupId))
@@ -37,69 +37,41 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
             }
 
+            var learn = new List<SkillManager.SkillData>();
             // 保证技能列表中的列表都是最上位技能（有下位技能则去除），避免引入判断是否获取了上位技能的数组
             // 不知道dp时通过Skill.Inferior/Superior读到的技能cost是否apply了hint，姑且认为是apply了
             // 理想中tips里边应该是只保留最上位技能，下位技能去除
-            for (int i = 0; i < tips.Count; i++)
-            {
-                var s = tips[i];
-                if (s.Inferior != null)
-                {
-                    // 如果此技能有下位, 在列表中去除该下位技能
-                    for (int j = 0; j < tips.Count; j++)
-                    {
-                        if (tips[j].Id == s.Inferior.Id)
-                        {
-                            tips.RemoveAt(j);
-                            i = 0;  // 不从头重新来无法遍历tips全部技能，暂且不知为何
-                        }
-                    }
-                }
-                if (s.Superior != null && s.Name.Contains("○") && s.Superior.Name.Contains("◎"))
-                {
-                    // 保证有单双圈之分的技能为双圈
-                    tips.RemoveAt(i);
-                    tips.Add(s.Superior);
-                    i = 0;
-                }
-            }
+            var inferiors = tips
+                    .SelectMany(x => Database.Skills.GetAllByGroupId(x.GroupId))
+                    .DistinctBy(x => x.Id)
+                    .OrderByDescending(x => x.Rarity)
+                    .ThenByDescending(x => x.Rate)
+                    .GroupBy(x => x.GroupId)
+                    .Where(x => x.Count() > 1)
+                    .SelectMany(x => tips.Where(y => y.GroupId == x.Key)
+                        .OrderByDescending(y => y.Rarity)
+                        .ThenByDescending(y => y.Rate)
+                        .Skip(1) //跳过当前有的最高级的hint
+                        .Select(y => y.Id));
+            tips.RemoveAll(x => inferiors.Contains(x.Id)); //只保留最上位技能，下位技能去除
             AnsiConsole.WriteLine("--- finishDeDuplicate ---");   //debug
-            for (int i = 0; i < tips.Count; i++)    //debug
-            {
-                var s = tips[i];
-                var info = string.Format("{0} cost:{1} value:{2}", s.Name, s.Cost, s.Grade); //debug
-                if (s.Inferior != null)
-                {
-                    info = info + " " + s.Inferior.Name + " " + s.Inferior.Cost;    //debug
-                }
-                if (s.Superior != null)
-                {
-                    info = info + " " + s.Superior.Name + " " + s.Superior.Cost;    //debug
-                }
-                AnsiConsole.WriteLine(info);    //debug
-            }
 
             // 01背包变种
             var dp = new int[totalSP + 1];
-            var dpLog = new List<int>[totalSP + 1]; // 记录dp时所选的技能，存技能Id
+            var dpLog = Enumerable.Range(0, totalSP + 1).Select(x => new List<int>()).ToList(); // 记录dp时所选的技能，存技能Id
 
-            for (int i = 0; i < totalSP + 1; i++)
-            {
-                dp[i] = 0;
-                dpLog[i] = new List<int>();
-            }
             for (int i = 0; i < tips.Count; i++)
             {
                 var s = tips[i];
                 // 读取此技能可以点的所有情况
-                int[] SuperiorCost = { 10000, 10000 };
-                int[] SuperiorGrade = { -1, -1 };
+                int[] SuperiorCost = { int.MaxValue, int.MaxValue };
+                int[] SuperiorGrade = { int.MinValue, int.MinValue };
                 if (s.Inferior != null)
                 {
                     // 绝大多数金技能
                     SuperiorCost[0] = s.TotalCost;
                     SuperiorGrade[0] = s.Grade;
-                    s = s.Inferior;
+                    s = s.Inferior.Apply(@event.data.chara_info);
                     AnsiConsole.WriteLine(string.Format("{0} {1} {2} | {3} {4} {5} |{6} {7} ", s.Name, s.Cost, s.Grade, s.Superior.Name, SuperiorCost[0], SuperiorGrade[0], SuperiorCost[1], SuperiorGrade[1])); //debug
                     if (s.Inferior != null)
                     {
@@ -108,7 +80,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         SuperiorGrade[1] = SuperiorGrade[0];
                         SuperiorCost[0] = s.TotalCost;
                         SuperiorGrade[0] = s.Grade;
-                        s = s.Inferior;
+                        s = s.Inferior.Apply(@event.data.chara_info);
                     }
                     // 退化技能到最低级，方便选择
                 }
@@ -118,10 +90,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                 for (int j = totalSP; j >= s.Cost; j--)
                 {
                     // 背包四种选法
-                    // 1-不选
-                    // 2-只选此技能
-                    // 3-选这个技能和它的上一级技能
-                    // 4-选这个技能的最高位技（全点）
+                    // 0-不选
+                    // 1-只选此技能
+                    // 2-选这个技能和它的上一级技能
+                    // 3-选这个技能的最高位技（全点）
                     int[] choice =
                     {
                         dp[j],
@@ -143,20 +115,26 @@ namespace UmamusumeResponseAnalyzer.Handler
                     else if (IsBestOption(1))
                     {
                         dp[j] = choice[1];
-                        dpLog[j] = new List<int>(dpLog[j - s.Cost].ToArray());
-                        dpLog[j].Add(s.Id);
+                        dpLog[j] = new(dpLog[j - s.Cost])
+                        {
+                            s.Id
+                        };
                     }
                     else if (IsBestOption(2))
                     {
                         dp[j] = choice[2];
-                        dpLog[j] = new List<int>(dpLog[j - SuperiorCost[0]].ToArray());
-                        dpLog[j].Add(s.Superior.Id);
+                        dpLog[j] = new(dpLog[j - SuperiorCost[0]])
+                        {
+                            s.Superior.Id
+                        };
                     }
                     else if (IsBestOption(3))
                     {
                         dp[j] = choice[3];
-                        dpLog[j] = new List<int>(dpLog[j - SuperiorCost[1]].ToArray());
-                        dpLog[j].Add(s.Superior.Superior.Id);
+                        dpLog[j] = new(dpLog[j - SuperiorCost[1]])
+                        {
+                            s.Superior.Superior.Id
+                        };
                     }
 
                     bool IsBestOption(int index)
@@ -171,19 +149,25 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             // 读取最终选择的技能
             var learnSkillId = dpLog[totalSP];
-            var learn = new List<SkillManager.SkillData>();
             foreach (var id in learnSkillId)
             {
                 foreach (var skill in tips)
                 {
-                    if (skill.Id == id) { learn.Add(skill); continue; }
-                    else if (skill.Inferior != null)
+                    var inferior = skill.Inferior?.Apply(@event.data.chara_info);
+                    var inferiorest = inferior?.Inferior?.Apply(@event.data.chara_info);
+                    if (skill.Id == id)
                     {
-                        if (skill.Inferior.Id == id) { learn.Add(skill.Inferior); continue; }
-                        else if (skill.Inferior.Inferior != null)
-                        {
-                            if (skill.Inferior.Inferior.Id == id) { learn.Add(skill.Inferior.Inferior); continue; }
-                        }
+                        learn.Add(skill);
+                        continue;
+                    }
+                    else if (inferior != null && inferior.Id == id)
+                    {
+                        learn.Add(inferior);
+                        continue;
+                    }
+                    else if (inferiorest != null && inferiorest.Id == id)
+                    {
+                        learn.Add(inferiorest);
                     }
                 }
             }

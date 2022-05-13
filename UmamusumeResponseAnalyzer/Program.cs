@@ -14,6 +14,13 @@ namespace UmamusumeResponseAnalyzer
     {
         public static async Task Main(string[] args)
         {
+#if DEBUG
+            Database.Initialize();
+            var bytes = File.ReadAllBytes(@"C:\Users\micro\AppData\Local\UmamusumeResponseAnalyzer\packets\22-05-13 01-18-51R.msgpack");
+            var jo = JsonConvert.DeserializeObject<Gallop.SingleModeCheckEventResponse>(MessagePack.MessagePackSerializer.ConvertToJson(bytes));
+            Handler.Handlers.ParseSkillTipsResponse(jo);
+            return;
+#endif
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             //加载设置
