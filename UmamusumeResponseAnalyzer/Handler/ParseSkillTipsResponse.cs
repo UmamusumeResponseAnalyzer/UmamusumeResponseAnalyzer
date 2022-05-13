@@ -36,7 +36,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
-            
+
             // 保证技能列表中的列表都是最上位技能（有下位技能则去除），避免引入判断是否获取了上位技能的数组
             // 不知道dp时通过Skill.Inferior/Superior读到的技能cost是否apply了hint，姑且认为是apply了
             // 理想中tips里边应该是只保留最上位技能，下位技能去除
@@ -78,7 +78,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 AnsiConsole.WriteLine(info);    //debug
             }
-            
+
             // 01背包变种
             var dp = new int[totalSP + 1];
             var dpLog = new List<int>[totalSP + 1]; // 记录dp时所选的技能，存技能Id
@@ -143,19 +143,19 @@ namespace UmamusumeResponseAnalyzer.Handler
                     else if (IsBestOption(1))
                     {
                         dp[j] = choice[1];
-                        dpStatusSucceed(j - s.Cost);
+                        dpLog[j] = new List<int>(dpLog[j - s.Cost].ToArray());
                         dpLog[j].Add(s.Id);
                     }
                     else if (IsBestOption(2))
                     {
                         dp[j] = choice[2];
-                        dpStatusSucceed(j - SuperiorCost[0]);
+                        dpLog[j] = new List<int>(dpLog[j - SuperiorCost[0]].ToArray());
                         dpLog[j].Add(s.Superior.Id);
                     }
                     else if (IsBestOption(3))
                     {
                         dp[j] = choice[3];
-                        dpStatusSucceed(j - SuperiorCost[1]);
+                        dpLog[j] = new List<int>(dpLog[j - SuperiorCost[1]].ToArray());
                         dpLog[j].Add(s.Superior.Superior.Id);
                     }
 
@@ -166,13 +166,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                             IsBest = choice[index] >= choice[k] && IsBest;
                         return IsBest;
                     };
-
-                    void dpStatusSucceed(int index)
-                    {
-                        dpLog[j] = new List<int>();
-                        for (int k = 0; k < dpLog[index].Count; k++)
-                            dpLog[j].Add(dpLog[index][k]);
-                    }
                 }
             }
 
