@@ -10,7 +10,6 @@ namespace UmamusumeResponseAnalyzer.Handler
 {
     public static partial class Handlers
     {
-
         public static void ParseSkillTipsResponse(Gallop.SingleModeCheckEventResponse @event)
         {
             var totalSP = @event.data.chara_info.skill_point;
@@ -38,9 +37,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
 
             var learn = new List<SkillManager.SkillData>();
-            // 保证技能列表中的列表都是最上位技能（有下位技能则去除），避免引入判断是否获取了上位技能的数组
-            // 不知道dp时通过Skill.Inferior/Superior读到的技能cost是否apply了hint，姑且认为是apply了
-            // 理想中tips里边应该是只保留最上位技能，下位技能去除
+            // 保证技能列表中的列表都是最上位技能（有下位技能则去除）
+            // 理想中tips里应只保留最上位技能，其所有的下位技能都去除
             var inferiors = tips
                     .SelectMany(x => Database.Skills.GetAllByGroupId(x.GroupId))
                     .DistinctBy(x => x.Id)
@@ -54,7 +52,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                         .Skip(1) //跳过当前有的最高级的hint
                         .Select(y => y.Id));
             tips.RemoveAll(x => inferiors.Contains(x.Id)); //只保留最上位技能，下位技能去除
-            AnsiConsole.WriteLine("--- finishDeDuplicate ---");   //debug
 
             // 01背包变种
             var dp = new int[totalSP + 1];
@@ -72,7 +69,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     SuperiorCost[0] = s.TotalCost;
                     SuperiorGrade[0] = s.Grade;
                     s = s.Inferior.Apply(@event.data.chara_info);
-                    AnsiConsole.WriteLine(string.Format("{0} {1} {2} | {3} {4} {5} |{6} {7} ", s.Name, s.Cost, s.Grade, s.Superior.Name, SuperiorCost[0], SuperiorGrade[0], SuperiorCost[1], SuperiorGrade[1])); //debug
                     if (s.Inferior != null)
                     {
                         // 绝大多数金绿技能
@@ -84,8 +80,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     // 退化技能到最低级，方便选择
                 }
-                else
-                    AnsiConsole.WriteLine(string.Format("{0} {1} {2}", s.Name, s.Cost, s.Grade)); //debug
 
                 for (int j = totalSP; j >= s.Cost; j--)
                 {
@@ -158,16 +152,19 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (skill.Id == id)
                     {
                         learn.Add(skill);
+                        totalSP -= skill.TotalCost;
                         continue;
                     }
                     else if (inferior != null && inferior.Id == id)
                     {
                         learn.Add(inferior);
+                        totalSP -= inferior.TotalCost;
                         continue;
                     }
                     else if (inferiorest != null && inferiorest.Id == id)
                     {
                         learn.Add(inferiorest);
+                        totalSP -= inferiorest.TotalCost;
                     }
                 }
             }
