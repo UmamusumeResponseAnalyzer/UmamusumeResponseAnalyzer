@@ -313,11 +313,12 @@ namespace UmamusumeResponseAnalyzer
             var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
+            if (filename.Contains("UmamusumeResponseAnalyzer.exe")) filename = "UmamusumeResponseAnalyzer.exe";
             var host = isCN ? CNHost : GithubHost;
             return ext switch
             {
-                ".json" => $"{host}/{filename}",
-                ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
+                ".json" => $"{host}/UmamusumeResponseAnalyzer/{filename}",
+                ".exe" => isCN ? $"{host}/UmamusumeResponseAnalyzer/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
         static async Task DownloadAssets(ProgressContext ctx, string instruction, string path)
@@ -325,7 +326,8 @@ namespace UmamusumeResponseAnalyzer
             var client = new HttpClient(new HttpClientHandler
             {
                 AllowAutoRedirect = false
-            });
+            })
+            { DefaultRequestVersion = new Version(2, 0) };
             var task = ctx.AddTask(instruction, false);
             var response = await client.GetAsync(GetDownloadUrl(path), HttpCompletionOption.ResponseHeadersRead);
             while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)

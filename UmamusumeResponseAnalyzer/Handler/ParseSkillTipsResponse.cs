@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer.Handler
@@ -36,7 +37,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
             }
 
-            var learn = new List<SkillManager.SkillData>();
+            var learn = new List<SkillData>();
             // 保证技能列表中的列表都是最上位技能（有下位技能则去除）
             // 理想中tips里应只保留最上位技能，其所有的下位技能都去除
             var inferiors = tips
