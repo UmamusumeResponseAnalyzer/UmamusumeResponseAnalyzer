@@ -40,7 +40,7 @@ namespace UmamusumeResponseAnalyzer
                         if (!Configuration.ContainsKey(i.Key))
                         {
                             if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //但是这个不默认开
-                                continue;
+                                Configuration.Add(i.Key, false);
                             Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
                         }
                     }
