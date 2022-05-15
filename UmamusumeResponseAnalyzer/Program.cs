@@ -183,6 +183,7 @@ namespace UmamusumeResponseAnalyzer
             else if (exist && !(Environment.ProcessPath != default && MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新
             {
                 CloseToUpdate();
+                exist = false; //能执行到这就代表更新文件受损，已经被删掉了
             }
 
             if (exist) //删除临时文件
@@ -244,7 +245,7 @@ namespace UmamusumeResponseAnalyzer
                 if (string.IsNullOrEmpty(output))
                 {
                     File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
-                    AnsiConsole.Write("[red]更新文件受损，主程序更新失败[/]");
+                    AnsiConsole.MarkupLine("[red]更新文件受损，主程序更新失败[/]");
                     return;
                 }
             }
