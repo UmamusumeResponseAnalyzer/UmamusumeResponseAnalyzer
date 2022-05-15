@@ -79,6 +79,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 强制使用GitHub更新 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_ForceUseGithubToUpdate {
+            get {
+                return ResourceManager.GetString("ConfigSet_ForceUseGithubToUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 给出评价点最大化的技能学习建议 的本地化字符串。
         /// </summary>
         public static string ConfigSet_MaximiumGradeSkillRecommendation {

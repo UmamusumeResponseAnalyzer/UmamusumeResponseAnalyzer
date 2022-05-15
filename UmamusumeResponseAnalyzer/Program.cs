@@ -155,26 +155,35 @@ namespace UmamusumeResponseAnalyzer
         {
             var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
             var exist = File.Exists(path);
-            if (args?.Length > 1 && args[0] == "--update")
+            if (args.Length > 1)
             {
-                path = args[1];
-                if (Environment.ProcessPath != default)
-                    File.Copy(Environment.ProcessPath, path, true);
-
-                using var Proc = new Process
+                if (args[0] == "--update")
                 {
-                    StartInfo = new ProcessStartInfo
+                    path = args[1];
+                    if (Environment.ProcessPath != default)
+                        File.Copy(Environment.ProcessPath, path, true);
+
+                    using var Proc = new Process
                     {
-                        FileName = path,
-                        UseShellExecute = true
-                    }
-                };
-                Proc.Start(); //把新程序复制到原来的目录后就启动
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = path,
+                            UseShellExecute = true
+                        }
+                    };
+                    Proc.Start(); //把新程序复制到原来的目录后就启动
+                    Environment.Exit(0);
+                }
+            }
+            else if (args.Length == 1 && (args[0] == "-v" || args[0] == "--version"))
+            {
+                Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
                 Environment.Exit(0);
             }
             else if (exist && !(Environment.ProcessPath != default && MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新
             {
                 CloseToUpdate();
+                exist = false; //能执行到这就代表更新文件受损，已经被删掉了
             }
 
             if (exist) //删除临时文件
@@ -188,40 +197,17 @@ namespace UmamusumeResponseAnalyzer
             {
                 while (Config.Get(Resource.ConfigSet_AutoUpdate))
                 {
+                    var downloaded = false;
                     try
                     {
+                        if (downloaded) break;
                         await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
-                        Console.Title = "正在检查更新......";
-
-                        var client = new HttpClient(new HttpClientHandler
+                        await DownloadAssets(null!, null!, path);
+                        if (File.Exists(path))
                         {
-                            AllowAutoRedirect = false
-                        });
-                        var response = await client.GetAsync(GetDownloadUrl(path), HttpCompletionOption.ResponseHeadersRead);
-                        while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
-                        {
-                            response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+                            Console.Title = "重启程序后将进行自动更新";
+                            downloaded = true;
                         }
-                        if (Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)))
-                        || File.Exists(path) && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(path)))) //服务器返回的hash和当前文件一致，即没有新的可用版本，直接返回
-                        {
-                            Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
-                            continue;
-                        }
-                        Console.Title = "正在下载更新......";
-                        using var contentStream = await response.Content.ReadAsStreamAsync();
-                        using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                        var buffer = new byte[8192];
-                        while (true)
-                        {
-                            var read = await contentStream.ReadAsync(buffer);
-                            if (read == 0)
-                                break;
-                            await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                        }
-                        fileStream.Flush();
-                        fileStream.Close();
-                        Console.Title = $"重启程序后将进行自动更新";
                         break;
                     }
                     catch (Exception e)
@@ -234,6 +220,35 @@ namespace UmamusumeResponseAnalyzer
         }
         static void CloseToUpdate()
         {
+            using (var proc = new Process()) //检查下载的文件是否正常
+            {
+                var output = string.Empty;
+                try
+                {
+                    proc.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
+                        Arguments = $"-v",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+                    proc.Start();
+                    while (!proc.StandardOutput.EndOfStream)
+                    {
+                        output = proc.StandardOutput.ReadLine();
+                    }
+                }
+                catch (Exception)
+                {
+                }
+                if (string.IsNullOrEmpty(output))
+                {
+                    File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                    AnsiConsole.MarkupLine("[red]更新文件受损，主程序更新失败[/]");
+                    return;
+                }
+            }
             using var Proc = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -308,37 +323,43 @@ namespace UmamusumeResponseAnalyzer
         }
         static string GetDownloadUrl(string filepath)
         {
-            const string CNHost = "https://assets.shuise.net";
+            const string CNHost = "https://assets.shuise.net/UmamusumeResponseAnalyzer";
             const string GithubHost = "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master";
             var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
-            var host = isCN ? CNHost : GithubHost;
+            if (filename.Contains("UmamusumeResponseAnalyzer.exe")) filename = "UmamusumeResponseAnalyzer.exe";
+            var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
             {
                 ".json" => $"{host}/{filename}",
                 ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
-        static async Task DownloadAssets(ProgressContext ctx, string instruction, string path)
+        static async Task DownloadAssets(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
             var client = new HttpClient(new HttpClientHandler
             {
                 AllowAutoRedirect = false
-            });
-            var task = ctx.AddTask(instruction, false);
+            })
+            { DefaultRequestVersion = new Version(2, 0) };
             var response = await client.GetAsync(GetDownloadUrl(path), HttpCompletionOption.ResponseHeadersRead);
             while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
             {
                 response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
             }
-            task.MaxValue(response.Content.Headers.ContentLength ?? 0);
-            task.StartTask();
-            if ((Path.GetExtension(path) == ".exe" && Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath))))
-                || (File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length)) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+            var task = ctx?.AddTask(instruction, false);
+            task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
+            task?.StartTask();
+            if (task != null)
             {
-                task.Increment(response.Content.Headers.ContentLength ?? 0);
-                return;
+                var programUpToDate = Path.GetExtension(path) == ".exe" && Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)));
+                var fileUpToDate = File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length;
+                if (programUpToDate || fileUpToDate) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+                {
+                    task.Increment(response.Content.Headers.ContentLength ?? 0);
+                    return;
+                }
             }
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
@@ -348,7 +369,7 @@ namespace UmamusumeResponseAnalyzer
                 var read = await contentStream.ReadAsync(buffer);
                 if (read == 0)
                     break;
-                task.Increment(read);
+                task?.Increment(read);
                 await fileStream.WriteAsync(buffer.AsMemory(0, read));
             }
         }
