@@ -315,7 +315,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static string GetDownloadUrl(string filepath)
         {
-            const string CNHost = "https://assets.shuise.net";
+            const string CNHost = "https://assets.shuise.net/UmamusumeResponseAnalyzer";
             const string GithubHost = "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master";
             var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
             var ext = Path.GetExtension(filepath);
@@ -324,9 +324,9 @@ namespace UmamusumeResponseAnalyzer
             var host = isCN ? CNHost : GithubHost;
             return ext switch
             {
-                ".json" => $"{host}/UmamusumeResponseAnalyzer/{filename}",
-                ".exe" => isCN ? $"{host}/UmamusumeResponseAnalyzer/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
-            };
+                ".json" => $"{host}/{filename}",
+                ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
+				};
         }
         static async Task DownloadAssets(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
