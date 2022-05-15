@@ -60,6 +60,8 @@ namespace UmamusumeResponseAnalyzer
                 {
                     if (i.Value == Array.Empty<string>())
                     {
+                        if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //不默认开
+                            Configuration.Add(i.Key, false);
                         Configuration.Add(i.Key, true);
                     }
                     else

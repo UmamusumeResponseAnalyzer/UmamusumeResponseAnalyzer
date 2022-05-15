@@ -221,24 +221,31 @@ namespace UmamusumeResponseAnalyzer
         {
             using (var proc = new Process()) //检查下载的文件是否正常
             {
-                proc.StartInfo = new ProcessStartInfo
+                var output = string.Empty;
+                try
                 {
-                    FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
-                    Arguments = $"-v",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                };
-                proc.Start();
-                while (!proc.StandardOutput.EndOfStream)
-                {
-                    var output = proc.StandardOutput.ReadLine();
-                    if (string.IsNullOrEmpty(output))
+                    proc.StartInfo = new ProcessStartInfo
                     {
-                        File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
-                        AnsiConsole.Write("[red]更新文件受损，主程序更新失败[/]");
-                        return;
+                        FileName = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"),
+                        Arguments = $"-v",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+                    proc.Start();
+                    while (!proc.StandardOutput.EndOfStream)
+                    {
+                        output = proc.StandardOutput.ReadLine();
                     }
+                }
+                catch (Exception)
+                {
+                }
+                if (string.IsNullOrEmpty(output))
+                {
+                    File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                    AnsiConsole.Write("[red]更新文件受损，主程序更新失败[/]");
+                    return;
                 }
             }
             using var Proc = new Process
@@ -326,7 +333,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 ".json" => $"{host}/{filename}",
                 ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
-				};
+            };
         }
         static async Task DownloadAssets(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
