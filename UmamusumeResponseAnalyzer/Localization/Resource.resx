@@ -258,4 +258,7 @@
   <data name="ConfigSet_SaveResponseForDebug" xml:space="preserve">
     <value>保存用于调试的通讯包</value>
   </data>
+  <data name="ConfigSet_ForceUseGithubToUpdate" xml:space="preserve">
+    <value>强制使用GitHub更新</value>
+  </data>
 </root>

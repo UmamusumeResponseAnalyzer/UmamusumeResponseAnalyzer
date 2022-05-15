@@ -28,6 +28,7 @@ namespace UmamusumeResponseAnalyzer
             });
             ConfigSet.Add(Resource.ConfigSet_AutoUpdate, Array.Empty<string>());
             ConfigSet.Add(Resource.ConfigSet_SaveResponseForDebug, Array.Empty<string>());
+            ConfigSet.Add(Resource.ConfigSet_ForceUseGithubToUpdate, Array.Empty<string>());
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {
@@ -37,7 +38,11 @@ namespace UmamusumeResponseAnalyzer
                     if (i.Value == Array.Empty<string>())
                     {
                         if (!Configuration.ContainsKey(i.Key))
+                        {
+                            if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //但是这个不默认开
+                                continue;
                             Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
+                        }
                     }
                     else
                     {

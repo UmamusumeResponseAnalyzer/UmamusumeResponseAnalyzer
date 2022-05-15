@@ -321,7 +321,7 @@ namespace UmamusumeResponseAnalyzer
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
             if (filename.Contains("UmamusumeResponseAnalyzer.exe")) filename = "UmamusumeResponseAnalyzer.exe";
-            var host = isCN ? CNHost : GithubHost;
+            var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
             {
                 ".json" => $"{host}/{filename}",
