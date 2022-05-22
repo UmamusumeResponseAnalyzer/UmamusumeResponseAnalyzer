@@ -333,6 +333,7 @@ namespace UmamusumeResponseAnalyzer
             return ext switch
             {
                 ".json" => $"{host}/{filename}",
+                ".br" => $"{host}/{filename}",
                 ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
