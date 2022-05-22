@@ -871,6 +871,19 @@
     "Style": 0
   },
   {
+    "Name": "ぶっちぎりロード",
+    "Id": 100641,
+    "GroupId": 10064,
+    "Rarity": 5,
+    "Rate": 1,
+    "Grade": 340,
+    "Cost": 0,
+    "DisplayOrder": 10,
+    "Ground": 0,
+    "Distance": 0,
+    "Style": 0
+  },
+  {
     "Name": "晦冥を照らせ永遠の耀き",
     "Id": 100671,
     "GroupId": 10067,
@@ -5590,6 +5603,19 @@
     "Style": 0
   },
   {
+    "Name": "お先に失礼っ！",
+    "Id": 201662,
+    "GroupId": 20166,
+    "Rarity": 2,
+    "Rate": 2,
+    "Grade": 508,
+    "Cost": 160,
+    "DisplayOrder": 21345,
+    "Ground": 0,
+    "Distance": 0,
+    "Style": 0
+  },
+  {
     "Name": "チャート急上昇！",
     "Id": 201671,
     "GroupId": 20167,
@@ -7010,6 +7036,19 @@
     "Name": "どんっ、パッ、むんっ",
     "Id": 900621,
     "GroupId": 90062,
+    "Rarity": 1,
+    "Rate": 2,
+    "Grade": 180,
+    "Cost": 200,
+    "DisplayOrder": 30,
+    "Ground": 0,
+    "Distance": 0,
+    "Style": 0
+  },
+  {
+    "Name": "ぶっちぎりロード",
+    "Id": 900641,
+    "GroupId": 90064,
     "Rarity": 1,
     "Rate": 2,
     "Grade": 180,
