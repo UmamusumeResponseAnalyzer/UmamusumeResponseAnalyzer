@@ -20,7 +20,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// 事件所属角色，通用事件为马娘名，决胜服/S卡事件为全名
         /// </summary>
         public string TriggerName { get; set; } = string.Empty;
-        public List<Choice> Choices { get; set; } = new();
+        public List<List<Choice>> Choices { get; set; } = new();
 
     }
     public class Choice
