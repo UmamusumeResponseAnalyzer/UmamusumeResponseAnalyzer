@@ -50,7 +50,7 @@ namespace UmamusumeResponseAnalyzer
                             {
                                 Directory.CreateDirectory(directory);
                             }
-                            File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.msgpack", buffer);
+                            File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.br", Brotli.Compress(buffer));
                         }
                         _ = Task.Run(() => ParseResponse(buffer));
                     }

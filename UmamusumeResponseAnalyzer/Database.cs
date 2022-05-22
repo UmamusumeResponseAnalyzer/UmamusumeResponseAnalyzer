@@ -1,20 +1,19 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text;
 using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class Database
     {
-        internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.json");
-        internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.json");
-        internal static string RACE_CODES_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races.json");
-        internal static string ID_TO_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "id.json");
-        internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skilldata.json");
-        internal static string UNKNOWN_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "unknownevents.txt");
-        internal static string SUPPORT_ID_SHORTNAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "name_cn.json");
-        internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.json");
-        internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talentskillsets.json");
+        internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.br");
+        internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.br");
+        internal static string ID_TO_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "id.br");
+        internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skilldata.br");
+        internal static string SUPPORT_ID_SHORTNAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "name_cn.br");
+        internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.br");
+        internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talentskillsets.br");
         /// <summary>
         /// index为属性，value为对应属性的评价点
         /// </summary>
@@ -34,7 +33,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 需要手动记录的成功育成事件
         /// </summary>
-        public static Dictionary<string, SuccessStory> SuccessEvent { get; set; } = new();
+        public static Dictionary<int, SuccessStory> SuccessEvent { get; set; } = new();
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
@@ -56,25 +55,25 @@ namespace UmamusumeResponseAnalyzer
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(EVENT_NAME_FILEPATH))
             {
-                var events = JArray.Parse(File.ReadAllText(EVENT_NAME_FILEPATH)).ToObject<List<Story>>()?.ToDictionary(x => x.Id, x => x);
+                var events = JArray.Parse(Load(EVENT_NAME_FILEPATH)).ToObject<List<Story>>()?.ToDictionary(x => x.Id, x => x);
                 if (events != default)
                     Events = events;
             }
             if (File.Exists(SUCCESS_EVENT_FILEPATH))
             {
-                var successEvent = JArray.Parse(File.ReadAllText(SUCCESS_EVENT_FILEPATH)).ToObject<List<SuccessStory>>()?.ToDictionary(x => x.Name, x => x);
+                var successEvent = JArray.Parse(Load(SUCCESS_EVENT_FILEPATH)).ToObject<List<SuccessStory>>()?.ToDictionary(x => x.Id, x => x);
                 if (successEvent != default)
                     SuccessEvent = successEvent;
             }
             if (File.Exists(ID_TO_NAME_FILEPATH))
             {
-                var idToName = JsonConvert.DeserializeObject<Dictionary<int, string>>(File.ReadAllText(ID_TO_NAME_FILEPATH));
+                var idToName = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(ID_TO_NAME_FILEPATH));
                 if (idToName != default)
                     IdToName = idToName;
             }
             if (File.Exists(SKILLS_FILEPATH))
             {
-                var skills = JsonConvert.DeserializeObject<List<SkillData>>(File.ReadAllText(SKILLS_FILEPATH));
+                var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH));
                 if (skills != default)
                 {
                     Skills = new SkillManager(skills);
@@ -82,22 +81,23 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(SUPPORT_ID_SHORTNAME_FILEPATH))
             {
-                var supportIdToShortName = JsonConvert.DeserializeObject<Dictionary<int, string>>(File.ReadAllText(SUPPORT_ID_SHORTNAME_FILEPATH));
+                var supportIdToShortName = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(SUPPORT_ID_SHORTNAME_FILEPATH));
                 if (supportIdToShortName != default)
                     SupportIdToShortName = supportIdToShortName;
             }
             if (File.Exists(CLIMAX_ITEM_FILEPATH))
             {
-                var climaxItem = JsonConvert.DeserializeObject<Dictionary<int, string>>(File.ReadAllText(CLIMAX_ITEM_FILEPATH));
+                var climaxItem = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(CLIMAX_ITEM_FILEPATH));
                 if (climaxItem != default)
                     ClimaxItem = climaxItem;
             }
             if (File.Exists(TALENT_SKILLS_FILEPATH))
             {
-                var talentSkill = JsonConvert.DeserializeObject<Dictionary<int, TalentSkillData[]>>(File.ReadAllText(TALENT_SKILLS_FILEPATH));
+                var talentSkill = JsonConvert.DeserializeObject<Dictionary<int, TalentSkillData[]>>(Load(TALENT_SKILLS_FILEPATH));
                 if (talentSkill != default)
                     TalentSkill = talentSkill;
             }
         }
+        static string Load(string path) => Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));
     }
 }

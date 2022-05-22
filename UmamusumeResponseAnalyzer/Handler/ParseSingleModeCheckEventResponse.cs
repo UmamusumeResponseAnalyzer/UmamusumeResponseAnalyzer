@@ -17,42 +17,46 @@ namespace UmamusumeResponseAnalyzer.Handler
             foreach (var i in @event.data.unchecked_event_array)
             {
                 //收录在数据库中
-                if (Database.Events.ContainsKey(i.story_id))
+                if (Database.Events.TryGetValue(i.story_id, out var story))
                 {
-                    var mainTree = new Tree(Database.Events[i.story_id].TriggerName.EscapeMarkup()); //触发者名称
-                    var eventTree = new Tree(Database.Events[i.story_id].Name.EscapeMarkup()); //事件名称
-                    for (var j = 0; j < i?.event_contents_info?.choice_array.Length; ++j)
+                    var mainTree = new Tree(story.TriggerName.EscapeMarkup()); //触发者名称
+                    var eventTree = new Tree(story.Name.EscapeMarkup()); //事件名称
+                    for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
                         //显示选项
-                        var tree = new Tree($"{(string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].Option) ? Resource.SingleModeCheckEvent_Event_NoOption : Database.Events[i.story_id].Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                        if (Database.SuccessEvent.TryGetValue(Database.Events[i.story_id].Name, out var successEvent)) //是可以成功的事件且已在数据库中
-                            AddSuccessEvent(successEvent.Choices.Where(x => x.ChoiceIndex == j + 1));
+                        var tree = new Tree($"{(string.IsNullOrEmpty(story.Choices[j].Option) ? Resource.SingleModeCheckEvent_Event_NoOption : story.Choices[j].Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
+                        if (Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent)) //是可以成功的事件且已在数据库中
+                            AddLoggedEvent(successEvent.Choices[j]);
                         else
                             AddNormalEvent();
                         eventTree.AddNode(tree);
 
-                        void AddSuccessEvent(IEnumerable<SuccessChoice> successChoices)
+                        void AddLoggedEvent(SuccessChoice[] choices)
                         {
-                            if (!successChoices.Any()) //如果ChoiceIndex没有记录在数据库中，即事件未被标记为成功，则改为添加失败事件
-                            {
-                                AddNormalEvent();
-                                return;
-                            }
-                            var successChoice = successChoices.FirstOrDefault(x => x.SelectIndex == i.event_contents_info.choice_array[j].select_index);
-                            if (successChoice != default && successChoice.Effects.ContainsKey(@event.data.chara_info.scenario_id))
-                                tree.AddNode($"[mediumspringgreen on #081129]{(string.IsNullOrEmpty(successChoice.Effects[@event.data.chara_info.scenario_id]) ? Database.Events[i.story_id].Choices[j].SuccessEffect : successChoice.Effects[@event.data.chara_info.scenario_id]).EscapeMarkup()}[/]");
-                            else if (string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].FailedEffect) || Database.Events[i.story_id].Choices[j].FailedEffect == "-")
-                                tree.AddNode($"{Database.Events[i.story_id].Choices[j].SuccessEffect}".EscapeMarkup());
+                            if (choices.WithSelectIndex(i.event_contents_info.choice_array[j].select_index).WithScenarioId(@event.data.chara_info.scenario_id).TryGet(out var choice))
+                                tree.AddNode(MarkupText(choice.Effect, choice.State));
+                            else if (string.IsNullOrEmpty(story.Choices[j].FailedEffect))
+                                tree.AddNode($"{story.Choices[j].SuccessEffect}".EscapeMarkup());
                             else
-                                tree.AddNode($"[#FF0050 on #081129]{Database.Events[i.story_id].Choices[j].FailedEffect.EscapeMarkup()}[/]");
+                                tree.AddNode(MarkupText(story.Choices[j].FailedEffect.EscapeMarkup(), 0));
                         }
                         void AddNormalEvent()
                         {
                             //如果没有失败效果则显示成功效果（别问我为什么这么设置，问kamigame
-                            if (string.IsNullOrEmpty(Database.Events[i.story_id].Choices[j].FailedEffect) || Database.Events[i.story_id].Choices[j].FailedEffect == "-")
-                                tree.AddNode($"{Database.Events[i.story_id].Choices[j].SuccessEffect}".EscapeMarkup());
+                            if (string.IsNullOrEmpty(story.Choices[j].FailedEffect))
+                                tree.AddNode($"{story.Choices[j].SuccessEffect}".EscapeMarkup());
                             else
-                                tree.AddNode($"{Database.Events[i.story_id].Choices[j].FailedEffect}".EscapeMarkup());
+                                tree.AddNode($"{story.Choices[j].FailedEffect}".EscapeMarkup());
+                        }
+                        string MarkupText(string text, int state)
+                        {
+                            return state switch
+                            {
+                                0 => $"[#FF0050 on #081129]{text}[/]", //失败
+                                1 => $"[mediumspringgreen on #081129]{text}[/]", //成功
+                                2 => $"[lightgoldenrod1 on #081129]{text}[/]", //大成功
+                                int.MaxValue => $"[#afafaf on #081129]{text}[/]" //中性
+                            };
                         }
                     }
                     mainTree.AddNode(eventTree);
