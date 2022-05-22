@@ -1,4 +1,5 @@
 ﻿using MessagePack;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,17 @@ namespace UmamusumeResponseAnalyzer
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {
-                Configuration = MessagePackSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllBytes(CONFIG_FILEPATH));
+                try
+                {
+                    var configuration = MessagePackSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllBytes(CONFIG_FILEPATH));
+                    Configuration = configuration;
+                }
+                catch (Exception)
+                {
+                    File.Delete(CONFIG_FILEPATH);
+                    Generate();
+                    AnsiConsole.MarkupLine($"[red]读取配置文件时发生错误,已重新生成,请再次更改设置[/]");
+                }
                 foreach (var i in ConfigSet)
                 {
                     if (i.Value == Array.Empty<string>())
@@ -41,7 +52,8 @@ namespace UmamusumeResponseAnalyzer
                         {
                             if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //但是这个不默认开
                                 Configuration.Add(i.Key, false);
-                            Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
+                            else
+                                Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
                         }
                     }
                     else
@@ -56,27 +68,32 @@ namespace UmamusumeResponseAnalyzer
             }
             else
             {
-                foreach (var i in ConfigSet)
-                {
-                    if (i.Value == Array.Empty<string>())
-                    {
-                        if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //不默认开
-                            Configuration.Add(i.Key, false);
-                        Configuration.Add(i.Key, true);
-                    }
-                    else
-                    {
-                        foreach (var j in i.Value)
-                        {
-                            Configuration.Add(j, true);
-                        }
-                    }
-                }
-                Save();
+                Generate();
             }
         }
         public static void Save() =>
                 File.WriteAllBytes(CONFIG_FILEPATH, MessagePackSerializer.Serialize(Configuration));
+        private static void Generate()
+        {
+            foreach (var i in ConfigSet)
+            {
+                if (i.Value == Array.Empty<string>())
+                {
+                    if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //不默认开
+                        Configuration.Add(i.Key, false);
+                    else
+                        Configuration.Add(i.Key, true);
+                }
+                else
+                {
+                    foreach (var j in i.Value)
+                    {
+                        Configuration.Add(j, true);
+                    }
+                }
+            }
+            Save();
+        }
         public static T Get<T>(string key) => (T)Configuration[key];
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)
