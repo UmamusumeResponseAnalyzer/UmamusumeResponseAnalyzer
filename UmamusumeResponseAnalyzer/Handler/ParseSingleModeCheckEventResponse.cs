@@ -39,14 +39,16 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 .TryGet(out var choice);
                             if (find)
                                 tree.AddNode(MarkupText(choice.Effect, choice.State));
+                            else
+                                tree.AddNode((string.IsNullOrEmpty(originalChoice.FailedEffect) ? originalChoice.SuccessEffect : originalChoice.FailedEffect).EscapeMarkup());
                         }
                         void AddNormalEvent()
                         {
                             //如果没有失败效果则显示成功效果（别问我为什么这么设置，问kamigame
                             if (string.IsNullOrEmpty(originalChoice.FailedEffect))
-                                tree.AddNode($"{originalChoice.SuccessEffect}".EscapeMarkup());
+                                tree.AddNode(originalChoice.SuccessEffect.EscapeMarkup());
                             else
-                                tree.AddNode($"{originalChoice.FailedEffect}".EscapeMarkup());
+                                tree.AddNode(originalChoice.FailedEffect.EscapeMarkup());
                         }
                         string MarkupText(string text, int state)
                         {
