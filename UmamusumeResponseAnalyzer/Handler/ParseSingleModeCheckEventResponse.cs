@@ -26,7 +26,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var originalChoice = story.Choices[j][0]; //因为kamigame的事件无法直接根据SelectIndex区分成功与否，所以必然只会有一个Choice;
                         //显示选项
                         var tree = new Tree($"{(string.IsNullOrEmpty(originalChoice.Option) ? Resource.SingleModeCheckEvent_Event_NoOption : originalChoice.Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                        if (Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent)) //是可以成功的事件且已在数据库中
+                        if (Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中
                             AddLoggedEvent(successEvent.Choices[j]);
                         else
                             AddNormalEvent();
@@ -40,15 +40,15 @@ namespace UmamusumeResponseAnalyzer.Handler
                             if (find)
                                 tree.AddNode(MarkupText(choice.Effect, choice.State));
                             else
-                                tree.AddNode((string.IsNullOrEmpty(originalChoice.FailedEffect) ? originalChoice.SuccessEffect : originalChoice.FailedEffect).EscapeMarkup());
+                                tree.AddNode((string.IsNullOrEmpty(originalChoice.FailedEffect) ? originalChoice.SuccessEffect : MarkupText(originalChoice.FailedEffect, 0)));
                         }
                         void AddNormalEvent()
                         {
                             //如果没有失败效果则显示成功效果（别问我为什么这么设置，问kamigame
                             if (string.IsNullOrEmpty(originalChoice.FailedEffect))
-                                tree.AddNode(originalChoice.SuccessEffect.EscapeMarkup());
+                                tree.AddNode(originalChoice.SuccessEffect);
                             else
-                                tree.AddNode(originalChoice.FailedEffect.EscapeMarkup());
+                                tree.AddNode(originalChoice.FailedEffect);
                         }
                         string MarkupText(string text, int state)
                         {

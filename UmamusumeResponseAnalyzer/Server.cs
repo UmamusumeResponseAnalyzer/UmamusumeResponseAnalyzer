@@ -137,8 +137,10 @@ namespace UmamusumeResponseAnalyzer
                             Handlers.ParseRoomMatchRaceStartResponse(dyn.ToObject<Gallop.RoomMatchRaceStartResponse>());
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    AnsiConsole.Markup("[red]解析Response时出现错误: [/]");
+                    AnsiConsole.WriteException(e);
                 }
             }
         }
