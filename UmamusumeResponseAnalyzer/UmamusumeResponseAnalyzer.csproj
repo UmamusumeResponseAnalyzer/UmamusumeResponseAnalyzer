@@ -9,7 +9,7 @@
 		<AssemblyVersion></AssemblyVersion>
 		<FileVersion></FileVersion>
 		<Authors>$(AssemblyName)</Authors>
-		<Version>1.8.11.2</Version>
+		<Version>1.8.11.3</Version>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
