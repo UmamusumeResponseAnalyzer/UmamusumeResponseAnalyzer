@@ -48,12 +48,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                             if (string.IsNullOrEmpty(originalChoice.FailedEffect))
                                 tree.AddNode(originalChoice.SuccessEffect);
                             else
-                                tree.AddNode(originalChoice.FailedEffect);
+                                tree.AddNode(MarkupText($"(成功时){originalChoice.SuccessEffect}{Environment.NewLine}(失败时){originalChoice.FailedEffect}{Environment.NewLine}", -1));
                         }
                         string MarkupText(string text, int state)
                         {
                             return state switch
                             {
+                                -1 => $"[darkorange on #081129]{text}(不知道是否成功)[/]", //未知的
                                 0 => $"[#FF0050 on #081129]{text}[/]", //失败
                                 1 => $"[mediumspringgreen on #081129]{text}[/]", //成功
                                 2 => $"[lightgoldenrod1 on #081129]{text}[/]", //大成功

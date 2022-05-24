@@ -50,7 +50,7 @@ namespace UmamusumeResponseAnalyzer
                             {
                                 Directory.CreateDirectory(directory);
                             }
-                            File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.br", Brotli.Compress(buffer));
+                            File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.msgpack", buffer);
                         }
                         _ = Task.Run(() => ParseResponse(buffer));
                     }
@@ -139,7 +139,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 catch (Exception e)
                 {
-                    AnsiConsole.Markup("[red]解析Response时出现错误: [/]");
+                    AnsiConsole.MarkupLine("[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]");
                     AnsiConsole.WriteException(e);
                 }
             }
