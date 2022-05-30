@@ -47,6 +47,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                             //如果没有失败效果则显示成功效果（别问我为什么这么设置，问kamigame
                             if (string.IsNullOrEmpty(originalChoice.FailedEffect))
                                 tree.AddNode(originalChoice.SuccessEffect);
+                            else if (originalChoice.SuccessEffect == "未知效果" && originalChoice.FailedEffect == "未知效果")
+                                tree.AddNode(MarkupText($"未知效果", int.MaxValue));
                             else
                                 tree.AddNode(MarkupText($"(成功时){originalChoice.SuccessEffect}{Environment.NewLine}(失败时){originalChoice.FailedEffect}{Environment.NewLine}", -1));
                         }
