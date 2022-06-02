@@ -19,7 +19,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 .SelectMany(x => x)
                 .Where(x => x.Rate > 0 && !@event.data.chara_info.skill_array.Any(y => y.skill_id == x.Id))
                 .ToList();
-            foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id])
+            foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level))
             {
                 if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
                 {
