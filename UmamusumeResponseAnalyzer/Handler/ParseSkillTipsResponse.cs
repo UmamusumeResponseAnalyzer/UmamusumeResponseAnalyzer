@@ -14,11 +14,13 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseSkillTipsResponse(Gallop.SingleModeCheckEventResponse @event)
         {
             var totalSP = @event.data.chara_info.skill_point;
+            //翻译技能tips方便使用
             var tips = @event.data.chara_info.skill_tips_array
                 .Select(x => Database.Skills[(x.group_id, x.rarity)].Select(y => y.Apply(@event.data.chara_info, x.level)))
                 .SelectMany(x => x)
                 .Where(x => x.Rate > 0 && !@event.data.chara_info.skill_array.Any(y => y.skill_id == x.Id))
                 .ToList();
+            //添加天赋技能
             foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level))
             {
                 if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
@@ -26,6 +28,19 @@ namespace UmamusumeResponseAnalyzer.Handler
                     tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info));
                 }
             }
+            //添加上位技能缺少的下位技能（为方便计算切者技能点）
+            foreach (var group in tips.GroupBy(x => x.GroupId))
+            {
+                var skills = Database.Skills.GetAllByGroupId(group.Key)
+                    .Where(x => x.Rarity < group.Max(y => y.Rarity) || x.Rate < group.Max(y => y.Rate))
+                    .Where(x => x.Rate > 0);
+                var ids = skills.ExceptBy(tips.Select(x => x.Id), x => x.Id);
+                foreach (var i in ids)
+                {
+                    tips.Add(i.Apply(@event.data.chara_info, 0));
+                }
+            }
+            //纠正技能总花费
             foreach (var i in tips.GroupBy(x => x.GroupId))
             {
                 if (i.Count() > 1)

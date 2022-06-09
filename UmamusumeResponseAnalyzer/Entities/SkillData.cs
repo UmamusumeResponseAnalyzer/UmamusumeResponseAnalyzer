@@ -61,6 +61,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         {
             if (level == int.MinValue)
             {
+                //自动搜索hint level?
                 level = chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == GroupId && x.rarity == Rarity)?.level ?? 0;
             }
             var instance = Clone();

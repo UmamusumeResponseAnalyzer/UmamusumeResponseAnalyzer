@@ -1,5 +1,6 @@
 ﻿using Gallop;
 using Newtonsoft.Json;
+using Test.Tests;
 using UmamusumeResponseAnalyzer;
 
 namespace Test
@@ -9,15 +10,12 @@ namespace Test
         static void Main(string[] args)
         {
             Database.Initialize();
-            var checkEventResponse = JsonConvert.DeserializeObject<SingleModeCheckEventResponse>(File.ReadAllText(@"C:\Users\micro\source\repos\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\bin\Debug\net6.0\packets\22-05-23 23-29-28R.json"));
-            if (checkEventResponse == null) throw new Exception("反序列化失败");
-            checkEventResponse
-                .WithStoryId(501001720)
-                .AddChoices(2, 3, 5, 7, 1)
-                .Run();
-            checkEventResponse
-                .WithStoryId(830006002)
-                .AddChoices(1, 1)
+            var bytes = File.ReadAllBytes(@"C:\Users\micro\AppData\Local\UmamusumeResponseAnalyzer\packets\22-06-09 12-06-28R.msgpack");
+            var obj = JsonConvert.DeserializeObject<SingleModeCheckEventResponse>(MessagePack.MessagePackSerializer.ConvertToJson(bytes));
+            if (obj == null) throw new Exception("反序列化失败");
+            obj.AsParseSkillTipsResponseTest()
+                .Translate()
+                .PrintSkillTips()
                 .Run();
         }
     }
