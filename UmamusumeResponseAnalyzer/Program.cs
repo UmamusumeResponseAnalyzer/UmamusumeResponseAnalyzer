@@ -334,7 +334,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 ".json" => $"{host}/{filename}",
                 ".br" => $"{host}/{filename}",
-                ".exe" => isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
+                ".exe" => !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
         static async Task DownloadAssets(ProgressContext ctx = null!, string instruction = null!, string path = null!)
