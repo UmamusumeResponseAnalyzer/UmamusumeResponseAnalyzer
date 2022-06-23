@@ -70,6 +70,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 启用游戏加速功能 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_EnableNetFilter {
+            get {
+                return ResourceManager.GetString("ConfigSet_EnableNetFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 事件 的本地化字符串。
         /// </summary>
         public static string ConfigSet_Events {
@@ -178,6 +187,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 安装游戏加速驱动 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_InstallNetFilterDriver {
+            get {
+                return ResourceManager.GetString("LaunchMenu_InstallNetFilterDriver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 选项 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Options {
@@ -201,6 +219,60 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Options_Instruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Options_Instruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 设置加速服务器 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetNetfilterTarget {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetNetfilterTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 代理服务器是否需要认证 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetNetfilterTarget_AskAuth {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetNetfilterTarget_AskAuth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入代理服务器的密码 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetNetfilterTarget_AskAuthPassword {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetNetfilterTarget_AskAuthPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入代理服务器的用户名 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetNetfilterTarget_AskAuthUsername {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetNetfilterTarget_AskAuthUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入代理服务器的地址（默认: 127.0.0.1） 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetNetfilterTarget_AskHost {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetNetfilterTarget_AskHost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入代理服务器的端口（默认: 1080） 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetNetfilterTarget_AskPort {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetNetfilterTarget_AskPort", resourceCulture);
             }
         }
         
@@ -291,6 +363,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Start_TokenGot {
             get {
                 return ResourceManager.GetString("LaunchMenu_Start_TokenGot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 卸载游戏加速驱动 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_UninstallNetFilterDriver {
+            get {
+                return ResourceManager.GetString("LaunchMenu_UninstallNetFilterDriver", resourceCulture);
             }
         }
         

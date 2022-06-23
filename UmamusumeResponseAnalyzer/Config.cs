@@ -30,6 +30,7 @@ namespace UmamusumeResponseAnalyzer
             ConfigSet.Add(Resource.ConfigSet_AutoUpdate, Array.Empty<string>());
             ConfigSet.Add(Resource.ConfigSet_SaveResponseForDebug, Array.Empty<string>());
             ConfigSet.Add(Resource.ConfigSet_ForceUseGithubToUpdate, Array.Empty<string>());
+            ConfigSet.Add(Resource.ConfigSet_EnableNetFilter, Array.Empty<string>());
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {
@@ -50,7 +51,8 @@ namespace UmamusumeResponseAnalyzer
                     {
                         if (!Configuration.ContainsKey(i.Key))
                         {
-                            if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //但是这个不默认开
+                            if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
+                                i.Key == Resource.ConfigSet_EnableNetFilter) //但是这个不默认开
                                 Configuration.Add(i.Key, false);
                             else
                                 Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
@@ -79,7 +81,8 @@ namespace UmamusumeResponseAnalyzer
             {
                 if (i.Value == Array.Empty<string>())
                 {
-                    if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate) //不默认开
+                    if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
+                                i.Key == Resource.ConfigSet_EnableNetFilter) //不默认开
                         Configuration.Add(i.Key, false);
                     else
                         Configuration.Add(i.Key, true);
@@ -94,6 +97,7 @@ namespace UmamusumeResponseAnalyzer
             }
             Save();
         }
+        public static bool ContainsKey(string key) => Configuration.ContainsKey(key);
         public static T Get<T>(string key) => (T)Configuration[key];
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)

@@ -51,6 +51,8 @@ namespace UmamusumeResponseAnalyzer
                     }
             }
 
+            if (Config.Get(Resource.ConfigSet_EnableNetFilter))
+                await NetFilter.Enable();
             if (File.Exists(DMM.DMM_CONFIG_FILEPATH)) //如果存在DMM的token文件则启用直接登录功能
                 await RunUmamusume();
 
@@ -65,7 +67,7 @@ namespace UmamusumeResponseAnalyzer
         }
         static async Task<string> ShowMenu()
         {
-            var prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            var selections = new SelectionPrompt<string>()
                 .Title(Resource.LaunchMenu)
                 .PageSize(10)
                 .AddChoices(new[]
@@ -74,7 +76,20 @@ namespace UmamusumeResponseAnalyzer
                         Resource.LaunchMenu_Options,
                         Resource.LaunchMenu_Update
                 }
-                ));
+                );
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (File.Exists(Path.Combine(Environment.SystemDirectory, "drivers", "netfilter2.sys")))
+                {
+                    selections.AddChoice(Resource.LaunchMenu_SetNetfilterTarget);
+                    selections.AddChoice(Resource.LaunchMenu_UninstallNetFilterDriver);
+                }
+                else
+                {
+                    selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
+                }
+            }
+            var prompt = AnsiConsole.Prompt(selections);
             if (prompt == Resource.LaunchMenu_Options)
             {
                 var multiSelection = new MultiSelectionPrompt<string>()
@@ -126,7 +141,103 @@ namespace UmamusumeResponseAnalyzer
             {
                 await Update();
             }
-            Console.Clear();
+            else if (prompt == Resource.LaunchMenu_InstallNetFilterDriver)
+            {
+                var applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+                var nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
+                var nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
+                var redirectorPath = Path.Combine(applicationDir, "Redirector.bin");
+                if (!File.Exists(nfapiPath) || !File.Exists(nfdriverPath) || !File.Exists(redirectorPath))
+                {
+                    await AnsiConsole.Progress()
+                        .Columns(new ProgressColumn[]
+                        {
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn(),
+                            new SpinnerColumn()
+                        })
+                        .StartAsync(async ctx =>
+                        {
+                            var tasks = new List<Task>();
+
+                            var nfAPITask = DownloadAssets(ctx, "正在下载nfapi.dll", nfapiPath);
+                            tasks.Add(nfAPITask);
+
+                            var nfDriverTask = DownloadAssets(ctx, "正在下载nfdriver.sys", nfdriverPath);
+                            tasks.Add(nfDriverTask);
+
+                            var redirectorTask = DownloadAssets(ctx, "正在下载Redirector.bin", redirectorPath);
+                            tasks.Add(redirectorTask);
+
+                            await Task.WhenAll(tasks);
+                        });
+                }
+                using var Proc = new Process();
+                var StartInfo = new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath,
+                    Arguments = "--install-netfilter-driver",
+                    CreateNoWindow = true,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                Proc.StartInfo = StartInfo;
+                Proc.Start();
+                Proc.WaitForExit();
+                Config.Set(Resource.ConfigSet_EnableNetFilter, true);
+            }
+            else if (prompt == Resource.LaunchMenu_UninstallNetFilterDriver)
+            {
+                using var Proc = new Process();
+                var StartInfo = new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath,
+                    Arguments = "--uninstall-netfilter-driver",
+                    CreateNoWindow = true,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                Proc.StartInfo = StartInfo;
+                Proc.Start();
+                Proc.WaitForExit();
+                Config.Set(Resource.ConfigSet_EnableNetFilter, false);
+            }
+            else if (prompt == Resource.LaunchMenu_SetNetfilterTarget)
+            {
+                string host;
+                string port;
+                string username;
+                string password;
+                do
+                {
+                    host = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskHost).AllowEmpty());
+                    if (string.IsNullOrEmpty(host)) host = "127.0.0.1";
+                } while (!System.Net.IPAddress.TryParse(host, out var _));
+                do
+                {
+                    port = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskPort).AllowEmpty());
+                    if (string.IsNullOrEmpty(port)) port = "1080";
+                } while (!int.TryParse(port, out var _));
+                Config.Set("PROXY_HOST", host);
+                Config.Set("PROXY_PORT", port);
+                if (AnsiConsole.Confirm(Resource.LaunchMenu_SetNetfilterTarget_AskAuth, false))
+                {
+                    do
+                    {
+                        username = AnsiConsole.Ask<string>(Resource.LaunchMenu_SetNetfilterTarget_AskAuthUsername);
+                    } while (string.IsNullOrEmpty(username));
+                    do
+                    {
+                        password = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskAuthPassword).Secret());
+                    } while (string.IsNullOrEmpty(password));
+                    Config.Set("PROXY_USERNAME", username);
+                    Config.Set("PROXY_PASSWORD", password);
+                }
+                Config.Save();
+            }
+            AnsiConsole.Clear();
 
             return prompt;
         }
@@ -178,6 +289,24 @@ namespace UmamusumeResponseAnalyzer
             else if (args.Length == 1 && (args[0] == "-v" || args[0] == "--version"))
             {
                 Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+                Environment.Exit(0);
+            }
+            else if (args.Length == 1 && args[0] == "--install-netfilter-driver")
+            {
+                AnsiConsole.Status().Start("正在安装加速驱动，请勿关闭该窗口。", (ctx) =>
+                {
+                    ctx.Spinner(Spinner.Known.BouncingBar);
+                    NetFilter.InstallDriver();
+                });
+                Environment.Exit(0);
+            }
+            else if (args.Length == 1 && args[0] == "--uninstall-netfilter-driver")
+            {
+                AnsiConsole.Status().Start("正在卸载加速驱动，请勿关闭该窗口。", (ctx) =>
+                {
+                    ctx.Spinner(Spinner.Known.BouncingBar);
+                    NetFilter.UninstallDriver();
+                });
                 Environment.Exit(0);
             }
             else if (exist && !(Environment.ProcessPath != default && MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新
@@ -325,10 +454,22 @@ namespace UmamusumeResponseAnalyzer
         {
             const string CNHost = "https://assets.shuise.net/UmamusumeResponseAnalyzer";
             const string GithubHost = "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master";
+            const string NetFilterAPIHost = "https://assets.shuise.net/NetFilterAPI";
             var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
-            if (filename.Contains("UmamusumeResponseAnalyzer.exe")) filename = "UmamusumeResponseAnalyzer.exe";
+            switch (filename)
+            {
+                case var _ when filename.Contains("UmamusumeResponseAnalyzer.exe"):
+                    filename = "UmamusumeResponseAnalyzer.exe";
+                    break;
+                case var _ when filename == "nfapi.dll":
+                    return NetFilterAPIHost + "/nfapi.dll";
+                case var _ when filename == "nfdriver.sys":
+                    return NetFilterAPIHost + "/nfdriver.sys";
+                case var _ when filename == "Redirector.bin":
+                    return NetFilterAPIHost + "/Redirector.bin";
+            }
             var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
             {

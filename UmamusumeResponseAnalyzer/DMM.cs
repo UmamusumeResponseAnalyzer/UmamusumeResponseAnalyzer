@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -68,7 +70,7 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async ValueTask<string?> GetExecuteArgsAsync()
         {
-            var cookies = new System.Net.CookieContainer();
+            var cookies = new CookieContainer();
             var client = new HttpClient(new HttpClientHandler
             {
                 CookieContainer = cookies
@@ -81,8 +83,8 @@ namespace UmamusumeResponseAnalyzer
             client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", SecFetchDest);
             client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", SecFetchMode);
             client.DefaultRequestHeaders.Add("Sec-Fetch-Site", SecFetchSite);
-            cookies.Add(new System.Net.Cookie(nameof(login_session_id), login_session_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
-            cookies.Add(new System.Net.Cookie(nameof(login_secure_id), login_secure_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
+            cookies.Add(new Cookie(nameof(login_session_id), login_session_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
+            cookies.Add(new Cookie(nameof(login_secure_id), login_secure_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
 
             await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/gameinfo", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
             var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
@@ -92,6 +94,14 @@ namespace UmamusumeResponseAnalyzer
                 await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/agreement/confirm/client", new StringContent("{\"product_id\":\"umamusume\",\"is_notification\":false,\"is_myapp\":false}", Encoding.UTF8, "application/json"));
                 response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
                 json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            }
+            var version = new Version(json["data"]!["latest_version"]!.ToString());
+            if (GetGameVersion() < version)
+            {
+                var file_list_url = json["data"]!["file_list_url"]!.ToString();
+                response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/getCookie", new StringContent($"{{\"url\":\"https://cdn-gameplayer.games.dmm.com/product/umamusume/Umamusume/content/win/{version}/data/*\"}}"));
+                var cookie = JObject.Parse(await response.Content.ReadAsStringAsync());
+                await UpdateGame(file_list_url, cookie);
             }
             await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/report", new StringContent("{\"type\":\"start\",\"product_id\":\"umamusume\",\"game_type\":\"GCL\"}", Encoding.UTF8, "application/json"));
 
@@ -110,6 +120,56 @@ namespace UmamusumeResponseAnalyzer
             };
             Proc.StartInfo = StartInfo;
             Proc.Start();
+        }
+        private static Version GetGameVersion()
+        {
+            var fs = new FileStream(Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "umamusume_Data", "globalgamemanagers"), FileMode.Open);
+            fs.Seek(0x1214, SeekOrigin.Begin);
+            var version = new byte[6];
+            fs.Read(version, 0, 6);
+            fs.Close();
+            return new Version(Encoding.UTF8.GetString(version));
+        }
+        private static async Task UpdateGame(string file_list_url, JObject cookie)
+        {
+            var applicationRootPath = Path.GetDirectoryName(umamusume_file_path);
+            if (applicationRootPath == default) throw new Exception("游戏路径有误？");
+            var cookies = new CookieContainer();
+            var client = new HttpClient(new HttpClientHandler
+            {
+                CookieContainer = cookies
+            });
+            client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip");
+            client.DefaultRequestHeaders.Add("User-Agent", "Go-http-client/2.0");
+            var totalPages = JObject.Parse(await (await client.GetAsync($"https://apidgp-gameplayer.games.dmm.com{file_list_url}")).Content.ReadAsStringAsync())["data"]!["total_pages"]!.Value<int>();
+            var downloads = new List<JToken>();
+            foreach (var i in Enumerable.Range(1, totalPages))
+            {
+                var page = JObject.Parse(await (await client.GetAsync($"https://apidgp-gameplayer.games.dmm.com{file_list_url}?page=1")).Content.ReadAsStringAsync());
+                foreach (var j in page["data"]!["file_list"]!)
+                {
+                    downloads.Add(j);
+                }
+            }
+            client.DefaultRequestHeaders.Remove("Accept-Encoding");
+            cookies.Add(new Cookie("CloudFront-Key-Pair-Id", cookie["key"]!.ToString()) { Domain = "cdn-gameplayer.games.dmm.com" });
+            cookies.Add(new Cookie("CloudFront-Signature", cookie["signature"]!.ToString()) { Domain = "cdn-gameplayer.games.dmm.com" });
+            cookies.Add(new Cookie("CloudFront-Policy", cookie["policy"]!.ToString()) { Domain = "cdn-gameplayer.games.dmm.com" });
+            Parallel.ForEach(downloads, new ParallelOptions { MaxDegreeOfParallelism = 8 }, async (download) =>
+            {
+                var local_path = download["local_path"]!.ToString();
+                var remote_hash = download["hash"]!.ToString();
+                var remote_path = $"https://cdn-gameplayer.games.dmm.com/" + download["path"]!.ToString();
+                local_path = Path.Combine(applicationRootPath, local_path);
+                using var fs = new FileStream(local_path, FileMode.Create);
+                do
+                {
+                    var local_hash = BitConverter.ToString(MD5.Create().ComputeHash(new FileStream(local_path, FileMode.Open))).Replace("-", string.Empty).ToLower();
+                    if (local_hash == remote_hash) return;
+                    using var stream = await client.GetStreamAsync(remote_path);
+                    stream.CopyTo(fs);
+                } while (BitConverter.ToString(MD5.Create().ComputeHash(fs)).Replace("-", string.Empty).ToLower() != remote_hash);
+            });
         }
     }
 }

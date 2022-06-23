@@ -261,4 +261,31 @@
   <data name="ConfigSet_ForceUseGithubToUpdate" xml:space="preserve">
     <value>强制使用GitHub更新</value>
   </data>
+  <data name="LaunchMenu_InstallNetFilterDriver" xml:space="preserve">
+    <value>安装游戏加速驱动</value>
+  </data>
+  <data name="LaunchMenu_UninstallNetFilterDriver" xml:space="preserve">
+    <value>卸载游戏加速驱动</value>
+  </data>
+  <data name="ConfigSet_EnableNetFilter" xml:space="preserve">
+    <value>启用游戏加速功能</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget" xml:space="preserve">
+    <value>设置加速服务器</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskAuth" xml:space="preserve">
+    <value>代理服务器是否需要认证</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskAuthPassword" xml:space="preserve">
+    <value>请输入代理服务器的密码</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskAuthUsername" xml:space="preserve">
+    <value>请输入代理服务器的用户名</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskHost" xml:space="preserve">
+    <value>请输入代理服务器的地址（默认: 127.0.0.1）</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskPort" xml:space="preserve">
+    <value>请输入代理服务器的端口（默认: 1080）</value>
+  </data>
 </root>

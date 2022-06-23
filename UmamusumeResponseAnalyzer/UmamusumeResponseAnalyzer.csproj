@@ -9,7 +9,7 @@
 		<AssemblyVersion></AssemblyVersion>
 		<FileVersion></FileVersion>
 		<Authors>$(AssemblyName)</Authors>
-		<Version>1.8.11.8</Version>
+		<Version>1.9.0.0</Version>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,6 +22,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="MessagePack" Version="2.3.85" />
+		<PackageReference Include="NetFilterAPI" Version="1.0.4" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Spectre.Console" Version="0.44.0" />
 	</ItemGroup>
