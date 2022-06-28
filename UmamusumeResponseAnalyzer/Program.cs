@@ -130,6 +130,7 @@ namespace UmamusumeResponseAnalyzer
 
                 foreach (var i in Config.Configuration.Keys)
                 {
+                    if (Config.Get<object>(i).GetType() != typeof(bool)) continue;
                     if (options.Contains(i))
                         Config.Set(i, true);
                     else
@@ -259,6 +260,7 @@ namespace UmamusumeResponseAnalyzer
                 else
                 {
                     ctx.Status(Resource.LaunchMenu_Start_Checking_AlreadyRunning);
+                    foreach (var process in processes) process.Dispose();
                 }
             });
         }

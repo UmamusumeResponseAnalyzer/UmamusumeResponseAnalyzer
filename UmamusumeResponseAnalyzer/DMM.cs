@@ -71,7 +71,7 @@ namespace UmamusumeResponseAnalyzer
         public static async ValueTask<string?> GetExecuteArgsAsync()
         {
             var cookies = new CookieContainer();
-            var client = new HttpClient(new HttpClientHandler
+            using var client = new HttpClient(new HttpClientHandler
             {
                 CookieContainer = cookies
             });
@@ -87,20 +87,20 @@ namespace UmamusumeResponseAnalyzer
             cookies.Add(new Cookie(nameof(login_secure_id), login_secure_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
 
             await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/gameinfo", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
-            var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
+            using var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
             var json = JObject.Parse(await response.Content.ReadAsStringAsync());
             if (json["result_code"]?.ToObject<int>() == 308)
             {
                 await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/agreement/confirm/client", new StringContent("{\"product_id\":\"umamusume\",\"is_notification\":false,\"is_myapp\":false}", Encoding.UTF8, "application/json"));
-                response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
-                json = JObject.Parse(await response.Content.ReadAsStringAsync());
+                using var resp = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
+                json = JObject.Parse(await resp.Content.ReadAsStringAsync());
             }
             var version = new Version(json["data"]!["latest_version"]!.ToString());
             if (GetGameVersion() < version)
             {
                 var file_list_url = json["data"]!["file_list_url"]!.ToString();
-                response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/getCookie", new StringContent($"{{\"url\":\"https://cdn-gameplayer.games.dmm.com/product/umamusume/Umamusume/content/win/{version}/data/*\"}}"));
-                var cookie = JObject.Parse(await response.Content.ReadAsStringAsync());
+                using var resp = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/getCookie", new StringContent($"{{\"url\":\"https://cdn-gameplayer.games.dmm.com/product/umamusume/Umamusume/content/win/{version}/data/*\"}}"));
+                var cookie = JObject.Parse(await resp.Content.ReadAsStringAsync());
                 await UpdateGame(file_list_url, cookie);
             }
             await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/report", new StringContent("{\"type\":\"start\",\"product_id\":\"umamusume\",\"game_type\":\"GCL\"}", Encoding.UTF8, "application/json"));
@@ -123,7 +123,7 @@ namespace UmamusumeResponseAnalyzer
         }
         private static Version GetGameVersion()
         {
-            var fs = new FileStream(Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "umamusume_Data", "globalgamemanagers"), FileMode.Open);
+            using var fs = new FileStream(Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "umamusume_Data", "globalgamemanagers"), FileMode.Open);
             fs.Seek(0x1214, SeekOrigin.Begin);
             var version = new byte[6];
             fs.Read(version, 0, 6);
@@ -135,7 +135,7 @@ namespace UmamusumeResponseAnalyzer
             var applicationRootPath = Path.GetDirectoryName(umamusume_file_path);
             if (applicationRootPath == default) throw new Exception("游戏路径有误？");
             var cookies = new CookieContainer();
-            var client = new HttpClient(new HttpClientHandler
+            using var client = new HttpClient(new HttpClientHandler
             {
                 CookieContainer = cookies
             });
