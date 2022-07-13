@@ -482,12 +482,31 @@ namespace UmamusumeResponseAnalyzer
         }
         static async Task DownloadAssets(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
+            var downloadURL = GetDownloadUrl(path);
             var client = new HttpClient(new HttpClientHandler
             {
                 AllowAutoRedirect = false
             })
-            { DefaultRequestVersion = new Version(2, 0) };
-            var response = await client.GetAsync(GetDownloadUrl(path), HttpCompletionOption.ResponseHeadersRead);
+            { DefaultRequestVersion = new Version(2, 0), Timeout = TimeSpan.FromSeconds(5) };
+            #region 检测更新服务器是否可用
+            try
+            {
+                await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL));
+            }
+            catch
+            {
+                if (new Uri(downloadURL).Host == "raw.githubusercontent.com")
+                {
+                    AnsiConsole.MarkupLine($"{downloadURL}: [red]无法连接到GitHub，请尝试使用代理[/red]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"{downloadURL}: [red]无法连接到更新服务器，请尝试在设置中启用\"强制使用GitHub更新\"后再试[/red]");
+                }
+                return;
+            }
+            #endregion
+            var response = await client.GetAsync(downloadURL, HttpCompletionOption.ResponseHeadersRead);
             while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
             {
                 response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
