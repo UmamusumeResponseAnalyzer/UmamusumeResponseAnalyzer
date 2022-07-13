@@ -89,6 +89,7 @@ namespace UmamusumeResponseAnalyzer
                     selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
                 }
             }
+            selections.AddChoice("加入QQ频道");
             var prompt = AnsiConsole.Prompt(selections);
             if (prompt == Resource.LaunchMenu_Options)
             {
@@ -237,6 +238,18 @@ namespace UmamusumeResponseAnalyzer
                     Config.Set("PROXY_PASSWORD", password);
                 }
                 Config.Save();
+            }
+            else if (prompt == "加入QQ频道")
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=1W70LIk&from=246610&biz=ka",
+                    UseShellExecute = true
+                });
+                AnsiConsole.WriteLine("如遇\"你的QQ版本不支持此功能\"，请将该链接发送到手机QQ上打开");
+                AnsiConsole.WriteLine("https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=1W70LIk&from=246610&biz=ka");
+                AnsiConsole.WriteLine("按任意键返回到主菜单...");
+                Console.ReadKey();
             }
             AnsiConsole.Clear();
 
