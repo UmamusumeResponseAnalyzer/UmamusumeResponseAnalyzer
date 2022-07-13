@@ -510,11 +510,11 @@ namespace UmamusumeResponseAnalyzer
             {
                 if (new Uri(downloadURL).Host == "raw.githubusercontent.com")
                 {
-                    AnsiConsole.MarkupLine($"{downloadURL}: [red]无法连接到GitHub，请尝试使用代理[/red]");
+                    AnsiConsole.MarkupLine($"{downloadURL}: [red]无法连接到GitHub，请尝试使用代理[/]");
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"{downloadURL}: [red]无法连接到更新服务器，请尝试在设置中启用\"强制使用GitHub更新\"后再试[/red]");
+                    AnsiConsole.MarkupLine($"{downloadURL}: [red]无法连接到更新服务器，请尝试在设置中启用\"强制使用GitHub更新\"后再试[/]");
                 }
                 return;
             }
