@@ -28,11 +28,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                     2 => "中",
                     3 => "下"
                 };
+                var teamData = i.team_data_array.Where(x => x.trained_chara_id != 0).GroupBy(x => x.distance_type).ToDictionary(x => x.Key, x => x.ToList());
                 var table = new Table();
                 table.Title(Type);
-                table.AddColumns(Enumerable.Repeat(new TableColumn("　　　").NoWrap(), 17).ToArray());
+                table.AddColumns(Enumerable.Repeat(new TableColumn("　　　").NoWrap(), 2 + teamData.Count).ToArray());
                 table.HideHeaders();
-                var teamData = i.team_data_array.GroupBy(x => x.distance_type).ToDictionary(x => x.Key, x => x.ToList());
                 var properTypeLine = new List<string> { string.Empty };
                 var properValueLine = new List<string> { "适性" };
                 var speedLine = new List<string> { "速度" };

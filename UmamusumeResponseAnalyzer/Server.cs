@@ -21,50 +21,57 @@ namespace UmamusumeResponseAnalyzer
             {
                 while (httpListener.IsListening)
                 {
-                    var ctx = await httpListener.GetContextAsync();
-
-                    var ms = new MemoryStream();
-                    ctx.Request.InputStream.CopyTo(ms);
-                    var buffer = ms.ToArray();
-
-                    if (ctx.Request.RawUrl == "/notify/response")
+                    try
                     {
-#if DEBUG
-                        Directory.CreateDirectory("packets");
-                        File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.bin", buffer);
-                        File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
-#endif
-                        if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
+                        var ctx = await httpListener.GetContextAsync();
+
+                        using var ms = new MemoryStream();
+                        ctx.Request.InputStream.CopyTo(ms);
+                        var buffer = ms.ToArray();
+
+                        if (ctx.Request.RawUrl == "/notify/response")
                         {
-                            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
-                            if (Directory.Exists(directory))
-                            {
-                                foreach (var i in Directory.GetFiles(directory))
-                                {
-                                    var fileInfo = new FileInfo(i);
-                                    if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
-                                        fileInfo.Delete();
-                                }
-                            }
-                            else
-                            {
-                                Directory.CreateDirectory(directory);
-                            }
-                            File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.msgpack", buffer);
-                        }
-                        _ = Task.Run(() => ParseResponse(buffer));
-                    }
-                    else if (ctx.Request.RawUrl == "/notify/request")
-                    {
 #if DEBUG
-                        Directory.CreateDirectory("packets");
-                        File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+                            Directory.CreateDirectory("packets");
+                            File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.bin", buffer);
+                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
-                        _ = Task.Run(() => ParseRequest(buffer[170..]));
-                    }
+                            if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
+                            {
+                                var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                                if (Directory.Exists(directory))
+                                {
+                                    foreach (var i in Directory.GetFiles(directory))
+                                    {
+                                        var fileInfo = new FileInfo(i);
+                                        if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
+                                            fileInfo.Delete();
+                                    }
+                                }
+                                else
+                                {
+                                    Directory.CreateDirectory(directory);
+                                }
+                                File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.msgpack", buffer);
+                            }
+                            _ = Task.Run(() => ParseResponse(buffer));
+                        }
+                        else if (ctx.Request.RawUrl == "/notify/request")
+                        {
+#if DEBUG
+                            Directory.CreateDirectory("packets");
+                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+#endif
+                            _ = Task.Run(() => ParseRequest(buffer[170..]));
+                        }
 
-                    await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
-                    ctx.Response.Close();
+                        await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
+                        ctx.Response.Close();
+                    }
+                    catch
+                    {
+
+                    }
                 }
             });
         }
