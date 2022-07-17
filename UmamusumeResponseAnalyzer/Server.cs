@@ -11,12 +11,24 @@ namespace UmamusumeResponseAnalyzer
 {
     internal static class Server
     {
-        static readonly HttpListener httpListener = new();
+        static HttpListener httpListener;
         static readonly object _lock = new();
         public static void Start()
         {
-            httpListener.Prefixes.Add("http://127.0.0.1:4693/");
-            httpListener.Start();
+            try
+            {
+                httpListener = new();
+                httpListener.Prefixes.Add("http://*:4693/");
+                httpListener.Start();
+                AnsiConsole.MarkupLine("服务器已于http://*:4693/启动");
+            }
+            catch
+            {
+                httpListener = new();
+                httpListener.Prefixes.Add("http://127.0.0.1:4693/");
+                httpListener.Start();
+                AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693/启动");
+            }
             Task.Run(async () =>
             {
                 while (httpListener.IsListening)
