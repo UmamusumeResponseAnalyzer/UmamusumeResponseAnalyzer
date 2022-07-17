@@ -288,4 +288,7 @@
   <data name="LaunchMenu_SetNetfilterTarget_AskPort" xml:space="preserve">
     <value>请输入代理服务器的端口（默认: 1080）</value>
   </data>
+  <data name="ConfigSet_DMMLaunch" xml:space="preserve">
+    <value>跳过DMM启动游戏</value>
+  </data>
 </root>

@@ -70,6 +70,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 跳过DMM启动游戏 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_DMMLaunch {
+            get {
+                return ResourceManager.GetString("ConfigSet_DMMLaunch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 启用游戏加速功能 的本地化字符串。
         /// </summary>
         public static string ConfigSet_EnableNetFilter {

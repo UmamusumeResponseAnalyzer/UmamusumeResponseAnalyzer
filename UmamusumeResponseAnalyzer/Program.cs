@@ -53,7 +53,7 @@ namespace UmamusumeResponseAnalyzer
 
             if (Config.Get(Resource.ConfigSet_EnableNetFilter))
                 await NetFilter.Enable();
-            if (File.Exists(DMM.DMM_CONFIG_FILEPATH)) //如果存在DMM的token文件则启用直接登录功能
+            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch)) //如果存在DMM的token文件则启用直接登录功能
                 await RunUmamusume();
 
             Database.Initialize(); //初始化马娘相关数据

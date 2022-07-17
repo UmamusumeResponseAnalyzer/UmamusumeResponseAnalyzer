@@ -11,14 +11,22 @@ namespace UmamusumeResponseAnalyzer
     public static class NetFilter
     {
         private static NFAPI nfAPI = new();
-        static NetFilter()
-        {
-            NFAPI.SetDriverPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "nfdriver.sys"));
-            Redirector.SetBinaryDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
-            NFAPI.EnableLog(false);
-        }
+        private static bool initialized = false;
         public static async Task Enable()
         {
+            var nfDriver = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "nfdriver.sys");
+            var binaryDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+            if (File.Exists(nfDriver) && !initialized)
+            {
+                NFAPI.SetDriverPath(nfDriver);
+                Redirector.SetBinaryDirectory(binaryDirectory);
+                NFAPI.EnableLog(false);
+            }
+            else
+            {
+                AnsiConsole.WriteLine("未找到加速驱动，加速功能启动失败");
+                return;
+            }
             if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
             {
                 AnsiConsole.WriteLine("未配置加速服务器，加速功能启动失败");

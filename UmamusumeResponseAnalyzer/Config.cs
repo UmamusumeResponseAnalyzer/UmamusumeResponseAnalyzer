@@ -31,6 +31,7 @@ namespace UmamusumeResponseAnalyzer
             ConfigSet.Add(Resource.ConfigSet_SaveResponseForDebug, Array.Empty<string>());
             ConfigSet.Add(Resource.ConfigSet_ForceUseGithubToUpdate, Array.Empty<string>());
             ConfigSet.Add(Resource.ConfigSet_EnableNetFilter, Array.Empty<string>());
+            ConfigSet.Add(Resource.ConfigSet_DMMLaunch, Array.Empty<string>());
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {
@@ -52,7 +53,8 @@ namespace UmamusumeResponseAnalyzer
                         if (!Configuration.ContainsKey(i.Key))
                         {
                             if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
-                                i.Key == Resource.ConfigSet_EnableNetFilter) //但是这个不默认开
+                                i.Key == Resource.ConfigSet_EnableNetFilter ||
+                                i.Key == Resource.ConfigSet_DMMLaunch) //但是这个不默认开
                                 Configuration.Add(i.Key, false);
                             else
                                 Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
@@ -82,7 +84,8 @@ namespace UmamusumeResponseAnalyzer
                 if (i.Value == Array.Empty<string>())
                 {
                     if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
-                                i.Key == Resource.ConfigSet_EnableNetFilter) //不默认开
+                                i.Key == Resource.ConfigSet_EnableNetFilter ||
+                                i.Key == Resource.ConfigSet_DMMLaunch) //不默认开
                         Configuration.Add(i.Key, false);
                     else
                         Configuration.Add(i.Key, true);
