@@ -11,22 +11,31 @@ namespace UmamusumeResponseAnalyzer
     public static class NetFilter
     {
         private static NFAPI nfAPI = new();
-        private static bool initialized = false;
+        static NetFilter()
+        {
+            try
+            {
+                var nfDriver = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "nfdriver.sys");
+                var binaryDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+                if (File.Exists(nfDriver))
+                {
+                    NFAPI.SetDriverPath(nfDriver);
+                    Redirector.SetBinaryDirectory(binaryDirectory);
+                    NFAPI.EnableLog(false);
+                }
+                else
+                {
+                    AnsiConsole.WriteLine("未找到加速驱动，加速功能启动失败");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.WriteLine($"加速功能初始化失败: {ex.Message}");
+            }
+        }
         public static async Task Enable()
         {
-            var nfDriver = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "nfdriver.sys");
-            var binaryDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-            if (File.Exists(nfDriver) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys") && !initialized)
-            {
-                NFAPI.SetDriverPath(nfDriver);
-                Redirector.SetBinaryDirectory(binaryDirectory);
-                NFAPI.EnableLog(false);
-            }
-            else
-            {
-                AnsiConsole.WriteLine("未找到加速驱动，加速功能启动失败");
-                return;
-            }
             if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
             {
                 AnsiConsole.WriteLine("未配置加速服务器，加速功能启动失败");

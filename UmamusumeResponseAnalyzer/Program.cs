@@ -80,7 +80,7 @@ namespace UmamusumeResponseAnalyzer
                 );
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (File.Exists(Path.Combine(Environment.SystemDirectory, "drivers", "netfilter2.sys")))
+                if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                 {
                     selections.AddChoice(Resource.LaunchMenu_SetNetfilterTarget);
                     selections.AddChoice(Resource.LaunchMenu_UninstallNetFilterDriver);
