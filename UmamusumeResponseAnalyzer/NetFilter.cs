@@ -16,7 +16,7 @@ namespace UmamusumeResponseAnalyzer
         {
             var nfDriver = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "nfdriver.sys");
             var binaryDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-            if (File.Exists(nfDriver) && !initialized)
+            if (File.Exists(nfDriver) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys") && !initialized)
             {
                 NFAPI.SetDriverPath(nfDriver);
                 Redirector.SetBinaryDirectory(binaryDirectory);

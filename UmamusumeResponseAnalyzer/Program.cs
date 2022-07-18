@@ -188,7 +188,8 @@ namespace UmamusumeResponseAnalyzer
                 Proc.StartInfo = StartInfo;
                 Proc.Start();
                 Proc.WaitForExit();
-                Config.Set(Resource.ConfigSet_EnableNetFilter, true);
+                if (File.Exists(nfapiPath) && File.Exists(nfdriverPath) && File.Exists(redirectorPath) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
+                    Config.Set(Resource.ConfigSet_EnableNetFilter, true);
             }
             else if (prompt == Resource.LaunchMenu_UninstallNetFilterDriver)
             {
