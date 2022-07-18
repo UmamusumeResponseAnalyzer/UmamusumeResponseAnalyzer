@@ -45,8 +45,8 @@ namespace UmamusumeResponseAnalyzer
                         {
 #if DEBUG
                             Directory.CreateDirectory("packets");
-                            File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.bin", buffer);
-                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
+                            File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
+                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
                             if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
                             {
@@ -64,7 +64,7 @@ namespace UmamusumeResponseAnalyzer
                                 {
                                     Directory.CreateDirectory(directory);
                                 }
-                                File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss}R.msgpack", buffer);
+                                File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.msgpack", buffer);
                             }
                             _ = Task.Run(() => ParseResponse(buffer));
                         }
@@ -72,7 +72,7 @@ namespace UmamusumeResponseAnalyzer
                         {
 #if DEBUG
                             Directory.CreateDirectory("packets");
-                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
 #endif
                             _ = Task.Run(() => ParseRequest(buffer[170..]));
                         }

@@ -28,7 +28,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 lines.Add(JsonConvert.SerializeObject(i, Formatting.None));
                 lines.Add(string.Empty);
             }
-            File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss} RoomMatch.txt", lines);
+            File.WriteAllLines(@$"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "races")}/{DateTime.Now:yy-MM-dd HH-mm-ss-fff} RoomMatch.txt", lines);
         }
     }
 }
