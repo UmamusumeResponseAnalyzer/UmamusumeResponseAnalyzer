@@ -27,7 +27,7 @@ namespace UmamusumeResponseAnalyzer
                 httpListener = new();
                 httpListener.Prefixes.Add("http://127.0.0.1:4693/");
                 httpListener.Start();
-                AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693/启动");
+                AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693/启动，如需模拟器/手机连入请以管理员权限运行");
             }
             Task.Run(async () =>
             {
