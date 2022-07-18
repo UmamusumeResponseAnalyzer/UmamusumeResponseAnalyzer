@@ -19,8 +19,7 @@ namespace UmamusumeResponseAnalyzer
             Console.OutputEncoding = Encoding.UTF8;
             //加载设置
             Config.Initialize();
-            //尝试更新程序本体
-            await TryUpdateProgram(args);
+            await ParseArguments(args);
 
             //根据操作系统显示启动菜单
             switch (Environment.OSVersion.GetSystemVersion())
@@ -269,10 +268,36 @@ namespace UmamusumeResponseAnalyzer
                 {
                     ctx.Spinner(Spinner.Known.BouncingBar);
                     ctx.Status(Resource.LaunchMenu_Start_GetToken);
-                    var dmmToken = await DMM.GetExecuteArgsAsync();
-                    AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.IsNullOrEmpty(dmmToken) ? Resource.LaunchMenu_Start_TokenFailed : Resource.LaunchMenu_Start_TokenGot));
-                    ctx.Status(Resource.LaunchMenu_Start_Launching);
-                    if (!string.IsNullOrEmpty(dmmToken)) DMM.Launch(dmmToken);
+
+                    using (var proc = new Process()) //检查下载的文件是否正常
+                    {
+                        var dmmToken = string.Empty;
+                        try
+                        {
+                            proc.StartInfo = new ProcessStartInfo
+                            {
+                                FileName = Environment.ProcessPath!,
+                                Arguments = $"--get-dmm-onetime-token",
+                                UseShellExecute = false,
+                                RedirectStandardOutput = true,
+                                CreateNoWindow = true
+                            };
+                            proc.Start();
+                            while (!proc.StandardOutput.EndOfStream)
+                            {
+                                dmmToken = proc.StandardOutput.ReadLine();
+                            }
+                        }
+                        catch
+                        {
+                            AnsiConsole.MarkupLine("[red]获取DMM OneTimeToken失败[/]");
+                            return;
+                        }
+
+                        AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.IsNullOrEmpty(dmmToken) ? Resource.LaunchMenu_Start_TokenFailed : Resource.LaunchMenu_Start_TokenGot));
+                        ctx.Status(Resource.LaunchMenu_Start_Launching);
+                        if (!string.IsNullOrEmpty(dmmToken)) DMM.Launch(dmmToken);
+                    }
                 }
                 else
                 {
@@ -281,51 +306,84 @@ namespace UmamusumeResponseAnalyzer
                 }
             });
         }
-        static async Task TryUpdateProgram(string[] args)
+        static async Task ParseArguments(string[] args)
+        {
+            switch (args.Length)
+            {
+                case 0:
+                    await TryUpdateProgram();
+                    return;
+                case 1:
+                    {
+                        switch (args[0])
+                        {
+                            case "-v":
+                            case "--version":
+                                {
+                                    Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+                                    Environment.Exit(0);
+                                    return;
+                                }
+                            case "--install-netfilter-driver":
+                                {
+                                    AnsiConsole.Status().Start("正在安装加速驱动，请勿关闭该窗口。", (ctx) =>
+                                    {
+                                        ctx.Spinner(Spinner.Known.BouncingBar);
+                                        NetFilter.InstallDriver();
+                                    });
+                                    Environment.Exit(0);
+                                    return;
+                                }
+                            case "--uninstall-netfilter-driver":
+                                {
+                                    AnsiConsole.Status().Start("正在卸载加速驱动，请勿关闭该窗口。", (ctx) =>
+                                    {
+                                        ctx.Spinner(Spinner.Known.BouncingBar);
+                                        NetFilter.UninstallDriver();
+                                    });
+                                    Environment.Exit(0);
+                                    return;
+                                }
+                            case "--get-dmm-onetime-token":
+                                {
+                                    Console.Write(await DMM.GetExecuteArgsAsync());
+                                    return;
+                                }
+                        }
+                        return;
+                    }
+                case 2:
+                    {
+                        switch (args[0])
+                        {
+                            case "--update":
+                                {
+                                    await TryUpdateProgram(args[1]);
+                                    return;
+                                }
+                        }
+                        return;
+                    }
+            }
+        }
+        static async Task TryUpdateProgram(string savepath = null!)
         {
             var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
             var exist = File.Exists(path);
-            if (args.Length > 1)
+            if (!string.IsNullOrEmpty(savepath))
             {
-                if (args[0] == "--update")
-                {
-                    path = args[1];
-                    if (Environment.ProcessPath != default)
-                        File.Copy(Environment.ProcessPath, path, true);
+                path = savepath;
+                File.Copy(Environment.ProcessPath!, path, true);
 
-                    using var Proc = new Process
+                using var Proc = new Process
+                {
+                    StartInfo = new ProcessStartInfo
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = path,
-                            UseShellExecute = true
-                        }
-                    };
-                    Proc.Start(); //把新程序复制到原来的目录后就启动
-                    Environment.Exit(0);
-                }
-            }
-            else if (args.Length == 1 && (args[0] == "-v" || args[0] == "--version"))
-            {
-                Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
-                Environment.Exit(0);
-            }
-            else if (args.Length == 1 && args[0] == "--install-netfilter-driver")
-            {
-                AnsiConsole.Status().Start("正在安装加速驱动，请勿关闭该窗口。", (ctx) =>
-                {
-                    ctx.Spinner(Spinner.Known.BouncingBar);
-                    NetFilter.InstallDriver();
-                });
-                Environment.Exit(0);
-            }
-            else if (args.Length == 1 && args[0] == "--uninstall-netfilter-driver")
-            {
-                AnsiConsole.Status().Start("正在卸载加速驱动，请勿关闭该窗口。", (ctx) =>
-                {
-                    ctx.Spinner(Spinner.Known.BouncingBar);
-                    NetFilter.UninstallDriver();
-                });
+                        FileName = path,
+                        UseShellExecute = true
+                    }
+                };
+                Proc.Start(); //把新程序复制到原来的目录后就启动
                 Environment.Exit(0);
             }
             else if (exist && !(Environment.ProcessPath != default && MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新

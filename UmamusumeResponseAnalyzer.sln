@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmamusumeResponseAnalyzer", "UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj", "{1DAB5AA1-916A-4EBA-B3FB-92CA61ACC772}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{3E59384E-9264-4D68-90BC-D768347C429C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{3E59384E-9264-4D68-90BC-D768347C429C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

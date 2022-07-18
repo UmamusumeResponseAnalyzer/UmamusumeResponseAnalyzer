@@ -41,13 +41,15 @@ namespace UmamusumeResponseAnalyzer
                 AnsiConsole.WriteLine("未配置加速服务器，加速功能启动失败");
                 return;
             }
+            var host = Config.Get<string>("PROXY_HOST");
+            var port = int.Parse(Config.Get<string>("PROXY_PORT"));
             if (Config.ContainsKey("PROXY_USERNAME") || Config.ContainsKey("PROXY_PASSWORD"))
             {
-                await nfAPI.StartAsync(Config.Get<string>("PROXY_HOST"), int.Parse(Config.Get<string>("PROXY_PORT")), new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, (Config.Get<string>("PROXY_USERNAME"), Config.Get<string>("PROXY_PASSWORD")));
+                await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, (Config.Get<string>("PROXY_USERNAME"), Config.Get<string>("PROXY_PASSWORD")));
             }
             else
             {
-                await nfAPI.StartAsync(Config.Get<string>("PROXY_HOST"), int.Parse(Config.Get<string>("PROXY_PORT")), new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, default);
+                await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, default);
             }
         }
         public static async Task Disable() => await nfAPI.StopAsync();
