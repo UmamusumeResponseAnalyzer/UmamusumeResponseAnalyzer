@@ -2,6 +2,7 @@
 using Spectre.Console;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -216,8 +217,10 @@ namespace UmamusumeResponseAnalyzer
                 do
                 {
                     host = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskHost).AllowEmpty());
+                    if (Uri.CheckHostName(host) == UriHostNameType.Dns)
+                        host = Dns.GetHostAddresses(host)[0].ToString();
                     if (string.IsNullOrEmpty(host)) host = "127.0.0.1";
-                } while (!System.Net.IPAddress.TryParse(host, out var _));
+                } while (!IPAddress.TryParse(host, out var _));
                 do
                 {
                     port = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskPort).AllowEmpty());
