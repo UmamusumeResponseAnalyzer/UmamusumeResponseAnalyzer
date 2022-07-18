@@ -148,12 +148,17 @@ namespace UmamusumeResponseAnalyzer
                     if (data.trained_chara_array != null && data.race_result_info != null && data.entry_info_array != null && data.practice_race_id != null && data.state != null && data.practice_partner_owner_info_array != null)
                     {
                         if (Config.Get(Resource.ConfigSet_ParsePracticeRaceRaceStartResponse))
-                            Handlers.ParsePracticeRaceRaceStartResponse(buffer);
+                            Handlers.ParsePracticeRaceRaceStartResponse(dyn.ToObject<Gallop.PracticeRaceRaceStartResponse>());
                     }
                     if (data.race_scenario != null && data.random_seed != null && data.race_horse_data_array != null && data.trained_chara_array != null && data.season != null && data.weather != null && data.ground_condition != null)
                     {
                         if (Config.Get(Resource.ConfigSet_ParseRoomMatchRaceStartResponse))
                             Handlers.ParseRoomMatchRaceStartResponse(dyn.ToObject<Gallop.RoomMatchRaceStartResponse>());
+                    }
+                    if (data.room_info != null && data.room_user_array != null && data.race_horse_data_array != null && data.trained_chara_array != null)
+                    {
+                        if (Config.Get(Resource.ConfigSet_ParseChampionsRaceStartResponse))
+                            Handlers.ParseChampionsRaceStartResponse(dyn.ToObject<Gallop.ChampionsFinalRaceStartResponse>());
                     }
                 }
                 catch (Exception e)

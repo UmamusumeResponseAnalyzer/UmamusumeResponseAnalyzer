@@ -115,6 +115,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 解析每月大赛比赛 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_ParseChampionsRaceStartResponse {
+            get {
+                return ResourceManager.GetString("ConfigSet_ParseChampionsRaceStartResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 解析好友种马胜鞍 的本地化字符串。
         /// </summary>
         public static string ConfigSet_ParseFriendSearchResponse {

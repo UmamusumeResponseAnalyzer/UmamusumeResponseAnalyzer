@@ -29,7 +29,6 @@ namespace Gallop
             [Key("practice_partner_owner_info_array")]
             public PracticePartnerOwnerInfo[] practice_partner_owner_info_array; // 0x30
         }
-
     }
     [MessagePackObject]
     public class RaceResultInfo // TypeDefIndex: 7434

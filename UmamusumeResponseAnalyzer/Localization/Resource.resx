@@ -291,4 +291,7 @@
   <data name="ConfigSet_DMMLaunch" xml:space="preserve">
     <value>跳过DMM启动游戏</value>
   </data>
+  <data name="ConfigSet_ParseChampionsRaceStartResponse" xml:space="preserve">
+    <value>解析每月大赛比赛</value>
+  </data>
 </root>

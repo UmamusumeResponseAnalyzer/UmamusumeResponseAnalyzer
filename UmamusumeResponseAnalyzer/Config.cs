@@ -24,6 +24,7 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ParseTeamStadiumOpponentListResponse,
                 Resource.ConfigSet_ParsePracticeRaceRaceStartResponse,
                 Resource.ConfigSet_ParseRoomMatchRaceStartResponse,
+                Resource.ConfigSet_ParseChampionsRaceStartResponse,
                 Resource.ConfigSet_MaximiumGradeSkillRecommendation,
                 Resource.ConfigSet_ShowCommandInfo
             });
