@@ -149,7 +149,7 @@ namespace UmamusumeResponseAnalyzer
                 var applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
                 var nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
                 var nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
-                var redirectorPath = Path.Combine(applicationDir, "Redirector.bin");
+                var redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
                 if (!File.Exists(nfapiPath) || !File.Exists(nfdriverPath) || !File.Exists(redirectorPath))
                 {
                     await AnsiConsole.Progress()
@@ -171,7 +171,7 @@ namespace UmamusumeResponseAnalyzer
                             var nfDriverTask = DownloadAssets(ctx, "正在下载nfdriver.sys", nfdriverPath);
                             tasks.Add(nfDriverTask);
 
-                            var redirectorTask = DownloadAssets(ctx, "正在下载Redirector.bin", redirectorPath);
+                            var redirectorTask = DownloadAssets(ctx, "正在下载Redirector.dll", redirectorPath);
                             tasks.Add(redirectorTask);
 
                             await Task.WhenAll(tasks);
@@ -486,8 +486,8 @@ namespace UmamusumeResponseAnalyzer
                     return NetFilterAPIHost + "/nfapi.dll";
                 case var _ when filename == "nfdriver.sys":
                     return NetFilterAPIHost + "/nfdriver.sys";
-                case var _ when filename == "Redirector.bin":
-                    return NetFilterAPIHost + "/Redirector.bin";
+                case var _ when filename == "Redirector.dll":
+                    return NetFilterAPIHost + "/Redirector.dll";
             }
             var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
