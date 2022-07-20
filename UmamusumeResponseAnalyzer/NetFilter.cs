@@ -11,6 +11,7 @@ namespace UmamusumeResponseAnalyzer
     public static class NetFilter
     {
         private static NFAPI nfAPI = new();
+        private static bool initialized = false;
         static NetFilter()
         {
             try
@@ -22,10 +23,11 @@ namespace UmamusumeResponseAnalyzer
                     NFAPI.SetDriverPath(nfDriver);
                     Redirector.SetBinaryDirectory(binaryDirectory);
                     NFAPI.EnableLog(false);
+                    initialized = true;
                 }
                 else
                 {
-                    AnsiConsole.WriteLine("未找到加速驱动，加速功能启动失败");
+                    AnsiConsole.WriteLine("加速功能未启动：未找到加速驱动");
                     return;
                 }
             }
@@ -36,9 +38,14 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async Task Enable()
         {
+            if (!initialized)
+            {
+                AnsiConsole.WriteLine("加速功能未启动：初始化失败");
+                return;
+            }
             if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
             {
-                AnsiConsole.WriteLine("未配置加速服务器，加速功能启动失败");
+                AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
                 return;
             }
             var host = Config.Get<string>("PROXY_HOST");
