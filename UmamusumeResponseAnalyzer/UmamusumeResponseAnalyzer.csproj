@@ -27,7 +27,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="MessagePack" Version="2.3.85" />
-		<PackageReference Include="NetFilterAPI" Version="1.0.7" />
+		<PackageReference Include="NetFilterAPI" Version="1.0.8" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Spectre.Console" Version="0.44.0" />
 	</ItemGroup>
