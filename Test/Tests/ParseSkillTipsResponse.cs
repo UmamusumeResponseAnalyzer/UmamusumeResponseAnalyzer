@@ -92,5 +92,4 @@ namespace Test.Tests
             return new ParseSkillTipsResponseTest(obj);
         }
     }
-
 }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +8,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -68,6 +70,53 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
+
+        public static void RunUmamusume()
+        {
+            AnsiConsole.Status().Start(Resource.LaunchMenu_Start_Checking, ctx =>
+            {
+                var processes = Process.GetProcessesByName("umamusume");
+                AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.Format(Resource.LaunchMenu_Start_Checking_Found, processes.Length)));
+                if (!processes.Any())
+                {
+                    ctx.Spinner(Spinner.Known.BouncingBar);
+                    ctx.Status(Resource.LaunchMenu_Start_GetToken);
+
+                    using var proc = new Process(); //检查下载的文件是否正常
+                    var dmmToken = string.Empty;
+                    try
+                    {
+                        proc.StartInfo = new ProcessStartInfo
+                        {
+                            FileName = Environment.ProcessPath!,
+                            Arguments = $"--get-dmm-onetime-token",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true
+                        };
+                        proc.Start();
+                        while (!proc.StandardOutput.EndOfStream)
+                        {
+                            dmmToken = proc.StandardOutput.ReadLine();
+                        }
+                    }
+                    catch
+                    {
+                        AnsiConsole.MarkupLine("[red]获取DMM OneTimeToken失败[/]");
+                        return;
+                    }
+
+                    AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.IsNullOrEmpty(dmmToken) ? Resource.LaunchMenu_Start_TokenFailed : Resource.LaunchMenu_Start_TokenGot));
+                    ctx.Status(Resource.LaunchMenu_Start_Launching);
+                    if (!string.IsNullOrEmpty(dmmToken)) DMM.Launch(dmmToken);
+                }
+                else
+                {
+                    ctx.Status(Resource.LaunchMenu_Start_Checking_AlreadyRunning);
+                    foreach (var process in processes) process.Dispose();
+                }
+            });
+        }
         public static async ValueTask<string?> GetExecuteArgsAsync()
         {
             var cookies = new CookieContainer();
@@ -107,7 +156,7 @@ namespace UmamusumeResponseAnalyzer
 
             return json["data"]?["execute_args"]?.ToString();
         }
-        public static void Launch(string args)
+        static void Launch(string args)
         {
             using var Proc = new Process();
             var StartInfo = new ProcessStartInfo
@@ -121,7 +170,7 @@ namespace UmamusumeResponseAnalyzer
             Proc.StartInfo = StartInfo;
             Proc.Start();
         }
-        private static Version GetGameVersion()
+        static Version GetGameVersion()
         {
             using var fs = new FileStream(Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "umamusume_Data", "globalgamemanagers"), FileMode.Open);
             fs.Seek(0x1214, SeekOrigin.Begin);
@@ -130,7 +179,7 @@ namespace UmamusumeResponseAnalyzer
             fs.Close();
             return new Version(Encoding.UTF8.GetString(version));
         }
-        private static async Task UpdateGame(string file_list_url, JObject cookie)
+        static async Task UpdateGame(string file_list_url, JObject cookie)
         {
             var applicationRootPath = Path.GetDirectoryName(umamusume_file_path);
             if (applicationRootPath == default) throw new Exception("游戏路径有误？");

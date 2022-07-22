@@ -10,26 +10,24 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class NetFilter
     {
-        private static NFAPI nfAPI = new();
-        private static bool initialized = false;
-        static NetFilter()
+        private static readonly NFAPI nfAPI = new();
+        async static Task Initialize()
         {
             try
             {
-                var nfDriver = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "nfdriver.sys");
-                var binaryDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-                if (File.Exists(nfDriver))
-                {
-                    NFAPI.SetDriverPath(nfDriver);
-                    Redirector.SetBinaryDirectory(binaryDirectory);
-                    NFAPI.EnableLog(false);
-                    initialized = true;
-                }
-                else
+                var applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+                var nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
+                var nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
+                var redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
+                if (!File.Exists(nfdriverPath) || !File.Exists(redirectorPath) || !File.Exists(nfapiPath))
                 {
                     AnsiConsole.WriteLine("加速功能未启动：未找到加速驱动");
-                    return;
+                    AnsiConsole.WriteLine("正在尝试重新下载加速驱动");
+                    await ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath);
                 }
+                NFAPI.SetDriverPath(nfdriverPath);
+                Redirector.SetBinaryDirectory(redirectorPath);
+                NFAPI.EnableLog(false);
             }
             catch (Exception ex)
             {
@@ -38,11 +36,7 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async Task Enable()
         {
-            if (!initialized)
-            {
-                AnsiConsole.WriteLine("加速功能未启动：初始化失败");
-                return;
-            }
+            await Initialize();
             if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
             {
                 AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
