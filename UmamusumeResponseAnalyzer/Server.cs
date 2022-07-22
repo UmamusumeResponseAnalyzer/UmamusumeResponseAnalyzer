@@ -76,6 +76,13 @@ namespace UmamusumeResponseAnalyzer
 #endif
                             _ = Task.Run(() => ParseRequest(buffer[170..]));
                         }
+                        else if (ctx.Request.RawUrl == "/notify/ping")
+                        {
+                            AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
+                            await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
+                            ctx.Response.Close();
+                            continue;
+                        }
 
                         await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
                         ctx.Response.Close();
