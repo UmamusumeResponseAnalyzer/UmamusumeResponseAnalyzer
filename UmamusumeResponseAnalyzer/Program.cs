@@ -21,34 +21,43 @@ namespace UmamusumeResponseAnalyzer
             Config.Initialize();
             await ParseArguments(args);
 
-            //根据操作系统显示启动菜单
-            switch (Environment.OSVersion.GetSystemVersion())
+            //小于Win10 Anniversary Update
+            //if (Environment.OSVersion.Version.Major < 10 || (Environment.OSVersion.Version.Major == 10 && Environment.OSVersion.Version.Build <= 14393))
+            if (true)
             {
-                case SystemVersion.Windows7: //Windows7的终端不支持Prompt，只能简单选择
-                    {
-                        AnsiConsole.WriteLine("检测到Windows 7");
-                        AnsiConsole.WriteLine("按下Y更新数据，按其他任意键启动");
-                        if (Console.ReadKey().Key == ConsoleKey.Y)
+                var funcs = new Dictionary<ConsoleKey, string>();
+                funcs.Add(ConsoleKey.U, "按U更新数据");
+                funcs.Add(ConsoleKey.C, "按C更新选项");
+                funcs.Add(ConsoleKey.I, "按I安装加速驱动");
+                funcs.Add(ConsoleKey.R, "按R卸载加速驱动");
+                funcs.Add(ConsoleKey.S, "按S设置加速服务器");
+                Console.WriteLine("检测到不支持ANSI escape sequences的Windows版本");
+                Console.WriteLine();
+                foreach (var i in funcs)
+                {
+                    if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys") && i.Key == ConsoleKey.I)
+                        continue;
+                    Console.WriteLine(i.Value);
+                }
+                Console.WriteLine("按其他键启动");
+                switch (Console.ReadKey().Key)
+                {
+                    case ConsoleKey.U:
                         {
                             AnsiConsole.WriteLine("正在更新......");
                             await ResourceUpdater.Update();
+                            break;
                         }
-                        foreach (var i in Config.Configuration)
-                        {
-                            Config.Set(i.Key, true);
-                        }
-                        break;
-                    }
-                default:
-                    {
-                        string prompt;
-                        do
-                        {
-                            prompt = await ShowMenu();
-                        }
-                        while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
-                        break;
-                    }
+                }
+            }
+            else
+            {
+                string prompt;
+                do
+                {
+                    prompt = await ShowMenu();
+                }
+                while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
             }
 
             if (Config.Get(Resource.ConfigSet_EnableNetFilter))
@@ -278,6 +287,7 @@ namespace UmamusumeResponseAnalyzer
                             case "--get-dmm-onetime-token":
                                 {
                                     Console.Write(await DMM.GetExecuteArgsAsync());
+                                    Environment.Exit(0);
                                     return;
                                 }
                         }

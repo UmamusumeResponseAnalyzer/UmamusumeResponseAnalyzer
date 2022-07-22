@@ -46,7 +46,12 @@ namespace UmamusumeResponseAnalyzer
             var port = int.Parse(Config.Get<string>("PROXY_PORT"));
             if (Config.ContainsKey("PROXY_USERNAME") || Config.ContainsKey("PROXY_PASSWORD"))
             {
-                await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, (Config.Get<string>("PROXY_USERNAME"), Config.Get<string>("PROXY_PASSWORD")));
+                var username = Config.Get<string>("PROXY_USERNAME");
+                var password = Config.Get<string>("PROXY_PASSWORD");
+                if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
+                    await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, (username, password));
+                else
+                    await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, default);
             }
             else
             {
