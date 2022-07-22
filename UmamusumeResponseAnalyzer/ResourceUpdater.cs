@@ -231,7 +231,7 @@ namespace UmamusumeResponseAnalyzer
         {
             const string CNHost = "https://assets.shuise.net/UmamusumeResponseAnalyzer";
             const string GithubHost = "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master";
-            const string NetFilterAPIHost = "https://assets.shuise.net/NetFilterAPI";
+            const string OSSHost = "https://assets.shuise.net/URA";
             var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
@@ -241,13 +241,13 @@ namespace UmamusumeResponseAnalyzer
                     filename = "UmamusumeResponseAnalyzer.exe";
                     break;
                 case var _ when filename == "nfapi.dll":
-                    return NetFilterAPIHost + "/nfapi.dll";
+                    return OSSHost + "/nfapi.dll";
                 case var _ when filename == "nfdriver.sys":
-                    return NetFilterAPIHost + "/nfdriver.sys";
+                    return OSSHost + "/nfdriver.sys";
                 case var _ when filename == "Redirector.dll":
-                    return NetFilterAPIHost + "/Redirector.dll";
+                    return OSSHost + "/Redirector.dll";
                 case var _ when filename == "cmder.zip":
-                    return CNHost + "cmder.zip";
+                    return OSSHost + "cmder.zip";
             }
             var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
