@@ -13,6 +13,7 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
+        static bool runInCmder = false;
         public static async Task Main(string[] args)
         {
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
@@ -20,6 +21,25 @@ namespace UmamusumeResponseAnalyzer
             //加载设置
             Config.Initialize();
             await ParseArguments(args);
+
+            if ((Environment.OSVersion.Version.Major < 10 || (Environment.OSVersion.Version.Major == 10 && Environment.OSVersion.Version.Build < 14393)) && !runInCmder)
+            { //不支持ANSI Escape Sequences，用Cmder打开
+                var cmderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "cmder");
+                if (!Directory.Exists(cmderPath))
+                    await ResourceUpdater.DownloadCmder(cmderPath);
+                using var Proc = new Process();
+                var StartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(cmderPath, "Cmder.exe"),
+                    Arguments = $"/start \"{Environment.CurrentDirectory}\" /task URA",
+                    CreateNoWindow = false,
+                    UseShellExecute = true
+                };
+                Proc.StartInfo = StartInfo;
+                Proc.Start();
+                Proc.WaitForExit();
+                Environment.Exit(0);
+            }
 
             string prompt;
             do
@@ -256,6 +276,11 @@ namespace UmamusumeResponseAnalyzer
                                 {
                                     Console.Write(await DMM.GetExecuteArgsAsync());
                                     Environment.Exit(0);
+                                    return;
+                                }
+                            case "--cmder":
+                                {
+                                    runInCmder = true;
                                     return;
                                 }
                         }

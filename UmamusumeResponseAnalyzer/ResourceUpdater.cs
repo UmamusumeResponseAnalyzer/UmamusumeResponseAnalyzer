@@ -158,6 +158,30 @@ namespace UmamusumeResponseAnalyzer
                     });
             }
         }
+        public static async Task DownloadCmder(string cmderPath)
+        {
+            await AnsiConsole.Progress()
+                .Columns(new ProgressColumn[]
+                {
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn(),
+                            new SpinnerColumn()
+                })
+                .StartAsync(async ctx =>
+                {
+                    var zipPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "cmder.zip");
+                    var download = DownloadAssets(ctx, "正在下载cmder.zip", zipPath);
+                    var unzip = ctx.AddTask("解压cmder.zip", false).IsIndeterminate();
+                    await download;
+                    unzip.StartTask();
+                    unzip.IsIndeterminate(false);
+                    System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, cmderPath);
+                    File.Delete(zipPath);
+                    unzip.StopTask();
+                });
+        }
         static async Task DownloadAssets(bool dataOnly = false)
         {
             await AnsiConsole.Progress()
@@ -222,6 +246,8 @@ namespace UmamusumeResponseAnalyzer
                     return NetFilterAPIHost + "/nfdriver.sys";
                 case var _ when filename == "Redirector.dll":
                     return NetFilterAPIHost + "/Redirector.dll";
+                case var _ when filename == "cmder.zip":
+                    return CNHost + "cmder.zip";
             }
             var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
