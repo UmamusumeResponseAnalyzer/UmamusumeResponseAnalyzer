@@ -26,7 +26,7 @@ namespace UmamusumeResponseAnalyzer
                     await ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath);
                 }
                 NFAPI.SetDriverPath(nfdriverPath);
-                Redirector.SetBinaryDirectory(redirectorPath);
+                Redirector.SetBinaryDirectory(applicationDir);
                 NFAPI.EnableLog(false);
             }
             catch (Exception ex)

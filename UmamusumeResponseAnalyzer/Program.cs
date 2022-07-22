@@ -214,6 +214,11 @@ namespace UmamusumeResponseAnalyzer
                     Config.Set("PROXY_USERNAME", username);
                     Config.Set("PROXY_PASSWORD", password);
                 }
+                else
+                {
+                    Config.Set("PROXY_USERNAME", string.Empty);
+                    Config.Set("PROXY_PASSWORD", string.Empty);
+                }
                 Config.Save();
             }
             else if (prompt == "加入QQ频道")
