@@ -31,7 +31,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var teamData = i.team_data_array.Where(x => x.trained_chara_id != 0).GroupBy(x => x.distance_type).ToDictionary(x => x.Key, x => x.ToList());
                 var table = new Table();
                 table.Title(Type);
-                AnsiConsole.WriteLine(teamData.Values.Sum(x => x.Count));
                 table.AddColumns(Enumerable.Repeat(new TableColumn("　　　").NoWrap(), 2 + teamData.Values.Sum(x=>x.Count)).ToArray());
                 table.HideHeaders();
                 var properTypeLine = new List<string> { string.Empty };

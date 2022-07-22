@@ -21,44 +21,12 @@ namespace UmamusumeResponseAnalyzer
             Config.Initialize();
             await ParseArguments(args);
 
-            //小于Win10 Anniversary Update
-            //if (Environment.OSVersion.Version.Major < 10 || (Environment.OSVersion.Version.Major == 10 && Environment.OSVersion.Version.Build <= 14393))
-            if (true)
+            string prompt;
+            do
             {
-                var funcs = new Dictionary<ConsoleKey, string>();
-                funcs.Add(ConsoleKey.U, "按U更新数据");
-                funcs.Add(ConsoleKey.C, "按C更新选项");
-                funcs.Add(ConsoleKey.I, "按I安装加速驱动");
-                funcs.Add(ConsoleKey.R, "按R卸载加速驱动");
-                funcs.Add(ConsoleKey.S, "按S设置加速服务器");
-                Console.WriteLine("检测到不支持ANSI escape sequences的Windows版本");
-                Console.WriteLine();
-                foreach (var i in funcs)
-                {
-                    if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys") && i.Key == ConsoleKey.I)
-                        continue;
-                    Console.WriteLine(i.Value);
-                }
-                Console.WriteLine("按其他键启动");
-                switch (Console.ReadKey().Key)
-                {
-                    case ConsoleKey.U:
-                        {
-                            AnsiConsole.WriteLine("正在更新......");
-                            await ResourceUpdater.Update();
-                            break;
-                        }
-                }
+                prompt = await ShowMenu();
             }
-            else
-            {
-                string prompt;
-                do
-                {
-                    prompt = await ShowMenu();
-                }
-                while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
-            }
+            while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
 
             if (Config.Get(Resource.ConfigSet_EnableNetFilter))
                 await NetFilter.Enable();
