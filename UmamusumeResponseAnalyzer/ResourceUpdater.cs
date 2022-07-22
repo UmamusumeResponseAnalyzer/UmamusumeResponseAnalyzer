@@ -247,7 +247,7 @@ namespace UmamusumeResponseAnalyzer
                 case var _ when filename == "Redirector.dll":
                     return OSSHost + "/Redirector.dll";
                 case var _ when filename == "cmder.zip":
-                    return OSSHost + "cmder.zip";
+                    return OSSHost + "/cmder.zip";
             }
             var host = !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
             return ext switch
