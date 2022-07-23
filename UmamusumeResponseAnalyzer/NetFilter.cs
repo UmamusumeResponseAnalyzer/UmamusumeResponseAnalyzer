@@ -36,6 +36,8 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async Task Enable()
         {
+            if (!File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
+                return;
             await Initialize();
             if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
             {
