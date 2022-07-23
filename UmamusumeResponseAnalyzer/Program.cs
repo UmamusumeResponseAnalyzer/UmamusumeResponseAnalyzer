@@ -16,13 +16,14 @@ namespace UmamusumeResponseAnalyzer
         static bool runInCmder = false;
         public static async Task Main(string[] args)
         {
+            Console.Clear();
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             //加载设置
             Config.Initialize();
             await ParseArguments(args);
 
-            if ((Environment.OSVersion.Version.Major < 10 || (Environment.OSVersion.Version.Major == 10 && Environment.OSVersion.Version.Build < 14393)) && !runInCmder)
+            if (!AnsiConsole.Profile.Capabilities.Ansi && !runInCmder)
             { //不支持ANSI Escape Sequences，用Cmder打开
                 var cmderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "cmder");
                 if (!Directory.Exists(cmderPath))
