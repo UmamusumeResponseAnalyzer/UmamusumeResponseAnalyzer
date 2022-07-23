@@ -1,12 +1,8 @@
-﻿using Newtonsoft.Json;
-using Spectre.Console;
+﻿using Spectre.Console;
 using System.Diagnostics;
-using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
@@ -16,7 +12,6 @@ namespace UmamusumeResponseAnalyzer
         static bool runInCmder = false;
         public static async Task Main(string[] args)
         {
-            Console.Clear();
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             //加载设置
@@ -249,7 +244,7 @@ namespace UmamusumeResponseAnalyzer
                             case "-v":
                             case "--version":
                                 {
-                                    Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+                                    Console.Write(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
                                     Environment.Exit(0);
                                     return;
                                 }

@@ -87,13 +87,13 @@ namespace UmamusumeResponseAnalyzer
                         output = proc.StandardOutput.ReadLine();
                     }
                 }
-                catch (Exception)
+                catch
                 {
                 }
                 if (string.IsNullOrEmpty(output))
                 {
-                    File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
                     AnsiConsole.MarkupLine("[red]更新文件受损，主程序更新失败[/]");
+                    File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
                     return;
                 }
             }
