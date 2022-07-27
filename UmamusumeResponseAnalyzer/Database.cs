@@ -14,6 +14,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string SUPPORT_ID_SHORTNAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "name_cn.br");
         internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.br");
         internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talentskillsets.br");
+        internal static string FACTOR_IDS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "factor_ids.br");
         /// <summary>
         /// index为属性，value为对应属性的评价点
         /// </summary>
@@ -50,6 +51,10 @@ namespace UmamusumeResponseAnalyzer
         /// 马娘的天赋技能,Key是CardId
         /// </summary>
         public static Dictionary<int, TalentSkillData[]> TalentSkill { get; set; } = new();
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Dictionary<int, string> FactorIds { get; set; }
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -96,6 +101,12 @@ namespace UmamusumeResponseAnalyzer
                 var talentSkill = JsonConvert.DeserializeObject<Dictionary<int, TalentSkillData[]>>(Load(TALENT_SKILLS_FILEPATH));
                 if (talentSkill != default)
                     TalentSkill = talentSkill;
+            }
+            if (File.Exists(FACTOR_IDS_FILEPATH))
+            {
+                var factor_ids = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(FACTOR_IDS_FILEPATH));
+                if (factor_ids != default)
+                    FactorIds = factor_ids;
             }
         }
         static string Load(string path) => Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));

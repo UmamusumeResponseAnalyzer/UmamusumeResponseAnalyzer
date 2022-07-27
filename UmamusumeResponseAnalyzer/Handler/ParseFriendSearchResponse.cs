@@ -19,7 +19,50 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.Write(new Rule());
             AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\t\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
             AnsiConsole.WriteLine($"种马：{Name}\t\t{WinSaddle}\t\t{Score}");
+            var tree = new Tree("因子");
+
+            var max = i.factor_id_array.Concat(i.succession_chara_array[0].factor_id_array)
+                .Concat(i.succession_chara_array[1].factor_id_array)
+                .Where((x, index) => index % 2 == 0)
+                .Max(x => GetRenderWidth(Database.FactorIds[x]));
+            var representative = AddFactors("代表", i.factor_id_array, max);
+            var inheritanceA = AddFactors("祖辈", i.succession_chara_array[0].factor_id_array, max);
+            var inheritanceB = AddFactors("祖辈", i.succession_chara_array[1].factor_id_array, max);
+
+            tree.AddNodes(representative, inheritanceA, inheritanceB);
+            AnsiConsole.Write(tree);
             AnsiConsole.Write(new Rule());
+        }
+        static Tree AddFactors(string title, int[] id_array, int max)
+        {
+            var tree = new Tree(title);
+            var ordered = id_array.Take(2).Append(id_array[^1]).Concat(id_array.Skip(2).SkipLast(1));
+            var even = ordered.Where((x, index) => index % 2 == 0).ToArray();
+            var odd = ordered.Where((x, index) => index % 2 != 0).ToArray();
+            foreach (var index in Enumerable.Range(0, even.Length))
+            {
+                var sb = new StringBuilder();
+                sb.Append(FactorName(even[index]));
+                sb.Append(string.Join(string.Empty, Enumerable.Repeat(' ', 12 + max - GetRenderWidth(Database.FactorIds[even[index]]))));
+                sb.Append(odd.Length > index ? FactorName(odd[index]) : "");
+                tree.AddNode(sb.ToString());
+            }
+            return tree;
+        }
+        static string FactorName(int factorId)
+        {
+            var name = Database.FactorIds[factorId];
+            return factorId.ToString().Length switch
+            {
+                3 => $"[white on #37B8F4]{name}[/]",
+                4 => $"[white on #FF78B2]{name}[/]",
+                8 => $"[white on #91D02E]{name}[/]",
+                _ => $"[#794016 on #E1E2E1]{name}[/]",
+            };
+        }
+        static int GetRenderWidth(string text)
+        {
+            return text.Sum(x => x.GetCellWidth());
         }
     }
 }

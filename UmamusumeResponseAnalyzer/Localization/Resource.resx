@@ -154,10 +154,10 @@
     <value>下载完成</value>
   </data>
   <data name="LaunchMenu_Update_DownloadEventsInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的events.json</value>
+    <value>正在从GitHub下载最新的events.br</value>
   </data>
   <data name="LaunchMenu_Update_DownloadSuccessEventsInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的successevents.json</value>
+    <value>正在从GitHub下载最新的successevents.br</value>
   </data>
   <data name="LaunchMenu_Start_Checking" xml:space="preserve">
     <value>[yellow]正在检测umamusume.exe是否运行[/]</value>
@@ -193,7 +193,7 @@
     <value>解析房间比赛</value>
   </data>
   <data name="LaunchMenu_Update_DownloadIdToNameInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的id.json</value>
+    <value>正在从GitHub下载最新的id.br</value>
   </data>
   <data name="LaunchMenu_Update_DownloadProgramInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的主程序文件</value>
@@ -205,7 +205,7 @@
     <value>未发现新版本程序</value>
   </data>
   <data name="LaunchMenu_Update_DownloadSkillDataInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的skilldata.json</value>
+    <value>正在从GitHub下载最新的skilldata.br</value>
   </data>
   <data name="ConfigSet_MaximiumGradeSkillRecommendation" xml:space="preserve">
     <value>给出评价点最大化的技能学习建议</value>
@@ -244,16 +244,16 @@
     <value>显示训练人头信息</value>
   </data>
   <data name="LaunchMenu_Update_DownloadTranslatedNameInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的name_cn.json</value>
+    <value>正在从GitHub下载最新的name_cn.br</value>
   </data>
   <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的climaxitems.json</value>
+    <value>正在从GitHub下载最新的climaxitems.br</value>
   </data>
   <data name="ConfigSet_AutoUpdate" xml:space="preserve">
     <value>自动更新</value>
   </data>
   <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的talentskillsets.json</value>
+    <value>正在从GitHub下载最新的talentskillsets.br</value>
   </data>
   <data name="ConfigSet_SaveResponseForDebug" xml:space="preserve">
     <value>保存用于调试的通讯包</value>
@@ -293,5 +293,8 @@
   </data>
   <data name="ConfigSet_ParseChampionsRaceStartResponse" xml:space="preserve">
     <value>解析每月大赛比赛</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadFactorIdsInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的factor_ids.br</value>
   </data>
 </root>

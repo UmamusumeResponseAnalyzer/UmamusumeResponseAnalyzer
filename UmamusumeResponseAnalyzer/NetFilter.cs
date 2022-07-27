@@ -11,7 +11,7 @@ namespace UmamusumeResponseAnalyzer
     public static class NetFilter
     {
         private static readonly NFAPI nfAPI = new();
-        async static Task Initialize()
+        static NetFilter()
         {
             try
             {
@@ -23,7 +23,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     AnsiConsole.WriteLine("加速功能未启动：未找到加速驱动");
                     AnsiConsole.WriteLine("正在尝试重新下载加速驱动");
-                    await ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath);
+                    ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath).Wait();
                 }
                 NFAPI.SetDriverPath(nfdriverPath);
                 Redirector.SetBinaryDirectory(applicationDir);
@@ -38,7 +38,6 @@ namespace UmamusumeResponseAnalyzer
         {
             if (!File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                 return;
-            await Initialize();
             if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
             {
                 AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
@@ -46,18 +45,19 @@ namespace UmamusumeResponseAnalyzer
             }
             var host = Config.Get<string>("PROXY_HOST");
             var port = int.Parse(Config.Get<string>("PROXY_PORT"));
+            var apps = new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
             if (Config.ContainsKey("PROXY_USERNAME") || Config.ContainsKey("PROXY_PASSWORD"))
             {
                 var username = Config.Get<string>("PROXY_USERNAME");
                 var password = Config.Get<string>("PROXY_PASSWORD");
                 if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
-                    await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, (username, password));
+                    await nfAPI.StartAsync(host, port, apps, default!, (username, password));
                 else
-                    await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, default);
+                    await nfAPI.StartAsync(host, port, apps, default!, default);
             }
             else
             {
-                await nfAPI.StartAsync(host, port, new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe" }, default!, default);
+                await nfAPI.StartAsync(host, port, apps, default!, default);
             }
         }
         public static async Task Disable() => await nfAPI.StopAsync();

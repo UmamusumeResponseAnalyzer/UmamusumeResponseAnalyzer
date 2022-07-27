@@ -28,7 +28,7 @@ namespace UmamusumeResponseAnalyzer
                 Proc.Start(); //把新程序复制到原来的目录后就启动
                 Environment.Exit(0);
             }
-            else if (exist && !(Environment.ProcessPath != default && MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新
+            else if (exist && !(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath!)).SequenceEqual(MD5.HashData(File.ReadAllBytes(path))))) //临时目录与当前目录的不一致则认为未更新
             {
                 CloseToUpdate();
                 exist = false; //能执行到这就代表更新文件受损，已经被删掉了
@@ -217,6 +217,9 @@ namespace UmamusumeResponseAnalyzer
 
                     var talentSkillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
                     tasks.Add(talentSkillTask);
+
+                    var factorIdTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH);
+                    tasks.Add(factorIdTask);
 
                     if (!dataOnly)
                     {

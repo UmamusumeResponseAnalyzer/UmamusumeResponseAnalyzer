@@ -421,7 +421,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的climaxitems.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的climaxitems.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadClimaxItemInstruction {
             get {
@@ -439,7 +439,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的events.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的events.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadEventsInstruction {
             get {
@@ -448,7 +448,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的id.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的factor_ids.br 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Update_DownloadFactorIdsInstruction {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Update_DownloadFactorIdsInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 正在从GitHub下载最新的id.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadIdToNameInstruction {
             get {
@@ -466,7 +475,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的skilldata.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的skilldata.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadSkillDataInstruction {
             get {
@@ -475,7 +484,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的successevents.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的successevents.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadSuccessEventsInstruction {
             get {
@@ -484,7 +493,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的talentskillsets.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的talentskillsets.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadTalentSkillInstruction {
             get {
@@ -493,7 +502,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的name_cn.json 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的name_cn.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadTranslatedNameInstruction {
             get {
