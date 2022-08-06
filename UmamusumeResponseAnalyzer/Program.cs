@@ -43,15 +43,37 @@ namespace UmamusumeResponseAnalyzer
                 prompt = await ShowMenu();
             }
             while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
-
-            if (Config.Get(Resource.ConfigSet_EnableNetFilter))
-                await NetFilter.Enable();
-            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch)) //如果存在DMM的token文件则启用直接登录功能
-                DMM.RunUmamusume();
-
+            
             Database.Initialize(); //初始化马娘相关数据
             Server.Start(); //启动HTTP服务器
             AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
+
+            if (Config.Get(Resource.ConfigSet_EnableNetFilter))
+                await NetFilter.Enable();
+            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch) && DMM.Accounts.Any()) //如果存在DMM的token文件则启用直接登录功能
+            {
+                if (DMM.Accounts.Count == 1)
+                {
+                    DMM.Accounts[0].RunUmamusume();
+                }
+                else
+                {
+                    prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                        .Title("发现多个帐号，请选择要启动的那个")
+                        .AddChoices(DMM.Accounts.Select(x => x.Name))
+                        .AddChoices(new[] { "启动全部" }));
+                    if (prompt == "启动全部")
+                    {
+                        DMM.IgnoreExistProcess = true;
+                        foreach (var account in DMM.Accounts)
+                            account.RunUmamusume();
+                    }
+                    else
+                    {
+                        DMM.Accounts.Find(x => x.Name == prompt)?.RunUmamusume();
+                    }
+                }
+            }
 
             while (true)
             {
@@ -62,12 +84,11 @@ namespace UmamusumeResponseAnalyzer
         {
             var selections = new SelectionPrompt<string>()
                 .Title(Resource.LaunchMenu)
-                .PageSize(10)
                 .AddChoices(new[]
                 {
-                        Resource.LaunchMenu_Start,
-                        Resource.LaunchMenu_Options,
-                        Resource.LaunchMenu_Update
+                    Resource.LaunchMenu_Start,
+                    Resource.LaunchMenu_Options,
+                    Resource.LaunchMenu_Update
                 }
                 );
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -268,12 +289,6 @@ namespace UmamusumeResponseAnalyzer
                                     Environment.Exit(0);
                                     return;
                                 }
-                            case "--get-dmm-onetime-token":
-                                {
-                                    Console.Write(await DMM.GetExecuteArgsAsync());
-                                    Environment.Exit(0);
-                                    return;
-                                }
                             case "--cmder":
                                 {
                                     runInCmder = true;
@@ -289,6 +304,17 @@ namespace UmamusumeResponseAnalyzer
                             case "--update":
                                 {
                                     await ResourceUpdater.TryUpdateProgram(args[1]);
+                                    return;
+                                }
+                            case "--update-data":
+                                {
+                                    System.IO.Compression.ZipFile.ExtractToDirectory(args[1], Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
+                                    return;
+                                }
+                            case "--get-dmm-onetime-token":
+                                {
+                                    Console.Write(await DMM.Accounts[int.Parse(args[1])].GetExecuteArgsAsync());
+                                    Environment.Exit(0);
                                     return;
                                 }
                         }

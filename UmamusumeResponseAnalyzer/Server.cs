@@ -13,6 +13,7 @@ namespace UmamusumeResponseAnalyzer
     {
         static HttpListener httpListener;
         static readonly object _lock = new();
+        public static ManualResetEvent OnPing = new(false);
         public static void Start()
         {
             try
@@ -81,6 +82,7 @@ namespace UmamusumeResponseAnalyzer
                             AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
                             await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
                             ctx.Response.Close();
+                            OnPing.Signal();
                             continue;
                         }
 

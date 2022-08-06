@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using IniParser;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Localization;
 
@@ -15,7 +17,7 @@ namespace UmamusumeResponseAnalyzer
     /// <summary>
     /// 直接从Beta抓的包，然后重放
     /// </summary>
-    internal static class DMM
+    internal class DMM
     {
         internal static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
         private const string AcceptEncoding = "gzip, deflate, br";
@@ -26,89 +28,133 @@ namespace UmamusumeResponseAnalyzer
         private const string SecFetchDest = "empty";
         private const string SecFetchMode = "no-cors";
         private const string SecFetchSite = "none";
-        //User specific
-        private static string login_session_id { get; set; } = string.Empty;
-        private static string login_secure_id { get; set; } = string.Empty;
-        private static string mac_address { get; set; } = string.Empty;
-        private static string hdd_serial { get; set; } = string.Empty;
-        private static string motherboard { get; set; } = string.Empty;
-        private static string user_os { get; set; } = string.Empty;
-        private static string umamusume_file_path { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Umamusume", "umamusume.exe");
+        static private string mac_address { get; set; } = string.Empty;
+        static private string hdd_serial { get; set; } = string.Empty;
+        static private string motherboard { get; set; } = string.Empty;
+        static private string user_os { get; set; } = string.Empty;
+        static private string umamusume_file_path { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Umamusume", "umamusume.exe");
+
+        public static List<DMM> Accounts { get; set; } = new();
+        public string Name { get; set; } = string.Empty;
+        public static bool IgnoreExistProcess = false;
+        private string split_umamusume_file_path { get; set; } = string.Empty;
+        private string savedata_file_path { get; set; } = string.Empty;
+        private string login_session_id { get; set; } = string.Empty;
+        private string login_secure_id { get; set; } = string.Empty;
 
         static DMM()
         {
             if (!File.Exists(DMM_CONFIG_FILEPATH)) return;
-            var lines = File.ReadAllLines(DMM_CONFIG_FILEPATH).Where(x => !string.IsNullOrEmpty(x));
-            foreach (var i in lines)
+            var config = new FileIniDataParser().ReadFile(DMM_CONFIG_FILEPATH, Encoding.UTF8);
+            foreach (var i in config["information"])
             {
-                var split = i.Split('=');
-                switch (split[0])
+                switch (i.KeyName)
                 {
-                    case nameof(login_session_id):
-                        login_session_id = split[1];
-                        break;
-                    case nameof(login_secure_id):
-                        login_secure_id = split[1];
-                        break;
                     case nameof(mac_address):
-                        mac_address = split[1];
+                        mac_address = i.Value;
                         break;
                     case nameof(hdd_serial):
-                        hdd_serial = split[1];
+                        hdd_serial = i.Value;
                         break;
                     case nameof(motherboard):
-                        motherboard = split[1];
+                        motherboard = i.Value;
                         break;
                     case nameof(user_os):
-                        user_os = split[1];
+                        user_os = i.Value;
                         break;
                     case nameof(umamusume_file_path):
-                        umamusume_file_path = split[1];
+                        umamusume_file_path = i.Value;
                         break;
                     default:
-                        throw new Exception($"Unknown .token key {split[0]}");
+                        throw new Exception($"Unknown .token key {i.KeyName}");
                 }
+            }
+            foreach (var i in config.Sections.Where(x => x.SectionName != "information"))
+            {
+                var dmm = new DMM();
+                dmm.Name = i.SectionName;
+                dmm.login_secure_id = i.Keys[nameof(login_secure_id)];
+                dmm.login_session_id = i.Keys[nameof(login_session_id)];
+                dmm.savedata_file_path = i.Keys[nameof(savedata_file_path)];
+                dmm.split_umamusume_file_path = i.Keys[nameof(split_umamusume_file_path)];
+                if (!string.IsNullOrEmpty(dmm.login_secure_id) && !string.IsNullOrEmpty(dmm.login_session_id))
+                    Accounts.Add(dmm);
             }
         }
 
-        public static void RunUmamusume()
+        public void RunUmamusume()
         {
             AnsiConsole.Status().Start(Resource.LaunchMenu_Start_Checking, ctx =>
             {
                 var processes = Process.GetProcessesByName("umamusume");
                 AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.Format(Resource.LaunchMenu_Start_Checking_Found, processes.Length)));
-                if (!processes.Any())
+                if (!processes.Any() || IgnoreExistProcess)
                 {
                     ctx.Spinner(Spinner.Known.BouncingBar);
                     ctx.Status(Resource.LaunchMenu_Start_GetToken);
 
                     using var proc = new Process(); //检查下载的文件是否正常
                     var dmmToken = string.Empty;
-                    try
+                    proc.StartInfo = new ProcessStartInfo
                     {
-                        proc.StartInfo = new ProcessStartInfo
-                        {
-                            FileName = Environment.ProcessPath!,
-                            Arguments = $"--get-dmm-onetime-token",
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            CreateNoWindow = true
-                        };
-                        proc.Start();
-                        while (!proc.StandardOutput.EndOfStream)
-                        {
-                            dmmToken = proc.StandardOutput.ReadLine();
-                        }
-                    }
-                    catch
+                        FileName = Environment.ProcessPath!,
+                        Arguments = $"--get-dmm-onetime-token {Accounts.IndexOf(this)}",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+                    proc.Start();
+                    while (!proc.StandardOutput.EndOfStream)
                     {
-                        AnsiConsole.MarkupLine("[red]获取DMM OneTimeToken失败[/]");
-                        return;
+                        dmmToken = proc.StandardOutput.ReadLine();
                     }
 
-                    AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.IsNullOrEmpty(dmmToken) ? Resource.LaunchMenu_Start_TokenFailed : Resource.LaunchMenu_Start_TokenGot));
+                    switch (dmmToken)
+                    {
+                        case "DMM session has expired":
+                            {
+                                AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, "DMM session已过期"));
+                                break;
+                            }
+                        case "":
+                            {
+
+                                AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, Resource.LaunchMenu_Start_TokenFailed));
+                                break;
+                            }
+                        default:
+
+                            AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, Resource.LaunchMenu_Start_TokenGot));
+                            break;
+                    }
                     ctx.Status(Resource.LaunchMenu_Start_Launching);
-                    if (!string.IsNullOrEmpty(dmmToken)) DMM.Launch(dmmToken);
+                    if (!string.IsNullOrEmpty(dmmToken))
+                    {
+                        if (string.IsNullOrEmpty(savedata_file_path))
+                        {
+                            Launch(dmmToken);
+                        }
+                        else
+                        {
+                            var configFilepath = Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "config.json");
+                            var config = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(File.ReadAllText(configFilepath))!;
+                            if (config.ContainsKey("savedata_path"))
+                            {
+                                var prev = config["savedata_path"]!.ToString();
+                                config["savedata_path"] = savedata_file_path;
+                                File.WriteAllText(configFilepath, config.ToString(Newtonsoft.Json.Formatting.Indented));
+                                config["savedata_path"] = prev;
+                            }
+                            else
+                            {
+                                config["savedata_path"] = savedata_file_path;
+                                File.WriteAllText(configFilepath, config.ToString(Newtonsoft.Json.Formatting.Indented));
+                                config.Remove("savedata_path");
+                            }
+                            Launch(dmmToken);
+                            Server.OnPing.Wait(() => File.WriteAllText(configFilepath, config.ToString(Newtonsoft.Json.Formatting.Indented)));
+                        }
+                    }
                 }
                 else
                 {
@@ -117,7 +163,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             });
         }
-        public static async ValueTask<string?> GetExecuteArgsAsync()
+        public async ValueTask<string?> GetExecuteArgsAsync()
         {
             var cookies = new CookieContainer();
             using var client = new HttpClient(new HttpClientHandler
@@ -144,6 +190,10 @@ namespace UmamusumeResponseAnalyzer
                 using var resp = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
                 json = JObject.Parse(await resp.Content.ReadAsStringAsync());
             }
+            if (json["result_code"]?.ToObject<int>() == 203)
+            {
+                return "DMM session has expired";
+            }
             var version = new Version(json["data"]!["latest_version"]!.ToString());
             if (GetGameVersion() < version)
             {
@@ -156,12 +206,12 @@ namespace UmamusumeResponseAnalyzer
 
             return json["data"]?["execute_args"]?.ToString();
         }
-        static void Launch(string args)
+        void Launch(string args)
         {
             using var Proc = new Process();
             var StartInfo = new ProcessStartInfo
             {
-                FileName = umamusume_file_path,
+                FileName = string.IsNullOrEmpty(split_umamusume_file_path) ? umamusume_file_path : split_umamusume_file_path,
                 Arguments = args,
                 CreateNoWindow = false,
                 UseShellExecute = true,
@@ -170,7 +220,7 @@ namespace UmamusumeResponseAnalyzer
             Proc.StartInfo = StartInfo;
             Proc.Start();
         }
-        static Version GetGameVersion()
+        Version GetGameVersion()
         {
             using var fs = new FileStream(Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "umamusume_Data", "globalgamemanagers"), FileMode.Open);
             fs.Seek(0x1214, SeekOrigin.Begin);
@@ -179,7 +229,7 @@ namespace UmamusumeResponseAnalyzer
             fs.Close();
             return new Version(Encoding.UTF8.GetString(version));
         }
-        static async Task UpdateGame(string file_list_url, JObject cookie)
+        async Task UpdateGame(string file_list_url, JObject cookie)
         {
             var applicationRootPath = Path.GetDirectoryName(umamusume_file_path);
             if (applicationRootPath == default) throw new Exception("游戏路径有误？");
@@ -190,11 +240,11 @@ namespace UmamusumeResponseAnalyzer
             });
             client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip");
             client.DefaultRequestHeaders.Add("User-Agent", "Go-http-client/2.0");
-            var totalPages = JObject.Parse(await (await client.GetAsync($"https://apidgp-gameplayer.games.dmm.com{file_list_url}")).Content.ReadAsStringAsync())["data"]!["total_pages"]!.Value<int>();
+            var totalPages = JObject.Parse(await (await client.GetAsync($"https://apidgp-gameplayer.games.dmm.com{file_list_url}/totalpages")).Content.ReadAsStringAsync())["data"]!["total_pages"]!.Value<int>();
             var downloads = new List<JToken>();
             foreach (var i in Enumerable.Range(1, totalPages))
             {
-                var page = JObject.Parse(await (await client.GetAsync($"https://apidgp-gameplayer.games.dmm.com{file_list_url}?page=1")).Content.ReadAsStringAsync());
+                var page = JObject.Parse(await (await client.GetAsync($"https://apidgp-gameplayer.games.dmm.com{file_list_url}?page={i}")).Content.ReadAsStringAsync());
                 foreach (var j in page["data"]!["file_list"]!)
                 {
                     downloads.Add(j);

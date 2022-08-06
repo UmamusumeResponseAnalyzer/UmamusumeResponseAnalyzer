@@ -1,4 +1,6 @@
-﻿using MessagePack;
+﻿using IniParser;
+using IniParser.Model;
+using MessagePack;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,7 @@ namespace UmamusumeResponseAnalyzer
         internal static Dictionary<string, object> Configuration { get; private set; } = new();
         internal static void Initialize()
         {
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             ConfigSet.Add(Resource.ConfigSet_Events, new[]
             {
                 Resource.ConfigSet_ParseSingleModeCheckEventResponse,
@@ -28,18 +31,36 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_MaximiumGradeSkillRecommendation,
                 Resource.ConfigSet_ShowCommandInfo
             });
-            ConfigSet.Add(Resource.ConfigSet_AutoUpdate, Array.Empty<string>());
-            ConfigSet.Add(Resource.ConfigSet_SaveResponseForDebug, Array.Empty<string>());
-            ConfigSet.Add(Resource.ConfigSet_ForceUseGithubToUpdate, Array.Empty<string>());
-            ConfigSet.Add(Resource.ConfigSet_EnableNetFilter, Array.Empty<string>());
-            ConfigSet.Add(Resource.ConfigSet_DMMLaunch, Array.Empty<string>());
-            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
+            ConfigSet.Add("更新", new[]
+            {
+                Resource.ConfigSet_AutoUpdate,
+                Resource.ConfigSet_ForceUseGithubToUpdate
+            });
+            ConfigSet.Add("调试", new[]
+            {
+                Resource.ConfigSet_SaveResponseForDebug
+            });
+            ConfigSet.Add("其他", new[]
+            {
+                Resource.ConfigSet_EnableNetFilter,
+                Resource.ConfigSet_DMMLaunch
+            });
             if (File.Exists(CONFIG_FILEPATH))
             {
                 try
                 {
-                    var configuration = MessagePackSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllBytes(CONFIG_FILEPATH));
-                    Configuration = configuration;
+                    var configuration = new FileIniDataParser().ReadFile(CONFIG_FILEPATH, Encoding.UTF8);
+                    foreach (var i in configuration.Sections.SelectMany(x => x.Keys))
+                    {
+                        if (bool.TryParse(i.Value, out var inBool))
+                        {
+                            Configuration.Add(i.KeyName, inBool);
+                        }
+                        else
+                        {
+                            Configuration.Add(i.KeyName, i.Value);
+                        }
+                    }
                 }
                 catch (Exception)
                 {
@@ -47,57 +68,36 @@ namespace UmamusumeResponseAnalyzer
                     Generate();
                     AnsiConsole.MarkupLine($"[red]读取配置文件时发生错误,已重新生成,请再次更改设置[/]");
                 }
-                foreach (var i in ConfigSet)
-                {
-                    if (i.Value == Array.Empty<string>())
-                    {
-                        if (!Configuration.ContainsKey(i.Key))
-                        {
-                            if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
-                                i.Key == Resource.ConfigSet_EnableNetFilter ||
-                                i.Key == Resource.ConfigSet_DMMLaunch) //但是这个不默认开
-                                Configuration.Add(i.Key, false);
-                            else
-                                Configuration.Add(i.Key, true); //对于新添加的功能 默认开启
-                        }
-                    }
-                    else
-                    {
-                        foreach (var j in i.Value)
-                        {
-                            if (!Configuration.ContainsKey(j))
-                                Configuration.Add(j, true);
-                        }
-                    }
-                }
             }
             else
             {
                 Generate();
             }
         }
-        public static void Save() =>
-                File.WriteAllBytes(CONFIG_FILEPATH, MessagePackSerializer.Serialize(Configuration));
-        private static void Generate()
+        public static void Save()
         {
+            var ini = new IniData();
             foreach (var i in ConfigSet)
             {
-                if (i.Value == Array.Empty<string>())
+                var section = new SectionData(i.Key);
+                foreach (var j in ConfigSet[i.Key])
                 {
-                    if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
-                                i.Key == Resource.ConfigSet_EnableNetFilter ||
-                                i.Key == Resource.ConfigSet_DMMLaunch) //不默认开
-                        Configuration.Add(i.Key, false);
-                    else
-                        Configuration.Add(i.Key, true);
+                    section.Keys[j] = Configuration[j].ToString();
                 }
+                ini.Sections.Add(section);
+            }
+            new FileIniDataParser().WriteFile(CONFIG_FILEPATH, ini, Encoding.UTF8);
+        }
+        private static void Generate()
+        {
+            foreach (var i in ConfigSet.SelectMany(x => x.Value))
+            {
+                if (i == Resource.ConfigSet_ForceUseGithubToUpdate ||
+                    i == Resource.ConfigSet_EnableNetFilter ||
+                    i == Resource.ConfigSet_DMMLaunch) //不默认开
+                    Configuration.Add(i, false);
                 else
-                {
-                    foreach (var j in i.Value)
-                    {
-                        Configuration.Add(j, true);
-                    }
-                }
+                    Configuration.Add(i, true);
             }
             Save();
         }
