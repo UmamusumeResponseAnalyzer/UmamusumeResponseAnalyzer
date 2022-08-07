@@ -43,7 +43,7 @@ namespace UmamusumeResponseAnalyzer
                 prompt = await ShowMenu();
             }
             while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
-            
+
             Database.Initialize(); //初始化马娘相关数据
             Server.Start(); //启动HTTP服务器
 
@@ -116,19 +116,12 @@ namespace UmamusumeResponseAnalyzer
 
                 foreach (var i in Config.ConfigSet) //根据预设值添加选项
                 {
-                    if (i.Value == Array.Empty<string>())
-                    {
-                        multiSelection.AddChoice(i.Key);
-                    }
-                    else
-                    {
-                        multiSelection.AddChoiceGroup(i.Key, i.Value);
-                    }
+                    multiSelection.AddChoiceGroup(i.Key, i.Value.Where(x => x.Visiable).Select(x => x.Key));
                 }
 
                 foreach (var i in Config.Configuration) //复原配置文件的选择情况
                 {
-                    if (i.Value.GetType() == typeof(bool) && (bool)i.Value)
+                    if (i.Value.Value.GetType() == typeof(bool) && (bool)i.Value.Value)
                     {
                         multiSelection.Select(i.Key);
                     }
@@ -136,7 +129,9 @@ namespace UmamusumeResponseAnalyzer
 
                 foreach (var i in Config.ConfigSet) //如果配置文件中的某一组全被选中，则也选中对应的组
                 {
-                    if (i.Value != Array.Empty<string>() && Config.Configuration.Where(x => x.Value.GetType() == typeof(bool) && (bool)x.Value == true).Select(x => x.Key).Intersect(i.Value).Count() == i.Value.Length)
+                    var visiableItems = Config.Configuration.Where(x => x.Value.Visiable);
+                    var visiableConfig = i.Value.Where(x => x.Visiable);
+                    if (i.Value.Any() && visiableItems.Where(x => x.Value.Value.GetType() == typeof(bool) && (bool)x.Value.Value).Select(x => x.Key).Intersect(i.Value.Select(x => x.Key)).Count() == visiableConfig.Count())
                     {
                         multiSelection.Select(i.Key);
                     }
@@ -214,8 +209,8 @@ namespace UmamusumeResponseAnalyzer
                     port = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskPort).AllowEmpty());
                     if (string.IsNullOrEmpty(port)) port = "1080";
                 } while (!int.TryParse(port, out var _));
-                Config.Set("PROXY_HOST", host);
-                Config.Set("PROXY_PORT", port);
+                Config.Set("加速服务器地址", host);
+                Config.Set("加速服务器端口", port);
                 if (AnsiConsole.Confirm(Resource.LaunchMenu_SetNetfilterTarget_AskAuth, false))
                 {
                     do
@@ -226,13 +221,13 @@ namespace UmamusumeResponseAnalyzer
                     {
                         password = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskAuthPassword).Secret());
                     } while (string.IsNullOrEmpty(password));
-                    Config.Set("PROXY_USERNAME", username);
-                    Config.Set("PROXY_PASSWORD", password);
+                    Config.Set("加速服务器用户名", username);
+                    Config.Set("加速服务器密码", password);
                 }
                 else
                 {
-                    Config.Set("PROXY_USERNAME", string.Empty);
-                    Config.Set("PROXY_PASSWORD", string.Empty);
+                    Config.Set("加速服务器用户名", string.Empty);
+                    Config.Set("加速服务器密码", string.Empty);
                 }
                 Config.Save();
             }

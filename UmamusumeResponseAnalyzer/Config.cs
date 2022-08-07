@@ -14,13 +14,13 @@ namespace UmamusumeResponseAnalyzer
     internal static class Config
     {
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
-        internal static Dictionary<string, string[]> ConfigSet { get; set; } = new();
-        internal static Dictionary<string, object> Configuration { get; private set; } = new();
+        internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = new();
+        internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = new();
         internal static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
-            ConfigSet.Add(Resource.ConfigSet_Events, new[]
-            {
+            ConfigSet.Add(Resource.ConfigSet_Events, ConfigItem.From
+            (
                 Resource.ConfigSet_ParseSingleModeCheckEventResponse,
                 Resource.ConfigSet_ParseTrainedCharaLoadResponse,
                 Resource.ConfigSet_ParseFriendSearchResponse,
@@ -30,21 +30,21 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ParseChampionsRaceStartResponse,
                 Resource.ConfigSet_MaximiumGradeSkillRecommendation,
                 Resource.ConfigSet_ShowCommandInfo
-            });
-            ConfigSet.Add("更新", new[]
-            {
+            ));
+            ConfigSet.Add("更新", ConfigItem.From(
                 Resource.ConfigSet_AutoUpdate,
                 Resource.ConfigSet_ForceUseGithubToUpdate
-            });
-            ConfigSet.Add("调试", new[]
+            ));
+            ConfigSet.Add("加速", new ConfigItem[]
             {
-                Resource.ConfigSet_SaveResponseForDebug
+                new(Resource.ConfigSet_EnableNetFilter,false),
+                new("加速服务器地址",string.Empty,false),
+                new("加速服务器端口",string.Empty,false),
+                new("加速服务器用户名",string.Empty, false),
+                new("加速服务器密码",string.Empty, false)
             });
-            ConfigSet.Add("其他", new[]
-            {
-                Resource.ConfigSet_EnableNetFilter,
-                Resource.ConfigSet_DMMLaunch
-            });
+            ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
+            ConfigSet.Add("其他", ConfigItem.From(Resource.ConfigSet_DMMLaunch));
             if (File.Exists(CONFIG_FILEPATH))
             {
                 try
@@ -54,11 +54,11 @@ namespace UmamusumeResponseAnalyzer
                     {
                         if (bool.TryParse(i.Value, out var inBool))
                         {
-                            Configuration.Add(i.KeyName, inBool);
+                            Configuration.Add(i.KeyName, new(i.KeyName, inBool));
                         }
                         else
                         {
-                            Configuration.Add(i.KeyName, i.Value);
+                            Configuration.Add(i.KeyName, new(i.KeyName, i.Value));
                         }
                     }
                 }
@@ -82,31 +82,51 @@ namespace UmamusumeResponseAnalyzer
                 var section = new SectionData(i.Key);
                 foreach (var j in ConfigSet[i.Key])
                 {
-                    section.Keys[j] = Configuration[j].ToString();
+                    if (!Configuration.ContainsKey(j.Key)) continue;
+                    section.Keys[j.Key] = Configuration[j.Key].ToString();
                 }
                 ini.Sections.Add(section);
             }
+            var configSets = ini.Sections.SelectMany(x => x.Keys).Select(x => x.KeyName);
             new FileIniDataParser().WriteFile(CONFIG_FILEPATH, ini, Encoding.UTF8);
         }
         private static void Generate()
         {
             foreach (var i in ConfigSet.SelectMany(x => x.Value))
             {
-                if (i == Resource.ConfigSet_ForceUseGithubToUpdate ||
-                    i == Resource.ConfigSet_EnableNetFilter ||
-                    i == Resource.ConfigSet_DMMLaunch) //不默认开
-                    Configuration.Add(i, false);
+                if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
+                    i.Key == Resource.ConfigSet_EnableNetFilter ||
+                    i.Key == Resource.ConfigSet_DMMLaunch) //不默认开
+                    Configuration.Add(i.Key, new(i.Key, false));
                 else
-                    Configuration.Add(i, true);
+                    Configuration.Add(i.Key, new(i.Key, true));
             }
             Save();
         }
         public static bool ContainsKey(string key) => Configuration.ContainsKey(key);
-        public static T Get<T>(string key) => (T)Configuration[key];
+        public static T Get<T>(string key) => (T)Configuration[key].Value;
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)
         {
-            Configuration[key] = value;
+            if (!Configuration.ContainsKey(key)) Configuration.Add(key, new(key, false, false));
+            Configuration[key].Value = value;
         }
+    }
+    public class ConfigItem
+    {
+        public string Key { get; set; }
+        public object Value { get; set; }
+        public bool Visiable { get; set; }
+        private ConfigItem(bool visiable = true) { Visiable = visiable; }
+        public ConfigItem(string key, object value, bool visiable = true)
+        {
+            Key = key;
+            Value = value;
+            Visiable = visiable;
+        }
+
+        public static IEnumerable<ConfigItem> From(params string[] arr)
+            => arr.Select(x => new ConfigItem { Key = x });
+        public override string ToString() => Value == null ? "NULL" : Value.ToString()!;
     }
 }

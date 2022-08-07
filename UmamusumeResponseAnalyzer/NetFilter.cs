@@ -38,18 +38,18 @@ namespace UmamusumeResponseAnalyzer
         {
             if (!File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                 return;
-            if (!Config.ContainsKey("PROXY_HOST") || !Config.ContainsKey("PROXY_PORT"))
+            if (!Config.ContainsKey("加速服务器地址") || !Config.ContainsKey("加速服务器端口"))
             {
                 AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
                 return;
             }
-            var host = Config.Get<string>("PROXY_HOST");
-            var port = int.Parse(Config.Get<string>("PROXY_PORT"));
+            var host = Config.Get<string>("加速服务器地址");
+            var port = int.Parse(Config.Get<string>("加速服务器端口"));
             var apps = new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
-            if (Config.ContainsKey("PROXY_USERNAME") || Config.ContainsKey("PROXY_PASSWORD"))
+            if (Config.ContainsKey("加速服务器用户名") || Config.ContainsKey("加速服务器密码"))
             {
-                var username = Config.Get<string>("PROXY_USERNAME");
-                var password = Config.Get<string>("PROXY_PASSWORD");
+                var username = Config.Get<string>("加速服务器用户名");
+                var password = Config.Get<string>("加速服务器密码");
                 if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
                     await nfAPI.StartAsync(host, port, apps, default!, (username, password));
                 else
