@@ -114,13 +114,13 @@ namespace UmamusumeResponseAnalyzer
                         case "DMM session has expired":
                             {
                                 AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, "DMM session已过期"));
-                                break;
+                                return;
                             }
                         case "":
                             {
 
                                 AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, Resource.LaunchMenu_Start_TokenFailed));
-                                break;
+                                return;
                             }
                         default:
 

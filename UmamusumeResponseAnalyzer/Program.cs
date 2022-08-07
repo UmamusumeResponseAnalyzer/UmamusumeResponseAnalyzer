@@ -46,7 +46,6 @@ namespace UmamusumeResponseAnalyzer
             
             Database.Initialize(); //初始化马娘相关数据
             Server.Start(); //启动HTTP服务器
-            AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
 
             if (Config.Get(Resource.ConfigSet_EnableNetFilter))
                 await NetFilter.Enable();
@@ -74,6 +73,8 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
             }
+
+            AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
 
             while (true)
             {
