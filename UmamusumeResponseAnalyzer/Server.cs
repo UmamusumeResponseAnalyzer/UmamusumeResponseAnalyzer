@@ -170,6 +170,7 @@ namespace UmamusumeResponseAnalyzer
                             Handlers.ParseChampionsRaceStartResponse(dyn.ToObject<Gallop.ChampionsFinalRaceStartResponse>());
                     }
                 }
+                catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
                 catch (Exception e)
                 {
                     AnsiConsole.MarkupLine("[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]");

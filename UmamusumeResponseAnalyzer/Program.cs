@@ -60,12 +60,16 @@ namespace UmamusumeResponseAnalyzer
                     prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
                         .Title("发现多个帐号，请选择要启动的那个")
                         .AddChoices(DMM.Accounts.Select(x => x.Name))
-                        .AddChoices(new[] { "启动全部" }));
+                        .AddChoices(new[] { "启动全部" })
+                        .AddChoices(new[] { "取消" }));
                     if (prompt == "启动全部")
                     {
                         DMM.IgnoreExistProcess = true;
                         foreach (var account in DMM.Accounts)
                             account.RunUmamusume();
+                    }
+                    else if (prompt == "取消")
+                    {
                     }
                     else
                     {
