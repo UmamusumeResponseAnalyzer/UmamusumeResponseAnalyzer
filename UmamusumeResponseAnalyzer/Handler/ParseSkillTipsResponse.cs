@@ -194,11 +194,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 table.AddRow($"{i.Name}", $"{i.TotalCost}", $"{i.Grade}");
             }
-            var statusPoint = Database.StatusToPoint[@event.data.chara_info.speed]
-                            + Database.StatusToPoint[@event.data.chara_info.stamina]
-                            + Database.StatusToPoint[@event.data.chara_info.power]
-                            + Database.StatusToPoint[@event.data.chara_info.guts]
-                            + Database.StatusToPoint[@event.data.chara_info.wiz];
+            var statusPoint = @event.data.chara_info.speed > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.speed]
+                            + @event.data.chara_info.stamina > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.stamina]
+                            + @event.data.chara_info.power > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.power]
+                            + @event.data.chara_info.guts > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.guts]
+                            + @event.data.chara_info.guts > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.wiz];
             var previousLearnPoint = 0; //之前学的技能的累计评价点
             foreach (var i in @event.data.chara_info.skill_array)
             {
