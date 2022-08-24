@@ -23,7 +23,17 @@ namespace UmamusumeResponseAnalyzer.Handler
                     var eventTree = new Tree(story.Name.EscapeMarkup()); //事件名称
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
-                        var originalChoice = story.Choices[j][0]; //因为kamigame的事件无法直接根据SelectIndex区分成功与否，所以必然只会有一个Choice;
+                        var originalChoice = new Choice();
+                        if (story.Choices.Count < (j + 1))
+                        {
+                            originalChoice.Option = "未知选项";
+                            originalChoice.SuccessEffect = "未知效果";
+                            originalChoice.FailedEffect = "未知效果";
+                        }
+                        else
+                        {
+                            originalChoice = story.Choices[j][0]; //因为kamigame的事件无法直接根据SelectIndex区分成功与否，所以必然只会有一个Choice;
+                        }
                         //显示选项
                         var tree = new Tree($"{(string.IsNullOrEmpty(originalChoice.Option) ? Resource.SingleModeCheckEvent_Event_NoOption : originalChoice.Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
                         if (Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中

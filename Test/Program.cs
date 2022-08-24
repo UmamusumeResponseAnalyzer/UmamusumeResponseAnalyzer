@@ -10,10 +10,10 @@ namespace Test
         static void Main(string[] args)
         {
             Database.Initialize();
-            var bytes = File.ReadAllBytes(@"C:\Users\micro\AppData\Local\UmamusumeResponseAnalyzer\packets\22-08-24 11-19-41-293R.msgpack");
+            var bytes = File.ReadAllBytes(@"C:\Users\micro\AppData\Local\UmamusumeResponseAnalyzer\packets\22-08-24 15-26-26-812R.msgpack");
             var obj = JsonConvert.DeserializeObject<SingleModeCheckEventResponse>(MessagePack.MessagePackSerializer.ConvertToJson(bytes));
             if (obj == null) throw new Exception("反序列化失败");
-            obj.AsParseCommandInfoResponseTest()
+            obj.AsParseSingleModeCheckEventResponseTest()
                 .Run();
         }
     }
