@@ -17,8 +17,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             foreach (var i in @event.data.unchecked_event_array)
             {
                 //收录在数据库中
-                if (Database.Events.TryGetValue(i.story_id, out var story)
-                    && story.Choices.Count == i.event_contents_info.choice_array.Length) //并且数据库中的事件不少选项
+                if (Database.Events.TryGetValue(i.story_id, out var story))
                 {
                     var mainTree = new Tree(story.TriggerName.EscapeMarkup()); //触发者名称
                     var eventTree = new Tree(story.Name.EscapeMarkup()); //事件名称
