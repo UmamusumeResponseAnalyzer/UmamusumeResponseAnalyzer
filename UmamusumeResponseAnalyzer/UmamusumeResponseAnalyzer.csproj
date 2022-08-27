@@ -9,7 +9,7 @@
 		<AssemblyVersion></AssemblyVersion>
 		<FileVersion></FileVersion>
 		<Authors>$(AssemblyName)</Authors>
-		<Version>1.10.0.3</Version>
+		<Version>1.10.1.0</Version>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
 

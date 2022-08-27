@@ -13,6 +13,7 @@ namespace UmamusumeResponseAnalyzer
     {
         static HttpListener httpListener;
         static readonly object _lock = new();
+        static Mutex Mutex;
         public static ManualResetEvent OnPing = new(false);
         public static void Start()
         {
@@ -29,6 +30,10 @@ namespace UmamusumeResponseAnalyzer
                 httpListener.Prefixes.Add("http://127.0.0.1:4693/");
                 httpListener.Start();
                 AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693/启动，如需模拟器/手机连入请以管理员权限运行");
+            }
+            finally
+            {
+                Mutex = new Mutex(true, "UmamusumeResponseAnalyzerMutex");
             }
             Task.Run(async () =>
             {

@@ -194,11 +194,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 table.AddRow($"{i.Name}", $"{i.TotalCost}", $"{i.Grade}");
             }
-            var statusPoint = @event.data.chara_info.speed > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.speed]
-                            + @event.data.chara_info.stamina > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.stamina]
-                            + @event.data.chara_info.power > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.power]
-                            + @event.data.chara_info.guts > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.guts]
-                            + @event.data.chara_info.guts > 1200 ? 0 : Database.StatusToPoint[@event.data.chara_info.wiz];
+            var statusPoint = @event.data.chara_info.speed >= 1200 ? Database.StatusToPoint[1200] : Database.StatusToPoint[@event.data.chara_info.speed]
+                            + @event.data.chara_info.stamina >= 1200 ? Database.StatusToPoint[1200] : Database.StatusToPoint[@event.data.chara_info.stamina]
+                            + @event.data.chara_info.power >= 1200 ? Database.StatusToPoint[1200] : Database.StatusToPoint[@event.data.chara_info.power]
+                            + @event.data.chara_info.guts >= 1200 ? Database.StatusToPoint[1200] : Database.StatusToPoint[@event.data.chara_info.guts]
+                            + @event.data.chara_info.wiz >= 1200 ? Database.StatusToPoint[1200] : Database.StatusToPoint[@event.data.chara_info.wiz];
             var previousLearnPoint = 0; //之前学的技能的累计评价点
             foreach (var i in @event.data.chara_info.skill_array)
             {
@@ -219,7 +219,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
             }
             var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;
-            table.Caption(string.Format(Resource.MaximiumGradeSkillRecommendation_Caption, previousLearnPoint, learn.Sum(x => x.Grade), statusPoint, totalPoint, Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank));
+            table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}\n由于大于1200的属性评价点未知，所有大于1200的属性均按1200计算评价点\n提前点技能可能导致此处的点法不是最大值", previousLearnPoint, learn.Sum(x => x.Grade), statusPoint, totalPoint, Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank));
             AnsiConsole.Write(table);
         }
     }
