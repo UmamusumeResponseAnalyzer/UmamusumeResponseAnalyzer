@@ -219,8 +219,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
             }
             var totalPoint = learn.Sum(x => x.Grade) + previousLearnPoint + statusPoint;
-            table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}\n由于大于1200的属性评价点未知，所有大于1200的属性均按1200计算评价点\n提前点技能可能导致此处的点法不是最大值", previousLearnPoint, learn.Sum(x => x.Grade), statusPoint, totalPoint, Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank));
+            table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, learn.Sum(x => x.Grade), statusPoint, totalPoint, Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Rank));
             AnsiConsole.Write(table);
+            AnsiConsole.WriteLine("由于大于1200的属性评价点未知，所有大于1200的属性均按1200计算评价点\n提前点技能可能导致此处的点法不是最大值");
         }
     }
 }
