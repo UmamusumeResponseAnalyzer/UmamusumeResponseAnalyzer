@@ -1,6 +1,6 @@
 # UmamusumeResponseAnalyzer
 # 前置 Prerequisite
-* 任意可以向指定URL发送数据包的插件，比如[EXNOA-CarrotJuicer](https://github.com/CNA-Bld/EXNOA-CarrotJuicer)或修改版[umamusume-localify](https://github.com/EtherealAO/umamusume-localify)
+* 任意可以向指定URL发送数据包的插件，比如[ura-core(推荐)](https://github.com/UmamusumeResponseAnalyzer/ura-core)或[EXNOA-CarrotJuicer](https://github.com/CNA-Bld/EXNOA-CarrotJuicer)
 * (可选，如果需要脱离DMM启动游戏)DMM Game Player β及HTTPS proxy，比如[Fiddler](https://www.telerik.com/fiddler/fiddler-classic)或[mitmproxy](https://mitmproxy.org/)
 
 # 安装 Installation
