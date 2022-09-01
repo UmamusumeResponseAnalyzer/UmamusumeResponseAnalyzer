@@ -41,7 +41,8 @@ namespace UmamusumeResponseAnalyzer
                 new("加速服务器地址",string.Empty,false),
                 new("加速服务器端口",string.Empty,false),
                 new("加速服务器用户名",string.Empty, false),
-                new("加速服务器密码",string.Empty, false)
+                new("加速服务器密码",string.Empty, false),
+                new("加速服务器类型",string.Empty, false)
             });
             ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
             ConfigSet.Add("其他", ConfigItem.From(Resource.ConfigSet_DMMLaunch));

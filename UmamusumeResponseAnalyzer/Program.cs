@@ -14,6 +14,7 @@ namespace UmamusumeResponseAnalyzer
         {
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
+            Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
             //加载设置
             Config.Initialize();
             await ParseArguments(args);
@@ -215,7 +216,15 @@ namespace UmamusumeResponseAnalyzer
                 } while (!int.TryParse(port, out var _));
                 Config.Set("加速服务器地址", host);
                 Config.Set("加速服务器端口", port);
-                if (AnsiConsole.Confirm(Resource.LaunchMenu_SetNetfilterTarget_AskAuth, false))
+
+                var proxyType = string.Empty;
+                do
+                {
+                    proxyType = AnsiConsole.Ask<string>("代理服务器类型是s(ocks)/h(ttp)").ToLower();
+                } while (proxyType[0] != 's' && proxyType[0] != 'h');
+                Config.Set("加速服务器类型", proxyType[0] == 'h' ? "http" : "socks");
+
+                if (proxyType[0] == 's' && AnsiConsole.Confirm(Resource.LaunchMenu_SetNetfilterTarget_AskAuth, false))
                 {
                     do
                     {

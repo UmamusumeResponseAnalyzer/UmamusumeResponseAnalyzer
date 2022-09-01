@@ -10,15 +10,14 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class NetFilter
     {
-        private static readonly NFAPI nfAPI = new();
+        static string applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+        static string nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
+        static string nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
+        static string redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
         static NetFilter()
         {
             try
             {
-                var applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-                var nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
-                var nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
-                var redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
                 if (!File.Exists(nfdriverPath) || !File.Exists(redirectorPath) || !File.Exists(nfapiPath))
                 {
                     AnsiConsole.WriteLine("加速功能未启动：未找到加速驱动");
@@ -43,24 +42,32 @@ namespace UmamusumeResponseAnalyzer
                 AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
                 return;
             }
-            var host = Config.Get<string>("加速服务器地址");
-            var port = int.Parse(Config.Get<string>("加速服务器端口"));
-            var apps = new[] { "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
-            if (Config.ContainsKey("加速服务器用户名") || Config.ContainsKey("加速服务器密码"))
+            NFAPI.Host = Config.Get<string>("加速服务器地址");
+            NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口"));
+            NFAPI.HandleList = new List<string> { "OnlyForTest.exe", "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
+
+            if (Config.Get<string>("加速服务器类型") == "http")
             {
-                var username = Config.Get<string>("加速服务器用户名");
-                var password = Config.Get<string>("加速服务器密码");
-                if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
-                    await nfAPI.StartAsync(host, port, apps, default!, (username, password));
-                else
-                    await nfAPI.StartAsync(host, port, apps, default!, default);
+                await NFAPI.StartAsync(true);
             }
             else
             {
-                await nfAPI.StartAsync(host, port, apps, default!, default);
+                if (Config.ContainsKey("加速服务器用户名") || Config.ContainsKey("加速服务器密码"))
+                {
+                    var username = Config.Get<string>("加速服务器用户名");
+                    var password = Config.Get<string>("加速服务器密码");
+                    if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
+                        await NFAPI.StartAsync(false, username, password);
+                    else
+                        await NFAPI.StartAsync();
+                }
+                else
+                {
+                    await NFAPI.StartAsync();
+                }
             }
         }
-        public static async Task Disable() => await nfAPI.StopAsync();
+        public static async Task Disable() => await NFAPI.StopAsync();
         public static void InstallDriver() => NFAPI.InstallDriver();
         public static void UninstallDriver() => NFAPI.UninstallDriver();
     }
