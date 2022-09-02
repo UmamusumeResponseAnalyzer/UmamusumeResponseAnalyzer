@@ -130,14 +130,19 @@ namespace UmamusumeResponseAnalyzer
                     ctx.Status(Resource.LaunchMenu_Start_Launching);
                     if (!string.IsNullOrEmpty(dmmToken))
                     {
+                        var configFilepath = Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "config.json");
+                        var config = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(File.ReadAllText(configFilepath))!;
                         if (string.IsNullOrEmpty(savedata_file_path))
                         {
+                            if (config.ContainsKey("savedata_path"))
+                            {
+                                config.Remove("savedata_path");
+                                File.WriteAllText(configFilepath, config.ToString(Newtonsoft.Json.Formatting.Indented));
+                            }
                             Launch(dmmToken);
                         }
                         else
                         {
-                            var configFilepath = Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "config.json");
-                            var config = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(File.ReadAllText(configFilepath))!;
                             if (config.ContainsKey("savedata_path"))
                             {
                                 var prev = config["savedata_path"]!.ToString();

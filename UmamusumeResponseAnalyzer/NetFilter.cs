@@ -44,7 +44,7 @@ namespace UmamusumeResponseAnalyzer
             }
             NFAPI.Host = Config.Get<string>("加速服务器地址");
             NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口"));
-            NFAPI.HandleList = new List<string> { "OnlyForTest.exe", "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
+            NFAPI.HandleList = new List<string> { "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
 
             if (Config.Get<string>("加速服务器类型") == "http")
             {
