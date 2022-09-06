@@ -81,10 +81,12 @@ namespace UmamusumeResponseAnalyzer
 
             AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
 
-            while (true)
+            var _closingEvent = new AutoResetEvent(false);
+            Console.CancelKeyPress += ((s, a) =>
             {
-                Console.ReadLine();
-            }
+                _closingEvent.Set();
+            });
+            _closingEvent.WaitOne();
         }
         static async Task<string> ShowMenu()
         {

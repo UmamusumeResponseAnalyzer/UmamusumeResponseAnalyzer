@@ -267,7 +267,8 @@ namespace UmamusumeResponseAnalyzer
             {
                 AllowAutoRedirect = false
             })
-            { DefaultRequestVersion = new Version(2, 0), Timeout = TimeSpan.FromSeconds(5) };
+            { DefaultRequestVersion = new Version(2, 0) };
+
             #region 检测更新服务器是否可用
             try
             {
@@ -286,10 +287,11 @@ namespace UmamusumeResponseAnalyzer
                 return;
             }
             #endregion
-            var response = await client.GetAsync(downloadURL, HttpCompletionOption.ResponseHeadersRead);
+
+            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL), HttpCompletionOption.ResponseHeadersRead);
             while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
             {
-                response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+                response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, response.Headers.Location), HttpCompletionOption.ResponseHeadersRead);
             }
             var task = ctx?.AddTask(instruction, false);
             task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
@@ -304,6 +306,13 @@ namespace UmamusumeResponseAnalyzer
                     return;
                 }
             }
+
+            response = await client.GetAsync(downloadURL, HttpCompletionOption.ResponseHeadersRead);
+            while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
+            {
+                response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
+            }
+
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
             var buffer = new byte[8192];
