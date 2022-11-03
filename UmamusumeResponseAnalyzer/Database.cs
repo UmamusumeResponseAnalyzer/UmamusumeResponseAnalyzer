@@ -38,15 +38,15 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
-        public static Dictionary<int, string> IdToName { get; set; } = new();
+        public static NullableIdNameDictionary IdToName { get; set; } = new();
         /// <summary>
         /// S卡ID到马娘名的Dictionary，用于显示训练时的人头信息
         /// </summary>
-        public static Dictionary<int, string> SupportIdToShortName { get; set; } = new();
+        public static NullableIdNameDictionary SupportIdToShortName { get; set; } = new();
         /// <summary>
-        /// 巅峰杯道具的ID极其对应名称
+        /// 巅峰杯道具的ID及其对应名称
         /// </summary>
-        public static Dictionary<int, string> ClimaxItem { get; set; } = new();
+        public static NullableIdNameDictionary ClimaxItem { get; set; } = new();
         /// <summary>
         /// 马娘的天赋技能,Key是CardId
         /// </summary>
@@ -54,7 +54,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 
         /// </summary>
-        public static Dictionary<int, string> FactorIds { get; set; }
+        public static NullableIdNameDictionary FactorIds { get; set; }
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -72,7 +72,7 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(ID_TO_NAME_FILEPATH))
             {
-                var idToName = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(ID_TO_NAME_FILEPATH));
+                var idToName = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(ID_TO_NAME_FILEPATH));
                 if (idToName != default)
                     IdToName = idToName;
             }
@@ -86,13 +86,13 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(SUPPORT_ID_SHORTNAME_FILEPATH))
             {
-                var supportIdToShortName = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(SUPPORT_ID_SHORTNAME_FILEPATH));
+                var supportIdToShortName = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(SUPPORT_ID_SHORTNAME_FILEPATH));
                 if (supportIdToShortName != default)
                     SupportIdToShortName = supportIdToShortName;
             }
             if (File.Exists(CLIMAX_ITEM_FILEPATH))
             {
-                var climaxItem = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(CLIMAX_ITEM_FILEPATH));
+                var climaxItem = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(CLIMAX_ITEM_FILEPATH));
                 if (climaxItem != default)
                     ClimaxItem = climaxItem;
             }
@@ -104,11 +104,20 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(FACTOR_IDS_FILEPATH))
             {
-                var factor_ids = JsonConvert.DeserializeObject<Dictionary<int, string>>(Load(FACTOR_IDS_FILEPATH));
+                var factor_ids = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(FACTOR_IDS_FILEPATH));
                 if (factor_ids != default)
                     FactorIds = factor_ids;
             }
         }
         static string Load(string path) => Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));
+    }
+
+    public class NullableIdNameDictionary : Dictionary<int, string>
+    {
+        public new string this[int key]
+        {
+            get => ContainsKey(key) ? base[key] : "未知";
+            set => base[key] = value;
+        }
     }
 }
