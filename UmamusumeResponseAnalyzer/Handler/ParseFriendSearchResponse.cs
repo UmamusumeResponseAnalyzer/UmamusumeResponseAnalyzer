@@ -21,13 +21,13 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.WriteLine($"种马：{Name}\t\t{WinSaddle}\t\t{Score}");
             var tree = new Tree("因子");
 
-            var max = i.factor_id_array.Concat(i.succession_chara_array[0].factor_id_array)
-                .Concat(i.succession_chara_array[1].factor_id_array)
+            var max = i.factor_info_array.Select(x => x.factor_id).Concat(i.succession_chara_array[0].factor_info_array.Select(x => x.factor_id))
+                .Concat(i.succession_chara_array[1].factor_info_array.Select(x => x.factor_id))
                 .Where((x, index) => index % 2 == 0)
                 .Max(x => GetRenderWidth(Database.FactorIds[x]));
-            var representative = AddFactors("代表", i.factor_id_array, max);
-            var inheritanceA = AddFactors("祖辈", i.succession_chara_array[0].factor_id_array, max);
-            var inheritanceB = AddFactors("祖辈", i.succession_chara_array[1].factor_id_array, max);
+            var representative = AddFactors("代表", i.factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceA = AddFactors("祖辈", i.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceB = AddFactors("祖辈", i.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
 
             tree.AddNodes(representative, inheritanceA, inheritanceB);
             AnsiConsole.Write(tree);

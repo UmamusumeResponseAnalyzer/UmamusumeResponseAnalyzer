@@ -102,8 +102,8 @@ namespace Gallop
 		public int[] win_saddle_id_array; // 0xC0
 		[Key("nickname_id_array")]
 		public int[] nickname_id_array; // 0xC8
-		[Key("factor_id_array")]
-		public int[] factor_id_array; // 0xD0
+		//[Key("factor_id_array")]
+		//public int[] factor_id_array; // 0xD0
 		[Key("factor_info_array")]
 		public FactorInfo[] factor_info_array; // 0xD8
 		[Key("succession_chara_array")]
@@ -166,8 +166,8 @@ namespace Gallop
 		public int rarity; // 0x1C
 		[Key("talent_level")]
 		public int talent_level; // 0x20
-		[Key("factor_id_array")]
-		public int[] factor_id_array; // 0x28
+		//[Key("factor_id_array")]
+		//public int[] factor_id_array; // 0x28
 		[Key("factor_info_array")]
 		public FactorInfo[] factor_info_array; // 0x30
 		[Key("win_saddle_id_array")]
