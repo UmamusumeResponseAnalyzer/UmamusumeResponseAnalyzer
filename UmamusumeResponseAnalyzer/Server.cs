@@ -174,6 +174,10 @@ namespace UmamusumeResponseAnalyzer
                         if (Config.Get(Resource.ConfigSet_ParseChampionsRaceStartResponse))
                             Handlers.ParseChampionsRaceStartResponse(dyn.ToObject<Gallop.ChampionsFinalRaceStartResponse>());
                     }
+                    if(dyn.data_headers.server_list != null && dyn.data_headers.server_list.resource_server_login != null)
+                    {
+                        AnsiConsole.MarkupLine($"[green]检测到ViewerID为{dyn.data_headers.viewer_id}的帐号登录请求[/]");
+                    }
                 }
                 catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
                 catch (Exception e)
