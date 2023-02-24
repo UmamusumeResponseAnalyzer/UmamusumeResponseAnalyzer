@@ -129,6 +129,13 @@ namespace UmamusumeResponseAnalyzer
                     var dyn = JsonConvert.DeserializeObject<dynamic>(MessagePackSerializer.ConvertToJson(buffer));
                     if (dyn == default(dynamic)) return;
                     var data = dyn.data;
+                    if (data.chara_info.scenario_id == 5)
+                    {
+                        if (dyn.data.venus_data_set.race_start_info is JArray)
+                            dyn.data.venus_data_set.race_start_info = null;
+                        if (dyn.data.venus_data_set.venus_race_condition is JArray)
+                            dyn.data.venus_data_set.venus_race_condition = null;
+                    }
                     if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
@@ -174,7 +181,7 @@ namespace UmamusumeResponseAnalyzer
                         if (Config.Get(Resource.ConfigSet_ParseChampionsRaceStartResponse))
                             Handlers.ParseChampionsRaceStartResponse(dyn.ToObject<Gallop.ChampionsFinalRaceStartResponse>());
                     }
-                    if(dyn.data_headers.server_list != null && dyn.data_headers.server_list.resource_server_login != null)
+                    if (dyn.data_headers.server_list != null && dyn.data_headers.server_list.resource_server_login != null)
                     {
                         AnsiConsole.MarkupLine($"[green]检测到ViewerID为{dyn.data_headers.viewer_id}的帐号登录请求[/]");
                     }

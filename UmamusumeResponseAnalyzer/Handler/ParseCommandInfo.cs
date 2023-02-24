@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer.Handler
@@ -109,13 +110,79 @@ namespace UmamusumeResponseAnalyzer.Handler
                 for (var i = 0; i < 5; ++i)
                     table.Columns[i].Footer = new Rows(rows[i].Select(x => new Markup(x)));
             }
+            if (@event.data.chara_info.scenario_id == 5 && @event.data.venus_data_set != null)
+            {
+                var spiritId = new Dictionary<int, string>
+                {
+                    { 1, "[red]速[/]" },
+                    { 2, "[red]耐[/]" },
+                    { 3, "[red]力[/]" },
+                    { 4, "[red]根[/]" },
+                    { 5, "[red]智[/]" },
+                    { 6, "[red]星[/]" },
+                    { 9, "[blue]速[/]" },
+                    { 10,"[blue]耐[/]" },
+                    { 11,"[blue]力[/]" },
+                    { 12,"[blue]根[/]" },
+                    { 13,"[blue]智[/]" },
+                    { 14,"[blue]星[/]" },
+                    { 17,"[yellow]速[/]" },
+                    { 18,"[yellow]耐[/]" },
+                    { 19,"[yellow]力[/]" },
+                    { 20,"[yellow]根[/]" },
+                    { 21,"[yellow]智[/]" },
+                    { 22,"[yellow]星[/]" },
+                };
+                foreach (var i in @event.data.venus_data_set.venus_chara_command_info_array)
+                {
+                    switch (i.command_type)
+                    {
+                        case 1:
+                            {
+                                switch (i.command_id)
+                                {
+                                    case 101:
+                                    case 601:
+                                        table.Columns[0].Header = new Markup($"速({(failureRate[101] > 16 ? $"[red]{failureRate[101]}[/]" : failureRate[101])}%) | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"); break;
+                                    case 102:
+                                    case 603:
+                                        table.Columns[2].Header = new Markup($"力({(failureRate[102] > 16 ? $"[red]{failureRate[102]}[/]" : failureRate[102])}%) | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"); break;
+                                    case 103:
+                                    case 604:
+                                        table.Columns[3].Header = new Markup($"根({(failureRate[103] > 16 ? $"[red]{failureRate[103]}[/]" : failureRate[103])}%) | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"); break;
+                                    case 105:
+                                    case 602:
+                                        table.Columns[1].Header = new Markup($"耐({(failureRate[105] > 16 ? $"[red]{failureRate[105]}[/]" : failureRate[105])}%) | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"); break;
+                                    case 106:
+                                    case 605:
+                                        table.Columns[4].Header = new Markup($"智({(failureRate[106] > 16 ? $"[red]{failureRate[106]}[/]" : failureRate[106])}%) | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"); break;
+                                }
+                                break;
+                            }
+                        case 3:
+                            {
+                                table.Columns[0].Footer = new Rows(new Markup($"出行 | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"));
+                                break;
+                            }
+                        case 4:
+                            {
+                                table.Columns[2].Footer = new Rows(new Markup($"比赛 | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"));
+                                break;
+                            }
+                        case 7:
+                            {
+                                table.Columns[1].Footer = new Rows(new Markup($"休息 | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "x2" : string.Empty)}"));
+                                break;
+                            }
+                    }
+                }
+            }
             AnsiConsole.Write(table);
 
-            //这里其实并无法判断是否触发友情训练（彩圈），只会判定在他是否在该在的位置上。
-            //但是因为aqua标签会被羁绊不满80时的yellow覆盖，所以也只会在有彩圈的时候才显示为aqua，实际效果是正确的。
-            static string IsShining(int commandId, string card)
+            string IsShining(int commandId, string card)
             {
-                return card.Contains(commandId switch
+                //在得意位置上
+                var shouldShining = card.Contains(commandId switch
                 {
                     101 => "[速]",
                     105 => "[耐]",
@@ -127,7 +194,17 @@ namespace UmamusumeResponseAnalyzer.Handler
                     603 => "[力]",
                     604 => "[根]",
                     605 => "[智]",
-                }) ? $"[aqua]{card}[/]" : card;
+                });
+                if (@event.data.chara_info.scenario_id == 5 && @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9042 && x.effect_group_id == 421)
+                    && (card.Contains("[速]") || card.Contains("[耐]") || card.Contains("[力]") || card.Contains("[根]") || card.Contains("[智]")))
+                {
+                    var redIndex = card.IndexOf("[red]![/]");
+                    card = card.Insert(redIndex > -1 ? redIndex + 9 : 0, "[aqua]");
+                    if (card.Contains("[yellow]"))
+                        card = new Regex(Regex.Escape("[/]")).Replace(card.Replace("[yellow]", string.Empty), string.Empty, 1);
+                    return $"{card}[/]";
+                }
+                return shouldShining ? $"[aqua]{card}[/]" : card;
             }
         }
     }

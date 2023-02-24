@@ -30,8 +30,10 @@ namespace Gallop
             public SingleModeRaceCondition[] race_condition_array;
             [Key("race_start_info")]
             public SingleRaceStartInfo race_start_info;
-            [Key("free_data_set")]
+            [Key("free_data_set")] //巅峰杯
             public SingleModeFreeDataSet free_data_set; // 0x90
+            [Key("venus_data_set")] //venus
+            public SingleModeVenusDataSet venus_data_set;
         }
     }
     [MessagePackObject]
