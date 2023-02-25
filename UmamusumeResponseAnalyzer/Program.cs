@@ -12,6 +12,7 @@ namespace UmamusumeResponseAnalyzer
         static bool runInCmder = false;
         public static async Task Main(string[] args)
         {
+            //Console.WriteLine(MessagePack.MessagePackSerializer.ConvertToJson(File.ReadAllBytes(@"C:\Users\micro\AppData\Local\UmamusumeResponseAnalyzer\packets\23-02-25 12-23-40-172R.msgpack")));return;
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");

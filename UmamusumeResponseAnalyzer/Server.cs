@@ -129,7 +129,7 @@ namespace UmamusumeResponseAnalyzer
                     var dyn = JsonConvert.DeserializeObject<dynamic>(MessagePackSerializer.ConvertToJson(buffer));
                     if (dyn == default(dynamic)) return;
                     var data = dyn.data;
-                    if (data.chara_info.scenario_id == 5)
+                    if (data.chara_info?.scenario_id == 5)
                     {
                         if (dyn.data.venus_data_set.race_start_info is JArray)
                             dyn.data.venus_data_set.race_start_info = null;
