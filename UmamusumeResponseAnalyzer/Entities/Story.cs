@@ -37,9 +37,22 @@ namespace UmamusumeResponseAnalyzer.Entities
     public class SuccessChoice
     {
         public int SelectIndex { get; set; }
+        public State State { get; set; }
         public int Scenario { get; set; }
-        public int State { get; set; }
         public string Effect { get; set; } = string.Empty;
+
+    }
+    public enum State
+    {
+        Unknown = -1,
+        Fail = 0,
+        Success = 1,
+        GreatSuccess = 2,
+        None = int.MaxValue
+    }
+    public class Extra
+    {
+        
     }
     public static class SuccessChoiceArrayExtension
     {

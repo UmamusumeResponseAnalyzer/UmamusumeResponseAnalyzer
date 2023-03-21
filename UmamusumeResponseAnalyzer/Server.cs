@@ -156,10 +156,12 @@ namespace UmamusumeResponseAnalyzer
                         if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
                             Handlers.ParseTrainedCharaLoadResponse(dyn.ToObject<Gallop.TrainedCharaLoadResponse>());
                     }
-                    if (data.user_info_summary != null && data.practice_partner_info != null && data.support_card_data != null && data.follower_num != null && data.own_follow_num != null)
+                    if (data.user_info_summary != null && Config.Get(Resource.ConfigSet_ParseFriendSearchResponse))
                     {
-                        if (Config.Get(Resource.ConfigSet_ParseFriendSearchResponse))
+                        if (data.practice_partner_info != null && data.support_card_data != null && data.follower_num != null && data.own_follow_num != null)
                             Handlers.ParseFriendSearchResponse(dyn.ToObject<Gallop.FriendSearchResponse>());
+                        else if (data.user_info_summary.user_trained_chara != null)
+                            Handlers.ParseFriendSearchResponseSimple(dyn.ToObject<Gallop.FriendSearchResponse>());
                     }
                     if (data.opponent_info_array?.Count == 3)
                     {

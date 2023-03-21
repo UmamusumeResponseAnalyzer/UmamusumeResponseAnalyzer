@@ -12,6 +12,7 @@ namespace UmamusumeResponseAnalyzer
         static bool runInCmder = false;
         public static async Task Main(string[] args)
         {
+            ConsoleHelper.DisableQuickEditMode();
             Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
@@ -319,6 +320,49 @@ namespace UmamusumeResponseAnalyzer
                         return;
                     }
             }
+        }
+    }
+
+    /// <summary>
+    ///     Adapted from
+    ///     http://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
+    /// </summary>
+    internal static class ConsoleHelper
+    {
+        private const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
+        private const uint ENABLE_MOUSE_INPUT = 0x0010;
+
+        // STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
+        private const int StdInputHandle = -10;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GetStdHandle(int nStdHandle);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+
+        internal static bool DisableQuickEditMode()
+        {
+            var consoleHandle = GetStdHandle(StdInputHandle);
+
+            // get current console mode
+            if (!GetConsoleMode(consoleHandle, out var consoleMode))
+                // ERROR: Unable to get console mode.
+                return false;
+
+            // Clear the quick edit bit in the mode flags
+            consoleMode &= ~ENABLE_QUICK_EDIT_MODE;
+            consoleMode &= ~ENABLE_MOUSE_INPUT;
+
+            // set the new mode
+            if (!SetConsoleMode(consoleHandle, consoleMode))
+                // ERROR: Unable to set console mode
+                return false;
+
+            return true;
         }
     }
 }

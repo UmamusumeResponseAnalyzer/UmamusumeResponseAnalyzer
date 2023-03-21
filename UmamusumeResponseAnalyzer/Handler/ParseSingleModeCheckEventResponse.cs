@@ -20,7 +20,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (Database.Events.TryGetValue(i.story_id, out var story))
                 {
                     var mainTree = new Tree(story.TriggerName.EscapeMarkup()); //触发者名称
-                    var eventTree = new Tree(story.Name.EscapeMarkup()); //事件名称
+                    var eventTree = new Tree($"{story.Name.EscapeMarkup()}({i.story_id})"); //事件名称
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
                         var originalChoice = new Choice();
@@ -58,19 +58,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                             if (string.IsNullOrEmpty(originalChoice.FailedEffect))
                                 tree.AddNode(originalChoice.SuccessEffect);
                             else if (originalChoice.SuccessEffect == "未知效果" && originalChoice.FailedEffect == "未知效果")
-                                tree.AddNode(MarkupText($"未知效果", int.MaxValue));
+                                tree.AddNode(MarkupText($"未知效果", State.None));
                             else
-                                tree.AddNode(MarkupText($"(成功时){originalChoice.SuccessEffect}{Environment.NewLine}(失败时){originalChoice.FailedEffect}{Environment.NewLine}", -1));
+                                tree.AddNode(MarkupText($"(成功时){originalChoice.SuccessEffect}{Environment.NewLine}(失败时){originalChoice.FailedEffect}{Environment.NewLine}", State.Fail));
                         }
-                        string MarkupText(string text, int state)
+                        string MarkupText(string text, State state)
                         {
                             return state switch
                             {
-                                -1 => $"[darkorange on #081129]{text}(不知道是否成功)[/]", //未知的
-                                0 => $"[#FF0050 on #081129]{text}[/]", //失败
-                                1 => $"[mediumspringgreen on #081129]{text}[/]", //成功
-                                2 => $"[lightgoldenrod1 on #081129]{text}[/]", //大成功
-                                int.MaxValue => $"[#afafaf on #081129]{text}[/]" //中性
+                                State.Unknown => $"[darkorange on #081129]{text}(不知道是否成功)[/]", //未知的
+                                State.Fail => $"[#FF0050 on #081129]{text}[/]", //失败
+                                State.Success => $"[mediumspringgreen on #081129]{text}[/]", //成功
+                                State.GreatSuccess => $"[lightgoldenrod1 on #081129]{text}[/]", //大成功
+                                State.None => $"[#afafaf on #081129]{text}[/]", //中性
+                                _ => throw new NotImplementedException()
                             };
                         }
                     }

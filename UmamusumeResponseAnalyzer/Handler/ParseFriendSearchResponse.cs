@@ -26,10 +26,28 @@ namespace UmamusumeResponseAnalyzer.Handler
                 .Where((x, index) => index % 2 == 0)
                 .Max(x => GetRenderWidth(Database.FactorIds[x]));
             var representative = AddFactors("代表", i.factor_info_array.Select(x => x.factor_id).ToArray(), max);
-            var inheritanceA = AddFactors("祖辈", i.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
-            var inheritanceB = AddFactors("祖辈", i.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceA = AddFactors($"祖辈@{i.succession_chara_array[0].owner_viewer_id}", i.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceB = AddFactors($"祖辈@{i.succession_chara_array[1].owner_viewer_id}", i.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
 
             tree.AddNodes(representative, inheritanceA, inheritanceB);
+            AnsiConsole.Write(tree);
+            AnsiConsole.Write(new Rule());
+        }
+        public static void ParseFriendSearchResponseSimple(Gallop.FriendSearchResponse @event)
+        {
+            var data = @event.data;
+            AnsiConsole.Write(new Rule());
+            AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\t\tID：{data.user_info_summary.viewer_id}");
+            AnsiConsole.WriteLine($"种马：{Database.IdToName?[data.user_info_summary.user_trained_chara.card_id]}");
+            var tree = new Tree("因子");
+
+            var i = data.user_info_summary.user_trained_chara;
+            var max = i.factor_info_array.Select(x => x.factor_id)
+                .Where((x, index) => index % 2 == 0)
+                .Max(x => GetRenderWidth(Database.FactorIds[x]));
+            var representative = AddFactors("代表", i.factor_info_array.Select(x => x.factor_id).ToArray(), max);
+
+            tree.AddNodes(representative);
             AnsiConsole.Write(tree);
             AnsiConsole.Write(new Rule());
         }
