@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -22,9 +23,9 @@ namespace UmamusumeResponseAnalyzer
         internal static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
         private const string AcceptEncoding = "gzip, deflate, br";
         private const string AcceptLanguage = "zh-CN";
-        private const string UserAgent = "DMMGamePlayer5-Win/5.0.119 Electron/17.2.0";
+        private const string UserAgent = "DMMGamePlayer5-Win/5.2.6 Electron/24.1.1";
         private const string ClientApp = "DMMGamePlayer5";
-        private const string ClientVersion = "5.0.119";
+        private const string ClientVersion = "5.2.6";
         private const string SecFetchDest = "empty";
         private const string SecFetchMode = "no-cors";
         private const string SecFetchSite = "none";
@@ -213,17 +214,24 @@ namespace UmamusumeResponseAnalyzer
         }
         void Launch(string args)
         {
-            using var Proc = new Process();
-            var StartInfo = new ProcessStartInfo
+            try
             {
-                FileName = string.IsNullOrEmpty(split_umamusume_file_path) ? umamusume_file_path : split_umamusume_file_path,
-                Arguments = args,
-                CreateNoWindow = false,
-                UseShellExecute = true,
-                Verb = "runas"
-            };
-            Proc.StartInfo = StartInfo;
-            Proc.Start();
+                using var Proc = new Process();
+                var StartInfo = new ProcessStartInfo
+                {
+                    FileName = string.IsNullOrEmpty(split_umamusume_file_path) ? umamusume_file_path : split_umamusume_file_path,
+                    Arguments = args,
+                    CreateNoWindow = false,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                Proc.StartInfo = StartInfo;
+                Proc.Start();
+            }
+            catch (Win32Exception)
+            {
+                AnsiConsole.WriteLine("客户端启动已取消");
+            }
         }
         Version GetGameVersion()
         {

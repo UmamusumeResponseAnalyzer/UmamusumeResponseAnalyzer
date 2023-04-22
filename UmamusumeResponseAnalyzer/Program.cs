@@ -80,14 +80,21 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
 
-            AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
-
-            var _closingEvent = new AutoResetEvent(false);
-            Console.CancelKeyPress += ((s, a) =>
+            if (!Server.IsRunning)
             {
-                _closingEvent.Set();
-            });
-            _closingEvent.WaitOne();
+                AnsiConsole.WriteLine("URA启动失败，按回车键退出程序");
+                Console.ReadLine();
+            }
+            else
+            {
+                AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
+                var _closingEvent = new AutoResetEvent(false);
+                Console.CancelKeyPress += ((s, a) =>
+                {
+                    _closingEvent.Set();
+                });
+                _closingEvent.WaitOne();
+            }
         }
         static async Task<string> ShowMenu()
         {

@@ -38,10 +38,17 @@ namespace UmamusumeResponseAnalyzer
             }
             catch
             {
-                httpListener = new();
-                httpListener.Prefixes.Add("http://127.0.0.1:4693/");
-                httpListener.Start();
-                AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693启动，如需模拟器/手机连入请以管理员权限运行");
+                try
+                {
+                    httpListener = new();
+                    httpListener.Prefixes.Add("http://127.0.0.1:4693/");
+                    httpListener.Start();
+                    AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693启动，如需模拟器/手机连入请以管理员权限运行");
+                }
+                catch (HttpListenerException)
+                {
+                    AnsiConsole.WriteLine("服务器启动失败，请检查是否已有URA实例正在运行");
+                }
             }
             finally
             {
@@ -113,6 +120,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             });
         }
+        public static bool IsRunning => httpListener.IsListening;
         static void ParseRequest(byte[] buffer)
         {
             try
