@@ -6,6 +6,8 @@ using System.Net;
 using System.Runtime.InteropServices;
 using UmamusumeResponseAnalyzer.Localization;
 using UmamusumeResponseAnalyzer.Handler;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -22,14 +24,24 @@ namespace UmamusumeResponseAnalyzer
                 httpListener = new();
                 httpListener.Prefixes.Add("http://*:4693/");
                 httpListener.Start();
-                AnsiConsole.MarkupLine("服务器已于http://*:4693/启动");
+                AnsiConsole.MarkupLine("服务器已于http://*:4693启动");
+                var interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                   .Where(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet && x.OperationalStatus == OperationalStatus.Up)
+                   .SelectMany(x => x.GetIPProperties().UnicastAddresses)
+                   .Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork)
+                   .Select(x => x.Address.ToString())
+                   .ToList();
+                foreach (var i in interfaces)
+                {
+                    AnsiConsole.WriteLine($"可尝试通过http://{i}:4693连接");
+                }
             }
             catch
             {
                 httpListener = new();
                 httpListener.Prefixes.Add("http://127.0.0.1:4693/");
                 httpListener.Start();
-                AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693/启动，如需模拟器/手机连入请以管理员权限运行");
+                AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693启动，如需模拟器/手机连入请以管理员权限运行");
             }
             finally
             {
