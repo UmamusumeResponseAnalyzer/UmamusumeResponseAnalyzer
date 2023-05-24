@@ -64,9 +64,16 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             double totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
             double totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
-            AnsiConsole.MarkupLine($"[aqua]总属性：{totalValue}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
             int currentVital = @event.data.chara_info.vital;
             int maxVital = @event.data.chara_info.max_vital;
+            AnsiConsole.Markup(@$"[{currentVital switch
+            {
+                < 30 => "red",
+                < 50 => "darkorange",
+                < 70 => "yellow",
+                _ => "green"
+            }}]体力：{currentVital}[/]/{maxVital}");
+            AnsiConsole.MarkupLine($"\t[aqua]总属性：{totalValue}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
 
             //额外显示GM杯信息
             if (@event.IsScenario(ScenarioType.GrandMasters))
@@ -109,24 +116,26 @@ namespace UmamusumeResponseAnalyzer.Handler
                         spiritStr = $"{{{spiritStr}}} ";
                     else
                         spiritStr = $"{spiritStr} ";
-                    outputLine = outputLine + spiritStr;
+                    outputLine += spiritStr;
                 }
                 AnsiConsole.MarkupLine(outputLine);
 
                 //看看有没有凑齐的女神
-                if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9040)) AnsiConsole.MarkupLine("当前女神睿智：[red]红[/]");
-                else if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9041)) AnsiConsole.MarkupLine("当前女神睿智：[blue]蓝[/]");
-                else if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9042)) AnsiConsole.MarkupLine("当前女神睿智：[yellow]黄[/]");
+                if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9040)) AnsiConsole.Markup("当前女神睿智：[red]红[/]");
+                else if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9041)) AnsiConsole.Markup("当前女神睿智：[blue]蓝[/]");
+                else if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9042)) AnsiConsole.Markup("当前女神睿智：[yellow]黄[/]");
                 else //预测下一个女神
                 {
                     string[] colorStrs = { "⚪", "[red]红[/]", "[blue]蓝[/]", "[yellow]黄[/]" };
                     if (spiritColors[0] == 0)
-                        AnsiConsole.MarkupLine("下一个女神：⚪ [green]vs[/] ⚪");
+                    {
+                        AnsiConsole.Markup("下一个女神：⚪ [green]vs[/] ⚪");
+                    }
                     else if (spiritColors[0] != 0 && spiritColors[4] == 0)
                     {
                         int color1 = spiritColors[0];
                         int color1count = spiritColors.Count(x => x == color1);
-                        AnsiConsole.MarkupLine($"下一个女神：{colorStrs[color1]}x{color1count} [green]vs[/] ⚪");
+                        AnsiConsole.Markup($"下一个女神：{colorStrs[color1]}x{color1count} [green]vs[/] ⚪");
                     }
                     else
                     {
@@ -136,23 +145,24 @@ namespace UmamusumeResponseAnalyzer.Handler
                         int color2count = spiritColors.Count(x => x == color2);
                         int emptycount = spiritColors.Count(x => x == 0);
                         if (color1 == color2 || color1count > color2count + emptycount)
-                            AnsiConsole.MarkupLine($"下一个女神：{colorStrs[color1]}");
+                            AnsiConsole.Markup($"下一个女神：{colorStrs[color1]}");
                         else if (color2count > color1count + emptycount)
-                            AnsiConsole.MarkupLine($"下一个女神：{colorStrs[color2]}");
+                            AnsiConsole.Markup($"下一个女神：{colorStrs[color2]}");
                         else
-                            AnsiConsole.MarkupLine($"下一个女神：{colorStrs[color1]}x{color1count} [green]vs[/] {colorStrs[color2]}x{color2count}");
+                            AnsiConsole.Markup($"下一个女神：{colorStrs[color1]}x{color1count} [green]vs[/] {colorStrs[color2]}x{color2count}");
                     }
                 }
 
                 if (@event.data.venus_data_set.venus_chara_info_array != null && @event.data.venus_data_set.venus_chara_info_array.Any(x => x.chara_id == 9042))
                 {
                     var venusLevels = @event.data.venus_data_set.venus_chara_info_array;
-                    AnsiConsole.MarkupLine($"女神等级：" +
+                    AnsiConsole.Markup($"\t女神等级：" +
                         $"[yellow]{venusLevels.First(x => x.chara_id == 9042).venus_level}[/] " +
                         $"[red]{venusLevels.First(x => x.chara_id == 9040).venus_level}[/] " +
                         $"[blue]{venusLevels.First(x => x.chara_id == 9041).venus_level}[/] "
                         );
                 }
+                AnsiConsole.Markup(Environment.NewLine);
             }
 
             var trainItems = new Dictionary<int, SingleModeCommandInfo>
@@ -340,7 +350,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else
                 {
                     var lv = @event.data.chara_info.training_level_info_array.First(x => x.command_id == normalId).level;
-                    outputItems[i] = lv < 5 ? $"训练等级:[yellow]Lv{lv}[/]" : $"Lv{lv}";
+                    outputItems[i] = $"训练等级:{(lv < 5 ? $"[yellow]Lv{lv}[/]" : $"Lv{lv}")}";
                 }
             }
             table.AddRow(outputItems);
@@ -390,7 +400,18 @@ namespace UmamusumeResponseAnalyzer.Handler
                         if (partner >= 1 && partner <= 7)
                         {
                             if (name.Contains("[友]")) //友人单独标绿
-                                name = $"[green]{name}[/]";
+                            {
+                                //三女神团队卡的友情训练
+                                if (supportCards[partner] == 30137 && @event.data.chara_info.chara_effect_id_array.Any(x => x == 102))
+                                {
+                                    name = $"[#80ff00]{name}[/]";
+                                }
+                                else
+                                {
+                                    name = $"[green]{name}[/]";
+                                }
+
+                            }
                             if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
                                 name = $"[yellow]{name}[/]";
                         }
