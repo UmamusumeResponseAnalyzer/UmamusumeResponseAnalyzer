@@ -194,7 +194,52 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
 
-                //GM杯额外信息
+                //青春杯
+                if (@event.data.team_data_set != null)
+                {
+                    foreach (var item in @event.data.team_data_set.command_info_array)
+                    {
+                        if (item.command_id == tid || item.command_id == xiahesuIds[tid])
+                        {
+                            foreach (var trainParam in item.params_inc_dec_info_array)
+                            {
+                                trainParams[trainParam.target_type] += trainParam.value;
+                                //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
+                            }
+                        }
+                    }
+                }
+                //巅峰杯
+                if (@event.data.free_data_set != null)
+                {
+                    foreach (var item in @event.data.free_data_set.command_info_array)
+                    {
+                        if (item.command_id == tid || item.command_id == xiahesuIds[tid])
+                        {
+                            foreach (var trainParam in item.params_inc_dec_info_array)
+                            {
+                                trainParams[trainParam.target_type] += trainParam.value;
+                                //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
+                            }
+                        }
+                    }
+                }
+                //偶像杯
+                if (@event.data.live_data_set != null)
+                {
+                    foreach (var item in @event.data.live_data_set.command_info_array)
+                    {
+                        if (item.command_id == tid || item.command_id == xiahesuIds[tid])
+                        {
+                            foreach (var trainParam in item.params_inc_dec_info_array)
+                            {
+                                trainParams[trainParam.target_type] += trainParam.value;
+                                //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
+                            }
+                        }
+                    }
+                }
+                //女神杯
                 if (@event.IsScenario(ScenarioType.GrandMasters))
                 {
                     foreach (var item in @event.data.venus_data_set.command_info_array)
