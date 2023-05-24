@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using Gallop;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             };
             container.AddColumn(new TableColumn(string.Empty).NoWrap());
             container.HideHeaders();
-            foreach (var i in data.opponent_info_array.OrderByDescending(x => x.strength))
+            foreach (var i in data.opponent_info_array.OrderByDescending(x => -x.strength))
             {
                 var Type = i.strength switch
                 {
@@ -40,6 +41,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var powerLine = new List<string> { "力量" };
                 var gutsLine = new List<string> { "根性" };
                 var wizLine = new List<string> { "智力" };
+                int totalPower = 0;
+                int totalWiz = 0;
+                int charaNum = 0;
                 foreach (var j in teamData)
                 {
                     foreach (var k in j.Value)
@@ -91,20 +95,41 @@ namespace UmamusumeResponseAnalyzer.Handler
                         });
                         properTypeLine.Add(properType);
                         properValueLine.Add(properValue);
+
+                        charaNum += 1;
+
                         speedLine.Add(trainedChara.speed.ToString());
                         staminaLine.Add(trainedChara.stamina.ToString());
-                        powerLine.Add(trainedChara.power.ToString());
+
+                        if (trainedChara.power < 600)
+                            powerLine.Add("[green]" + trainedChara.power.ToString() + "[/]");
+                        else if (trainedChara.power < 800)
+                            powerLine.Add("[aqua]" + trainedChara.power.ToString() + "[/]");
+                        else
+                            powerLine.Add(trainedChara.power.ToString());
+                        totalPower += trainedChara.power;
+
                         gutsLine.Add(trainedChara.guts.ToString());
-                        wizLine.Add(trainedChara.wiz.ToString());
+
+                        if (trainedChara.wiz > 1600)
+                            wizLine.Add("[aqua]" + trainedChara.wiz.ToString() + "[/]");
+                        else
+                            wizLine.Add(trainedChara.wiz.ToString());
+                        totalWiz += trainedChara.wiz;
+
+
+
                     }
                 }
                 table.AddRow(properTypeLine.Append("平 均").ToArray());
                 table.AddRow(properValueLine.Append("/ / /").ToArray());
+
                 table.AddRow(speedLine.Append(speedLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
                 table.AddRow(staminaLine.Append(staminaLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
-                table.AddRow(powerLine.Append(powerLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
+                table.AddRow(powerLine.Append((totalPower/charaNum).ToString("F0")).ToArray());
                 table.AddRow(gutsLine.Append(gutsLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
-                table.AddRow(wizLine.Append(wizLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
+                table.AddRow(wizLine.Append((totalWiz / charaNum).ToString("F0")).ToArray());
+
                 container.AddRow(table);
             }
 

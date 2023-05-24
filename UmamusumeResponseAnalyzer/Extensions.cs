@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using Gallop;
+using Spectre.Console;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,6 +14,15 @@ namespace UmamusumeResponseAnalyzer
     {
         Default = 0,
         Windows7 = 1
+    }
+    public enum ScenarioType
+    {
+        Ura = 1,
+        Aoharu = 2,
+        GrandLive = 3,
+        MakeANewTrack = 4, //巅峰杯
+        GrandMasters = 5,
+        Unknown = int.MaxValue
     }
     public static class Extensions
     {
@@ -79,6 +89,20 @@ namespace UmamusumeResponseAnalyzer
                     return true;
             }
             return false;
+        }
+        public static bool IsScenario(this SingleModeCheckEventResponse @event, ScenarioType type)
+        {
+            var data = @event.data;
+            return type switch
+            {
+                ScenarioType.Ura => data.chara_info.scenario_id == 1,
+                ScenarioType.Aoharu => data.chara_info.scenario_id == 2,
+                ScenarioType.GrandLive => data.chara_info.scenario_id == 3,
+                ScenarioType.MakeANewTrack => data.chara_info.scenario_id == 4 && data.free_data_set.pick_up_item_info_array != null,
+                ScenarioType.GrandMasters => data.chara_info.scenario_id == 5 && data.venus_data_set != null,
+                ScenarioType.Unknown => true,
+                _ => false
+            };
         }
     }
     public static class ManualResetEventExtensions
