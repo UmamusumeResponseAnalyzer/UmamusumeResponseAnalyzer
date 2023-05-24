@@ -1,7 +1,9 @@
 ﻿using Spectre.Console;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
@@ -37,34 +39,9 @@ namespace UmamusumeResponseAnalyzer
             if (exist) //删除临时文件
             {
                 File.Delete(path);
-                await Update(true); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
+                await UpdateAssets(); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
                 AnsiConsole.Clear();
             }
-#if RELEASE //只在Release里启用自动更新
-            _ = Task.Run(async () =>
-            {
-                while (Config.Get(Resource.ConfigSet_AutoUpdate))
-                {
-                    var downloaded = false;
-                    try
-                    {
-                        if (downloaded) break;
-                        await Task.Delay(5 * 60 * 1000); //5min * 60s * 1000ms
-                        await DownloadAssets(null!, null!, path);
-                        if (File.Exists(path))
-                        {
-                            Console.Title = "重启程序后将进行自动更新";
-                            downloaded = true;
-                        }
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.Title = $"检查更新失败: {e.Message}";
-                    }
-                }
-            });
-#endif
         }
         public static void CloseToUpdate()
         {
@@ -109,12 +86,70 @@ namespace UmamusumeResponseAnalyzer
             Proc.Start();
             Environment.Exit(0);
         }
-        public static async Task Update(bool dataOnly = false)
+        public static async Task UpdateAssets()
         {
-            await DownloadAssets(dataOnly);
-            AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
+            await AnsiConsole.Progress()
+                .Columns(new ProgressColumn[]
+                {
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn(),
+                            new SpinnerColumn()
+                })
+                .StartAsync(async ctx =>
+                {
+                    var tasks = new List<Task>();
 
-            if (dataOnly) return;
+                    var eventTask = Download(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
+                    tasks.Add(eventTask);
+
+                    var successEventTask = Download(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
+                    tasks.Add(successEventTask);
+
+                    var idToNameTask = Download(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH);
+                    tasks.Add(idToNameTask);
+
+                    var skillTask = Download(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
+                    tasks.Add(skillTask);
+
+                    var translatedNameTask = Download(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH);
+                    tasks.Add(translatedNameTask);
+
+                    var climaxItemTask = Download(ctx, Resource.LaunchMenu_Update_DownloadClimaxItemInstruction, Database.CLIMAX_ITEM_FILEPATH);
+                    tasks.Add(climaxItemTask);
+
+                    var talentSkillTask = Download(ctx, Resource.LaunchMenu_Update_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
+                    tasks.Add(talentSkillTask);
+
+                    var factorIdTask = Download(ctx, Resource.LaunchMenu_Update_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH);
+                    tasks.Add(factorIdTask);
+
+                    await Task.WhenAll(tasks);
+                });
+            AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);
+            Console.ReadKey();
+        }
+        public static async Task UpdateProgram()
+        {
+            await AnsiConsole.Progress()
+                .Columns(new ProgressColumn[]
+                {
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn(),
+                            new SpinnerColumn()
+                })
+                .StartAsync(async ctx =>
+                {
+                    var tasks = new List<Task>();
+
+                    var programTask = Download(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                    tasks.Add(programTask);
+
+                    await Task.WhenAll(tasks);
+                });
             if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
             {
                 Console.WriteLine(Resource.LaunchMenu_Update_BeginUpdateProgramInstruction);
@@ -145,13 +180,13 @@ namespace UmamusumeResponseAnalyzer
                     {
                         var tasks = new List<Task>();
 
-                        var nfAPITask = DownloadAssets(ctx, "正在下载nfapi.dll", nfapiPath);
+                        var nfAPITask = Download(ctx, "正在下载nfapi.dll", nfapiPath);
                         tasks.Add(nfAPITask);
 
-                        var nfDriverTask = DownloadAssets(ctx, "正在下载nfdriver.sys", nfdriverPath);
+                        var nfDriverTask = Download(ctx, "正在下载nfdriver.sys", nfdriverPath);
                         tasks.Add(nfDriverTask);
 
-                        var redirectorTask = DownloadAssets(ctx, "正在下载Redirector.dll", redirectorPath);
+                        var redirectorTask = Download(ctx, "正在下载Redirector.dll", redirectorPath);
                         tasks.Add(redirectorTask);
 
                         await Task.WhenAll(tasks);
@@ -172,7 +207,7 @@ namespace UmamusumeResponseAnalyzer
                 .StartAsync(async ctx =>
                 {
                     var zipPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "cmder.zip");
-                    var download = DownloadAssets(ctx, "正在下载cmder.zip", zipPath);
+                    var download = Download(ctx, "正在下载cmder.zip", zipPath);
                     var unzip = ctx.AddTask("解压cmder.zip", false).IsIndeterminate();
                     await download;
                     unzip.StartTask();
@@ -180,54 +215,6 @@ namespace UmamusumeResponseAnalyzer
                     System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, cmderPath);
                     File.Delete(zipPath);
                     unzip.StopTask();
-                });
-        }
-        static async Task DownloadAssets(bool dataOnly = false)
-        {
-            await AnsiConsole.Progress()
-                .Columns(new ProgressColumn[]
-                {
-                            new TaskDescriptionColumn(),
-                            new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn(),
-                            new SpinnerColumn()
-                })
-                .StartAsync(async ctx =>
-                {
-                    var tasks = new List<Task>();
-
-                    var eventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
-                    tasks.Add(eventTask);
-
-                    var successEventTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
-                    tasks.Add(successEventTask);
-
-                    var idToNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH);
-                    tasks.Add(idToNameTask);
-
-                    var skillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
-                    tasks.Add(skillTask);
-
-                    var translatedNameTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH);
-                    tasks.Add(translatedNameTask);
-
-                    var climaxItemTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadClimaxItemInstruction, Database.CLIMAX_ITEM_FILEPATH);
-                    tasks.Add(climaxItemTask);
-
-                    var talentSkillTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
-                    tasks.Add(talentSkillTask);
-
-                    var factorIdTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH);
-                    tasks.Add(factorIdTask);
-
-                    if (!dataOnly)
-                    {
-                        var programTask = DownloadAssets(ctx, Resource.LaunchMenu_Update_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
-                        tasks.Add(programTask);
-                    }
-
-                    await Task.WhenAll(tasks);
                 });
         }
         static string GetDownloadUrl(string filepath)
@@ -260,7 +247,7 @@ namespace UmamusumeResponseAnalyzer
                 ".exe" => !Config.Get(Resource.ConfigSet_ForceUseGithubToUpdate) && isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
-        public static async Task DownloadAssets(ProgressContext ctx = null!, string instruction = null!, string path = null!)
+        public static async Task Download(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
             var downloadURL = GetDownloadUrl(path);
             var client = new HttpClient(new HttpClientHandler

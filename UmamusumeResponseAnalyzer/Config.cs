@@ -32,7 +32,6 @@ namespace UmamusumeResponseAnalyzer
                 Resource.ConfigSet_ShowCommandInfo
             ));
             ConfigSet.Add("更新", ConfigItem.From(
-                Resource.ConfigSet_AutoUpdate,
                 Resource.ConfigSet_ForceUseGithubToUpdate
             ));
             ConfigSet.Add("加速", new ConfigItem[]

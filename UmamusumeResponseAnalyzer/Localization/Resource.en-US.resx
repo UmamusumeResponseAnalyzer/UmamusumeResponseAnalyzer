@@ -147,17 +147,17 @@
   <data name="LaunchMenu_Start" xml:space="preserve">
     <value>Start!</value>
   </data>
-  <data name="LaunchMenu_Update" xml:space="preserve">
+  <data name="LaunchMenu_UpdateAssets" xml:space="preserve">
     <value>Update data</value>
   </data>
   <data name="LaunchMenu_Update_DownloadedInstruction" xml:space="preserve">
     <value>Download completed</value>
   </data>
   <data name="LaunchMenu_Update_DownloadEventsInstruction" xml:space="preserve">
-    <value>Downloading events.json from github</value>
+    <value>Downloading events.json from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_DownloadSuccessEventsInstruction" xml:space="preserve">
-    <value>Downloading successevents.json from github</value>
+    <value>Downloading successevents.json from GitHub</value>
   </data>
   <data name="LaunchMenu_Start_Checking" xml:space="preserve">
     <value>[yellow]Check if umamusume.exe is running[/]</value>
@@ -193,10 +193,10 @@
     <value>ParseRoomMatchRaceStartResponse</value>
   </data>
   <data name="LaunchMenu_Update_DownloadIdToNameInstruction" xml:space="preserve">
-    <value>Downloading id.json from github</value>
+    <value>Downloading id.json from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_DownloadProgramInstruction" xml:space="preserve">
-    <value>Downloading program from github</value>
+    <value>Downloading program from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_BeginUpdateProgramInstruction" xml:space="preserve">
     <value>Press enter to update program</value>
@@ -209,5 +209,95 @@
   </data>
   <data name="ConfigSet_MaximiumGradeSkillRecommendation" xml:space="preserve">
     <value>MaximiumGradeSkillRecommendation</value>
+  </data>
+  <data name="ConfigSet_DMMLaunch" xml:space="preserve">
+    <value>Launch game without opening DMM</value>
+  </data>
+  <data name="ConfigSet_EnableNetFilter" xml:space="preserve">
+    <value>Enable game accelerator</value>
+  </data>
+  <data name="ConfigSet_ForceUseGithubToUpdate" xml:space="preserve">
+    <value>Force use GitHub to update</value>
+  </data>
+  <data name="ConfigSet_ParseChampionsRaceStartResponse" xml:space="preserve">
+    <value>ParseMonthlyRace</value>
+  </data>
+  <data name="ConfigSet_SaveResponseForDebug" xml:space="preserve">
+    <value>Save packets for debugging</value>
+  </data>
+  <data name="ConfigSet_ShowCommandInfo" xml:space="preserve">
+    <value>Show Command Info</value>
+  </data>
+  <data name="LaunchMenu_InstallNetFilterDriver" xml:space="preserve">
+    <value>Install game accelerator driver</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget" xml:space="preserve">
+    <value>Set Accelerator Server</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskAuth" xml:space="preserve">
+    <value>Does Proxy Server Requires Authentication</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskAuthPassword" xml:space="preserve">
+    <value>Please input proxy password</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskAuthUsername" xml:space="preserve">
+    <value>Please input proxy username</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskHost" xml:space="preserve">
+    <value>Please input proxy server address</value>
+  </data>
+  <data name="LaunchMenu_SetNetfilterTarget_AskPort" xml:space="preserve">
+    <value>Please input proxy server port</value>
+  </data>
+  <data name="LaunchMenu_UninstallNetFilterDriver" xml:space="preserve">
+    <value>Uninstall game accelerator driver</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
+    <value>Downloading climaxitems.br from GitHub</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadFactorIdsInstruction" xml:space="preserve">
+    <value>Downloading factor_ids.br from GitHub</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
+    <value>Downloading talentskillsets.br from GitHub</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadTranslatedNameInstruction" xml:space="preserve">
+    <value>Downloading name_cn.br from GitHub</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Caption" xml:space="preserve">
+    <value>Predicted score: {0}(learned skills) + {1}(skills to be learned) + {2}(statuses) = {3}({4})</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Columns_Grade" xml:space="preserve">
+    <value>Score</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Columns_RequireSP" xml:space="preserve">
+    <value>Required Skill Points</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Columns_SkillName" xml:space="preserve">
+    <value>Skill Name</value>
+  </data>
+  <data name="MaximiumGradeSkillRecommendation_Title" xml:space="preserve">
+    <value>Total SP: {0}, Used SP: {1}, Remaining SP: {2}</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_NoOption" xml:space="preserve">
+    <value>NO OPTION</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownEffect" xml:space="preserve">
+    <value>UNKNOWN EFFECT</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownEvent" xml:space="preserve">
+    <value>UNKNOWN EVENT</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownOption" xml:space="preserve">
+    <value>UNKNOWN OPTION @ {0}</value>
+  </data>
+  <data name="SingleModeCheckEvent_Event_UnknownSource" xml:space="preserve">
+    <value>UNKNOWN SOURCE</value>
+  </data>
+  <data name="LaunchMenu_UpdateProgram" xml:space="preserve">
+    <value>Update program</value>
+  </data>
+  <data name="LaunchMenu_InstallUraCore" xml:space="preserve">
+    <value>Automatic install ura-core</value>
   </data>
 </root>

@@ -147,7 +147,7 @@
   <data name="LaunchMenu_Start" xml:space="preserve">
     <value>启动！</value>
   </data>
-  <data name="LaunchMenu_Update" xml:space="preserve">
+  <data name="LaunchMenu_UpdateAssets" xml:space="preserve">
     <value>更新数据文件</value>
   </data>
   <data name="LaunchMenu_Update_DownloadedInstruction" xml:space="preserve">
@@ -249,9 +249,6 @@
   <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的climaxitems.br</value>
   </data>
-  <data name="ConfigSet_AutoUpdate" xml:space="preserve">
-    <value>自动更新</value>
-  </data>
   <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的talentskillsets.br</value>
   </data>
@@ -296,5 +293,11 @@
   </data>
   <data name="LaunchMenu_Update_DownloadFactorIdsInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的factor_ids.br</value>
+  </data>
+  <data name="LaunchMenu_UpdateProgram" xml:space="preserve">
+    <value>更新程序</value>
+  </data>
+  <data name="LaunchMenu_InstallUraCore" xml:space="preserve">
+    <value>自动安装ura-core</value>
   </data>
 </root>

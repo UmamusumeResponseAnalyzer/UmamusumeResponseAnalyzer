@@ -61,15 +61,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 自动更新 的本地化字符串。
-        /// </summary>
-        public static string ConfigSet_AutoUpdate {
-            get {
-                return ResourceManager.GetString("ConfigSet_AutoUpdate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 跳过DMM启动游戏 的本地化字符串。
         /// </summary>
         public static string ConfigSet_DMMLaunch {
@@ -210,6 +201,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_InstallNetFilterDriver {
             get {
                 return ResourceManager.GetString("LaunchMenu_InstallNetFilterDriver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 自动安装ura-core 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_InstallUraCore {
+            get {
+                return ResourceManager.GetString("LaunchMenu_InstallUraCore", resourceCulture);
             }
         }
         
@@ -394,15 +394,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 更新数据文件 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Update {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 未发现新版本程序 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_AlreadyLatestInstruction {
@@ -507,6 +498,24 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Update_DownloadTranslatedNameInstruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Update_DownloadTranslatedNameInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 更新数据文件 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_UpdateAssets {
+            get {
+                return ResourceManager.GetString("LaunchMenu_UpdateAssets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 更新程序 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_UpdateProgram {
+            get {
+                return ResourceManager.GetString("LaunchMenu_UpdateProgram", resourceCulture);
             }
         }
         
