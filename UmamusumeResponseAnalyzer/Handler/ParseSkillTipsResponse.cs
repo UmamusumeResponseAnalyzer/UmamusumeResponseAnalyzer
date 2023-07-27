@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
+using UmamusumeResponseAnalyzer.Game;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -45,12 +46,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                 .Where(x => x.Rate > 0 && !@event.data.chara_info.skill_array.Any(y => y.skill_id == x.Id))
                 .ToList();
             //添加天赋技能
-            foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level))
+            bool unknownUma=false;//新出的马娘的天赋技能不在数据库中
+            if (Database.TalentSkill.ContainsKey(@event.data.chara_info.card_id))
             {
-                if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
+                foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level))
                 {
-                    tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info));
+                    if (!tips.Any(x => x.Id == i.SkillId) && !@event.data.chara_info.skill_array.Any(y => y.skill_id == i.SkillId))
+                    {
+                        tips.Add(Database.Skills[i.SkillId].Apply(@event.data.chara_info));
+                    }
                 }
+            }
+            else
+            {
+                unknownUma=true;
             }
             //添加上位技能缺少的下位技能（为方便计算切者技能点）
             foreach (var group in tips.GroupBy(x => x.GroupId))
@@ -102,7 +111,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (skill == null)
                 {
                     hasUnknownSkills = true;
-                    AnsiConsole.MarkupLine($"[red]警告：未知技能，id={i.skill_id}[/]");
+                    AnsiConsole.MarkupLine($"[red]警告：未知已购买技能，id={i.skill_id}[/]");
                     continue;
                 }
                 boughtSkillsAndInferiors.Add(skill.Id);
@@ -317,6 +326,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 else
                 {
+                    if (Database.Skills[i.skill_id] == null) continue;
                     var (GroupId, Rarity, Rate) = Database.Skills.Deconstruction(i.skill_id);
                     previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Apply(@event.data.chara_info, 0).Grade;
                 }
@@ -327,11 +337,21 @@ namespace UmamusumeResponseAnalyzer.Handler
             table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
             AnsiConsole.Write(table);
             AnsiConsole.MarkupLine($"距离{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Rank}还有[yellow]{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Min - totalPoint}[/]分");
+            if(unknownUma)
+            {
+                AnsiConsole.MarkupLine($"[red]未知马娘：{@event.data.chara_info.card_id}，无法获取觉醒技能，请自己决定是否购买。[/]");
+            }
             if(hasUnknownSkills)
             {
                 AnsiConsole.MarkupLine($"[red]警告：存在未知技能[/]");
             }
             AnsiConsole.MarkupLine("");
+
+            if (@event.IsScenario(ScenarioType.GrandMasters))
+            {
+                GameStats.print();
+                AnsiConsole.MarkupLine("");
+            }
 
             //双适性技能的评分计算有问题，需要重做数据库
             AnsiConsole.MarkupLine("[yellow]已知问题 [/]");
@@ -350,6 +370,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (totalSP0 > 0)
                 AnsiConsole.MarkupLine($"[aqua]平均性价比：{(double)willLearnPoint / totalSP0:F3}[/]");
             
+
+
 
 
             //计算边际性价比，对totalSP正负50的范围做线性回归
