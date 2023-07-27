@@ -213,7 +213,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     zhongMaBlueCount[i] = threeStarCount * 3;
                 }
             }
-            zhongMaExtraBonus = new int[6] { 20, 0, 40, 0, 20, 150 };//大师杯和青春杯因子各一半
+            zhongMaExtraBonus = new int[6] { 20, 0, 40, 0, 20, 0 };//大师杯和青春杯因子各一半
 
 
             cardDistribution = new bool[5, 8];
@@ -295,6 +295,161 @@ namespace UmamusumeResponseAnalyzer.AI
             }
             if (@event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id >= 9040))
                 venusIsWisdomActive = true;
+
+
+
+            trainValue = new int[5, 7];
+            failRate = new int[5];
+            {
+
+
+                var currentVital = @event.data.chara_info.vital;
+                //maxVital = @event.data.chara_info.max_vital;
+                var currentFiveValue = fiveStatus;
+
+                var trainItems = new Dictionary<int, SingleModeCommandInfo>
+                { //60x是合宿训练，10x是平时训练
+                    {101,@event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601): @event.data.home_info.command_info_array.First(x => x.command_id == 101)},
+                    {105,@event.data.home_info.command_info_array.Any(x => x.command_id == 602) ? @event.data.home_info.command_info_array.First(x => x.command_id == 602): @event.data.home_info.command_info_array.First(x => x.command_id == 105)},
+                    {102,@event.data.home_info.command_info_array.Any(x => x.command_id == 603) ? @event.data.home_info.command_info_array.First(x => x.command_id == 603): @event.data.home_info.command_info_array.First(x => x.command_id == 102)},
+                    {103,@event.data.home_info.command_info_array.Any(x => x.command_id == 604) ? @event.data.home_info.command_info_array.First(x => x.command_id == 604): @event.data.home_info.command_info_array.First(x => x.command_id == 103)},
+                    {106,@event.data.home_info.command_info_array.Any(x => x.command_id == 605) ? @event.data.home_info.command_info_array.First(x => x.command_id == 605): @event.data.home_info.command_info_array.First(x => x.command_id == 106)}
+                };
+
+                var trainStats = new TrainStats[5];
+                var failureRate = new Dictionary<int, int>();
+                for (int t = 0; t < 5; t++)
+                {
+                    int tid = GameGlobal.TrainIds[t];
+                    failureRate[tid] = trainItems[tid].failure_rate;
+                    var trainParams = new Dictionary<int, int>()
+                {
+                    {1,0},
+                    {2,0},
+                    {3,0},
+                    {4,0},
+                    {5,0},
+                    {30,0},
+                    {10,0},
+                };
+                    var nonScenarioTrainParams = new Dictionary<int, int>()
+                {
+                    {1,0},
+                    {2,0},
+                    {3,0},
+                    {4,0},
+                    {5,0},
+                    {30,0},
+                    {10,0},
+                };
+                    //去掉剧本加成的训练值（游戏里的下层显示）
+                    foreach (var item in @event.data.home_info.command_info_array)
+                    {
+                        if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                        {
+                            foreach (var trainParam in item.params_inc_dec_info_array)
+                            {
+                                nonScenarioTrainParams[trainParam.target_type] += trainParam.value;
+                                trainParams[trainParam.target_type] += trainParam.value;
+                            }
+                        }
+                    }
+
+                    //青春杯
+                    if (@event.data.team_data_set != null)
+                    {
+                        foreach (var item in @event.data.team_data_set.command_info_array)
+                        {
+                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                            {
+                                foreach (var trainParam in item.params_inc_dec_info_array)
+                                {
+                                    trainParams[trainParam.target_type] += trainParam.value;
+                                    //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
+                                }
+                            }
+                        }
+                    }
+                    //巅峰杯
+                    if (@event.data.free_data_set != null)
+                    {
+                        foreach (var item in @event.data.free_data_set.command_info_array)
+                        {
+                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                            {
+                                foreach (var trainParam in item.params_inc_dec_info_array)
+                                {
+                                    trainParams[trainParam.target_type] += trainParam.value;
+                                    //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
+                                }
+                            }
+                        }
+                    }
+                    //偶像杯
+                    if (@event.data.live_data_set != null)
+                    {
+                        foreach (var item in @event.data.live_data_set.command_info_array)
+                        {
+                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                            {
+                                foreach (var trainParam in item.params_inc_dec_info_array)
+                                {
+                                    trainParams[trainParam.target_type] += trainParam.value;
+                                    //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
+                                }
+                            }
+                        }
+                    }
+                    //女神杯
+                    if (@event.IsScenario(ScenarioType.GrandMasters))
+                    {
+                        foreach (var item in @event.data.venus_data_set.command_info_array)
+                        {
+                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                            {
+                                foreach (var trainParam in item.params_inc_dec_info_array)
+                                {
+                                    trainParams[trainParam.target_type] += trainParam.value;
+                                }
+                            }
+                        }
+                    }
+
+                    var stats = new TrainStats();
+                    stats.FailureRate = trainItems[tid].failure_rate;
+                    stats.VitalGain = trainParams[10];
+                    if (currentVital + stats.VitalGain > maxVital)
+                        stats.VitalGain = maxVital - currentVital;
+                    if (stats.VitalGain < -currentVital)
+                        stats.VitalGain = -currentVital;
+                    stats.FiveValueGain = new int[] { trainParams[1], trainParams[2], trainParams[3], trainParams[4], trainParams[5] };
+                    for (int i = 0; i < 5; i++)
+                        stats.FiveValueGain[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGain[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
+                    stats.PtGain = trainParams[30];
+                    stats.FiveValueGainNonScenario = new int[] { nonScenarioTrainParams[1], nonScenarioTrainParams[2], nonScenarioTrainParams[3], nonScenarioTrainParams[4], nonScenarioTrainParams[5] };
+                    for (int i = 0; i < 5; i++)
+                        stats.FiveValueGainNonScenario[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGainNonScenario[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
+                    stats.PtGainNonScenario = nonScenarioTrainParams[30];
+
+
+                    for (int i = 0; i < 5; i++)
+                        trainValue[t, i] = stats.FiveValueGain[i];
+                    trainValue[t, 5] = stats.PtGain;
+                    trainValue[t, 6] = stats.VitalGain;
+                    failRate[t] = stats.FailureRate;
+
+
+
+
+
+                }
+
+
+
+            }
+
+
+
         }
     
     }
