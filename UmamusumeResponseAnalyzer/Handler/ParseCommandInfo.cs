@@ -17,11 +17,40 @@ namespace UmamusumeResponseAnalyzer.Handler
 
 
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
-            var gameStatusToSend = new GameStatusSend(@event);
 
-            //File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}GS.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
+            //把当前游戏状态写入一个文件，用于与ai通信
+            if (@event.IsScenario(ScenarioType.GrandMasters))
+            {
+                var gameStatusToSend = new GameStatusSend(@event);
 
-            File.WriteAllText($@"./packets/currentGS.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
+                var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                if (!Directory.Exists(currentGSdirectory))
+                {
+                    Directory.CreateDirectory(currentGSdirectory);
+                }
+
+                bool success = false;
+                int tried = 0;
+
+                while (!success && tried < 10)
+                {
+                    try
+                    {
+                        File.WriteAllText($@"{currentGSdirectory}/currentGS.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
+                        success = true; // 写入成功，跳出循环
+                    }
+                    catch
+                    {
+                        tried++;
+                        AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                        Thread.Sleep(500); // 等待0.5秒
+                    }
+                }
+                if(!success)
+                {
+                    AnsiConsole.MarkupLine("[red]写入currentGS.json失败！[/]");
+                }
+            }
 
             var currentFiveValue = new int[]
             {
