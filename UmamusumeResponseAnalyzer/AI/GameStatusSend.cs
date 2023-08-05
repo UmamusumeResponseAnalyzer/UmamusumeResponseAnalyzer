@@ -105,7 +105,22 @@ namespace UmamusumeResponseAnalyzer.AI
                 ScoreUtils.ReviseOver1200(@event.data.chara_info.max_wiz) ,
             };
 
+
             skillPt = @event.data.chara_info.skill_point;
+
+            try
+            {
+                double ptRate = isQieZhe ? 2.0 : 1.8;
+                double ptScore = AiUtils.calculateSkillScore(@event, ptRate);
+                skillPt=(int)(ptScore/ptRate);
+            }
+            catch(Exception ex)
+            {
+                AnsiConsole.MarkupLine("获取当前技能分失败"+ex.Message);
+            }
+
+
+
             motivation = @event.data.chara_info.motivation;
 
 
@@ -213,7 +228,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     zhongMaBlueCount[i] = threeStarCount * 3;
                 }
             }
-            zhongMaExtraBonus = new int[6] { 20, 0, 40, 0, 20, 0 };//大师杯和青春杯因子各一半
+            zhongMaExtraBonus = new int[6] { 20, 0, 40, 0, 20, 150 };//大师杯和青春杯因子各一半
 
 
             cardDistribution = new bool[5, 8];

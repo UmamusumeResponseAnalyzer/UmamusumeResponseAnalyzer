@@ -131,7 +131,6 @@ namespace UmamusumeResponseAnalyzer.Game
                 int motDropCount = 0;
                 for (int i = currentTurn; i >= 2; i--)
                 {
-                    //第一个回合不可能是女神情热，所以这个判断条件没有问题
                     if (stats[i] == null)
                     {
                         break;

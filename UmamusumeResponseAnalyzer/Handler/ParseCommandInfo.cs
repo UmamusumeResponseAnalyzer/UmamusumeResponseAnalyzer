@@ -114,6 +114,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/78, 第{gameYear}年{gameMonth}月{halfMonth}[/]");
 
 
+            int motivation = @event.data.chara_info.motivation;
+            turnStat.motivation = motivation;
+
             //显示统计信息
             if (@event.IsScenario(ScenarioType.GrandMasters))
                 GameStats.print();
@@ -132,8 +135,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             else
                 AnsiConsole.MarkupLine($"[green]体力：{currentVital}[/]/{maxVital}");
 
-            int motivation = @event.data.chara_info.motivation;
-            turnStat.motivation = motivation;
             if (motivation == 5)
                 AnsiConsole.MarkupLine($"干劲[green]绝好调[/]");
             else if (motivation == 4)
