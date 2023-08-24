@@ -22,6 +22,7 @@ namespace UmamusumeResponseAnalyzer
         GrandLive = 3,
         MakeANewTrack = 4, //巅峰杯
         GrandMasters = 5,
+        LArc = 6,
         Unknown = int.MaxValue
     }
     public static class Extensions
@@ -100,9 +101,51 @@ namespace UmamusumeResponseAnalyzer
                 ScenarioType.GrandLive => data.chara_info.scenario_id == 3,
                 ScenarioType.MakeANewTrack => data.chara_info.scenario_id == 4 && data.free_data_set.pick_up_item_info_array != null,
                 ScenarioType.GrandMasters => data.chara_info.scenario_id == 5 && data.venus_data_set != null,
+                ScenarioType.LArc => data.chara_info.scenario_id == 6 && data.arc_data_set != null,
                 ScenarioType.Unknown => true,
                 _ => false
             };
+        }
+    }
+    public static class TableExtension
+    {
+        static Dictionary<Table, Dictionary<(int, int), string>> saved = new();
+        private static void Prepare(this Table table)
+        {
+            if (!saved.ContainsKey(table))
+            {
+                saved.Add(table, new Dictionary<(int, int), string>());
+            }
+        }
+        public static bool Edit(this Table? table, int column, int row, string content)
+        {
+            if (table is null) return false;
+            table.Prepare();
+            if (saved[table].ContainsKey((column, row)))
+                saved[table][(column, row)] = content;
+            else
+                saved[table].Add((column, row), content);
+            return true;
+        }
+        public static bool AddToRows(this Table? table, int rowIndex, params string[] contents)
+        {
+            if (table is null) return false;
+            table.Prepare();
+            for (var index = 0; index < contents.Length; index++)
+            {
+                saved[table].Add((index, rowIndex), contents[index]);
+            }
+            return true;
+        }
+        public static bool Finish(this Table? table)
+        {
+            if (table is null) return false;
+            foreach (var i in saved[table].GroupBy(x => x.Key.Item2))
+            {
+                table.AddRow(i.Select(x => x.Value).ToArray());
+            }
+            saved.Clear();
+            return true;
         }
     }
     public static class ManualResetEventExtensions
