@@ -2,34 +2,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Entities;
-using UmamusumeResponseAnalyzer.Localization;
 using UmamusumeResponseAnalyzer.Game;
+using UmamusumeResponseAnalyzer.Localization;
+using UmamusumeResponseAnalyzer.Entities;
 
-namespace UmamusumeResponseAnalyzer.Handler
+namespace UmamusumeResponseAnalyzer.AI
 {
-    public static partial class Handlers
+    public class AiUtils
     {
-        public static void ParseSkillTipsResponse(Gallop.SingleModeCheckEventResponse @event)
+        public static double calculateSkillScore(Gallop.SingleModeCheckEventResponse @event, double ptRate)
         {
-            AnsiConsole.MarkupLine($"[green]-----------------------------------------------------------------[/]");
             bool hasUnknownSkills = false;
             var totalSP = @event.data.chara_info.skill_point;
             //
             var tipsRaw = @event.data.chara_info.skill_tips_array;
             var tipsExistInDatabase = tipsRaw.Where(x => Database.Skills[(x.group_id, x.rarity)] != null);//去掉数据库中没有的技能，避免报错
             var tipsNotExistInDatabase = tipsRaw.Where(x => Database.Skills[(x.group_id, x.rarity)] == null);//数据库中没有的技能
-            foreach(var i in tipsNotExistInDatabase)
+            foreach (var i in tipsNotExistInDatabase)
             {
                 hasUnknownSkills = true;
                 string lineToPrint = $"警告：未知技能，group_id={i.group_id}, rarity={i.rarity}";
-                for(int rarity=0; rarity<10; rarity++)
+                for (int rarity = 0; rarity < 10; rarity++)
                 {
                     var maybeInferiorSkills = Database.Skills[(i.group_id, rarity)];
-                    if (maybeInferiorSkills!=null)
+                    if (maybeInferiorSkills != null)
                     {
                         foreach (var inferiorSkill in maybeInferiorSkills)
                         {
@@ -46,7 +44,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 .Where(x => x.Rate > 0 && !@event.data.chara_info.skill_array.Any(y => y.skill_id == x.Id))
                 .ToList();
             //添加天赋技能
-            bool unknownUma=false;//新出的马娘的天赋技能不在数据库中
+            bool unknownUma = false;//新出的马娘的天赋技能不在数据库中
             if (Database.TalentSkill.ContainsKey(@event.data.chara_info.card_id))
             {
                 foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level))
@@ -59,7 +57,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             else
             {
-                unknownUma=true;
+                unknownUma = true;
             }
             //添加上位技能缺少的下位技能（为方便计算切者技能点）
             foreach (var group in tips.GroupBy(x => x.GroupId))
@@ -115,9 +113,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     continue;
                 }
                 boughtSkillsAndInferiors.Add(skill.Id);
-                if(skill.Inferior!=null)
+                if (skill.Inferior != null)
                 {
-                    skill=skill.Inferior;
+                    skill = skill.Inferior;
                     boughtSkillsAndInferiors.Add(skill.Id);
                     if (skill.Inferior != null)
                     {
@@ -127,7 +125,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 }
             }
-            tips.RemoveAll(x => boughtSkillsAndInferiors.Contains(x.Id)); 
+            tips.RemoveAll(x => boughtSkillsAndInferiors.Contains(x.Id));
 
 
             // 01背包变种
@@ -181,7 +179,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //if (SuperiorCost[0] == 234)//skill_id=202531, debug
                 //    AnsiConsole.WriteLine($"{s.Name} {s.Id} {s.Grade} {s.Inferior.Apply(@event.data.chara_info).Name} {s.Inferior.Apply(@event.data.chara_info).Id} {s.Inferior.Apply(@event.data.chara_info).Grade}");
 
-                if (SuperiorCost[0]!=0 && s.Inferior != null)
+                if (SuperiorCost[0] != 0 && s.Inferior != null)
                 {
                     s = s.Inferior.Apply(@event.data.chara_info);
                     SuperiorId[1] = s.Id;
@@ -205,9 +203,9 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 // 退化技能到最低级，方便选择
 
-                
 
-                for (int j = totalSP+100; j >= 0; j--)
+
+                for (int j = totalSP + 100; j >= 0; j--)
                 {
                     // 背包四种选法
                     // 0-不选
@@ -298,20 +296,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             learn = learn.OrderBy(x => x.DisplayOrder).ToList();
 
-            var table = new Table();
-            table.Title(string.Format(Resource.MaximiumGradeSkillRecommendation_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
-            table.AddColumns(Resource.MaximiumGradeSkillRecommendation_Columns_SkillName, Resource.MaximiumGradeSkillRecommendation_Columns_RequireSP, Resource.MaximiumGradeSkillRecommendation_Columns_Grade);
-            table.Columns[0].Centered();
-            foreach (var i in learn)
-            {
-                table.AddRow($"{i.Name}", $"{getCost(i)}", $"{getGrade(i)}");
-            }
-            var statusPoint = Database.StatusToPoint[@event.data.chara_info.speed]
-                            + Database.StatusToPoint[@event.data.chara_info.stamina]
-                            + Database.StatusToPoint[@event.data.chara_info.power]
-                            + Database.StatusToPoint[@event.data.chara_info.guts]
-                            + Database.StatusToPoint[@event.data.chara_info.wiz];
-            AnsiConsole.MarkupLine($"[yellow]速{@event.data.chara_info.speed} 耐{@event.data.chara_info.stamina} 力{@event.data.chara_info.power} 根{@event.data.chara_info.guts} 智{@event.data.chara_info.wiz} [/]");
             var previousLearnPoint = 0; //之前学的技能的累计评价点
             foreach (var i in @event.data.chara_info.skill_array)
             {
@@ -332,79 +316,23 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
             }
             var willLearnPoint = learn.Sum(x => getGrade(x));
-            var totalPoint = willLearnPoint + previousLearnPoint + statusPoint;
-            var thisLevelId = Database.GradeToRank.First(x => x.Min < totalPoint && totalPoint < x.Max).Id;
-            table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
-            AnsiConsole.Write(table);
-            AnsiConsole.MarkupLine($"距离{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Rank}还有[yellow]{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Min - totalPoint}[/]分");
-            if(unknownUma)
+            if (unknownUma)
             {
                 AnsiConsole.MarkupLine($"[red]未知马娘：{@event.data.chara_info.card_id}，无法获取觉醒技能，请自己决定是否购买。[/]");
             }
-            if(hasUnknownSkills)
+            if (hasUnknownSkills)
             {
                 AnsiConsole.MarkupLine($"[red]警告：存在未知技能[/]");
             }
-            AnsiConsole.MarkupLine("");
 
-            if (@event.IsScenario(ScenarioType.GrandMasters))
-            {
-                GameStats.print();
-                AnsiConsole.MarkupLine("");
-            }
-
-            //双适性技能的评分计算有问题，需要重做数据库
-            AnsiConsole.MarkupLine("[yellow]已知问题 [/]");
-            AnsiConsole.MarkupLine("[yellow]1.对于多距离或者多跑法的技能（例如英里/中距离），如果马娘对两种距离或跑法的适性不一样，评分计算可能错误 [/]");
-            AnsiConsole.MarkupLine("[yellow]2.暂时没考虑进化技能，若以上没有包括可进化技能，请自己决定是否购买 [/]");
-            AnsiConsole.MarkupLine("[yellow]3.没考虑紫色（负面）技能，请自己解除紫色技能 [/]");
-            AnsiConsole.MarkupLine("[red]以上几种情况可以自己决定是否购买相应技能，购买之后重启游戏，即可重新计算 [/]");
-            AnsiConsole.MarkupLine("[red]以下是一些参考指标 [/]");
 
 
 
 
             //计算边际性价比与减少50/100/150/.../500pt的平均性价比
 
-            //计算平均性价比
-            if (totalSP0 > 0)
-                AnsiConsole.MarkupLine($"[aqua]平均性价比：{(double)willLearnPoint / totalSP0:F3}[/]");
-            
 
-
-
-
-            //计算边际性价比，对totalSP正负50的范围做线性回归
-            if (totalSP0 > 50)
-            {
-                double sxy = 0, sy = 0, sx2 = 0, n = 0;
-                for (int x = -50; x <= 50; x++)
-                {
-                    int y = dp[totalSP0 + x];
-                    sxy += x * y;
-                    sy += y;
-                    sx2 += x * x;
-                    n += 1;
-                }
-                double b = sxy / sx2;
-                AnsiConsole.MarkupLine($"[aqua]边际性价比：{b:F3}[/]");
-            }
-
-            //计算减少50/100/150/.../500pt的平均性价比
-            AnsiConsole.MarkupLine($"[aqua]不同价格的技能的期望性价比如下，若某技能的评分计算错误且偏低且没有出现在上表中（以上几种情况），请手动计算性价比与下表进行比较[/]");
-            for (int t=1; t<=10; t++)
-            {
-                int start = totalSP0 - t * 50 - 25;
-                if (start < 0)
-                    break;
-
-                //totalSP - t * 50 的前后25个取平均
-                var meanScoreReduced = dp.Skip(start).Take(51).Average();
-                var eff = (dp[totalSP0] - meanScoreReduced) / (t * 50);
-                AnsiConsole.MarkupLine($"[green]{t*50}pt技能的期望性价比：{eff:F3}[/]");
-            }
-
-
+            return willLearnPoint + previousLearnPoint + ptRate * totalSP;
 
 
 

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
+using UmamusumeResponseAnalyzer.Game;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -16,6 +17,19 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             foreach (var i in @event.data.unchecked_event_array)
             {
+                if (GameStats.stats[GameStats.currentTurn] != null)
+                {
+                    if (i.story_id == 830137001)//第一次点击女神
+                    {
+                        GameStats.stats[GameStats.currentTurn].venusStat1_isVenusCountConcerned = false;
+                    }
+
+                    if (i.story_id == 830137003)//女神三选一事件
+                    {
+                        GameStats.stats[GameStats.currentTurn].venusStat1_venusEvent = true;
+                    }
+                }
+
                 //收录在数据库中
                 if (Database.Events.TryGetValue(i.story_id, out var story))
                 {

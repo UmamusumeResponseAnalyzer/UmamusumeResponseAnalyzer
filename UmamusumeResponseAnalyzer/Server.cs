@@ -8,6 +8,7 @@ using UmamusumeResponseAnalyzer.Localization;
 using UmamusumeResponseAnalyzer.Handler;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using UmamusumeResponseAnalyzer.Game;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -68,10 +69,13 @@ namespace UmamusumeResponseAnalyzer
 
                         if (ctx.Request.RawUrl == "/notify/response")
                         {
-#if DEBUG
                             Directory.CreateDirectory("packets");
+
+
+#if DEBUG
+
                             File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
-                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
+                            File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
                             if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
                             {
@@ -95,9 +99,10 @@ namespace UmamusumeResponseAnalyzer
                         }
                         else if (ctx.Request.RawUrl == "/notify/request")
                         {
-#if DEBUG
                             Directory.CreateDirectory("packets");
-                            File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+#if DEBUG
+                            File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+
 #endif
                             _ = Task.Run(() => ParseRequest(buffer[170..]));
                         }
@@ -128,11 +133,17 @@ namespace UmamusumeResponseAnalyzer
                 lock (_lock)
                 {
                     var str = MessagePackSerializer.ConvertToJson(buffer);
-                    switch (str)
+                    //AnsiConsole.WriteLine(str);
+                    var dyn = JsonConvert.DeserializeObject<dynamic>(str);
+
+                    if (dyn == default(dynamic)) return;
+
+                    if (dyn.command_type==1) //玩家点击了训练
                     {
-                        default:
-                            return;
+                       Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
+
+
                 }
             }
             catch (Exception e)
@@ -146,10 +157,13 @@ namespace UmamusumeResponseAnalyzer
             {
                 try
                 {
-                    var dyn = JsonConvert.DeserializeObject<dynamic>(MessagePackSerializer.ConvertToJson(buffer));
+                    var jsonstr = MessagePackSerializer.ConvertToJson(buffer);
+                    //AnsiConsole.WriteLine(jsonstr);
+                    var dyn = JsonConvert.DeserializeObject<dynamic>(jsonstr); 
+                    if (dyn == default(dynamic)) return;
                     if (dyn == default(dynamic)) return;
                     var data = dyn.data;
-                    if (data.chara_info?.scenario_id == 5)
+                    if (data.chara_info?.scenario_id == 5 || (data != null && data.venus_data_set != null))
                     {
                         if (dyn.data.venus_data_set.race_start_info is JArray)
                             dyn.data.venus_data_set.race_start_info = null;
@@ -160,6 +174,12 @@ namespace UmamusumeResponseAnalyzer
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
                             Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                    }
+                    if (dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result != null && dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result.result_state == 1)//训练失败
+                    {
+                        AnsiConsole.MarkupLine($"[red]训练失败！[/]");
+                        if (GameStats.stats[GameStats.currentTurn] != null)
+                            GameStats.stats[GameStats.currentTurn].isTrainingFailed = true;
                     }
                     if (data.chara_info != null && data.unchecked_event_array?.Count > 0)
                     {

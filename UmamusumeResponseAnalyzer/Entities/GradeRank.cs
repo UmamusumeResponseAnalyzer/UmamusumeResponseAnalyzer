@@ -122,43 +122,4 @@ namespace UmamusumeResponseAnalyzer.Entities
         [JsonProperty("max_value")]
         public int Max { get; set; }
     }
-    public static class ScoreUtils
-    {
-        public static double ScoreOfVital(int vital, int maxVital)
-        {
-            //四段折线
-            if (vital <= 50) return 2.5 * vital;
-            else if (vital <= 75) return 1.7 * (vital - 50) + ScoreOfVital(50, maxVital);
-            else if (vital <= maxVital - 10) return 1.2 * (vital - 75) + ScoreOfVital(75, maxVital);
-            else return 0.7 * (vital - (maxVital - 10)) + ScoreOfVital(maxVital - 10, maxVital);
-        }
-        public static int ReviseOver1200(int x)
-        {
-            if (x <= 1200) return x;
-            else return x * 2 - 1200;
-        }
-
-    }
-    public class TrainStats
-    {
-        public int[] FiveValueGain;
-        public int PtGain;
-        public int VitalGain;
-        public int FailureRate;
-        public double ScoreAssumeSuccessNoVital()
-        {
-            return FiveValueGain.Sum() + PtGain * 0.7;
-        }
-        public double ScoreNoVital()
-        {
-            const double scoreAssumeFailed = -100;//掉1心情5属性，还相当于浪费一回合，有各种隐性影响
-            return ScoreAssumeSuccessNoVital() * (1 - 0.01 * FailureRate) + 0.01 * FailureRate * scoreAssumeFailed;
-        }
-        public double Score(int currentVital, int maxVital)
-        {
-            double scoreAssumeFailed = -100;
-            double scoreAssumeSuccess = FiveValueGain.Sum() + PtGain * 0.7;
-            return (scoreAssumeSuccess - ScoreUtils.ScoreOfVital(currentVital, maxVital) + ScoreUtils.ScoreOfVital(currentVital + VitalGain, maxVital)) * (1 - 0.01 * FailureRate) + 0.01 * FailureRate * scoreAssumeFailed;
-        }
-    }
 }
