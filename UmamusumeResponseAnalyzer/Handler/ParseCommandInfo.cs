@@ -110,8 +110,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             int gameYear = (turnNum - 1) / 24 + 1;
             int gameMonth = ((turnNum - 1) % 24) / 2 + 1;
             string halfMonth = (turnNum % 2 == 0) ? "后半" : "前半";
-            AnsiConsole.MarkupLine($"[#00ffff]------------------------------------------------------------------------------------[/]");
-            AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/78, 第{gameYear}年{gameMonth}月{halfMonth}[/]");
+            int totalTurns = @event.IsScenario(ScenarioType.LArc) ? 67 : 78;
+                AnsiConsole.MarkupLine($"[#00ffff]------------------------------------------------------------------------------------[/]");
+            AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/{totalTurns}, 第{gameYear}年{gameMonth}月{halfMonth}[/]");
 
 
             int motivation = @event.data.chara_info.motivation;
@@ -311,7 +312,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //去掉剧本加成的训练值（游戏里的下层显示）
                 foreach (var item in @event.data.home_info.command_info_array)
                 {
-                    if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                    if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
+                        GameGlobal.ToTrainId[item.command_id] == tid)
                     {
                         foreach (var trainParam in item.params_inc_dec_info_array)
                         {
@@ -372,6 +374,22 @@ namespace UmamusumeResponseAnalyzer.Handler
                     foreach (var item in @event.data.venus_data_set.command_info_array)
                     {
                         if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                        {
+                            foreach (var trainParam in item.params_inc_dec_info_array)
+                            {
+                                trainParams[trainParam.target_type] += trainParam.value;
+                            }
+                        }
+                    }
+                }
+
+                //凯旋门
+                if (@event.IsScenario(ScenarioType.LArc))
+                {
+                    foreach (var item in @event.data.arc_data_set.command_info_array)
+                    {
+                        if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
+                            GameGlobal.ToTrainId[item.command_id] == tid )
                         {
                             foreach (var trainParam in item.params_inc_dec_info_array)
                             {
@@ -735,18 +753,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             string IsShining(int commandId, string card)
             {
                 //在得意位置上
-                var shouldShining = card.Contains(commandId switch
+                var commandId1 = GameGlobal.ToTrainId[commandId];
+                var shouldShining = card.Contains(commandId1 switch
                 {
                     101 => "[速]",
                     105 => "[耐]",
                     102 => "[力]",
                     103 => "[根]",
                     106 => "[智]",
-                    601 or 1101 => "[速]",
-                    602 or 1102 => "[耐]",
-                    603 or 1103 => "[力]",
-                    604 or 1104 => "[根]",
-                    605 or 1105 => "[智]",
                 });
                 //GM杯检查
                 if (@event.IsScenario(ScenarioType.GrandMasters) && @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9042 && x.effect_group_id == 421)
