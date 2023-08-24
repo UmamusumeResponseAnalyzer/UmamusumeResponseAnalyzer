@@ -19,6 +19,11 @@ namespace UmamusumeResponseAnalyzer.Game
             };
         static public Dictionary<int, int> ToTrainId = new Dictionary<int, int>()
             {
+                {1101,101} ,
+                {1102,105} ,
+                {1103,102} ,
+                {1104,103} ,
+                {1105,106} ,
                 {601,101} ,
                 {602,105} ,
                 {603,102} ,
@@ -32,6 +37,11 @@ namespace UmamusumeResponseAnalyzer.Game
             };
         static public Dictionary<int, int> ToTrainIndex= new Dictionary<int, int>()
             {
+                {1101,0} ,
+                {1102,1} ,
+                {1103,2} ,
+                {1104,3} ,
+                {1105,4} ,
                 {601,0} ,
                 {602,1} ,
                 {603,2} ,
