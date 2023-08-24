@@ -14,8 +14,6 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
-
-
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
 
             //把当前游戏状态写入一个文件，用于与ai通信
@@ -38,7 +36,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     try
                     {
                         File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
-                        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend)); 
+                        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
                         success = true; // 写入成功，跳出循环
                     }
                     catch
@@ -48,7 +46,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         Thread.Sleep(500); // 等待0.5秒
                     }
                 }
-                if(!success)
+                if (!success)
                 {
                     AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
                 }
@@ -100,14 +98,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             //初始化TurnStats
             if (isRepeat)
                 AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
-            else 
+            else
             {
                 GameStats.currentTurn = turnNum;
                 GameStats.stats[turnNum] = new TurnStats();
             }
 
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
-            TurnStats turnStat = isRepeat? new TurnStats():GameStats.stats[turnNum];
+            TurnStats turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
 
             int gameYear = (turnNum - 1) / 24 + 1;
             int gameMonth = ((turnNum - 1) % 24) / 2 + 1;
@@ -255,7 +253,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 turnStat.isEffect102 = true;
                 //统计一下女神情热持续了几回合
                 int continuousTurnNum = 0;
-                for (int i=turnNum;i>=1;i--)
+                for (int i = turnNum; i >= 1; i--)
                 {
                     if (GameStats.stats[i] == null || !GameStats.stats[i].isEffect102)
                         break;
@@ -264,18 +262,29 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine($"女神彩圈已持续[green]{continuousTurnNum}[/]回合");
             }
 
-            var trainItems = new Dictionary<int, SingleModeCommandInfo>
-                { //60x是合宿训练，10x是平时训练
-                    {101,@event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601): @event.data.home_info.command_info_array.First(x => x.command_id == 101)},
-                    {105,@event.data.home_info.command_info_array.Any(x => x.command_id == 602) ? @event.data.home_info.command_info_array.First(x => x.command_id == 602): @event.data.home_info.command_info_array.First(x => x.command_id == 105)},
-                    {102,@event.data.home_info.command_info_array.Any(x => x.command_id == 603) ? @event.data.home_info.command_info_array.First(x => x.command_id == 603): @event.data.home_info.command_info_array.First(x => x.command_id == 102)},
-                    {103,@event.data.home_info.command_info_array.Any(x => x.command_id == 604) ? @event.data.home_info.command_info_array.First(x => x.command_id == 604): @event.data.home_info.command_info_array.First(x => x.command_id == 103)},
-                    {106,@event.data.home_info.command_info_array.Any(x => x.command_id == 605) ? @event.data.home_info.command_info_array.First(x => x.command_id == 605): @event.data.home_info.command_info_array.First(x => x.command_id == 106)}
-                };
+            var trainItems = new Dictionary<int, SingleModeCommandInfo>();
+            if (@event.IsScenario(ScenarioType.LArc))
+            {
+                //LArc的合宿ID不一样，所以要单独处理
+                trainItems.Add(101, @event.data.home_info.command_info_array.Any(x => x.command_id == 1101) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1101) : @event.data.home_info.command_info_array.First(x => x.command_id == 101));
+                trainItems.Add(105, @event.data.home_info.command_info_array.Any(x => x.command_id == 1102) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1102) : @event.data.home_info.command_info_array.First(x => x.command_id == 105));
+                trainItems.Add(102, @event.data.home_info.command_info_array.Any(x => x.command_id == 1103) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1103) : @event.data.home_info.command_info_array.First(x => x.command_id == 102));
+                trainItems.Add(103, @event.data.home_info.command_info_array.Any(x => x.command_id == 1104) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1104) : @event.data.home_info.command_info_array.First(x => x.command_id == 103));
+                trainItems.Add(106, @event.data.home_info.command_info_array.Any(x => x.command_id == 1105) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1105) : @event.data.home_info.command_info_array.First(x => x.command_id == 106));
+            }
+            else
+            {
+                //速耐力根智，6xx为合宿时ID
+                trainItems.Add(101, @event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601) : @event.data.home_info.command_info_array.First(x => x.command_id == 101));
+                trainItems.Add(105, @event.data.home_info.command_info_array.Any(x => x.command_id == 602) ? @event.data.home_info.command_info_array.First(x => x.command_id == 602) : @event.data.home_info.command_info_array.First(x => x.command_id == 105));
+                trainItems.Add(102, @event.data.home_info.command_info_array.Any(x => x.command_id == 603) ? @event.data.home_info.command_info_array.First(x => x.command_id == 603) : @event.data.home_info.command_info_array.First(x => x.command_id == 102));
+                trainItems.Add(103, @event.data.home_info.command_info_array.Any(x => x.command_id == 604) ? @event.data.home_info.command_info_array.First(x => x.command_id == 604) : @event.data.home_info.command_info_array.First(x => x.command_id == 103));
+                trainItems.Add(106, @event.data.home_info.command_info_array.Any(x => x.command_id == 605) ? @event.data.home_info.command_info_array.First(x => x.command_id == 605) : @event.data.home_info.command_info_array.First(x => x.command_id == 106));
+            }
 
             var trainStats = new TrainStats[5];
             var failureRate = new Dictionary<int, int>();
-            for(int t=0;t<5;t++)
+            for (int t = 0; t < 5; t++)
             {
                 int tid = GameGlobal.TrainIds[t];
                 failureRate[tid] = trainItems[tid].failure_rate;
@@ -413,10 +422,15 @@ namespace UmamusumeResponseAnalyzer.Handler
                 , new TableColumn($"力{failureRateStr[2]}").Width(14)
                 , new TableColumn($"根{failureRateStr[3]}").Width(14)
                 , new TableColumn($"智{failureRateStr[4]}").Width(14));
+            if (@event.IsScenario(ScenarioType.LArc))
+            {
+                table.AddColumn(new TableColumn("SS Match").Width(14));
+            }
             var separatorLine = Enumerable.Repeat(new string(Enumerable.Repeat('-', table.Columns.Max(x => x.Width.GetValueOrDefault())).ToArray()), 5).ToArray();
             var outputItems = new string[5];
 
-            table.AddRow(Enumerable.Repeat("当前:可获得", 5).ToArray());
+            //table.AddRow(Enumerable.Repeat("当前:可获得", 5).ToArray());
+            table.AddToRows(0, Enumerable.Repeat("当前:可获得", 5).ToArray());
             //显示此属性的当前属性及还差多少属性达到上限
             for (int i = 0; i < 5; i++)
             {
@@ -429,8 +443,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else
                     outputItems[i] += $"[red]{remainValue}[/]属性";
             }
-            table.AddRow(outputItems);
-            table.AddRow(separatorLine);
+            //table.AddRow(outputItems);
+            //table.AddRow(separatorLine);
+            table.AddToRows(1, outputItems);
+            table.AddToRows(2, separatorLine);
 
             //显示训练后的剩余体力
             for (int i = 0; i < 5; i++)
@@ -451,7 +467,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 outputItems[i] = outputItem;
             }
-            table.AddRow(outputItems);
+            //table.AddRow(outputItems);
+            table.AddToRows(3, outputItems);
 
             //显示此训练的训练等级
             for (int i = 0; i < 5; i++)
@@ -468,8 +485,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                     outputItems[i] = lv < 5 ? $"训练等级:[yellow]Lv{lv}[/]" : $"Lv{lv}";
                 }
             }
-            table.AddRow(outputItems);
-            table.AddRow(separatorLine);
+            //table.AddRow(outputItems);
+            //table.AddRow(separatorLine);
+            table.AddToRows(4, outputItems);
+            table.AddToRows(5, separatorLine);
 
             //显示此次训练可获得的属性和Pt
             int bestScore = -100;
@@ -493,8 +512,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else
                     outputItems[i] = $"属性:[green]{outputItems[i]}[/]|Pt:{trainStats[i].PtGain}";
             }
-            table.AddRow(outputItems);
-            table.AddRow(separatorLine);
+            //table.AddRow(outputItems);
+            //table.AddRow(separatorLine);
+            table.AddToRows(6, outputItems);
+            table.AddToRows(7, separatorLine);
 
             //显示此次训练可获得的打分
             double bestValue = -100;
@@ -531,7 +552,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             foreach (var command in @event.data.home_info.command_info_array)
             {
                 if (command.command_id != 101 && command.command_id != 105 && command.command_id != 102 && command.command_id != 103 && command.command_id != 106 &&
-                    command.command_id != 601 && command.command_id != 602 && command.command_id != 603 && command.command_id != 604 && command.command_id != 605) continue;
+                    command.command_id != 601 && command.command_id != 602 && command.command_id != 603 && command.command_id != 604 && command.command_id != 605 &&
+                    command.command_id != 1101 && command.command_id != 1102 && command.command_id != 1103 && command.command_id != 1104 && command.command_id != 1105) continue;
                 var tips = command.tips_event_partner_array.Intersect(command.training_partner_array); //红感叹号 || Hint
                 commandInfo.Add(command.command_id, command.training_partner_array
                     .Select(partner =>
@@ -574,7 +596,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             if (!commandInfo.SelectMany(x => x.Value).Any()) return;
 
-
             for (var i = 0; i < 5; ++i)
             {
                 var rows = new List<string>();
@@ -582,7 +603,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     rows.Add(j.Value.Length > i ? IsShining(j.Key, j.Value[i]) : string.Empty);
                 }
-                table.AddRow(rows.ToArray());
+                //table.AddRow(rows.ToArray());
+                table.AddToRows(8 + i, rows.ToArray());
             }
 
             if (@event.IsScenario(ScenarioType.MakeANewTrack))
@@ -699,6 +721,15 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
+            if (@event.IsScenario(ScenarioType.LArc))
+            {
+                for (var i = 0; i < @event.data.arc_data_set.selection_info.selection_rival_info_array.Length; i++)
+                {
+                    table.Edit(5, i, Database.SupportIdToShortName[@event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id]);
+                }
+                table.Edit(5, @event.data.arc_data_set.selection_info.selection_rival_info_array.Length + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
+            }
+            table.Finish();
             AnsiConsole.Write(table);
 
             string IsShining(int commandId, string card)
@@ -711,11 +742,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                     102 => "[力]",
                     103 => "[根]",
                     106 => "[智]",
-                    601 => "[速]",
-                    602 => "[耐]",
-                    603 => "[力]",
-                    604 => "[根]",
-                    605 => "[智]",
+                    601 or 1101 => "[速]",
+                    602 or 1102 => "[耐]",
+                    603 or 1103 => "[力]",
+                    604 or 1104 => "[根]",
+                    605 or 1105 => "[智]",
                 });
                 //GM杯检查
                 if (@event.IsScenario(ScenarioType.GrandMasters) && @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9042 && x.effect_group_id == 421)
