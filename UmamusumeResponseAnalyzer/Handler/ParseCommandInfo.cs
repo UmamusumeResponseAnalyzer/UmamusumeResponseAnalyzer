@@ -23,7 +23,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 var gameStatusToSend = new GameStatusSend(@event);
 
-                var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                //var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                var currentGSdirectory = "./packets";
                 if (!Directory.Exists(currentGSdirectory))
                 {
                     Directory.CreateDirectory(currentGSdirectory);
@@ -36,7 +37,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     try
                     {
-                        File.WriteAllText($@"{currentGSdirectory}/currentGS.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
+                        File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
+                        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend)); 
                         success = true; // 写入成功，跳出循环
                     }
                     catch
@@ -48,7 +50,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 if(!success)
                 {
-                    AnsiConsole.MarkupLine("[red]写入currentGS.json失败！[/]");
+                    AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
                 }
             }
 
