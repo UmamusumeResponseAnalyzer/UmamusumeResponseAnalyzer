@@ -61,6 +61,33 @@ namespace UmamusumeResponseAnalyzer.Game
                 {103,"根"} ,
                 {106,"智"} ,
             };
+
+        static public Dictionary<int, string> LArcSSEffectNameColored = new Dictionary<int, string>()
+            {
+                {1,"技能"} ,
+                {3,"[#00ff00]体力[/]"} ,
+                {4,"[#00ff00]体力[/]"} ,
+                {5,"[#00ff00]心情[/]"} ,
+                {6,"充电"} ,
+                {7,"适pt"} ,
+                {8,"[#00ff00]爱娇[/]"} ,
+                {9,"上手"} ,
+                {11,"属性"} ,
+                {12,"技pt"} ,
+            };
+        static public Dictionary<int, string> LArcSSEffectNameColoredShort = new Dictionary<int, string>()
+            {
+                {1,"技"} ,
+                {3,"[#00ff00]体[/]"} ,
+                {4,"[#00ff00]体[/]"} ,
+                {5,"[#00ff00]心[/]"} ,
+                {6,"充"} ,
+                {7,"适"} ,
+                {8,"[#00ff00]娇[/]"} ,
+                {9,"练"} ,
+                {11,"属"} ,
+                {12,"pt"} ,
+            };
     }
 
     public static class ScoreUtils

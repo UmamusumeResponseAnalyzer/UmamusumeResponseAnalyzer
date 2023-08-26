@@ -7,6 +7,10 @@ using UmamusumeResponseAnalyzer.AI;
 using MessagePack;
 using Newtonsoft.Json.Linq;
 using System;
+using System.ComponentModel.Design;
+using System.IO.Pipes;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -80,6 +84,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             AnsiConsole.WriteLine(string.Empty);
             int turnNum = @event.data.chara_info.turn;
+
+            bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
 
 
             if (GameStats.currentTurn != turnNum - 1 //正常情况
@@ -433,16 +439,16 @@ namespace UmamusumeResponseAnalyzer.Handler
                     outputItem = "[yellow]" + outputItem + "[/]";
                 failureRateStr[i] = outputItem;
             }
-
+            int tableWidth = 15;
             table.AddColumns(
-                  new TableColumn($"速{failureRateStr[0]}").Width(14)
-                , new TableColumn($"耐{failureRateStr[1]}").Width(14)
-                , new TableColumn($"力{failureRateStr[2]}").Width(14)
-                , new TableColumn($"根{failureRateStr[3]}").Width(14)
-                , new TableColumn($"智{failureRateStr[4]}").Width(14));
+                  new TableColumn($"速{failureRateStr[0]}").Width(tableWidth)
+                , new TableColumn($"耐{failureRateStr[1]}").Width(tableWidth)
+                , new TableColumn($"力{failureRateStr[2]}").Width(tableWidth)
+                , new TableColumn($"根{failureRateStr[3]}").Width(tableWidth)
+                , new TableColumn($"智{failureRateStr[4]}").Width(tableWidth));
             if (@event.IsScenario(ScenarioType.LArc))
             {
-                table.AddColumn(new TableColumn("SS Match").Width(14));
+                table.AddColumn(new TableColumn("SS Match").Width(tableWidth));
             }
             var separatorLine = Enumerable.Repeat(new string(Enumerable.Repeat('-', table.Columns.Max(x => x.Width.GetValueOrDefault())).ToArray()), 5).ToArray();
             var outputItems = new string[5];
@@ -533,7 +539,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             //table.AddRow(outputItems);
             //table.AddRow(separatorLine);
             table.AddToRows(6, outputItems);
-            table.AddToRows(7, separatorLine);
 
             //显示此次训练可获得的打分
             double bestValue = -100;
@@ -565,13 +570,20 @@ namespace UmamusumeResponseAnalyzer.Handler
             //table.AddRow(outputItems);
             //table.AddRow(separatorLine);
 
+            //以下几项用于计算单次训练能充多少格
+            var LArcRivalBoostCount = new int[,] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }};// 五种训练的充电槽为0,1,2格的个数
+            var LArcShiningCount = new int[] { 0, 0, 0, 0, 0 };//彩圈个数
+            var LArcfriendAppear = new bool[] { false, false, false, false, false};//友人在不在
+
             var supportCards = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
             var commandInfo = new Dictionary<int, string[]>();
             foreach (var command in @event.data.home_info.command_info_array)
             {
-                if (command.command_id != 101 && command.command_id != 105 && command.command_id != 102 && command.command_id != 103 && command.command_id != 106 &&
-                    command.command_id != 601 && command.command_id != 602 && command.command_id != 603 && command.command_id != 604 && command.command_id != 605 &&
-                    command.command_id != 1101 && command.command_id != 1102 && command.command_id != 1103 && command.command_id != 1104 && command.command_id != 1105) continue;
+                if (!GameGlobal.ToTrainIndex.ContainsKey(command.command_id)) continue;
+
+
+                var trainIdx = GameGlobal.ToTrainIndex[command.command_id];
+
                 var tips = command.tips_event_partner_array.Intersect(command.training_partner_array); //红感叹号 || Hint
                 commandInfo.Add(command.command_id, command.training_partner_array
                     .Select(partner =>
@@ -580,49 +592,152 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var name = Database.SupportIdToShortName[(partner >= 1 && partner <= 7) ? supportCards[partner] : partner].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                         if (name.Length > 7)
                             name = name[..7];
+                        if(!(partner >= 1 && partner <= 7))//非支援卡，名字可以更短
+                            if (name.Length > 2)
+                                name = name[..2];
                         var friendship = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == partner).evaluation;
-                        if (friendship < 100) //羁绊不满100，显示羁绊
-                            name = $"{name}:{friendship}绊";
+                        bool isArcPartner = (partner > 1000 || (partner >= 1 && partner <= 7)) && @event.IsScenario(ScenarioType.LArc) && @event.data.arc_data_set.evaluation_info_array.Any(x => x.target_id == partner);
+                        var nameColor = "[#ffffff]";
+                        var nameAppend = "";
+                        bool shouldShining = false;//是不是友情训练
                         if (partner >= 1 && partner <= 7)
                         {
                             if (name.Contains("[友]")) //友人单独标绿
                             {
+                                nameColor = $"[green]";
+
                                 //三女神团队卡的友情训练
                                 if (supportCards[partner] == 30137)
                                 {
                                     turnStat.venusStat1_venusTrain = GameGlobal.ToTrainId[command.command_id];
-                                    if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 102))
-                                    {
-                                        name = $"[#80ff00]{name}[/]";
-                                    }
-                                    else
-                                        name = $"[green]{name}[/]";
                                 }
-                                else
-                                    name = $"[green]{name}[/]";
+
+                                if (supportCards[partner] == 30160 || supportCards[partner] == 10094)//佐岳友人卡
+                                    LArcfriendAppear[trainIdx] = true;
+                            }
+                            else if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
+                                nameColor = $"[yellow]";
+
+                            //闪彩标蓝
+                            {
+                                //在得意位置上
+                                var commandId1 = GameGlobal.ToTrainId[command.command_id];
+                                shouldShining = friendship >= 80 &&
+                                    name.Contains(commandId1 switch
+                                    {
+                                        101 => "[速]",
+                                        105 => "[耐]",
+                                        102 => "[力]",
+                                        103 => "[根]",
+                                        106 => "[智]",
+                                    });
+                                //GM杯检查
+                                if (@event.IsScenario(ScenarioType.GrandMasters) && @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9042 && x.effect_group_id == 421)
+                                    && (name.Contains("[速]") || name.Contains("[耐]") || name.Contains("[力]") || name.Contains("[根]") || name.Contains("[智]")))
+                                {
+                                    shouldShining = true;
+                                }
+
+                                if ((supportCards[partner] == 30137 && @event.data.chara_info.chara_effect_id_array.Any(x => x == 102)) || //神团
+                                (supportCards[partner] == 30067 && @event.data.chara_info.chara_effect_id_array.Any(x => x == 101)) || //皇团
+                                (supportCards[partner] == 30081 && @event.data.chara_info.chara_effect_id_array.Any(x => x == 100)) //天狼星
+                                )
+                                {
+                                    shouldShining = true;
+                                    nameColor = $"[#80ff00]";
+                                }
 
                             }
-                            if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
-                                name = $"[yellow]{name}[/]";
+
+                            if (shouldShining)
+                            {
+                                LArcShiningCount[trainIdx] += 1;
+                                if(name.Contains("[友]"))
+                                    nameColor = $"[#80ff00]";
+                                else
+                                    nameColor = $"[aqua]";
+                            }
+
+
                         }
                         else
                         {
-                            name = $"[blue]{name}[/]";
+                            if(partner>=100 && partner<1000)//理事长、记者等
+                                nameColor = $"[#000080]";
+                            else if (isArcPartner) // 凯旋门的其他人
+                                nameColor = $"[#6000ff]";
                         }
-                        return tips.Contains(partner) ? $"[red]![/]{name}" : name; //有Hint就加个红感叹号，和游戏内表现一样
+
+                        if ((partner >= 1 && partner <= 7) || (partner >= 100 && partner < 1000) )//支援卡，理事长，记者，佐岳
+                            if(friendship < 100) //羁绊不满100，显示羁绊
+                                nameAppend += $"[red]{friendship}[/]";
+
+
+                        if (isArcPartner&&!LArcIsAbroad)
+                        {
+                            var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == partner).chara_id;
+                            if (@event.data.arc_data_set.arc_rival_array.Any(x => x.chara_id == chara_id))
+                            {
+                                var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+                                var rival_boost = arc_data.rival_boost;
+                                var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.star_lv + 1).effect_group_id;
+                                if (rival_boost != 3)
+                                {
+                                    LArcRivalBoostCount[trainIdx,rival_boost] += 1;
+
+                                    if(partner>1000)
+                                        nameColor = $"[#ff00ff]";
+                                    nameAppend += $":[aqua]{rival_boost}[/]{GameGlobal.LArcSSEffectNameColoredShort[effectId]}";
+                                }
+                            }
+                        }
+
+                        name = $"{nameColor}{name}[/]{nameAppend}";
+
+                        name = tips.Contains(partner) ? $"[red]![/]{name}" : name; //有Hint就加个红感叹号，和游戏内表现一样
+
+                        return name;
                     }).ToArray());
             }
             if (!commandInfo.SelectMany(x => x.Value).Any()) return;
+
+
+
+            //LArc充电槽计数
+            if (@event.IsScenario(ScenarioType.LArc)&&(!LArcIsAbroad))
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    int chargedNum = LArcRivalBoostCount[i, 0] + LArcRivalBoostCount[i, 1] + LArcRivalBoostCount[i, 2];
+                    int chargedFullNum = LArcRivalBoostCount[i, 2];
+                    if (LArcShiningCount[i] >= 1)
+                    {
+                        chargedNum += LArcRivalBoostCount[i, 0] + LArcRivalBoostCount[i, 1];
+                        chargedFullNum += LArcRivalBoostCount[i, 1];
+                    }
+                    if (LArcShiningCount[i] >= 2)
+                    {
+                        chargedNum += LArcRivalBoostCount[i, 0];
+                        chargedFullNum += LArcRivalBoostCount[i, 0];
+                    }
+                    var maybefriendStr = LArcfriendAppear[i] ? "+友" : "";
+                    outputItems[i] = $"格数[#00ff00]{chargedNum}{maybefriendStr}[/]|满数[#00ff00]{chargedFullNum}[/]";
+                }
+
+                table.AddToRows(7, outputItems);
+            }
+            table.AddToRows(8, separatorLine);
+
 
             for (var i = 0; i < 5; ++i)
             {
                 var rows = new List<string>();
                 foreach (var j in commandInfo)
                 {
-                    rows.Add(j.Value.Length > i ? IsShining(j.Key, j.Value[i]) : string.Empty);
+                    rows.Add(j.Value.Length > i ? j.Value[i] : string.Empty);
                 }
                 //table.AddRow(rows.ToArray());
-                table.AddToRows(8 + i, rows.ToArray());
+                table.AddToRows(9 + i, rows.ToArray());//第8行预留位置
             }
 
             if (@event.IsScenario(ScenarioType.MakeANewTrack))
@@ -741,39 +856,35 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             if (@event.IsScenario(ScenarioType.LArc))
             {
-                for (var i = 0; i < @event.data.arc_data_set.selection_info.selection_rival_info_array.Length; i++)
+
+                int rivalNum = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
+                for (var i = 0; i < rivalNum; i++)
                 {
-                    table.Edit(5, i, Database.SupportIdToShortName[@event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id]);
+                    var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
+                    var rivalName = Database.SupportIdToShortName[chara_id];
+                    if (rivalName.Length > 4)
+                        rivalName = rivalName[..4];
+                    if (rivalNum == 5)
+                    {
+                        if(@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark!=1)
+                            rivalName = $"[#ff0000]{rivalName}(可能失败)[/]";
+                        else if (@event.data.arc_data_set.selection_info.is_special_match==1)//sss对战
+                            rivalName = $"[#00ffff]{rivalName}[/]";
+                        else
+                            rivalName = $"[#00ff00]{rivalName}[/]";
+                    }
+
+                    var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+                    var rival_boost = arc_data.rival_boost;
+                    var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.star_lv + 1).effect_group_id;
+                    rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
+                    table.Edit(5, i, rivalName);
                 }
-                table.Edit(5, @event.data.arc_data_set.selection_info.selection_rival_info_array.Length + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
+                //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
             }
             table.Finish();
             AnsiConsole.Write(table);
 
-            string IsShining(int commandId, string card)
-            {
-                //在得意位置上
-                var commandId1 = GameGlobal.ToTrainId[commandId];
-                var shouldShining = card.Contains(commandId1 switch
-                {
-                    101 => "[速]",
-                    105 => "[耐]",
-                    102 => "[力]",
-                    103 => "[根]",
-                    106 => "[智]",
-                });
-                //GM杯检查
-                if (@event.IsScenario(ScenarioType.GrandMasters) && @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9042 && x.effect_group_id == 421)
-                    && (card.Contains("[速]") || card.Contains("[耐]") || card.Contains("[力]") || card.Contains("[根]") || card.Contains("[智]")))
-                {
-                    var redIndex = card.IndexOf("[red]![/]");
-                    card = card.Insert(redIndex > -1 ? redIndex + 9 : 0, "[aqua]");
-                    if (card.Contains("[yellow]"))
-                        card = new Regex(Regex.Escape("[/]")).Replace(card.Replace("[yellow]", string.Empty), string.Empty, 1);
-                    return $"{card}[/]";
-                }
-                return shouldShining ? $"[aqua]{card}[/]" : card;
-            }
         }
     }
 }
