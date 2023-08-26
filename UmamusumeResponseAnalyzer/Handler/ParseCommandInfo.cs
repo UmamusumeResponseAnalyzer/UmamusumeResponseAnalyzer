@@ -663,9 +663,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                         else
                         {
                             if(partner>=100 && partner<1000)//理事长、记者等
-                                nameColor = $"[#000080]";
+                                nameColor = $"[#008080]";
                             else if (isArcPartner) // 凯旋门的其他人
-                                nameColor = $"[#6000ff]";
+                                nameColor = $"[#a166ff]";
                         }
 
                         if ((partner >= 1 && partner <= 7) || (partner >= 100 && partner < 1000) )//支援卡，理事长，记者，佐岳
