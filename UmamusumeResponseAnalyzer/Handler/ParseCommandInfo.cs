@@ -158,6 +158,25 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.MarkupLine($"[aqua]总属性：{totalValue}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
 
 
+            //额外显示LArc信息
+            if (@event.IsScenario(ScenarioType.LArc))
+            {
+                int totalSSLevel = 0;
+                int[] rivalBoostCount= new int[4] { 0, 0, 0, 0 };
+                foreach (var rival in @event.data.arc_data_set.arc_rival_array)
+                {
+                    if (rival.selection_peff_array == null)//马娘自身
+                        continue;
+                    totalSSLevel += rival.star_lv;
+                    rivalBoostCount[rival.rival_boost] += 1;
+                }
+                int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
+                AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
+
+            }
+
+
+
             //额外显示GM杯信息
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
@@ -451,6 +470,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 table.AddColumn(new TableColumn("SS Match").Width(tableWidth));
             }
             var separatorLine = Enumerable.Repeat(new string(Enumerable.Repeat('-', table.Columns.Max(x => x.Width.GetValueOrDefault())).ToArray()), 5).ToArray();
+            var separatorLineSSMatch =new string(Enumerable.Repeat('-', tableWidth).ToArray());
             var outputItems = new string[5];
 
             //table.AddRow(Enumerable.Repeat("当前:可获得", 5).ToArray());
@@ -585,10 +605,26 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var trainIdx = GameGlobal.ToTrainIndex[command.command_id];
 
                 var tips = command.tips_event_partner_array.Intersect(command.training_partner_array); //红感叹号 || Hint
-                commandInfo.Add(command.command_id, command.training_partner_array
+                var partners = command.training_partner_array
                     .Select(partner =>
                     {
                         turnStat.isTraining = true;
+
+
+                        //优先级。数字越小越优先，不能超过9
+                        //最后直接放在字符串最前面，然后排序，然后删掉第一位
+                        //0友人
+                        //1闪彩的卡
+                        //2没闪彩的但需要拉羁绊的卡
+                        //3其他卡
+                        //4需要充电的乱七八糟人头
+                        //5理事长记者
+                        //6无用人头
+                        int priority = 7; 
+
+
+
+
                         var name = Database.SupportIdToShortName[(partner >= 1 && partner <= 7) ? supportCards[partner] : partner].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                         if (name.Length > 7)
                             name = name[..7];
@@ -602,8 +638,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                         bool shouldShining = false;//是不是友情训练
                         if (partner >= 1 && partner <= 7)
                         {
+                            priority = 3;
                             if (name.Contains("[友]")) //友人单独标绿
                             {
+                                priority = 0;
                                 nameColor = $"[green]";
 
                                 //三女神团队卡的友情训练
@@ -616,7 +654,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                                     LArcfriendAppear[trainIdx] = true;
                             }
                             else if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
+                            {
+                                priority = 2;
                                 nameColor = $"[yellow]";
+                            }
 
                             //闪彩标蓝
                             {
@@ -652,20 +693,33 @@ namespace UmamusumeResponseAnalyzer.Handler
                             if (shouldShining)
                             {
                                 LArcShiningCount[trainIdx] += 1;
-                                if(name.Contains("[友]"))
+                                if (name.Contains("[友]"))
+                                {
+                                    priority = 0;
                                     nameColor = $"[#80ff00]";
+                                }
                                 else
+                                {
+                                    priority = 1;
                                     nameColor = $"[aqua]";
+                                }
                             }
 
 
                         }
                         else
                         {
-                            if(partner>=100 && partner<1000)//理事长、记者等
-                                nameColor = $"[#000080]";
+                            if (partner >= 100 && partner < 1000)//理事长、记者等
+                            {
+                                priority = 5;
+                                nameColor = $"[#0000ff]";
+                            }
                             else if (isArcPartner) // 凯旋门的其他人
-                                nameColor = $"[#6000ff]";
+                            {
+                                priority = 6;
+                                nameColor = $"[#500090]";
+                            }
+
                         }
 
                         if ((partner >= 1 && partner <= 7) || (partner >= 100 && partner < 1000) )//支援卡，理事长，记者，佐岳
@@ -683,6 +737,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.star_lv + 1).effect_group_id;
                                 if (rival_boost != 3)
                                 {
+                                    if (priority > 4) priority = 4;
                                     LArcRivalBoostCount[trainIdx,rival_boost] += 1;
 
                                     if(partner>1000)
@@ -696,8 +751,23 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                         name = tips.Contains(partner) ? $"[red]![/]{name}" : name; //有Hint就加个红感叹号，和游戏内表现一样
 
+                        //把优先级放在字符串的第一位用于排序，最后再删掉
+                        name = $"{priority}" + name;
+
                         return name;
-                    }).ToArray());
+                    }).ToArray();
+
+                // 按照第一个字符降序排序
+                partners = partners.OrderBy(s => s[0]).ToArray();
+
+                // 删除每个字符串的第一个字符
+                for (int i = 0; i < partners.Length; i++)
+                {
+                    partners[i] = partners[i].Substring(1);
+                }
+
+
+                commandInfo.Add(command.command_id, partners);
             }
             if (!commandInfo.SelectMany(x => x.Value).Any()) return;
 
@@ -875,10 +945,43 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
 
                     var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
-                    var rival_boost = arc_data.rival_boost;
                     var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.star_lv + 1).effect_group_id;
                     rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
                     table.Edit(5, i, rivalName);
+                }
+
+                if(rivalNum == 5)//把攒满但没进ss的人头也显示在下面
+                {
+                    table.Edit(5, 5, separatorLineSSMatch);
+                    table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
+
+                    int extraHeadCount = 0;
+
+                    foreach (var rival in @event.data.arc_data_set.arc_rival_array)
+                    {
+                        if (rival.selection_peff_array == null)//马娘自身
+                            continue;
+                        var chara_id = rival.chara_id;
+                        var rival_boost = rival.rival_boost;
+                        if (rival_boost != 3)//没攒满
+                            continue;
+                        if (@event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == chara_id))//已经在ss训练中了
+                            continue;
+
+                        extraHeadCount += 1;
+                        if (extraHeadCount > 5) //只能放得下5个人
+                            continue;
+
+                        var rivalName = Database.SupportIdToShortName[chara_id];
+                        if (rivalName.Length > 4)
+                            rivalName = rivalName[..4];
+
+                        var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.star_lv + 1).effect_group_id;
+                        rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
+                        table.Edit(5, extraHeadCount + 6, rivalName);
+                    }
+                    if (extraHeadCount > 5)//有没显示的
+                        table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
                 }
                 //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
             }
