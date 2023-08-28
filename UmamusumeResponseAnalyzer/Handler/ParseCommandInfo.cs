@@ -173,6 +173,40 @@ namespace UmamusumeResponseAnalyzer.Handler
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
 
+                toPrint = "";
+                //每个人头（包括支援卡）每3级一定有一个属性，一个pt，一个特殊词条。其中特殊词条是固定的
+                var supportCards1 = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
+                for (int cardCount = 0; cardCount < 8; cardCount++)
+                {
+                    if (supportCards1.Any(x => x.Key == cardCount))
+                    {
+
+                        var name = Database.SupportIdToShortName[supportCards1[cardCount]].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
+                        if (name.Length > 7)
+                            name = name[..7];
+
+                        string specialBuffs = "";
+                        var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == cardCount).chara_id;
+                        if (@event.data.arc_data_set.arc_rival_array.Any(x => x.chara_id == chara_id))
+                        {
+                            var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+
+                            foreach (var ef in arc_data.selection_peff_array)
+                            {
+                                var efid = ef.effect_group_id;
+                                if (efid != 1 && efid != 11)
+                                    specialBuffs += "|"+GameGlobal.LArcSSEffectNameFullColored[efid];
+                            }
+                        }
+                        if (specialBuffs.Length == 0)
+                            specialBuffs = "?";
+                        else
+                            specialBuffs = specialBuffs.Substring(1);
+                        toPrint += $"{name}:{specialBuffs} ";
+                    }
+                }
+                AnsiConsole.MarkupLine(toPrint);
+
             }
 
 
