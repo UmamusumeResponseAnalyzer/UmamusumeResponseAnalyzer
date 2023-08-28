@@ -62,6 +62,19 @@ namespace UmamusumeResponseAnalyzer.Game
                 {106,"智"} ,
             };
 
+        static public Dictionary<int, string> LArcSSEffectNameFullColored = new Dictionary<int, string>()
+            {
+                {1,"技能hint"} ,
+                {3,"[#00ff00]体力[/]"} ,
+                {4,"[#00ffff]体力与上限[/]"} ,//最好的，用亮色
+                {5,"[#00ff00]心情体力[/]"} ,
+                {6,"充电"} ,
+                {7,"适性pt"} ,
+                {8,"[#00ff00]爱娇[/]"} ,
+                {9,"上手"} ,
+                {11,"属性"} ,
+                {12,"[#0000ff]技能点[/]"} ,//最烂的，用个深色
+            };
         static public Dictionary<int, string> LArcSSEffectNameColored = new Dictionary<int, string>()
             {
                 {1,"技能"} ,

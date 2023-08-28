@@ -163,18 +163,34 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 int totalSSLevel = 0;
                 int[] rivalBoostCount= new int[4] { 0, 0, 0, 0 };
+                int[] effectCount = new int[13] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
                 foreach (var rival in @event.data.arc_data_set.arc_rival_array)
                 {
                     if (rival.selection_peff_array == null)//马娘自身
                         continue;
                     totalSSLevel += rival.star_lv;
                     rivalBoostCount[rival.rival_boost] += 1;
+
+                    foreach(var ef in rival.selection_peff_array)
+                    {
+                        effectCount[ef.effect_group_id] += 1;
+                    }
                 }
+                //显示所有npc升级奖励的统计
+                string toPrint = "";
+                foreach(var ef in GameGlobal.LArcSSEffectNameFullColored)
+                {
+                    toPrint += $"{ef.Value}:[#ff0000]{effectCount[ef.Key]}[/] ";
+                }
+                //AnsiConsole.MarkupLine(toPrint);//永远固定，所以不用显示
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
 
                 toPrint = "";
-                //每个人头（包括支援卡）每3级一定有一个属性，一个pt，一个特殊词条。其中特殊词条是固定的
+                //每个人头（包括支援卡）每3级一定有一个属性，一个pt，一个特殊词条。其中特殊词条在一局内是固定的
+                //每局15个人头的每种特殊词条的总数是固定的。但是除了几个特殊的（体力最大值-茶座、爱娇-黄金船、练习上手-神鹰），其他都会随机分配给支援卡和路人
+                //支援卡相比路人点的次数更多，如果第三回合的支援卡随机分配的特殊词条不好，就可以重开了
                 var supportCards1 = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
                 for (int cardCount = 0; cardCount < 8; cardCount++)
                 {

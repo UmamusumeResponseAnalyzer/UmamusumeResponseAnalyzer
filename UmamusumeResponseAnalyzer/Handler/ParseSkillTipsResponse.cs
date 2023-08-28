@@ -15,6 +15,7 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseSkillTipsResponse(Gallop.SingleModeCheckEventResponse @event)
         {
+            //@event.data.chara_info.proper_running_style_senko = 7;
             AnsiConsole.MarkupLine($"[green]-----------------------------------------------------------------[/]");
             bool hasUnknownSkills = false;
             var totalSP = @event.data.chara_info.skill_point;
