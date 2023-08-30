@@ -118,7 +118,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             int gameMonth = ((turnNum - 1) % 24) / 2 + 1;
             string halfMonth = (turnNum % 2 == 0) ? "后半" : "前半";
             int totalTurns = @event.IsScenario(ScenarioType.LArc) ? 67 : 78;
-                AnsiConsole.MarkupLine($"[#00ffff]------------------------------------------------------------------------------------[/]");
+            AnsiConsole.MarkupLine($"[#00ffff]------------------------------------------------------------------------------------[/]");
             AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/{totalTurns}, 第{gameYear}年{gameMonth}月{halfMonth}[/]");
 
 
@@ -162,9 +162,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (@event.IsScenario(ScenarioType.LArc))
             {
                 int totalSSLevel = 0;
-                int[] rivalBoostCount= new int[4] { 0, 0, 0, 0 };
+                int[] rivalBoostCount = new int[4] { 0, 0, 0, 0 };
                 int[] effectCount = new int[13] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
                 foreach (var rival in @event.data.arc_data_set.arc_rival_array)
                 {
                     if (rival.selection_peff_array == null)//马娘自身
@@ -474,7 +473,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     foreach (var item in @event.data.arc_data_set.command_info_array)
                     {
                         if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
-                            GameGlobal.ToTrainId[item.command_id] == tid )
+                            GameGlobal.ToTrainId[item.command_id] == tid)
                         {
                             foreach (var trainParam in item.params_inc_dec_info_array)
                             {
@@ -530,7 +529,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 table.AddColumn(new TableColumn("SS Match").Width(tableWidth));
             }
             var separatorLine = Enumerable.Repeat(new string(Enumerable.Repeat('-', table.Columns.Max(x => x.Width.GetValueOrDefault())).ToArray()), 5).ToArray();
-            var separatorLineSSMatch =new string(Enumerable.Repeat('-', tableWidth).ToArray());
+            var separatorLineSSMatch = new string(Enumerable.Repeat('-', tableWidth).ToArray());
             var outputItems = new string[5];
 
             //table.AddRow(Enumerable.Repeat("当前:可获得", 5).ToArray());
@@ -651,9 +650,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             //table.AddRow(separatorLine);
 
             //以下几项用于计算单次训练能充多少格
-            var LArcRivalBoostCount = new int[,] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }};// 五种训练的充电槽为0,1,2格的个数
+            var LArcRivalBoostCount = new int[,] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };// 五种训练的充电槽为0,1,2格的个数
             var LArcShiningCount = new int[] { 0, 0, 0, 0, 0 };//彩圈个数
-            var LArcfriendAppear = new bool[] { false, false, false, false, false};//友人在不在
+            var LArcfriendAppear = new bool[] { false, false, false, false, false };//友人在不在
 
             var supportCards = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
             var commandInfo = new Dictionary<int, string[]>();
@@ -669,39 +668,24 @@ namespace UmamusumeResponseAnalyzer.Handler
                     .Select(partner =>
                     {
                         turnStat.isTraining = true;
-
-
-                        //优先级。数字越小越优先，不能超过9
-                        //最后直接放在字符串最前面，然后排序，然后删掉第一位
-                        //0友人
-                        //1闪彩的卡
-                        //2没闪彩的但需要拉羁绊的卡
-                        //3其他卡
-                        //4需要充电的乱七八糟人头
-                        //5理事长记者
-                        //6无用人头
-                        int priority = 7; 
-
-
-
+                        var priority = PartnerPriority.默认;
 
                         var name = Database.SupportIdToShortName[(partner >= 1 && partner <= 7) ? supportCards[partner] : partner].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                         if (name.Length > 7)
                             name = name[..7];
-                        if(!(partner >= 1 && partner <= 7))//非支援卡，名字可以更短
-                            if (name.Length > 2)
-                                name = name[..2];
+                        if (!(partner >= 1 && partner <= 7) && name.Length > 2)//非支援卡，名字可以更短
+                            name = name[..2];
                         var friendship = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == partner).evaluation;
-                        bool isArcPartner = (partner > 1000 || (partner >= 1 && partner <= 7)) && @event.IsScenario(ScenarioType.LArc) && @event.data.arc_data_set.evaluation_info_array.Any(x => x.target_id == partner);
+                        bool isArcPartner = @event.IsScenario(ScenarioType.LArc) && (partner > 1000 || (partner >= 1 && partner <= 7)) && @event.data.arc_data_set.evaluation_info_array.Any(x => x.target_id == partner);
                         var nameColor = "[#ffffff]";
                         var nameAppend = "";
                         bool shouldShining = false;//是不是友情训练
                         if (partner >= 1 && partner <= 7)
                         {
-                            priority = 3;
+                            priority = PartnerPriority.其他;
                             if (name.Contains("[友]")) //友人单独标绿
                             {
-                                priority = 0;
+                                priority = PartnerPriority.友人;
                                 nameColor = $"[green]";
 
                                 //三女神团队卡的友情训练
@@ -718,7 +702,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                             }
                             else if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
                             {
-                                priority = 2;
+                                priority = PartnerPriority.羁绊不足;
                                 nameColor = $"[yellow]";
                             }
 
@@ -758,39 +742,36 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 LArcShiningCount[trainIdx] += 1;
                                 if (name.Contains("[友]"))
                                 {
-                                    priority = 0;
+                                    priority = PartnerPriority.友人;
                                     nameColor = $"[#80ff00]";
                                 }
                                 else
                                 {
-                                    priority = 1;
+                                    priority = PartnerPriority.闪;
                                     nameColor = $"[aqua]";
                                 }
                             }
-
-
                         }
                         else
                         {
                             if (partner >= 100 && partner < 1000)//理事长、记者等
                             {
-                                priority = 5;
-                                nameColor = $"[#0000ff]";
+                                priority = PartnerPriority.关键NPC;
+                                nameColor = $"[#008080]";
                             }
                             else if (isArcPartner) // 凯旋门的其他人
                             {
-                                priority = 6;
-                                nameColor = $"[#500090]";
+                                priority = PartnerPriority.无用NPC;
+                                nameColor = $"[#a166ff]";
                             }
-
                         }
 
-                        if ((partner >= 1 && partner <= 7) || (partner >= 100 && partner < 1000) )//支援卡，理事长，记者，佐岳
-                            if(friendship < 100) //羁绊不满100，显示羁绊
+                        if ((partner >= 1 && partner <= 7) || (partner >= 100 && partner < 1000))//支援卡，理事长，记者，佐岳
+                            if (friendship < 100) //羁绊不满100，显示羁绊
                                 nameAppend += $"[red]{friendship}[/]";
 
 
-                        if (isArcPartner&&!LArcIsAbroad)
+                        if (isArcPartner && !LArcIsAbroad)
                         {
                             var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == partner).chara_id;
                             if (@event.data.arc_data_set.arc_rival_array.Any(x => x.chara_id == chara_id))
@@ -800,10 +781,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.star_lv + 1).effect_group_id;
                                 if (rival_boost != 3)
                                 {
-                                    if (priority > 4) priority = 4;
-                                    LArcRivalBoostCount[trainIdx,rival_boost] += 1;
+                                    if (priority > PartnerPriority.需要充电) priority = PartnerPriority.需要充电;
+                                    LArcRivalBoostCount[trainIdx, rival_boost] += 1;
 
-                                    if(partner>1000)
+                                    if (partner > 1000)
                                         nameColor = $"[#ff00ff]";
                                     nameAppend += $":[aqua]{rival_boost}[/]{GameGlobal.LArcSSEffectNameColoredShort[effectId]}";
                                 }
@@ -814,30 +795,16 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                         name = tips.Contains(partner) ? $"[red]![/]{name}" : name; //有Hint就加个红感叹号，和游戏内表现一样
 
-                        //把优先级放在字符串的第一位用于排序，最后再删掉
-                        name = $"{priority}" + name;
-
-                        return name;
+                        return (priority, name);
                     }).ToArray();
 
-                // 按照第一个字符降序排序
-                partners = partners.OrderBy(s => s[0]).ToArray();
-
-                // 删除每个字符串的第一个字符
-                for (int i = 0; i < partners.Length; i++)
-                {
-                    partners[i] = partners[i].Substring(1);
-                }
-
-
-                commandInfo.Add(command.command_id, partners);
+                // 按照优先级排序
+                commandInfo.Add(command.command_id, partners.OrderBy(s => s.priority).Select(x => x.name).ToArray());
             }
             if (!commandInfo.SelectMany(x => x.Value).Any()) return;
 
-
-
             //LArc充电槽计数
-            if (@event.IsScenario(ScenarioType.LArc)&&(!LArcIsAbroad))
+            if (@event.IsScenario(ScenarioType.LArc) && (!LArcIsAbroad))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -999,9 +966,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                         rivalName = rivalName[..4];
                     if (rivalNum == 5)
                     {
-                        if(@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark!=1)
+                        if (@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark != 1)
                             rivalName = $"[#ff0000]{rivalName}(可能失败)[/]";
-                        else if (@event.data.arc_data_set.selection_info.is_special_match==1)//sss对战
+                        else if (@event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
                             rivalName = $"[#00ffff]{rivalName}[/]";
                         else
                             rivalName = $"[#00ff00]{rivalName}[/]";
@@ -1013,7 +980,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     table.Edit(5, i, rivalName);
                 }
 
-                if(rivalNum == 5)//把攒满但没进ss的人头也显示在下面
+                if (rivalNum == 5)//把攒满但没进ss的人头也显示在下面
                 {
                     table.Edit(5, 5, separatorLineSSMatch);
                     table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
