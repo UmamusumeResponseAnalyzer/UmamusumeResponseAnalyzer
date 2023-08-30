@@ -70,9 +70,15 @@ namespace UmamusumeResponseAnalyzer
                         if (ctx.Request.RawUrl == "/notify/response")
                         {
                             Directory.CreateDirectory("packets");
+#if WRITE_GAME_STATISTICS
+                            var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
+                            if (!Directory.Exists(statsDirectory))
+                            {
+                                Directory.CreateDirectory(statsDirectory);
+                            }
+#endif
 
-
-#if DEBUG
+#if DEBUG||WRITE_GAME_LOG
 
                             File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
                             File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
@@ -100,7 +106,7 @@ namespace UmamusumeResponseAnalyzer
                         else if (ctx.Request.RawUrl == "/notify/request")
                         {
                             Directory.CreateDirectory("packets");
-#if DEBUG
+#if DEBUG||WRITE_GAME_LOG
                             File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
 
 #endif

@@ -147,7 +147,7 @@ namespace UmamusumeResponseAnalyzer.AI
                 int continuousTurnNum = 1;
                 for (int i = turn; i >= 1; i--)
                 {
-                    if (GameStats.stats[i] == null || !GameStats.stats[i].isEffect102)
+                    if (GameStats.stats[i] == null || !GameStats.stats[i].venus_isEffect102)
                         break;
                     continuousTurnNum++;
                 }
@@ -191,7 +191,7 @@ namespace UmamusumeResponseAnalyzer.AI
             {
                 var turnStat = GameStats.stats[t];
                 if (turnStat == null) continue;//有可能这局中途才打开小黑板
-                if (turnStat.isTraining && turnStat.venusStat1_venusTrain == turnStat.playerChoice)
+                if (turnStat.isTraining && turnStat.venus_venusTrain == turnStat.playerChoice)
                 {
                     venusCardFirstClick = true;
                     break;

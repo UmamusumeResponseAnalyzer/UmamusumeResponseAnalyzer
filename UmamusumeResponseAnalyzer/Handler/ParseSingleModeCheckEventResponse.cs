@@ -21,12 +21,39 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     if (i.story_id == 830137001)//第一次点击女神
                     {
-                        GameStats.stats[GameStats.currentTurn].venusStat1_isVenusCountConcerned = false;
+                        GameStats.stats[GameStats.currentTurn].venus_isVenusCountConcerned = false;
                     }
 
                     if (i.story_id == 830137003)//女神三选一事件
                     {
-                        GameStats.stats[GameStats.currentTurn].venusStat1_venusEvent = true;
+                        GameStats.stats[GameStats.currentTurn].venus_venusEvent = true;
+                    }
+
+
+                    if (i.story_id == 400006112)//ss训练
+                    {
+                        GameStats.stats[GameStats.currentTurn].larc_playerChoiceSS = true;
+                    }
+
+                    if (i.story_id == 809043002)//佐岳启动
+                    {
+                        GameStats.stats[GameStats.currentTurn].larc_zuoyueEvent = 5;
+                    }
+
+                    if (i.story_id == 809043003)//佐岳充电
+                    {
+                        int suc = i.event_contents_info.choice_array[0].select_index;
+                        int eventType = 0;
+                        if (suc == 1)//加心情
+                        {
+                            eventType = 2;
+                        }
+                        else if (suc == 2)//不加心情
+                        {
+                            eventType = 1;
+                        }
+
+                        GameStats.stats[GameStats.currentTurn].larc_zuoyueEvent = eventType;
                     }
                 }
 

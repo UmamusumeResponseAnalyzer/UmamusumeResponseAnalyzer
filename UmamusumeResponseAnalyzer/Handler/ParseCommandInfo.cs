@@ -106,6 +106,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
             else
             {
+                GameStats.whichScenario = @event.data.chara_info.scenario_id;
                 GameStats.currentTurn = turnNum;
                 GameStats.stats[turnNum] = new TurnStats();
             }
@@ -125,8 +126,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             turnStat.motivation = motivation;
 
             //显示统计信息
-            if (@event.IsScenario(ScenarioType.GrandMasters))
-                GameStats.print();
+            GameStats.print();
 
 
 
@@ -223,6 +223,16 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 AnsiConsole.MarkupLine(toPrint);
 
+                //游戏统计，用于测试游戏里各种概率
+                if (@event.data.arc_data_set.selection_info!=null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
+                    turnStat.larc_isSSS = true;
+#if WRITE_GAME_STATISTICS
+                var statsDirectoryZuoYueSuccess = "./gameStatistics/zuoyue";//是否成功点出来佐岳
+                if (!Directory.Exists(statsDirectoryZuoYueSuccess))
+                {
+                    Directory.CreateDirectory(statsDirectoryZuoYueSuccess);
+                }
+#endif
             }
 
 
@@ -306,18 +316,18 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (@event.data.venus_data_set.venus_chara_info_array != null && @event.data.venus_data_set.venus_chara_info_array.Any(x => x.chara_id == 9042))
                 {
                     var venusLevels = @event.data.venus_data_set.venus_chara_info_array;
-                    turnStat.yellowVenusLevel = venusLevels.First(x => x.chara_id == 9042).venus_level;
-                    turnStat.redVenusLevel = venusLevels.First(x => x.chara_id == 9040).venus_level;
-                    turnStat.blueVenusLevel = venusLevels.First(x => x.chara_id == 9041).venus_level;
+                    turnStat.venus_yellowVenusLevel = venusLevels.First(x => x.chara_id == 9042).venus_level;
+                    turnStat.venus_redVenusLevel = venusLevels.First(x => x.chara_id == 9040).venus_level;
+                    turnStat.venus_blueVenusLevel = venusLevels.First(x => x.chara_id == 9041).venus_level;
                     AnsiConsole.MarkupLine($"女神等级：" +
-                        $"[yellow]{turnStat.yellowVenusLevel}[/] " +
-                        $"[red]{turnStat.redVenusLevel}[/] " +
-                        $"[blue]{turnStat.blueVenusLevel}[/] "
+                        $"[yellow]{turnStat.venus_yellowVenusLevel}[/] " +
+                        $"[red]{turnStat.venus_redVenusLevel}[/] " +
+                        $"[blue]{turnStat.venus_blueVenusLevel}[/] "
                         );
                 }
                 bool isBlueActive = @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9041);//是否开蓝了
                 if (isBlueActive)
-                    turnStat.venusStat1_isVenusCountConcerned = false;
+                    turnStat.venus_isVenusCountConcerned = false;
 
             }
 
@@ -325,13 +335,13 @@ namespace UmamusumeResponseAnalyzer.Handler
             //女神情热状态，不统计女神召唤次数
             if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 102))
             {
-                turnStat.venusStat1_isVenusCountConcerned = false;
-                turnStat.isEffect102 = true;
+                turnStat.venus_isVenusCountConcerned = false;
+                turnStat.venus_isEffect102 = true;
                 //统计一下女神情热持续了几回合
                 int continuousTurnNum = 0;
                 for (int i = turnNum; i >= 1; i--)
                 {
-                    if (GameStats.stats[i] == null || !GameStats.stats[i].isEffect102)
+                    if (GameStats.stats[i] == null || !GameStats.stats[i].venus_isEffect102)
                         break;
                     continuousTurnNum++;
                 }
@@ -697,11 +707,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 //三女神团队卡的友情训练
                                 if (supportCards[partner] == 30137)
                                 {
-                                    turnStat.venusStat1_venusTrain = GameGlobal.ToTrainId[command.command_id];
+                                    turnStat.venus_venusTrain = GameGlobal.ToTrainId[command.command_id];
                                 }
 
                                 if (supportCards[partner] == 30160 || supportCards[partner] == 10094)//佐岳友人卡
+                                {
                                     LArcfriendAppear[trainIdx] = true;
+                                    turnStat.larc_zuoyueAtTrain[trainIdx] = true;
+                                }
                             }
                             else if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
                             {
@@ -1034,6 +1047,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                         table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
                 }
                 //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
+
+                turnStat.larc_isFullSS = true;
+                turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
+
             }
             table.Finish();
             AnsiConsole.Write(table);
