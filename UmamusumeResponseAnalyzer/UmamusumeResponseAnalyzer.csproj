@@ -18,22 +18,22 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<NoWarn>1701;1702;CS8509;CS8618</NoWarn>
 		<Prefer32Bit>true</Prefer32Bit>
-		<DefineConstants>$(DefineConstants)TRACE;WRITE_GAME_STATISTICS</DefineConstants>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 	  <NoWarn>1701;1702;CS8509;CS8618</NoWarn>
-	  <DefineConstants>$(DefineConstants)TRACE;WRITE_GAME_STATISTICS</DefineConstants>
+	  <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<NoWarn>1701;1702;CS8509;CS8618</NoWarn>
-		<DefineConstants>$(DefineConstants)TRACE;WRITE_GAME_STATISTICS</DefineConstants>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 	  <NoWarn>1701;1702;CS8509;CS8618</NoWarn>
-	  <DefineConstants>$(DefineConstants)TRACE;WRITE_GAME_STATISTICS</DefineConstants>
+	  <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>

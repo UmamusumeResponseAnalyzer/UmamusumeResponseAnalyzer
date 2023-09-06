@@ -223,11 +223,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                         if (name.Length > 7)
                             name = name[..7];
 
+                        string charaTrainingType = "";
                         string specialBuffs = "";
                         var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == cardCount).chara_id;
                         if (@event.data.arc_data_set.arc_rival_array.Any(x => x.chara_id == chara_id))
                         {
                             var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+
+                            charaTrainingType = $"[red]({GameGlobal.TrainNames[arc_data.command_id]})[/]";
 
                             foreach (var ef in arc_data.selection_peff_array)
                             {
@@ -240,7 +243,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                             specialBuffs = "?";
                         else
                             specialBuffs = specialBuffs.Substring(1);
-                        toPrint += $"{name}:{specialBuffs} ";
+                        toPrint += $"{name}:{charaTrainingType}{specialBuffs} ";
                     }
                 }
                 AnsiConsole.MarkupLine(toPrint);
