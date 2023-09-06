@@ -55,6 +55,10 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                         GameStats.stats[GameStats.currentTurn].larc_zuoyueEvent = eventType;
                     }
+                    if (i.story_id == 400006115)//远征佐岳加pt
+                    {
+                        GameStats.stats[GameStats.currentTurn].larc_zuoyueEvent = 4;
+                    }
                 }
 
                 //收录在数据库中

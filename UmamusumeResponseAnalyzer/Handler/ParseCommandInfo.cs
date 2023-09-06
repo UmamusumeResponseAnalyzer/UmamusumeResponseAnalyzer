@@ -86,15 +86,23 @@ namespace UmamusumeResponseAnalyzer.Handler
             int turnNum = @event.data.chara_info.turn;
 
             bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
-
+            bool shouldWriteStatistics = true;
 
             if (GameStats.currentTurn != turnNum - 1 //正常情况
                 && GameStats.currentTurn != turnNum //重复显示
                 && turnNum != 1 //第一个回合
                 )
             {
+                GameStats.isFullGame = false;
                 AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
             }
+            else if (turnNum == 1) GameStats.isFullGame = true;
+
+            if (GameStats.currentTurn != turnNum - 1)
+                shouldWriteStatistics = false;
+            if (!GameStats.isFullGame)
+                shouldWriteStatistics = false;
+
 
             //买技能，大师杯剧本年末比赛，会重复显示
             bool isRepeat = @event.data.chara_info.playing_state != 1;
@@ -111,6 +119,12 @@ namespace UmamusumeResponseAnalyzer.Handler
                 GameStats.stats[turnNum] = new TurnStats();
             }
 
+#if WRITE_GAME_STATISTICS
+            if (shouldWriteStatistics)
+            {
+                GameStats.LArcWriteStatsLastTurn(@event);
+            }
+#endif
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
             TurnStats turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
 
@@ -183,6 +197,15 @@ namespace UmamusumeResponseAnalyzer.Handler
                     toPrint += $"{ef.Value}:[#ff0000]{effectCount[ef.Key]}[/] ";
                 }
                 //AnsiConsole.MarkupLine(toPrint);//永远固定，所以不用显示
+                int totalApproval = @event.data.arc_data_set.arc_rival_array.Sum(x => x.approval_point);
+                turnStat.larc_totalApproval = totalApproval;
+                int approval_rate = @event.data.arc_data_set.arc_info.approval_rate;
+                int shixingPt = @event.data.arc_data_set.arc_info.global_exp;
+
+                int lastTurnTotalApproval = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].larc_totalApproval : 0;
+
+                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval-lastTurnTotalApproval}[/])");
+
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
 
@@ -225,13 +248,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //游戏统计，用于测试游戏里各种概率
                 if (@event.data.arc_data_set.selection_info!=null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
                     turnStat.larc_isSSS = true;
-#if WRITE_GAME_STATISTICS
-                var statsDirectoryZuoYueSuccess = "./gameStatistics/zuoyue";//是否成功点出来佐岳
-                if (!Directory.Exists(statsDirectoryZuoYueSuccess))
-                {
-                    Directory.CreateDirectory(statsDirectoryZuoYueSuccess);
-                }
-#endif
             }
 
 
@@ -1012,16 +1028,23 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     if (extraHeadCount > 5)//有没显示的
                         table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
+
+                    turnStat.larc_isFullSS = true;
+                    turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
                 }
                 //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
 
-                turnStat.larc_isFullSS = true;
-                turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
 
             }
             table.Finish();
             AnsiConsole.Write(table);
 
+#if WRITE_GAME_STATISTICS
+            if(shouldWriteStatistics)
+            {
+                GameStats.LArcWriteStatsBeforeTrain(@event);
+            }
+#endif
         }
     }
 }
