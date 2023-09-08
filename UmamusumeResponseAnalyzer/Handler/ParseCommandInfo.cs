@@ -204,7 +204,11 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 int lastTurnTotalApproval = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].larc_totalApproval : 0;
 
-                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval-lastTurnTotalApproval}[/])");
+                int approval_rate_level = approval_rate / 50;
+                if (approval_rate_level > 40) { approval_rate_level = 40; }
+                int approval_training_bonus = GameGlobal.LArcTrainBonusEvery5Percent[approval_rate_level];
+
+                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval-lastTurnTotalApproval}[/])");
 
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
