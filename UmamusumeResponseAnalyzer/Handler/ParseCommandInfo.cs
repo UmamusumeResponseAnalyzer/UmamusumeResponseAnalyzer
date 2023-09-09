@@ -86,15 +86,23 @@ namespace UmamusumeResponseAnalyzer.Handler
             int turnNum = @event.data.chara_info.turn;
 
             bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
-
+            bool shouldWriteStatistics = true;
 
             if (GameStats.currentTurn != turnNum - 1 //正常情况
                 && GameStats.currentTurn != turnNum //重复显示
                 && turnNum != 1 //第一个回合
                 )
             {
+                GameStats.isFullGame = false;
                 AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
             }
+            else if (turnNum == 1) GameStats.isFullGame = true;
+
+            if (GameStats.currentTurn != turnNum - 1)
+                shouldWriteStatistics = false;
+            if (!GameStats.isFullGame)
+                shouldWriteStatistics = false;
+
 
             //买技能，大师杯剧本年末比赛，会重复显示
             bool isRepeat = @event.data.chara_info.playing_state != 1;
@@ -106,10 +114,17 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
             else
             {
+                GameStats.whichScenario = @event.data.chara_info.scenario_id;
                 GameStats.currentTurn = turnNum;
                 GameStats.stats[turnNum] = new TurnStats();
             }
 
+#if WRITE_GAME_STATISTICS
+            if (shouldWriteStatistics)
+            {
+                GameStats.LArcWriteStatsLastTurn(@event);
+            }
+#endif
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
             TurnStats turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
 
@@ -125,8 +140,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             turnStat.motivation = motivation;
 
             //显示统计信息
-            if (@event.IsScenario(ScenarioType.GrandMasters))
-                GameStats.print();
+            GameStats.print();
 
 
 
@@ -163,16 +177,84 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 int totalSSLevel = 0;
                 int[] rivalBoostCount = new int[4] { 0, 0, 0, 0 };
+                int[] effectCount = new int[13] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
                 foreach (var rival in @event.data.arc_data_set.arc_rival_array)
                 {
                     if (rival.selection_peff_array == null)//马娘自身
                         continue;
                     totalSSLevel += rival.star_lv;
                     rivalBoostCount[rival.rival_boost] += 1;
+
+                    foreach(var ef in rival.selection_peff_array)
+                    {
+                        effectCount[ef.effect_group_id] += 1;
+                    }
                 }
+                //显示所有npc升级奖励的统计
+                string toPrint = "";
+                foreach(var ef in GameGlobal.LArcSSEffectNameFullColored)
+                {
+                    toPrint += $"{ef.Value}:[#ff0000]{effectCount[ef.Key]}[/] ";
+                }
+                //AnsiConsole.MarkupLine(toPrint);//永远固定，所以不用显示
+                int totalApproval = @event.data.arc_data_set.arc_rival_array.Sum(x => x.approval_point);
+                turnStat.larc_totalApproval = totalApproval;
+                int approval_rate = @event.data.arc_data_set.arc_info.approval_rate;
+                int shixingPt = @event.data.arc_data_set.arc_info.global_exp;
+
+                int lastTurnTotalApproval = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].larc_totalApproval : 0;
+
+                int approval_rate_level = approval_rate / 50;
+                if (approval_rate_level > 40) { approval_rate_level = 40; }
+                int approval_training_bonus = GameGlobal.LArcTrainBonusEvery5Percent[approval_rate_level];
+
+                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval-lastTurnTotalApproval}[/])");
+
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
 
+                toPrint = "";
+                //每个人头（包括支援卡）每3级一定有一个属性，一个pt，一个特殊词条。其中特殊词条在一局内是固定的
+                //每局15个人头的每种特殊词条的总数是固定的。但是除了几个特殊的（体力最大值-茶座、爱娇-黄金船、练习上手-神鹰），其他都会随机分配给支援卡和路人
+                //支援卡相比路人点的次数更多，如果第三回合的支援卡随机分配的特殊词条不好，就可以重开了
+                var supportCards1 = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
+                for (int cardCount = 0; cardCount < 8; cardCount++)
+                {
+                    if (supportCards1.Any(x => x.Key == cardCount))
+                    {
+
+                        var name = Database.SupportIdToShortName[supportCards1[cardCount]].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
+                        if (name.Length > 7)
+                            name = name[..7];
+
+                        string charaTrainingType = "";
+                        string specialBuffs = "";
+                        var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == cardCount).chara_id;
+                        if (@event.data.arc_data_set.arc_rival_array.Any(x => x.chara_id == chara_id))
+                        {
+                            var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+
+                            charaTrainingType = $"[red]({GameGlobal.TrainNames[arc_data.command_id]})[/]";
+
+                            foreach (var ef in arc_data.selection_peff_array)
+                            {
+                                var efid = ef.effect_group_id;
+                                if (efid != 1 && efid != 11)
+                                    specialBuffs += "|"+GameGlobal.LArcSSEffectNameFullColored[efid];
+                            }
+                        }
+                        if (specialBuffs.Length == 0)
+                            specialBuffs = "?";
+                        else
+                            specialBuffs = specialBuffs.Substring(1);
+                        toPrint += $"{name}:{charaTrainingType}{specialBuffs} ";
+                    }
+                }
+                AnsiConsole.MarkupLine(toPrint);
+
+                //游戏统计，用于测试游戏里各种概率
+                if (@event.data.arc_data_set.selection_info!=null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
+                    turnStat.larc_isSSS = true;
             }
 
 
@@ -256,18 +338,18 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (@event.data.venus_data_set.venus_chara_info_array != null && @event.data.venus_data_set.venus_chara_info_array.Any(x => x.chara_id == 9042))
                 {
                     var venusLevels = @event.data.venus_data_set.venus_chara_info_array;
-                    turnStat.yellowVenusLevel = venusLevels.First(x => x.chara_id == 9042).venus_level;
-                    turnStat.redVenusLevel = venusLevels.First(x => x.chara_id == 9040).venus_level;
-                    turnStat.blueVenusLevel = venusLevels.First(x => x.chara_id == 9041).venus_level;
+                    turnStat.venus_yellowVenusLevel = venusLevels.First(x => x.chara_id == 9042).venus_level;
+                    turnStat.venus_redVenusLevel = venusLevels.First(x => x.chara_id == 9040).venus_level;
+                    turnStat.venus_blueVenusLevel = venusLevels.First(x => x.chara_id == 9041).venus_level;
                     AnsiConsole.MarkupLine($"女神等级：" +
-                        $"[yellow]{turnStat.yellowVenusLevel}[/] " +
-                        $"[red]{turnStat.redVenusLevel}[/] " +
-                        $"[blue]{turnStat.blueVenusLevel}[/] "
+                        $"[yellow]{turnStat.venus_yellowVenusLevel}[/] " +
+                        $"[red]{turnStat.venus_redVenusLevel}[/] " +
+                        $"[blue]{turnStat.venus_blueVenusLevel}[/] "
                         );
                 }
                 bool isBlueActive = @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9041);//是否开蓝了
                 if (isBlueActive)
-                    turnStat.venusStat1_isVenusCountConcerned = false;
+                    turnStat.venus_isVenusCountConcerned = false;
 
             }
 
@@ -275,13 +357,13 @@ namespace UmamusumeResponseAnalyzer.Handler
             //女神情热状态，不统计女神召唤次数
             if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 102))
             {
-                turnStat.venusStat1_isVenusCountConcerned = false;
-                turnStat.isEffect102 = true;
+                turnStat.venus_isVenusCountConcerned = false;
+                turnStat.venus_isEffect102 = true;
                 //统计一下女神情热持续了几回合
                 int continuousTurnNum = 0;
                 for (int i = turnNum; i >= 1; i--)
                 {
-                    if (GameStats.stats[i] == null || !GameStats.stats[i].isEffect102)
+                    if (GameStats.stats[i] == null || !GameStats.stats[i].venus_isEffect102)
                         break;
                     continuousTurnNum++;
                 }
@@ -632,11 +714,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 //三女神团队卡的友情训练
                                 if (supportCards[partner] == 30137)
                                 {
-                                    turnStat.venusStat1_venusTrain = GameGlobal.ToTrainId[command.command_id];
+                                    turnStat.venus_venusTrain = GameGlobal.ToTrainId[command.command_id];
                                 }
 
                                 if (supportCards[partner] == 30160 || supportCards[partner] == 10094)//佐岳友人卡
+                                {
                                     LArcfriendAppear[trainIdx] = true;
+                                    turnStat.larc_zuoyueAtTrain[trainIdx] = true;
+                                }
                             }
                             else if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
                             {
@@ -950,12 +1035,23 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     if (extraHeadCount > 5)//有没显示的
                         table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
+
+                    turnStat.larc_isFullSS = true;
+                    turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
                 }
                 //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
+
+
             }
             table.Finish();
             AnsiConsole.Write(table);
 
+#if WRITE_GAME_STATISTICS
+            if(shouldWriteStatistics)
+            {
+                GameStats.LArcWriteStatsBeforeTrain(@event);
+            }
+#endif
         }
     }
 }
