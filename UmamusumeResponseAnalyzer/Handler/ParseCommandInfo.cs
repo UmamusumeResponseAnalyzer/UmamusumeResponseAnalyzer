@@ -20,10 +20,9 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
 
+#if WRITE_AI
             //把当前游戏状态写入一个文件，用于与ai通信
-            if (@event.IsScenario(ScenarioType.GrandMasters))
-            {
-                var gameStatusToSend = new GameStatusSend(@event);
+            var gameStatusToSend = new GameStatusSend(@event);
 
                 //var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
                 var currentGSdirectory = "./packets";
@@ -54,8 +53,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
                 }
-            }
-
+            //     }
+#endif
             var currentFiveValue = new int[]
             {
                 @event.data.chara_info.speed,
@@ -141,9 +140,6 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             //显示统计信息
             GameStats.print();
-
-
-
 
             int currentVital = @event.data.chara_info.vital;
             int maxVital = @event.data.chara_info.max_vital;

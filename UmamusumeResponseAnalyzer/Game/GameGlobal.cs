@@ -20,6 +20,14 @@ namespace UmamusumeResponseAnalyzer.Game
                 {103,604} ,
                 {106,605} ,
             };
+        static public Dictionary<int, int> HaiwaiIds = new Dictionary<int, int>()
+            {
+                {101,1101} ,
+                {105,1102} ,
+                {102,1103} ,
+                {103,1104} ,
+                {106,1105} ,
+            };
         static public Dictionary<int, int> ToTrainId = new Dictionary<int, int>()
             {
                 {1101,101} ,
