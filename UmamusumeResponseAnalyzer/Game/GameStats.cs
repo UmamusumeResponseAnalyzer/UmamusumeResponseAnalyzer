@@ -468,7 +468,6 @@ namespace UmamusumeResponseAnalyzer.Game
             int zuoyueIndex = 0;
             int linkCardsNum = 0;
             var supportCards = @thisTurnEvent.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
-            var scenarioLinkCharas = new int[] { 1007, 1014, 1025, 1049, 1067, 1070 };
             foreach (var card in supportCards)
             {
                 var cardIndex = card.Key;
@@ -485,7 +484,7 @@ namespace UmamusumeResponseAnalyzer.Game
                 else if (@thisTurnEvent.data.arc_data_set.evaluation_info_array.Any(x => x.target_id == cardIndex))
                 {
                     var chara_id = @thisTurnEvent.data.arc_data_set.evaluation_info_array.First(x => x.target_id == cardIndex).chara_id;
-                    if (scenarioLinkCharas.Any(x => x == chara_id))
+                    if (GameGlobal.LArcScenarioLinkCharas.Any(x => x == chara_id))
                         linkCardsNum += 1;
                 }
             }
