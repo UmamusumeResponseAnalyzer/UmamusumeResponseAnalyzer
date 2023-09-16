@@ -255,6 +255,56 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //游戏统计，用于测试游戏里各种概率
                 if (@event.data.arc_data_set.selection_info!=null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
                     turnStat.larc_isSSS = true;
+
+                if (@event.data.arc_data_set.selection_info != null && @event.data.arc_data_set.selection_info.params_inc_dec_info_array != null && @event.data.arc_data_set.selection_info.all_win_approval_point != 0)
+                {
+                    var ssStatus = @event.data.arc_data_set.selection_info.params_inc_dec_info_array;
+                    int totalStatusBonus = 0;
+
+                    for (int i = 0; i < 5; i++)
+                        totalStatusBonus += ScoreUtils.ReviseOver1200(currentFiveValue[i] + ssStatus.First(x => x.target_type == i + 1).value) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
+
+                    int headnum = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
+                    int linkNum = 0;
+                    //数一下有几个link卡。
+                    foreach (var sshead in @event.data.arc_data_set.selection_info.selection_rival_info_array)
+                    {
+                        if (GameGlobal.LArcScenarioLinkCharas.Any(x => x == sshead.chara_id))
+                        {
+                            int cardPos = @event.data.arc_data_set.evaluation_info_array.First(x => x.chara_id == sshead.chara_id).target_id;
+                            if (cardPos <= 6 && cardPos >= 1)//是支援卡
+                                linkNum += 1;
+                        }
+
+                    }
+                    int headBonus = 4 * headnum + 2 * linkNum;//link卡+6属性，非link卡+4
+                    double approvalBonus = approval_rate <= 250 ? 0.0 : (approval_rate - 200) / 500.0;
+                    //if (turnNum >= 67) approvalBonus += 0.2;
+                    double predictValue = headBonus + headnum * (1.0 + approvalBonus) * 5;
+                    if (@event.data.arc_data_set.selection_info.is_special_match == 1)
+                        predictValue += 5 * 15;
+
+                    //AnsiConsole.MarkupLine($"SS Match属性（只算下层）：[#00ff00]{totalStatusBonus}[/]，预测[#ff8000]{predictValue:F2}[/]，预测误差[#ff8000]{predictValue - totalStatusBonus:F2}[/]，除以人头[#00ffff]{(double)(totalStatusBonus - headBonus) / headnum:F2}[/]");
+                    int selfApprovalPoint = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == @event.data.chara_info.card_id / 100).approval_point;
+
+                    int rivalApprovalPoint = 0;
+
+                    foreach (var sshead in @event.data.arc_data_set.selection_info.selection_rival_info_array)
+                    {
+                        rivalApprovalPoint += @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == sshead.chara_id).approval_point;
+                    }
+                    //AnsiConsole.MarkupLine($"自己pt：[#00ff00]{selfApprovalPoint}[/]，其他人pt：[#00ff00]{rivalApprovalPoint}[/]");
+
+#if WRITE_GAME_STATISTICS
+                    GameStats.writeGameStatistics("ssValue", $"{totalStatusBonus} {headnum} {linkNum} {approval_rate} {approval_training_bonus} {selfApprovalPoint} {rivalApprovalPoint} {turnNum}");
+
+#endif
+                }
+                //凯旋门前显示技能性价比
+                if (turnNum == 43 || turnNum == 67)
+                {
+                    CalculateSkillScoreCost(@event);
+                }
             }
 
 
@@ -1046,12 +1096,60 @@ namespace UmamusumeResponseAnalyzer.Handler
             table.Finish();
             AnsiConsole.Write(table);
 
+            //远征/没买友情+20%或者pt+10警告
+            if (@event.IsScenario(ScenarioType.LArc))
+            {
+                //两次远征分别是37,60回合
+                if (turnNum < 37 && turnNum >= 34)
+                    AnsiConsole.MarkupLine($@"[#ff0000]还有{37 - turnNum}回合第二年远征！[/]");
+                if (turnNum < 60 && turnNum >= 55)
+                    AnsiConsole.MarkupLine($@"[#ff0000]还有{60 - turnNum}回合第三年远征！[/]");
+                if(turnNum==59)
+                {
+                    AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！[/]");
+                    AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！[/]");
+                    AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！（重要的事情说三遍）[/]");
+                }
+
+                if(turnNum>42)
+                {
+                    //十个升级的id分别是
+                    //  2 5
+                    // 1 4 6
+                    // 3 7 8
+                    //  9 10
+
+
+                    //检查是否买了友情+20
+                    if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 8).level == 2)//没买友情
+                    {
+                        if (@event.data.arc_data_set.arc_info.global_exp >= 300)
+                        {
+                            AnsiConsole.MarkupLine($@"[#00ffff]没买友情+20%！[/]");
+                            AnsiConsole.MarkupLine($@"[#00ffff]没买友情+20%！[/]");
+                            AnsiConsole.MarkupLine($@"[#00ffff]没买友情+20%！（重要的事情说三遍）[/]");
+                        }
+                    }
+                    else
+                    {
+                        if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level == 2)//没买pt+10
+                        {
+                            if (@event.data.arc_data_set.arc_info.global_exp >= 200)
+                            {
+                                AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
+                                AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
+                                AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！（重要的事情说三遍）[/]");
+                            }
+                        }
+                    }
+                }
+            }
 #if WRITE_GAME_STATISTICS
             if(shouldWriteStatistics)
             {
                 GameStats.LArcWriteStatsBeforeTrain(@event);
             }
 #endif
-        }
+            }
     }
 }
