@@ -98,6 +98,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             else if (turnNum == 1) GameStats.isFullGame = true;
 
+            if (!@event.IsScenario(ScenarioType.LArc))
+                shouldWriteStatistics = false;
             if (GameStats.currentTurn != turnNum - 1)
                 shouldWriteStatistics = false;
             if (!GameStats.isFullGame)
@@ -1048,7 +1050,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
 
                     var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
-                    var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.star_lv + 1).effect_group_id;
+                    var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                     rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
                     table.Edit(5, i, rivalName);
                 }
