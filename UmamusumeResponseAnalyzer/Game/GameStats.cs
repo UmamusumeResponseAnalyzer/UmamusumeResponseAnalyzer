@@ -41,6 +41,8 @@ namespace UmamusumeResponseAnalyzer.Game
 
         public int playerChoice;//玩家最终点了哪个训练
         public bool isTrainingFailed;//是否训练失败
+        public int[] trainLevel;//训练等级
+        public int[] trainLevelCount;//训练等级计数，凯旋门每4为一级
 
 
         //凯旋门
@@ -69,6 +71,10 @@ namespace UmamusumeResponseAnalyzer.Game
             playerChoice = -1;
             isTrainingFailed = false;
             fiveTrainStats = new TrainStats[5];
+            trainLevel = new int[5];
+            trainLevelCount = new int[5];
+            for (int j = 0; j < 5; j++) trainLevel[j] = 1;
+            for (int j = 0; j < 5; j++) trainLevelCount[j] = 0;
 
             larc_zuoyueAtTrain = new bool[5];//佐岳是否在这个训练
             for(int j = 0; j < 5; j++) larc_zuoyueAtTrain[j] = false;
