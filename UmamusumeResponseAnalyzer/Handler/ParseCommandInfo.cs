@@ -626,14 +626,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             var table = new Table();
 
             var failureRateStr = new string[5];
-            //失败率>30%标红、>15%标DarkOrange、>0%标黄
+            //失败率>=40%标红、>=20%(有可能大失败)标DarkOrange、>0%标黄
             for (int i = 0; i < 5; i++)
             {
                 int thisFailureRate = failureRate[GameGlobal.TrainIds[i]];
                 string outputItem = $"({thisFailureRate}%)";
-                if (thisFailureRate > 30)
+                if (thisFailureRate >= 40)
                     outputItem = "[red]" + outputItem + "[/]";
-                else if (thisFailureRate > 15)
+                else if (thisFailureRate >= 20)
                     outputItem = "[darkorange]" + outputItem + "[/]";
                 else if (thisFailureRate > 0)
                     outputItem = "[yellow]" + outputItem + "[/]";
