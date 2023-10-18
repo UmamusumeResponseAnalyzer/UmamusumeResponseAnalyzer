@@ -11,4 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="..\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NetFilterAPI">
+      <HintPath>..\UmamusumeResponseAnalyzer\NetFilterAPI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
