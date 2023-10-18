@@ -1,4 +1,4 @@
-﻿    using Gallop;
+﻿using Gallop;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;

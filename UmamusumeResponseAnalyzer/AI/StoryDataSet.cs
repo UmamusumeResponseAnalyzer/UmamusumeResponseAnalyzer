@@ -74,15 +74,15 @@ namespace UmamusumeResponseAnalyzer.AI
         public LArcDataSet(Gallop.SingleModeCheckEventResponse @event)
         {
             SingleModeArcDataSet data = @event.data.arc_data_set;
-            int turn = @event.data.chara_info.turn; // 从1开始
+            int turn = @event.data.chara_info.turn - 1; // 从0开始
 
             approvalRate = data.arc_info.approval_rate;
             shixingPt = data.arc_info.global_exp;
             ssApprovalRate = data.selection_info.all_win_approval_point;
             isSpecialMatch = Convert.ToBoolean(data.selection_info.is_special_match);
             this.turn = turn;
-            isAbroad = (turn >= 37 && turn <= 43) || (turn >= 61 && turn <= 67);
-            isBegin = (turn <= 2);
+            isAbroad = (turn >= 36 && turn <= 42) || (turn >= 60 && turn <= 66);
+            isBegin = (turn <= 1);
 
             if (!isBegin)
             {
