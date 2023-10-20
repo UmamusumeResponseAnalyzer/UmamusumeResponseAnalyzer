@@ -35,6 +35,7 @@ namespace UmamusumeResponseAnalyzer.AI
         public bool friendCardFirstClick;       // 是否点击过友人
         public bool friendCardUnlockOutgoing; // 友人卡是否出门
         public int friendCardOutgoingStage;   // 友人卡（假设只有一张）使用过的出行次数
+        public int motDropCount;    // 掉心情次数
 
         //女神杯相关
         public VenusDataSet venusData;
@@ -109,6 +110,7 @@ namespace UmamusumeResponseAnalyzer.AI
             }
 
             motivation = @event.data.chara_info.motivation;
+            motDropCount = GameStats.m_motDropCount;
             fans = @event.data.chara_info.fans;
             cardId = new int[6];
             cardJiBan = new int[8];
@@ -330,6 +332,19 @@ namespace UmamusumeResponseAnalyzer.AI
                                 }
                             }
                         }
+                        foreach (var s in @event.data.chara_info.evaluation_info_array)
+                        {
+                            int p = s.target_id - 1;
+                            if (p >= 0 && p < 6)
+                                if (cardId[p] % 100000 == 30160 || cardId[p] % 100000 == 10094)    // 佐岳
+                                {
+                                    friendCardUnlockOutgoing = s.is_outing > 0;
+                                    friendCardOutgoingStage = s.story_step;
+                                }
+                            if (friendCardUnlockOutgoing)
+                                friendCardFirstClick = true;    // 这里区分是否第一次点过友人还需要修改。
+                        }
+
                     }
 
                     var stats = new TrainStats();

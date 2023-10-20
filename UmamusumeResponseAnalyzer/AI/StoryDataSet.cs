@@ -1,5 +1,6 @@
 ﻿using Gallop;
 using Spectre.Console;
+using Spectre.Console.Cli;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,14 +21,17 @@ namespace UmamusumeResponseAnalyzer.AI
         public int lv;     // 电池等级 star_lv
         public int specialEffect; // 特殊电池Buff ID, 0为未知！
         public int[] nextThreeEffects; // 下三次Buff加成
+        public int nextEffect;  // 下一次Buff，考虑到SS可能失败需要额外记录
         public bool hasAiJiao;  // 是否有爱娇Buff
         public bool hasTrain;   // 是否有擅长练习Buff
+        public bool isCard = false; // 是否为携带的卡，由LArcDataSet进行判定
+        public bool isLink = false; // 是否为链接卡
 
         public LArcRivalData() { }
         public LArcRivalData(SingleModeArcRival rival)
         {
             id = rival.chara_id;
-            commandId = rival.command_id;
+            commandId = rival.command_id == 0 ? 0 : GameGlobal.ToTrainIndex[rival.command_id];  // 内部编号转为训练项目
             boost = rival.rival_boost;
             lv = rival.star_lv;
             hasAiJiao = hasTrain = false;
@@ -35,10 +39,11 @@ namespace UmamusumeResponseAnalyzer.AI
             nextThreeEffects = new int[3];
             if (rival.selection_peff_array != null)
             {
+                nextEffect = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id; //???
                 for (int i = 0; i < 3; ++i)
                 {
                     int effect = rival.selection_peff_array[i].effect_group_id;
-                    nextThreeEffects[i] = effect;
+                    nextThreeEffects[i] = effect;                  
 
                     if (effect == 8)
                         hasAiJiao = true;
@@ -54,14 +59,20 @@ namespace UmamusumeResponseAnalyzer.AI
     // 从SingleModeArcDataSet导出的LArc剧本机制数值
     public class LArcDataSet
     {
-        public double approvalRate;        // 支持度，换算成百分比
+        public int totalApproval;       // 支持度
+        public double approvalRate;        // 支持度，换算成百分比*10
         public int[] lessonLevels;         // 课程等级（10项）
         public int shixingPt;                 // 适性PT
         public LArcRivalData[] rivals;     // 人头（电池Buff）数据
         public int ssApprovalRate;         // 当前ss训练的支持度加值
-        public Dictionary<int, int> ssStatus;             // 当前ss训练的属性
-        public Dictionary<int, int> ssBonusStatus;        // 当前ss训练的蓝字（上层）属性
+        public int[] ssStatus;             // 当前ss训练的属性，速耐力根智，pt，属性
+        public int[] ssBonusStatus;        // 当前ss训练的蓝字（上层）属性
         public bool isSpecialMatch;        // 是否为SSS
+        public int ssCount;   // 总SS次数
+        public int currentSSCount;  // 当前SS人头数
+        public int[] currentSSRivals; // 当前SS的chara_id
+        public int contNonSSS;  // 连续非SSS的次数
+
         // 训练数据
         public int[] shiningCount;         // 各个训练的彩圈数
         public bool[] friendAppear;         // 友人位置
@@ -70,7 +81,6 @@ namespace UmamusumeResponseAnalyzer.AI
         public int turn;
         public bool isAbroad;              // 是否在海外
         public bool isBegin;                // 是否刚开始(1-2回合)
-
         public LArcDataSet(Gallop.SingleModeCheckEventResponse @event)
         {
             SingleModeArcDataSet data = @event.data.arc_data_set;
@@ -78,8 +88,6 @@ namespace UmamusumeResponseAnalyzer.AI
 
             approvalRate = data.arc_info.approval_rate;
             shixingPt = data.arc_info.global_exp;
-            ssApprovalRate = data.selection_info.all_win_approval_point;
-            isSpecialMatch = Convert.ToBoolean(data.selection_info.is_special_match);
             this.turn = turn;
             isAbroad = (turn >= 36 && turn <= 42) || (turn >= 60 && turn <= 66);
             isBegin = (turn <= 1);
@@ -87,7 +95,7 @@ namespace UmamusumeResponseAnalyzer.AI
             if (!isBegin)
             {
                 lessonLevels = new int[10];
-                ssStatus = new Dictionary<int, int>()
+                Dictionary<int, int> origSsStatus = new Dictionary<int, int>()
                 {
                     {1,0},
                     {2,0},
@@ -97,7 +105,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     {30,0},
                     {10,0},
                 };
-                ssBonusStatus = new Dictionary<int, int>()
+                Dictionary<int, int> origSsBonusStatus = new Dictionary<int, int>()
                 {
                     {1,0},
                     {2,0},
@@ -110,18 +118,27 @@ namespace UmamusumeResponseAnalyzer.AI
                 rivals = new LArcRivalData[data.arc_rival_array.Length];
 
                 // 课程信息
+                //十个升级potential_id分别是
+                //  2 5
+                // 1 4 6
+                // 3 7 8
+                //  9 10
+                // 但是AI是按从左到右顺序，所以要转换
                 foreach (var item in data.arc_info.potential_array)
-                    lessonLevels[item.potential_id - 1] = item.level;
+                    if (item.potential_id > 0)
+                        lessonLevels[GameGlobal.LArcLessonMapping[item.potential_id - 1]] = item.level;
                 // 人头信息
                 for (int i = 0; i < data.arc_rival_array.Length; ++i)
                 {
                     rivals[i] = new LArcRivalData(data.arc_rival_array[i]);
                 }
-                // SS训练属性值
+                // SS训练属性值，展开为数组
                 foreach (var item in data.selection_info.params_inc_dec_info_array)
-                    ssStatus[item.target_type] += item.value;
+                    origSsStatus[item.target_type] += item.value;
                 foreach (var item in data.selection_info.bonus_params_inc_dec_info_array)
-                    ssBonusStatus[item.target_type] += item.value;
+                    origSsBonusStatus[item.target_type] += item.value;
+                ssStatus = origSsStatus.Values.ToArray();
+                ssBonusStatus = origSsBonusStatus.Values.ToArray();
 
                 shiningCount = new int[5] { 0, 0, 0, 0, 0 };
                 friendAppear = new bool[5] { false, false, false, false, false };
@@ -184,7 +201,8 @@ namespace UmamusumeResponseAnalyzer.AI
                         if (isArcPartner)
                         {
                             // 从卡号到角色名
-                            var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == partner).chara_id;
+                            var info = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == partner);
+                            int chara_id = info.chara_id;
                             if (rivals.Any(x => x.id == chara_id))
                             {
                                 var rv = rivals.First(x => x.id == chara_id);
@@ -197,11 +215,29 @@ namespace UmamusumeResponseAnalyzer.AI
                                     if (rv.boost + charge >= 3)
                                         ++chargedFullNum[trainIdx];
                                 }
-
                             }
                         }
                     }
                 }   // foreach command
+
+                // 增加AI需要用到的剧本统计数据
+                totalApproval = @event.data.arc_data_set.arc_rival_array.Sum(x => x.approval_point);
+                ssCount = @event.data.arc_data_set.arc_rival_array.Sum(x => x.star_lv);
+                currentSSCount = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
+                currentSSRivals = @event.data.arc_data_set.selection_info.selection_rival_info_array.Select(x => x.chara_id).ToArray(); // 记录的是CharaID
+                ssApprovalRate = data.selection_info.all_win_approval_point;
+                isSpecialMatch = Convert.ToBoolean(data.selection_info.is_special_match);
+
+                foreach (var info in @event.data.arc_data_set.evaluation_info_array)
+                {
+                    // 判断是否为link和支援卡
+                    if (rivals.Contains(x => x.id == info.chara_id))
+                    {
+                        var rv = rivals.First(x => x.id == info.chara_id);
+                        rv.isCard = (info.target_id < 6);   // <6为支援卡，否则为NPC
+                        rv.isLink = GameGlobal.LArcScenarioLinkCharas.Contains(info.chara_id);   // 判断是否为Link卡
+                    }
+                }
             } // if not isBegin
         } // ctor
     } // class
