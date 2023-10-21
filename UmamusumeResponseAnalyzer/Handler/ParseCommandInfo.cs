@@ -138,6 +138,53 @@ namespace UmamusumeResponseAnalyzer.Handler
             double totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
             AnsiConsole.MarkupLine($"[aqua]总属性：{totalValue}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
 
+            //计算训练等级
+            if (@event.IsScenario(ScenarioType.LArc))//预测训练等级
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    if (turnNum == 1)
+                    {
+                        turnStat.trainLevel[i] = 1;
+                        turnStat.trainLevelCount[i] = 0;
+                    }
+                    else
+                    {
+                        var lastTrainLevel = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].trainLevel[i] : 1;
+                        var lastTrainLevelCount = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].trainLevelCount[i] : 0;
+
+                        turnStat.trainLevel[i] = lastTrainLevel;
+                        turnStat.trainLevelCount[i] = lastTrainLevelCount;
+                        if (GameStats.stats[turnNum - 1] != null &&
+                            GameStats.stats[turnNum - 1].playerChoice == GameGlobal.TrainIds[i] &&
+                            !GameStats.stats[turnNum - 1].isTrainingFailed &&
+                            !((turnNum - 1 >= 37 && turnNum - 1 <= 43) || (turnNum - 1 >= 61 && turnNum - 1 <= 67))
+                            )//上回合点的这个训练，计数+1
+                            turnStat.trainLevelCount[i] += 1;
+                        if (turnStat.trainLevelCount[i] >= 4)
+                        {
+                            turnStat.trainLevelCount[i] -= 4;
+                            turnStat.trainLevel[i] += 1;
+                        }
+                        //检查是否有期待度上升
+                        int appRate = @event.data.arc_data_set.arc_info.approval_rate;
+                        int oldAppRate = GameStats.stats[turnNum - 1] != null ? (GameStats.stats[turnNum - 1].larc_totalApproval + 85) / 170 : 0;
+                        if (oldAppRate < 200 && appRate >= 200)
+                            turnStat.trainLevel[i] += 1;
+                        if (oldAppRate < 600 && appRate >= 600)
+                            turnStat.trainLevel[i] += 1;
+                        if (oldAppRate < 1000 && appRate >= 1000)
+                            turnStat.trainLevel[i] += 1;
+
+                        if (turnStat.trainLevel[i] >= 5)
+                        {
+                            turnStat.trainLevel[i] = 5;
+                            turnStat.trainLevelCount[i] = 0;
+                        }
+
+                    }
+                }
+            }
 
             //额外显示LArc信息
             if (@event.IsScenario(ScenarioType.LArc))
@@ -544,14 +591,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             var table = new Table();
 
             var failureRateStr = new string[5];
-            //失败率>30%标红、>15%标DarkOrange、>0%标黄
+            //失败率>=40%标红、>=20%(有可能大失败)标DarkOrange、>0%标黄
             for (int i = 0; i < 5; i++)
             {
                 int thisFailureRate = failureRate[GameGlobal.TrainIds[i]];
                 string outputItem = $"({thisFailureRate}%)";
-                if (thisFailureRate > 30)
+                if (thisFailureRate >= 40)
                     outputItem = "[red]" + outputItem + "[/]";
-                else if (thisFailureRate > 15)
+                else if (thisFailureRate >= 20)
                     outputItem = "[darkorange]" + outputItem + "[/]";
                 else if (thisFailureRate > 0)
                     outputItem = "[yellow]" + outputItem + "[/]";
@@ -617,15 +664,28 @@ namespace UmamusumeResponseAnalyzer.Handler
             for (int i = 0; i < 5; i++)
             {
                 int normalId = GameGlobal.TrainIds[i];
-                int xiahesuId = GameGlobal.XiahesuIds[normalId];
-                if (@event.data.home_info.command_info_array.Any(x => x.command_id == xiahesuId))
+                if (@event.data.home_info.command_info_array.Any(x => x.command_id == GameGlobal.XiahesuIds[normalId]))
                 {
-                    outputItems[i] = "训练等级:[green]夏合宿[/]";
+                    outputItems[i] = "[green]夏合宿[/]";
+                }
+                else if (@event.IsScenario(ScenarioType.LArc) && LArcIsAbroad)
+                {
+                    outputItems[i] = "[green]远征[/]";
                 }
                 else
                 {
                     var lv = @event.data.chara_info.training_level_info_array.First(x => x.command_id == normalId).level;
-                    outputItems[i] = lv < 5 ? $"训练等级:[yellow]Lv{lv}[/]" : $"Lv{lv}";
+                    if (@event.IsScenario(ScenarioType.LArc) && turnStat.trainLevel[i] != lv && !isRepeat)
+                    {
+                        //可能是半途开启小黑板，也可能是有未知bug
+                        AnsiConsole.MarkupLine($"[red]警告：训练等级预测错误，预测{GameGlobal.TrainNames[normalId]}为lv{turnStat.trainLevel[i]}(+{turnStat.trainLevelCount[i]})，实际为lv{lv}[/]");
+                        turnStat.trainLevel[i] = lv;
+                        turnStat.trainLevelCount[i] = 0;//如果是半途开启小黑板，则会在下一次升级时变成正确的计数
+                    }
+                    if (@event.IsScenario(ScenarioType.LArc))
+                        outputItems[i] = lv < 5 ? $"[yellow]Lv{lv}[/](+{turnStat.trainLevelCount[i]})" : $"Lv{lv}";
+                    else
+                        outputItems[i] = lv < 5 ? $"[yellow]Lv{lv}[/]" : $"Lv{lv}";
                 }
             }
             //table.AddRow(outputItems);

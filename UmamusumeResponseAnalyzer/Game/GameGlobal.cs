@@ -78,15 +78,17 @@ namespace UmamusumeResponseAnalyzer.Game
                 {11,"属性"} ,
                 {12,"[#0000ff]技能点[/]"} ,//最烂的，用个深色
             };
+
+        //主要是给影响育成节奏的项目加上颜色
         static public Dictionary<int, string> LArcSSEffectNameColored = new Dictionary<int, string>()
             {
                 {1,"技能"} ,
                 {3,"[#00ff00]体力[/]"} ,
-                {4,"[#00ff00]体力[/]"} ,
+                {4,"[#00ffff]体力[/]"} ,
                 {5,"[#00ff00]心情[/]"} ,
-                {6,"充电"} ,
+                {6,"[#ff00ff]充电[/]"} ,
                 {7,"适pt"} ,
-                {8,"[#00ff00]爱娇[/]"} ,
+                {8,"[#ffff00]爱娇[/]"} ,
                 {9,"上手"} ,
                 {11,"属性"} ,
                 {12,"技pt"} ,
@@ -95,11 +97,11 @@ namespace UmamusumeResponseAnalyzer.Game
             {
                 {1,"技"} ,
                 {3,"[#00ff00]体[/]"} ,
-                {4,"[#00ff00]体[/]"} ,
+                {4,"[#00ffff]体[/]"} ,
                 {5,"[#00ff00]心[/]"} ,
                 {6,"充"} ,
                 {7,"适"} ,
-                {8,"[#00ff00]娇[/]"} ,
+                {8,"[#ffff00]娇[/]"} ,
                 {9,"练"} ,
                 {11,"属"} ,
                 {12,"pt"} ,
