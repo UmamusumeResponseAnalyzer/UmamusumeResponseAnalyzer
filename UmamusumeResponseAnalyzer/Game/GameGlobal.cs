@@ -112,6 +112,7 @@ namespace UmamusumeResponseAnalyzer.Game
 
         static public int[] LArcScenarioLinkCharas = new int[] { 1007, 1014, 1025, 1049, 1067, 1070, 1107 };
         static public int[] LArcLessonMapping = new int[] { 2, 0, 5, 3, 1, 4, 6, 7, 8, 9 };
+        static public int[] LArcLessonMappingInv = new int[] { 2, 5, 1, 4, 6, 3, 7, 8, 9, 10 };
     }
 
     public static class ScoreUtils

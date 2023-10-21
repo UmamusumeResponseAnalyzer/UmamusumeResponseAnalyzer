@@ -48,7 +48,7 @@ namespace UmamusumeResponseAnalyzer.Game
         //凯旋门
         public bool[] larc_zuoyueAtTrain;//佐岳是否在这个训练
         public bool larc_playerChoiceSS;//这个回合玩家是不是点的ss训练
-        public bool larc_isFullSS;//这个回合ss训练有没有5个头
+        public int larc_SSPersonCount;//这个回合ss训练有几个头
         public bool larc_isSSS;//这个回合是不是sss训练
         public int larc_zuoyueEvent;//是否召唤出佐岳充电事件。有好几种：0没事件，1充电，2充电加心情，4海外，5第一次启动
         public int larc_totalApproval;//玩家与所有npc的总“支援pt”
@@ -79,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Game
             larc_zuoyueAtTrain = new bool[5];//佐岳是否在这个训练
             for(int j = 0; j < 5; j++) larc_zuoyueAtTrain[j] = false;
             larc_playerChoiceSS = false;
-            larc_isFullSS = false;
+            larc_SSPersonCount = 0;
             larc_isSSS = false;
             larc_zuoyueEvent = 0;
             larc_totalApproval = 0;
@@ -104,6 +104,7 @@ namespace UmamusumeResponseAnalyzer.Game
         public static int m_fullSSCount = 0;
         public static int m_SSSCount = 0;
         public static int m_contNonSSS = 0;
+        public static Dictionary<int,int> SSRivalsSpecialBuffs; //每个人头的特殊buff
 
         public static void print()
         {
@@ -305,14 +306,14 @@ namespace UmamusumeResponseAnalyzer.Game
                         break;
                     }
 
-                    if (stats[i].larc_isFullSS && stats[i].larc_playerChoiceSS)//一次完整的ss训练
+                    if (stats[i].larc_playerChoiceSS)//一次完整的ss训练
                     {
                         fullSSCount += 1;
                         if (stats[i].larc_isSSS) SSSCount += 1;
-                        if (SSSCount == 0) contNonSSS += 1;
+                        if (SSSCount == 0) contNonSSS += stats[i].larc_SSPersonCount;
                     }
                 }
-                AnsiConsole.MarkupLine($"一共进行了[aqua]{fullSSCount}[/]次SS训练，其中[aqua]{SSSCount}[/]次为SSS，已经连续[#80ff00]{contNonSSS}[/]次不是SSS");
+                AnsiConsole.MarkupLine($"一共进行了[aqua]{fullSSCount}[/]次SS训练，其中[aqua]{SSSCount}[/]次为SSS，已经连续[#80ff00]{contNonSSS}[/]人头不是SSS{(contNonSSS >= 8 ? "，[aqua]下次必为SSS[/]" : "")}");
                 m_fullSSCount = fullSSCount;
                 m_SSSCount = SSSCount;
                 m_contNonSSS = contNonSSS;
