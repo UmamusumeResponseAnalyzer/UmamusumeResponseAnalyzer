@@ -99,6 +99,11 @@ namespace UmamusumeResponseAnalyzer.Game
         public static int whichScenario = 0;
         public static int currentTurn = 0;
         public static TurnStats[] stats=new TurnStats[79];//从1开始
+        public static int m_motDropCount = 0;   // 保存当前值方便调取
+        //几次ss训练，几次sss，连着几回合没sss
+        public static int m_fullSSCount = 0;
+        public static int m_SSSCount = 0;
+        public static int m_contNonSSS = 0;
 
         public static void print()
         {
@@ -118,7 +123,8 @@ namespace UmamusumeResponseAnalyzer.Game
                     if (stats[i].motivation < stats[i - 1].motivation)
                         motDropCount += (stats[i - 1].motivation - stats[i].motivation);
                 }
-                AnsiConsole.MarkupLine($"这局掉了[yellow]{motDropCount}[/]次心情（忽略刚掉就回的情况）");
+                AnsiConsole.MarkupLine($"这局掉了[yellow]{motDropCount}[/]级心情（忽略刚掉就回的情况）");
+                m_motDropCount = motDropCount;
             }
 
             //统计体力消耗和赌训练的次数
@@ -307,7 +313,9 @@ namespace UmamusumeResponseAnalyzer.Game
                     }
                 }
                 AnsiConsole.MarkupLine($"一共进行了[aqua]{fullSSCount}[/]次SS训练，其中[aqua]{SSSCount}[/]次为SSS，已经连续[#80ff00]{contNonSSS}[/]次不是SSS");
-
+                m_fullSSCount = fullSSCount;
+                m_SSSCount = SSSCount;
+                m_contNonSSS = contNonSSS;
 
                 //佐岳点了几次，来了几次
                 int zuoyueClickedTimesNonAbroad = 0;//非海外点了几次，不算启动

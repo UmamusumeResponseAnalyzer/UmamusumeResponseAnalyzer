@@ -11,6 +11,7 @@ using System.ComponentModel.Design;
 using System.IO.Pipes;
 using System.Linq;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -19,42 +20,6 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
-
-            //把当前游戏状态写入一个文件，用于与ai通信
-            if (@event.IsScenario(ScenarioType.GrandMasters))
-            {
-                var gameStatusToSend = new GameStatusSend(@event);
-
-                //var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
-                var currentGSdirectory = "./packets";
-                if (!Directory.Exists(currentGSdirectory))
-                {
-                    Directory.CreateDirectory(currentGSdirectory);
-                }
-
-                bool success = false;
-                int tried = 0;
-
-                while (!success && tried < 10)
-                {
-                    try
-                    {
-                        File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
-                        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend));
-                        success = true; // 写入成功，跳出循环
-                    }
-                    catch
-                    {
-                        tried++;
-                        AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
-                        Thread.Sleep(500); // 等待0.5秒
-                    }
-                }
-                if (!success)
-                {
-                    AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
-                }
-            }
 
             var currentFiveValue = new int[]
             {
@@ -315,7 +280,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     int headnum = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
                     int linkNum = 0;
-                    //数一下有几个link卡。
+                    //数一下有几个link卡
                     foreach (var sshead in @event.data.arc_data_set.selection_info.selection_rival_info_array)
                     {
                         if (GameGlobal.LArcScenarioLinkCharas.Any(x => x == sshead.chara_id))
@@ -1150,10 +1115,43 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     turnStat.larc_isFullSS = true;
                     turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
+                    
+                   
+                    //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
                 }
-                //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
 
+                // 增加当前SS训练属性和PT的显示
+                if (rivalNum > 0)
+                {
+                    int totalStats = 0;
+                    int totalPt = 0;
+                    int totalVital = 0;
+                    foreach (var item in @event.data.arc_data_set.selection_info.params_inc_dec_info_array)
+                    {
+                        if (item.target_type >= 1 && item.target_type <= 5)
+                            totalStats += item.value;
+                        else if (item.target_type == 30)
+                            totalPt += item.value;
+                        else if (item.target_type == 10)
+                            totalVital += item.value;
+                        else
+                            AnsiConsole.MarkupLine($"{item.target_type} = {item.value}");
+                    }
+                    foreach (var item in @event.data.arc_data_set.selection_info.bonus_params_inc_dec_info_array)
+                    {
+                        if (item.target_type >= 1 && item.target_type <= 5)
+                            totalStats += item.value;
+                        else if (item.target_type == 30)
+                            totalPt += item.value;
+                        else if (item.target_type == 10)
+                            totalVital += item.value;
+                        else
+                            AnsiConsole.MarkupLine($"{item.target_type} = {item.value}");
+                    }
+                    string line = $"[#00ffff]属性:{totalStats}|Pt:{totalPt}[/]";
 
+                    table.Edit(5, 13, line);
+                }
             }
             table.Finish();
             AnsiConsole.Write(table);
@@ -1180,8 +1178,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     // 1 4 6
                     // 3 7 8
                     //  9 10
-
-
                     //检查是否买了友情+20
                     if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 8).level == 2)//没买友情
                     {
@@ -1192,26 +1188,67 @@ namespace UmamusumeResponseAnalyzer.Handler
                             AnsiConsole.MarkupLine($@"[#00ffff]没买友情+20%！（重要的事情说三遍）[/]");
                         }
                     }
-                    else
+                    else if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level == 2)//买了友情但没买pt+10
                     {
-                        if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level == 2)//没买pt+10
+                        if (@event.data.arc_data_set.arc_info.global_exp >= 200)
                         {
-                            if (@event.data.arc_data_set.arc_info.global_exp >= 200)
-                            {
-                                AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
-                                AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
-                                AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！（重要的事情说三遍）[/]");
-                            }
+                            AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
+                            AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
+                            AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！（重要的事情说三遍）[/]");
                         }
                     }
+                    // 增加大逃日本杯提示
+                    if (turnNum == 46)
+                        AnsiConsole.MarkupLine($@"[#ffff00]日本杯！拿大逃别忘了打！[/]");
                 }
             }
+
+            //把当前游戏状态写入一个文件，用于与ai通信。放到最后以收集GameStats数据
+#if WRITE_AI
+            var gameStatusToSend = new GameStatusSend(@event);
+            if (@event.IsScenario(ScenarioType.LArc))
+            {
+                gameStatusToSend.larcData.contNonSSS = GameStats.m_contNonSSS;
+            }
+
+            //var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+            var currentGSdirectory = "./packets";
+            if (!Directory.Exists(currentGSdirectory))
+            {
+                Directory.CreateDirectory(currentGSdirectory);
+            }
+
+            bool success = false;
+            int tried = 0;
+
+            while (!success && tried < 10)
+            {
+                try
+                {
+                    // 去掉空值避免C++端抽风
+                    var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                    File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                    File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                    success = true; // 写入成功，跳出循环
+                }
+                catch
+                {
+                    tried++;
+                    AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                    Thread.Sleep(500); // 等待0.5秒
+                }
+            }
+            if (!success)
+            {
+                AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+            }
+#endif
 #if WRITE_GAME_STATISTICS
             if(shouldWriteStatistics)
             {
                 GameStats.LArcWriteStatsBeforeTrain(@event);
             }
 #endif
-            }
+        }
     }
 }

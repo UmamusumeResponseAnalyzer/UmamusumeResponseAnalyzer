@@ -110,9 +110,8 @@ namespace UmamusumeResponseAnalyzer.Game
         // 期待度训练加成，每5%一档
         static public int[] LArcTrainBonusEvery5Percent = new int[41] { 0, 5, 8, 10, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 30, 31, 31, 32, 32, 33, 33, 34, 34, 35, 35, 36, 36, 37, 37, 38, 38, 39, 39, 40 };
 
-
-        static public int[] LArcScenarioLinkCharas = new int[] { 1007, 1014, 1025, 1049, 1067, 1070 };
-
+        static public int[] LArcScenarioLinkCharas = new int[] { 1007, 1014, 1025, 1049, 1067, 1070, 1107 };
+        static public int[] LArcLessonMapping = new int[] { 2, 0, 5, 3, 1, 4, 6, 7, 8, 9 };
     }
 
     public static class ScoreUtils
