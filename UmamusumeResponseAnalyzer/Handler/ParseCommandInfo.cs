@@ -1128,7 +1128,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                             AnsiConsole.MarkupLine($@"[#00ffff]没买友情+20%！（重要的事情说三遍）[/]");
                         }
                     }
-                    if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level == 2)//没买pt+10
+                    else if (@event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level == 2)//买了友情但没买pt+10
                     {
                         if (@event.data.arc_data_set.arc_info.global_exp >= 200)
                         {
