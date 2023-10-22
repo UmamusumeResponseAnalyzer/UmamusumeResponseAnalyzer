@@ -247,7 +247,7 @@ namespace UmamusumeResponseAnalyzer.AI
                         persons[17].cardIdInGame = i;
                         headIdConvert[i + 1] = 17;
                     }
-                    else if (cardId[i] / 10 == 30160)//r佐岳
+                    else if (cardId[i] / 10 == 10094)//r佐岳
                     {
                         larc_zuoyueType = 2;
                         persons[17].cardIdInGame = i;
