@@ -185,7 +185,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     zhongMaBlueCount[i] = threeStarCount * 3;
                 }
             }
-            zhongMaExtraBonus = new int[6] { 20, 0, 40, 0, 20, 150 };//大师杯和青春杯因子各一半
+            zhongMaExtraBonus = new int[6] { 10, 10, 30, 0, 10, 70 };//大师杯,青春杯,凯旋门因子混合
 
             motivationDropCount = GameStats.m_motDropCount;
 
