@@ -53,7 +53,8 @@ namespace UmamusumeResponseAnalyzer
 
             if (Config.Get(Resource.ConfigSet_EnableNetFilter))
                 await NetFilter.Enable();
-            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch) && DMM.Accounts.Any()) //如果存在DMM的token文件则启用直接登录功能
+            //如果存在DMM的token文件则启用直接登录功能
+            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch) && DMM.Accounts.Any())
             {
                 if (DMM.Accounts.Count == 1)
                 {
@@ -275,48 +276,73 @@ namespace UmamusumeResponseAnalyzer
                     return prompt;
                 }
                 AnsiConsole.WriteLine("正在搜索注册表");
-                var muiCache = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Classes")?.OpenSubKey("Local Settings")?.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("Shell")?.OpenSubKey("MuiCache");
-                if (muiCache != null)
+                try
                 {
-                    foreach (var i in muiCache.GetValueNames())
+                    var muiCache = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Classes")?.OpenSubKey("Local Settings")?.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("Shell")?.OpenSubKey("MuiCache");
+                    if (muiCache != null)
                     {
-                        if (i.Contains("umamusume.exe"))
-                            paths.Add(i[..i.IndexOf("umamusume.exe")]);
-                    }
-                }
-                var explorerFeatureUsage = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("CurrentVersion")?.OpenSubKey("Explorer")?.OpenSubKey("FeatureUsage")?.OpenSubKey("AppSwitched");
-                if (explorerFeatureUsage != null)
-                {
-                    foreach (var i in explorerFeatureUsage.GetValueNames())
-                    {
-                        if (i.Contains("umamusume.exe"))
-                            paths.Add(i[..i.IndexOf("umamusume.exe")]);
-                    }
-                }
-                var compatibilityAssistant = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows NT")?.OpenSubKey("CurrentVersion")?.OpenSubKey("AppCompatFlags")?.OpenSubKey("Compatibility Assistant")?.OpenSubKey("Store");
-                if (compatibilityAssistant != null)
-                {
-                    foreach (var i in compatibilityAssistant.GetValueNames())
-                    {
-                        if (i.Contains("umamusume.exe"))
-                            paths.Add(i[..i.IndexOf("umamusume.exe")]);
-                    }
-                }
-                var gameConfigStore = Registry.CurrentUser.OpenSubKey("System")?.OpenSubKey("GameConfigStore")?.OpenSubKey("Children");
-                if (gameConfigStore != null)
-                {
-                    foreach (var subkey in gameConfigStore.GetSubKeyNames())
-                    {
-                        var gameConfig = gameConfigStore.OpenSubKey(subkey);
-                        if (gameConfig != null)
+                        foreach (var i in muiCache.GetValueNames())
                         {
-                            var value = gameConfig.GetValue("MatchedExeFullPath");
-                            if (value is string path && path.Contains("umamusume.exe"))
+                            if (i.Contains("umamusume.exe"))
+                                paths.Add(i[..i.IndexOf("umamusume.exe")]);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.WriteLine($"搜索mui cache时失败: {ex.Message}");
+                }
+                try
+                {
+                    var explorerFeatureUsage = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("CurrentVersion")?.OpenSubKey("Explorer")?.OpenSubKey("FeatureUsage")?.OpenSubKey("AppSwitched");
+                    if (explorerFeatureUsage != null)
+                    {
+                        foreach (var i in explorerFeatureUsage.GetValueNames())
+                        {
+                            if (i.Contains("umamusume.exe"))
+                                paths.Add(i[..i.IndexOf("umamusume.exe")]);
+                        }
+                    }
+                }catch(Exception ex)
+                {
+                    AnsiConsole.WriteLine($"搜索explorer feature时失败: {ex.Message}");
+                }
+                try
+                {
+                    var compatibilityAssistant = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows NT")?.OpenSubKey("CurrentVersion")?.OpenSubKey("AppCompatFlags")?.OpenSubKey("Compatibility Assistant")?.OpenSubKey("Store");
+                    if (compatibilityAssistant != null)
+                    {
+                        foreach (var i in compatibilityAssistant.GetValueNames())
+                        {
+                            if (i.Contains("umamusume.exe"))
+                                paths.Add(i[..i.IndexOf("umamusume.exe")]);
+                        }
+                    }
+                }catch(Exception ex)
+                {
+                    AnsiConsole.WriteLine($"搜索compatibility assistant时失败: {ex.Message}");
+                }
+                try
+                {
+                    var gameConfigStore = Registry.CurrentUser.OpenSubKey("System")?.OpenSubKey("GameConfigStore")?.OpenSubKey("Children");
+                    if (gameConfigStore != null)
+                    {
+                        foreach (var subkey in gameConfigStore.GetSubKeyNames())
+                        {
+                            var gameConfig = gameConfigStore.OpenSubKey(subkey);
+                            if (gameConfig != null)
                             {
-                                paths.Add(path[..path.IndexOf("umamusume.exe")]);
+                                var value = gameConfig.GetValue("MatchedExeFullPath");
+                                if (value is string path && path.Contains("umamusume.exe"))
+                                {
+                                    paths.Add(path[..path.IndexOf("umamusume.exe")]);
+                                }
                             }
                         }
                     }
+                }catch(Exception ex)
+                {
+                    AnsiConsole.WriteLine($"搜索game config store时失败: {ex.Message}");
                 }
                 paths = paths.Distinct().ToList();
                 AnsiConsole.WriteLine($"找到了{paths.Count}个可能的目录");

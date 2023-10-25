@@ -24,6 +24,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
             AnsiConsole.WriteLine($"种马：{Database.IdToName?[chara.card_id]}\t胜鞍：{win_saddle}\t\t评分：{chara.rank_score}");
             AnsiConsole.WriteLine($"胜鞍列表：{string.Join(',', charaWinSaddle)}");
+            if (Database.SaddleNames.Any())
+                AnsiConsole.WriteLine($"胜鞍详细：{string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x]))}{Environment.NewLine}");
             var tree = new Tree("因子");
 
             var max = chara.factor_info_array.Select(x => x.factor_id).Concat(chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id))

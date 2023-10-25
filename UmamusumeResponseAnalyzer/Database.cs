@@ -2,11 +2,13 @@
 using Newtonsoft.Json.Linq;
 using System.Text;
 using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class Database
     {
+        #region Paths
         internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.br");
         internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.br");
         internal static string ID_TO_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "id.br");
@@ -15,6 +17,9 @@ namespace UmamusumeResponseAnalyzer
         internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.br");
         internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talentskillsets.br");
         internal static string FACTOR_IDS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "factor_ids.br");
+        internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>("本地化文件路径");
+        #endregion
+        #region Properties
         /// <summary>
         /// index为属性，value为对应属性的评价点
         /// </summary>
@@ -58,7 +63,12 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 可获得胜鞍的Id
         /// </summary>
-        public static readonly int[] SaddleIds = new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184 };
+        public static int[] SaddleIds { get; set; } = new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184 };
+        /// <summary>
+        /// 胜鞍ID对应的比赛/奖章名
+        /// </summary>
+        public static Dictionary<int, string> SaddleNames { get; set; } = new();
+        #endregion
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -111,6 +121,51 @@ namespace UmamusumeResponseAnalyzer
                 var factor_ids = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(FACTOR_IDS_FILEPATH));
                 if (factor_ids != default)
                     FactorIds = factor_ids;
+            }
+            if (Config.Get(Resource.ConfigSet_LoadLocalizedData) && !string.IsNullOrEmpty(LOCALIZED_DATA_FILEPATH) && File.Exists(LOCALIZED_DATA_FILEPATH))
+            {
+                var textData = JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(LOCALIZED_DATA_FILEPATH));
+                if (textData != default)
+                {
+                    foreach (var i in textData)
+                    {
+                        switch (i.Key)
+                        {
+                            case TextDataCategory.CostumeName:
+                                foreach (var j in i.Value)
+                                    IdToName[j.Key] = j.Value;
+                                break;
+                            case TextDataCategory.UmaName:
+                                foreach (var j in i.Value)
+                                    SupportIdToShortName[j.Key] = j.Value;
+                                break;
+                            case TextDataCategory.SkillName:
+                                var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? new List<SkillData>();
+                                foreach (var j in skills)
+                                    if (i.Value.TryGetValue(j.Id, out var localized_name))
+                                        j.Name = localized_name;
+                                Skills = new SkillManager(skills);
+                                break;
+                            case TextDataCategory.WinSaddleName:
+                                SaddleNames = i.Value;
+                                break;
+                            case TextDataCategory.FactorName:
+                                foreach (var j in i.Value)
+                                    FactorIds[j.Key] = $"{j.Value}{string.Join(string.Empty, Enumerable.Repeat('★', int.Parse(j.Key.ToString()[..1])))}";
+                                break;
+                            case TextDataCategory.EventName:
+                                foreach (var j in Events)
+                                    if (i.Value.TryGetValue(j.Key, out var localized_name))
+                                        j.Value.Name = localized_name;
+                                break;
+                            case TextDataCategory.ClimaxItemName:
+                                ClimaxItem = new NullableIdNameDictionary();
+                                foreach (var j in i.Value)
+                                    ClimaxItem.Add(j.Key, j.Value);
+                                break;
+                        }
+                    }
+                }
             }
         }
         static string Load(string path) => Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));
