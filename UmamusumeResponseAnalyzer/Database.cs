@@ -55,6 +55,10 @@ namespace UmamusumeResponseAnalyzer
         /// 
         /// </summary>
         public static NullableIdNameDictionary FactorIds { get; set; }
+        /// <summary>
+        /// 可获得胜鞍的Id
+        /// </summary>
+        public static readonly int[] SaddleIds = new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184 };
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
