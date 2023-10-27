@@ -43,8 +43,15 @@ namespace UmamusumeResponseAnalyzer
                 new("加速服务器密码",string.Empty, false),
                 new("加速服务器类型",string.Empty, false)
             });
+            ConfigSet.Add("本地化", new ConfigItem[]
+            {
+                new(Resource.ConfigSet_LoadLocalizedData,true),
+                new("本地化文件路径",string.Empty,false),
+            });
             ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
-            ConfigSet.Add("其他", ConfigItem.From(Resource.ConfigSet_DMMLaunch));
+            ConfigSet.Add("其他", ConfigItem.From(
+                Resource.ConfigSet_DMMLaunch
+                ));
             if (File.Exists(CONFIG_FILEPATH))
             {
                 try
@@ -61,17 +68,14 @@ namespace UmamusumeResponseAnalyzer
                             Configuration.Add(i.KeyName, new(i.KeyName, i.Value));
                         }
                     }
+                    AddMissing();
                 }
                 catch (Exception)
                 {
                     File.Delete(CONFIG_FILEPATH);
-                    Generate();
+                    AddMissing();
                     AnsiConsole.MarkupLine($"[red]读取配置文件时发生错误,已重新生成,请再次更改设置[/]");
                 }
-            }
-            else
-            {
-                Generate();
             }
         }
         public static void Save()
@@ -90,10 +94,11 @@ namespace UmamusumeResponseAnalyzer
             var configSets = ini.Sections.SelectMany(x => x.Keys).Select(x => x.KeyName);
             new FileIniDataParser().WriteFile(CONFIG_FILEPATH, ini, Encoding.UTF8);
         }
-        private static void Generate()
+        private static void AddMissing()
         {
             foreach (var i in ConfigSet.SelectMany(x => x.Value))
             {
+                if (Configuration.ContainsKey(i.Key)) continue;
                 if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
                     i.Key == Resource.ConfigSet_EnableNetFilter ||
                     i.Key == Resource.ConfigSet_DMMLaunch) //不默认开
@@ -105,7 +110,7 @@ namespace UmamusumeResponseAnalyzer
         }
         public static bool ContainsKey(string key) => Configuration.ContainsKey(key);
         public static T Get<T>(string key) => (T)Configuration[key].Value;
-        public static bool Get(string key) => Get<bool>(key);
+        public static bool Get(string key) => Configuration.ContainsKey(key) && Get<bool>(key);
         public static void Set(string key, object value)
         {
             if (!Configuration.ContainsKey(key)) Configuration.Add(key, new(key, false, false));

@@ -12,22 +12,29 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseFriendSearchResponse(Gallop.FriendSearchResponse @event)
         {
             var data = @event.data;
-            var i = data.practice_partner_info;
-            //每个相同的重赏胜场加1胜鞍加成
-            var (Name, WinSaddle, Score) = (Database.IdToName?[i.card_id], i.win_saddle_id_array.Intersect(i.succession_chara_array[0].win_saddle_id_array).Count()
-                    + i.win_saddle_id_array.Intersect(i.succession_chara_array[1].win_saddle_id_array).Count(), i.rank_score);
+            var chara = data.practice_partner_info;
+            //每个相同的重赏胜场加3胜鞍加成
+            var charaWinSaddle = chara.win_saddle_id_array.Intersect(Database.SaddleIds);
+            var parentWinSaddle_a = chara.succession_chara_array[0].win_saddle_id_array.Intersect(Database.SaddleIds);
+            var parentWinSaddle_b = chara.succession_chara_array[1].win_saddle_id_array.Intersect(Database.SaddleIds);
+            var win_saddle = charaWinSaddle.Intersect(parentWinSaddle_a).Count() * 3
+                + charaWinSaddle.Intersect(parentWinSaddle_b).Count() * 3;
+
             AnsiConsole.Write(new Rule());
-            AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\t\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
-            AnsiConsole.WriteLine($"种马：{Name}\t\t{WinSaddle}\t\t{Score}");
+            AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
+            AnsiConsole.WriteLine($"种马：{Database.IdToName?[chara.card_id]}\t胜鞍：{win_saddle}\t\t评分：{chara.rank_score}");
+            AnsiConsole.WriteLine($"胜鞍列表：{string.Join(',', charaWinSaddle)}");
+            if (Database.SaddleNames.Any())
+                AnsiConsole.WriteLine($"胜鞍详细：{string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x]))}{Environment.NewLine}");
             var tree = new Tree("因子");
 
-            var max = i.factor_info_array.Select(x => x.factor_id).Concat(i.succession_chara_array[0].factor_info_array.Select(x => x.factor_id))
-                .Concat(i.succession_chara_array[1].factor_info_array.Select(x => x.factor_id))
+            var max = chara.factor_info_array.Select(x => x.factor_id).Concat(chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id))
+                .Concat(chara.succession_chara_array[1].factor_info_array.Select(x => x.factor_id))
                 .Where((x, index) => index % 2 == 0)
                 .Max(x => GetRenderWidth(Database.FactorIds[x]));
-            var representative = AddFactors("代表", i.factor_info_array.Select(x => x.factor_id).ToArray(), max);
-            var inheritanceA = AddFactors($"祖辈@{i.succession_chara_array[0].owner_viewer_id}", i.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
-            var inheritanceB = AddFactors($"祖辈@{i.succession_chara_array[1].owner_viewer_id}", i.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var representative = AddFactors("代表", chara.factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceA = AddFactors($"祖辈@{chara.succession_chara_array[0].owner_viewer_id}", chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceB = AddFactors($"祖辈@{chara.succession_chara_array[1].owner_viewer_id}", chara.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
 
             tree.AddNodes(representative, inheritanceA, inheritanceB);
             AnsiConsole.Write(tree);

@@ -300,4 +300,7 @@
   <data name="LaunchMenu_InstallUraCore" xml:space="preserve">
     <value>Automatic install ura-core</value>
   </data>
+  <data name="ConfigSet_LoadLocalizedData" xml:space="preserve">
+    <value>Load localized data from other plugins</value>
+  </data>
 </root>

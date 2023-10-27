@@ -78,7 +78,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             //纠正技能总花费
             foreach (var i in tips.GroupBy(x => x.GroupId))
             {
-                if (i.Count() > 1)
+                if (i.Any())
                 {
                     foreach (var j in i.OrderByDescending(x => x.Rarity).ThenByDescending(x => x.Rate))
                     {
@@ -101,74 +101,25 @@ namespace UmamusumeResponseAnalyzer.Handler
                 boughtSkillsAndInferiors.Add(skill.Id);
                 if (skill.Inferior != null)
                 {
-                    skill = skill.Inferior;
-                    boughtSkillsAndInferiors.Add(skill.Id);
-                    if (skill.Inferior != null)
+                    do
                     {
                         skill = skill.Inferior;
                         boughtSkillsAndInferiors.Add(skill.Id);
-                    }
-
+                    } while (skill.Inferior != null);
                 }
             }
             tips.RemoveAll(x => boughtSkillsAndInferiors.Contains(x.Id));
 
-
-            //扣除已买技能的开销与分数
-            int getCost(SkillData s)
-            {
-                if (@event.data.chara_info.skill_array.Any(x => x.skill_id == s.Id))
-                    return 0;
-                else if (s.Inferior == null)
-                {
-                    return s.Cost;
-                }
-                else
-                {
-                    SkillData inferior = s.Inferior.Apply(@event.data.chara_info);
-                    return s.Cost + getCost(inferior);
-                }
-            }
-
-            //双适性技能的评分计算有问题，需要重做数据库
-            int getGrade(SkillData s)
-            {
-                if (@event.data.chara_info.skill_array.Any(x => x.skill_id == s.Id))
-                    return 0;
-                else if (s.Inferior == null)
-                {
-                    return s.Grade;
-                }
-                else
-                {
-                    SkillData inferior = s.Inferior.Apply(@event.data.chara_info);
-                    return s.Grade - inferior.Grade + getGrade(inferior);
-                }
-            }
-
-            List<ValueTuple<string, int, int, double>> skillNameCost= new List<ValueTuple<string, int, int, double>>();
-
-            foreach(var tip in tips)
-            {
-                ValueTuple<string, int, int, double> sk;
-                sk.Item1 = tip.Name;
-                sk.Item2 = getCost(tip);
-                sk.Item3 = getGrade(tip);
-                sk.Item4 = (double)sk.Item3 / sk.Item2;
-                skillNameCost.Add(sk);
-            }
-
-
-
-
-
             var table = new Table();
             table.Title("技能性价比排序");
-            table.AddColumns("技能名称","pt","评分","性价比");
+            table.AddColumns("技能名称", "pt", "评分", "性价比");
             table.Columns[0].Centered();
-            foreach (var i in skillNameCost.OrderByDescending(x => x.Item4))
+            foreach (var i in tips
+                // (string Name, int Cost, int Grade, double Cost-Performance)
+                .Select(tip => (tip.Name, tip.GetRealCost(@event.data.chara_info), tip.GetRealGrade(@event.data.chara_info), (double)tip.GetRealGrade() / tip.GetRealCost()))
+                .OrderByDescending(x => x.Item4))
             {
-                table.AddRow($"{i.Item1}", $"{i.Item2}", $"{i.Item3}", $"{i.Item4:F3}");
+                table.AddRow($"{i.Name}", $"{i.Item2}", $"{i.Item3}", $"{i.Item4:F3}");
             }
 
             AnsiConsole.Write(table);

@@ -97,6 +97,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 加载本地化插件的数据 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_LoadLocalizedData {
+            get {
+                return ResourceManager.GetString("ConfigSet_LoadLocalizedData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 给出评价点最大化的技能学习建议 的本地化字符串。
         /// </summary>
         public static string ConfigSet_MaximiumGradeSkillRecommendation {

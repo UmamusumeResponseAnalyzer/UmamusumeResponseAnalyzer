@@ -300,4 +300,7 @@
   <data name="LaunchMenu_InstallUraCore" xml:space="preserve">
     <value>自动安装ura-core</value>
   </data>
+  <data name="ConfigSet_LoadLocalizedData" xml:space="preserve">
+    <value>加载本地化插件的数据</value>
+  </data>
 </root>

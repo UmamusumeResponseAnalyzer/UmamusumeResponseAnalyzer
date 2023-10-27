@@ -8,6 +8,8 @@ namespace UmamusumeResponseAnalyzer.Entities
 {
     public class SkillData
     {
+        private int _realCost = -1;
+        private int _realGrade = int.MinValue;
         /// <summary>
         /// 此技能的上位技能,不计算hint及适性,需调用Apply单独应用
         /// </summary>
@@ -57,18 +59,6 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// <param name="chara_info">@event.data.chara_info</param>
         /// <param name="level">该技能的折扣等级</param>
         /// <returns></returns>
-        public SkillData Apply(Gallop.SingleModeChara chara_info, int level = int.MinValue)
-        {
-            if (level == int.MinValue)
-            {
-                //自动搜索hint level?
-                level = chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == GroupId && x.rarity == Rarity)?.level ?? 0;
-            }
-            var instance = Clone();
-            instance.ApplyHint(chara_info, level);
-            instance.ApplyProper(chara_info);
-            return instance;
-        }
         private void ApplyHint(Gallop.SingleModeChara chara_info, int level)
         {
             var cutted = chara_info.chara_effect_id_array.Contains(7) ? 10 : 0; //切者
@@ -134,6 +124,63 @@ namespace UmamusumeResponseAnalyzer.Entities
                 _ => 0,
             };
 
+        }
+        public SkillData Apply(Gallop.SingleModeChara chara_info, int level = int.MinValue)
+        {
+            if (level == int.MinValue)
+            {
+                //自动搜索hint level?
+                level = chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == GroupId && x.rarity == Rarity)?.level ?? 0;
+            }
+            var instance = Clone();
+            instance.ApplyHint(chara_info, level);
+            instance.ApplyProper(chara_info);
+            return instance;
+        }
+        /// <summary>
+        /// 扣除已买技能的开销后的实际价格
+        /// </summary>
+        /// <param name="chara_info">角色信息</param>
+        /// <returns></returns>
+        public int GetRealCost(Gallop.SingleModeChara chara_info = null!)
+        {
+            if (chara_info is null || _realCost != -1)
+            {
+                if (_realCost == -1)
+                    throw new Exception("在未计算GetRealCost前就尝试读取RealCost");
+                else
+                    return _realCost;
+            }
+            if (chara_info.skill_array.Any(x => x.skill_id == Id))
+                _realCost = 0;
+            else if (Inferior == null)
+                _realCost = Cost;
+            else
+                _realCost = Cost + Inferior.Apply(chara_info).GetRealCost(chara_info);
+            return _realCost;
+        }
+        /// <summary>
+        /// 扣除已买技能的开销后的实际分数，*双适性技能的评分计算有问题，需要重做数据库*
+        /// </summary>
+        /// <param name="chara_info">角色信息</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public int GetRealGrade(Gallop.SingleModeChara chara_info = null!)
+        {
+            if (chara_info is null || _realGrade != int.MinValue)
+            {
+                if (_realGrade == int.MinValue)
+                    throw new Exception("在未计算GetRealGrade前就尝试读取RealGrade");
+                else
+                    return _realGrade;
+            }
+            if (chara_info.skill_array.Any(x => x.skill_id == Id))
+                _realGrade = 0;
+            else if (Inferior == null)
+                _realGrade = Grade;
+            else
+                _realGrade = Grade - Inferior.Apply(chara_info).Grade + Inferior.Apply(chara_info).GetRealGrade(chara_info);
+            return _realGrade;
         }
         public (int GroupId, int Rarity, int Rate) Deconstruction() => (GroupId, Rarity, Rate);
         public SkillData Clone()
