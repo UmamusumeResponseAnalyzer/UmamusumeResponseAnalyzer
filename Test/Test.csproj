@@ -5,8 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
-    <BaseOutputPath>$(USERPROFILE)\source\builds\$(SolutionName)\Bin\$(AssemblyName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(USERPROFILE)\source\builds\$(SolutionName)\Obj\$(AssemblyName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj" />
