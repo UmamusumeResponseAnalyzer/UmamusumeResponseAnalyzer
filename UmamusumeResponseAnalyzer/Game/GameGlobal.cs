@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-
-
-namespace UmamusumeResponseAnalyzer.Game
+﻿namespace UmamusumeResponseAnalyzer.Game
 {
-    public class GameGlobal
+    public static class GameGlobal
     {
-        static public int[] TrainIds = new int[]{ 101, 105, 102, 103, 106 };
+        static public int[] TrainIds = new int[] { 101, 105, 102, 103, 106 };
         static public Dictionary<int, int> XiahesuIds = new Dictionary<int, int>()
             {
                 {101,601} ,
@@ -38,7 +29,7 @@ namespace UmamusumeResponseAnalyzer.Game
                 {103,103} ,
                 {106,106} ,
             };
-        static public Dictionary<int, int> ToTrainIndex= new Dictionary<int, int>()
+        static public Dictionary<int, int> ToTrainIndex = new Dictionary<int, int>()
             {
                 {1101,0} ,
                 {1102,1} ,

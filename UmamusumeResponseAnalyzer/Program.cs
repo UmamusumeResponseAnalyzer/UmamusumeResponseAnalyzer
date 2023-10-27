@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
@@ -15,7 +16,7 @@ namespace UmamusumeResponseAnalyzer
         public static async Task Main(string[] args)
         {
             ConsoleHelper.DisableQuickEditMode();
-            Console.Title = $"UmamusumeResponseAnalyzer v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
+            Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
             //加载设置
@@ -111,6 +112,7 @@ namespace UmamusumeResponseAnalyzer
                     Resource.LaunchMenu_UpdateProgram
                 }
                 );
+            // Windows限定功能，其他平台不显示
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
@@ -122,7 +124,8 @@ namespace UmamusumeResponseAnalyzer
                 {
                     selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
                 }
-                selections.AddChoice(Resource.LaunchMenu_InstallUraCore);
+                if (UraCoreHelper.GamePaths.Any())
+                    selections.AddChoice(Resource.LaunchMenu_InstallUraCore);
             }
             var prompt = AnsiConsole.Prompt(selections);
             if (prompt == Resource.LaunchMenu_Options)
@@ -133,20 +136,21 @@ namespace UmamusumeResponseAnalyzer
                     .PageSize(20)
                     .InstructionsText(Resource.LaunchMenu_Options_Instruction);
 
-                foreach (var i in Config.ConfigSet) //根据预设值添加选项
+                // 根据预设值添加选项
+                foreach (var i in Config.ConfigSet)
                 {
                     multiSelection.AddChoiceGroup(i.Key, i.Value.Where(x => x.Visiable).Select(x => x.Key));
                 }
-
-                foreach (var i in Config.Configuration) //复原配置文件的选择情况
+                // 复原配置文件的选择情况
+                foreach (var i in Config.Configuration)
                 {
                     if (i.Value.Value.GetType() == typeof(bool) && (bool)i.Value.Value)
                     {
                         multiSelection.Select(i.Key);
                     }
                 }
-
-                foreach (var i in Config.ConfigSet) //如果配置文件中的某一组全被选中，则也选中对应的组
+                // 如果配置文件中的某一组全被选中，则也选中对应的组
+                foreach (var i in Config.ConfigSet)
                 {
                     var visiableItems = Config.Configuration.Where(x => x.Value.Visiable);
                     var visiableConfig = i.Value.Where(x => x.Visiable);
@@ -266,7 +270,6 @@ namespace UmamusumeResponseAnalyzer
             {
 #pragma warning disable CA1416
                 AnsiConsole.Clear();
-                var paths = new List<string>();
                 using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UmamusumeResponseAnalyzer.ura-core.dll");
                 if (stream == null)
                 {
@@ -275,127 +278,56 @@ namespace UmamusumeResponseAnalyzer
                     AnsiConsole.Clear();
                     return prompt;
                 }
-                AnsiConsole.WriteLine("正在搜索注册表");
-                try
-                {
-                    var muiCache = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Classes")?.OpenSubKey("Local Settings")?.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("Shell")?.OpenSubKey("MuiCache");
-                    if (muiCache != null)
-                    {
-                        foreach (var i in muiCache.GetValueNames())
-                        {
-                            if (i.Contains("umamusume.exe"))
-                                paths.Add(i[..i.IndexOf("umamusume.exe")]);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    AnsiConsole.WriteLine($"搜索mui cache时失败: {ex.Message}");
-                }
-                try
-                {
-                    var explorerFeatureUsage = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("CurrentVersion")?.OpenSubKey("Explorer")?.OpenSubKey("FeatureUsage")?.OpenSubKey("AppSwitched");
-                    if (explorerFeatureUsage != null)
-                    {
-                        foreach (var i in explorerFeatureUsage.GetValueNames())
-                        {
-                            if (i.Contains("umamusume.exe"))
-                                paths.Add(i[..i.IndexOf("umamusume.exe")]);
-                        }
-                    }
-                }catch(Exception ex)
-                {
-                    AnsiConsole.WriteLine($"搜索explorer feature时失败: {ex.Message}");
-                }
-                try
-                {
-                    var compatibilityAssistant = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows NT")?.OpenSubKey("CurrentVersion")?.OpenSubKey("AppCompatFlags")?.OpenSubKey("Compatibility Assistant")?.OpenSubKey("Store");
-                    if (compatibilityAssistant != null)
-                    {
-                        foreach (var i in compatibilityAssistant.GetValueNames())
-                        {
-                            if (i.Contains("umamusume.exe"))
-                                paths.Add(i[..i.IndexOf("umamusume.exe")]);
-                        }
-                    }
-                }catch(Exception ex)
-                {
-                    AnsiConsole.WriteLine($"搜索compatibility assistant时失败: {ex.Message}");
-                }
-                try
-                {
-                    var gameConfigStore = Registry.CurrentUser.OpenSubKey("System")?.OpenSubKey("GameConfigStore")?.OpenSubKey("Children");
-                    if (gameConfigStore != null)
-                    {
-                        foreach (var subkey in gameConfigStore.GetSubKeyNames())
-                        {
-                            var gameConfig = gameConfigStore.OpenSubKey(subkey);
-                            if (gameConfig != null)
-                            {
-                                var value = gameConfig.GetValue("MatchedExeFullPath");
-                                if (value is string path && path.Contains("umamusume.exe"))
-                                {
-                                    paths.Add(path[..path.IndexOf("umamusume.exe")]);
-                                }
-                            }
-                        }
-                    }
-                }catch(Exception ex)
-                {
-                    AnsiConsole.WriteLine($"搜索game config store时失败: {ex.Message}");
-                }
-                paths = paths.Distinct().ToList();
-                AnsiConsole.WriteLine($"找到了{paths.Count}个可能的目录");
+                AnsiConsole.WriteLine($"找到了{UraCoreHelper.GamePaths.Count}个可能的目录");
 
-                foreach (var i in paths)
+                foreach (var i in UraCoreHelper.GamePaths)
                 {
-                    var files = Directory.GetFiles(i);
-                    var executableFilePath = Path.Combine(i, "umamusume.exe");
                     var modulePath = Path.Combine(i, "version.dll");
                     var compatiableModulePath = Path.Combine(i, "winhttp.dll");
-                    if (files.Contains(executableFilePath))
+                    AnsiConsole.WriteLine($"发现有效的游戏目录: {i}");
+                    if (!File.Exists(modulePath) && !File.Exists(compatiableModulePath))
                     {
-                        AnsiConsole.WriteLine($"发现有效的游戏目录: {executableFilePath}");
-                        if (!files.Contains(modulePath) && !files.Contains(compatiableModulePath))
+                        AnsiConsole.WriteLine("未找到任何模块");
+                        if (AnsiConsole.Confirm("是否要在此处安装?"))
                         {
-                            AnsiConsole.WriteLine("未找到任何模块");
-                            if (AnsiConsole.Confirm("是否要在此处安装?"))
-                            {
-                                InstallModule(modulePath);
-                            }
+                            InstallModule(modulePath);
                         }
-                        else if (files.Contains(compatiableModulePath))
+                    }
+                    else if (File.Exists(compatiableModulePath))
+                    {
+                        AnsiConsole.WriteLine("发现其他以兼容模式安装的模块");
+                        if (AnsiConsole.Confirm("是否要覆盖该模块?"))
                         {
-                            AnsiConsole.WriteLine("发现其他以兼容模式安装的模块");
-                            if (AnsiConsole.Confirm("是否要覆盖该模块?"))
-                            {
-                                InstallModule(compatiableModulePath);
-                            }
-                            else
-                            {
-                                AnsiConsole.WriteLine("安装失败，请手动处理与其他模块的冲突");
-                            }
+                            InstallModule(compatiableModulePath);
                         }
-                        else if (files.Contains(modulePath))
+                        else
                         {
-                            AnsiConsole.WriteLine("发现其他模块");
-                            if (AnsiConsole.Confirm("是否要以兼容模式安装"))
-                            {
-                                InstallModule(compatiableModulePath);
-                            }
-                            else
-                            {
-                                AnsiConsole.WriteLine("安装失败，请手动处理与其他模块的冲突，或尝试兼容模式");
-                            }
+                            AnsiConsole.WriteLine("安装失败，请手动处理与其他模块的冲突");
                         }
-                        void InstallModule(string path)
+                    }
+                    else if (File.Exists(modulePath))
+                    {
+                        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(modulePath)));
+                        if (UraCoreHelper.uraCoreHashs.Contains(hash) && AnsiConsole.Confirm("发现旧版本ura-core，是否更新？"))
                         {
-                            using var fs = File.Create(path);
-                            stream.CopyTo(fs);
-                            fs.Flush();
-                            fs.Close();
-                            AnsiConsole.WriteLine($"安装到{path}成功,按任意键返回主菜单");
+                            InstallModule(modulePath);
                         }
+                        else if (AnsiConsole.Confirm("发现其他模块，是否要以兼容模式安装？"))
+                        {
+                            InstallModule(compatiableModulePath);
+                        }
+                        else
+                        {
+                            AnsiConsole.WriteLine("安装失败，请手动处理与其他模块的冲突，或尝试兼容模式");
+                        }
+                    }
+                    void InstallModule(string path)
+                    {
+                        using var fs = File.Create(path);
+                        stream.CopyTo(fs);
+                        fs.Flush();
+                        fs.Close();
+                        AnsiConsole.WriteLine($"安装到{path}成功,按任意键返回主菜单");
                     }
                 }
                 Console.ReadKey();
