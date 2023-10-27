@@ -334,7 +334,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             var willLearnPoint = learn.Sum(x => getGrade(x));
             var totalPoint = willLearnPoint + previousLearnPoint + statusPoint;
-            var thisLevelId = Database.GradeToRank.First(x => x.Min <= totalPoint && totalPoint < x.Max).Id;
+            var thisLevelId = Database.GradeToRank.First(x => x.Min <= totalPoint && totalPoint <= x.Max).Id;
             table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
             AnsiConsole.Write(table);
             AnsiConsole.MarkupLine($"距离{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Rank}还有[yellow]{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Min - totalPoint}[/]分");

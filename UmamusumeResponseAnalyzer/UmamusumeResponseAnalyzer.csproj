@@ -18,22 +18,22 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<NoWarn>1701;1702;CS8509;CS8618</NoWarn>
 		<Prefer32Bit>true</Prefer32Bit>
-		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+		<DefineConstants>$(DefineConstants);TRACE;WRITE_AI</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 	  <NoWarn>1701;1702;CS8509;CS8618</NoWarn>
-	  <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	  <DefineConstants>$(DefineConstants);TRACE;WRITE_AI</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<NoWarn>1701;1702;CS8509;CS8618</NoWarn>
-		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+		<DefineConstants>$(DefineConstants);TRACE;WRITE_AI</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 	  <NoWarn>1701;1702;CS8509;CS8618</NoWarn>
-	  <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	  <DefineConstants>$(DefineConstants);TRACE;WRITE_AI</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -51,9 +51,14 @@
 	<ItemGroup>
 		<PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
 		<PackageReference Include="MessagePack" Version="2.4.35" />
-		<PackageReference Include="NetFilterAPI" Version="1.1.4" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Spectre.Console" Version="0.44.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="NetFilterAPI">
+	    <HintPath>NetFilterAPI.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>

@@ -10,9 +10,10 @@ using UmamusumeResponseAnalyzer.Game;
 
 namespace UmamusumeResponseAnalyzer.AI
 {
-    public class GameStatusSend
+    public class GameStatusSend_LArc
     {
         public int umaId;//马娘编号，见KnownUmas.cpp
+        //int16_t fiveStatusBonus[5];//马娘的五维属性的成长率
         public int turn;//回合数，从0开始，到77结束
         public int vital;//体力，叫做“vital”是因为游戏里就这样叫的
         public int maxVital;//体力上限
@@ -20,58 +21,87 @@ namespace UmamusumeResponseAnalyzer.AI
         public bool isAiJiao;//爱娇
         public int failureRateBias;//失败率改变量。练习上手=2，练习下手=-2
         public int[] fiveStatus;//五维属性，1200以上不减半
-                                //int fiveStatusUmaBonus[5];//马娘自身加成
         public int[] fiveStatusLimit;//五维属性上限，1200以上不减半
         public int skillPt;//技能点
+        public int skillScore;//已买技能的分数
         public int motivation;//干劲，从1到5分别是绝不调到绝好调
-        public int[] cardId;//6张卡的id
-        public int[] cardJiBan;//羁绊，六张卡分别012345，理事长6，记者7
+        public bool isPositiveThinking;//ポジティブ思考，友人第三段出行选上的buff，可以防一次掉心情
         public int[] trainLevelCount;//五个训练的等级的计数，实际训练等级=min(5,t/12+1)
         public int[] zhongMaBlueCount;//种马的蓝因子个数，假设只有3星
         public int[] zhongMaExtraBonus;//种马的剧本因子以及技能白因子（等效成pt），每次继承加多少。全大师杯因子典型值大约是30速30力200pt
-        public bool isRacing;//这个回合是否在比赛
+        public int normalCardCount;//速耐力根智卡的数量
+        public int[] cardId;//6张卡的id
+        //SupportCard cardParam[6];//六张卡的参数，拷贝到Game类里，一整局内不变，顺序任意。这样做的目的是训练ai时可能要随机改变卡的参数提高鲁棒性，所以每个game的卡的参数可能不一样
+        //int16_t saihou;//赛后加成
+        public LArcPerson[] persons;//如果不带其他友人团队卡，最多18个头。依次是15个可充电人头（先是支援卡（顺序随意）：0~4或5，再是npc：5或6~14），理事长15，记者16，佐岳17（带没带卡都是17）
+        //bool isRacing;//这个回合是否在比赛
+
+        public int motivationDropCount;//掉过几次心情了，不包括剧本事件（已知同一个掉心情不会出现多次，一共3个掉心情事件，所以之前掉过越多，之后掉的概率越低）
 
 
-        //女神杯相关
-        public int venusLevelYellow;//女神等级
-        public int venusLevelRed;
-        public int venusLevelBlue;
+        public bool larc_isAbroad;//这个回合是否在海外
+        public int larc_supportPtAll;//所有人（自己+其他人）的支援pt之和，每1700支援pt对应1%期待度
+        public int larc_shixingPt;//适性pt
+        public int[] larc_levels;//10个海外适性的等级，0为未解锁。顺序是游戏里从左上到右下的顺序，顺序编号在小黑板传过来的时候已经处理好了
+        public bool larc_isSSS;//是否为sss
+        public int larc_ssWin;//一共多少人头的ss
+        public int larc_ssWinSinceLastSSS;//从上次sss到现在win过几次ss（决定了下一个是sss的概率）
+        //bool[] larc_allowedDebuffsFirstLarc;//第一次凯旋门可以不消哪些debuff。玩家可以设置，满足则认为可以赢凯旋门
 
-        public int[] venusSpiritsBottom;//底层碎片。8*颜色+属性。颜色012对应红蓝黄，属性123456对应速耐力根智pt。叫做“spirit”是因为游戏里就这样叫的
-        public int[] venusSpiritsUpper;//按顺序分别是第二层和第三层的碎片，编号与底层碎片一致。*2还是*3现场算
-        public int venusAvailableWisdom;//顶层的女神睿智，123分别是红蓝黄，0是没有
-        public bool venusIsWisdomActive;//是否正在使用睿智
+        //public int larc_zuoyueType;//没带佐岳卡=0，带的SSR卡=1，带的R卡=2
+        //public double larc_zuoyueVitalBonus;//佐岳卡的回复量倍数（满破1.8）
+        //public double larc_zuoyueStatusBonus;//佐岳卡的事件效果倍数（满破1.2）
+        public bool larc_zuoyueFirstClick;//佐岳是否点过第一次
+        public bool larc_zuoyueOutgoingUnlocked;//佐岳外出解锁
+        public bool larc_zuoyueOutgoingRefused;//是否拒绝了佐岳外出
+        public int larc_zuoyueOutgoingUsed;//佐岳外出走了几段了
 
 
-        //神团卡专属
-        public bool venusCardFirstClick;// 是否已经点击过神团卡
-        public bool venusCardUnlockOutgoing;// 是否解锁外出
-        public bool venusCardIsQingRe;// 情热zone
-        public int venusCardQingReContinuousTurns;//女神连着情热了几个回合
-        public bool[] venusCardOutgoingUsed;// 用过哪些出行，依次是红黄蓝和最后两个
+
+
+
+
+
+
+
+
+
+        // 额外信息
+        //public int fans; // 粉丝数，用于计算固有
+
 
         //当前回合的训练信息
-        //0支援卡还未分配，1支援卡分配完毕或比赛开始前，2训练结束后或比赛结束后，0检查各种固定事件与随机事件并进入下一个回合
-        //stageInTurn=0时可以输入神经网络输出估值，stageInTurn=1时可以输入神经网络输出policy
-        public int stageInTurn;
-        public bool[,] cardDistribution;//支援卡分布，六张卡分别012345，理事长6，记者7
-        public bool[] cardHint;//六张卡分别有没有亮红点
-        public int[] spiritDistribution;//碎片分布，依次是五训练01234，休息5，外出6，比赛7。若为2碎片，则加32
+        public int[,] personDistribution;//每个训练有哪些人头id，personDistribution[哪个训练][第几个人头]，空人头为-1
+
+        public int larc_ssPersonsCount;//ss有几个人
+        public int[] larc_ssPersons;//ss有哪几个人
+
+        //这是个临时变量，导入ai的时候让它等于larc_ssPersonsCount即可
+        //public int larc_ssPersonsCountLastTurn;//上个非比赛非远征回合有几个ss人头，只用来判断这个回合是不是新的ss，用来计算sss。为了避免满10人连出两个ss时计算错误，使用ss的时候把这个置零
 
         //通过计算获得的信息
-        public int[] spiritBonus;//碎片加成
         public int[,] trainValue;//第一个数是第几个训练，第二个数依次是速耐力根智pt体力
         public int[] failRate;//训练失败率
-        
-        public GameStatusSend(Gallop.SingleModeCheckEventResponse @event)
+
+        //这些在模拟器里calculateTrain一下就行了
+        //public int[] trainShiningNum;//这个训练有几个彩圈
+        //int[] larc_staticBonus;//适性升级的收益，包括前5个1级和第6个的1级3级pt+10
+        //public int[] larc_shixingPtGainAbroad;//海外训练适性pt收益
+        //public int larc_trainBonus;//期待度训练加成
+
+        //这两个可能有误差，但为了保证一致性，最好还是直接采用ai自己算的数值
+        //public int[] larc_ssValue;//ss的速耐力根智（不包括上层的属性）
+        //public int larc_ssFailRate;//ss的失败率
+
+        public GameStatusSend_LArc(Gallop.SingleModeCheckEventResponse @event)
         {
 
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
 
-            stageInTurn = 1;
 
             umaId = @event.data.chara_info.card_id + 1000000 * @event.data.chara_info.rarity;
-            turn = @event.data.chara_info.turn - 1;
+            int turnNum = @event.data.chara_info.turn;//游戏里回合数从1开始
+            turn = turnNum - 1;//ai里回合数从0开始
             vital = @event.data.chara_info.vital;
             maxVital = @event.data.chara_info.max_vital;
             isQieZhe = @event.data.chara_info.chara_effect_id_array.Contains(7);
@@ -110,7 +140,7 @@ namespace UmamusumeResponseAnalyzer.AI
 
             try
             {
-                double ptRate = isQieZhe ? 2.0 : 1.8;
+                double ptRate = isQieZhe ? 2.1 : 1.9;
                 double ptScore = AiUtils.calculateSkillScore(@event, ptRate);
                 skillPt=(int)(ptScore/ptRate);
             }
@@ -119,102 +149,29 @@ namespace UmamusumeResponseAnalyzer.AI
                 AnsiConsole.MarkupLine("获取当前技能分失败"+ex.Message);
             }
 
-
+            skillScore = 0;
 
             motivation = @event.data.chara_info.motivation;
-
-
-
+            //fans = @event.data.chara_info.fans;
             cardId = new int[6];
-            cardJiBan = new int[8];
-            venusCardOutgoingUsed = new bool[] { false, false, false, false, false };
-            foreach (var s in @event.data.chara_info.support_card_array)
+
+
+            isPositiveThinking = @event.data.chara_info.chara_effect_id_array.Contains(25);
+
+            bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
+
+
+
+            trainLevelCount = new int[5];
+            for (int i = 0; i < 5; i++)
             {
-                int p = s.position - 1;
-                //100000*突破数+卡原来的id，例如神团是30137，满破神团就是430137
-                cardId[p] = s.limit_break_count * 100000 + s.support_card_id;
-            }
-
-
-
-
-            venusCardUnlockOutgoing = false;
-            venusCardOutgoingUsed =new bool[5] {false,false,false,false,false};
-            venusCardIsQingRe = @event.data.chara_info.chara_effect_id_array.Contains(102);
-            venusCardQingReContinuousTurns = 0;
-            if(venusCardIsQingRe)
-            { 
-                int continuousTurnNum = 1;
-                for (int i = turn; i >= 1; i--)
-                {
-                    if (GameStats.stats[i] == null || !GameStats.stats[i].venus_isEffect102)
-                        break;
-                    continuousTurnNum++;
-                }
-                venusCardQingReContinuousTurns = continuousTurnNum;
-                //AnsiConsole.MarkupLine($"女神彩圈已持续[green]{continuousTurnNum}[/]回合");
-            }
-            
-            foreach (var s in @event.data.chara_info.evaluation_info_array)
-            {
-                int p=s.target_id - 1;
-                if (p < 6)//支援卡
-                {
-                    cardJiBan[p] = s.evaluation;
-                    if (cardId[p] % 100000 == 30137)
-                    {
-                        venusCardUnlockOutgoing = s.is_outing > 0;
-                        if (venusCardUnlockOutgoing)
-                        {
-                            venusCardOutgoingUsed[0] = s.group_outing_info_array.First(x => x.chara_id == 9040).story_step > 0;
-                            venusCardOutgoingUsed[1] = s.group_outing_info_array.First(x => x.chara_id == 9041).story_step > 0;
-                            venusCardOutgoingUsed[2] = s.group_outing_info_array.First(x => x.chara_id == 9042).story_step > 0;
-                            venusCardOutgoingUsed[3] = s.story_step > 0;
-                            venusCardOutgoingUsed[4] = s.story_step > 1;
-                        }
-
-                    }
-
-                }
-                else if (p == 101)//理事长
-                {
-                    cardJiBan[6] = s.evaluation;
-                }
-                else if (p == 102)//记者
-                {
-                    cardJiBan[7] = s.evaluation;
-                }
-            }
-
-            venusCardFirstClick = false;
-            for (int t = 1; t <= turn; t++)//不考虑当前回合，因为当前回合还未选训练
-            {
-                var turnStat = GameStats.stats[t];
-                if (turnStat == null) continue;//有可能这局中途才打开小黑板
-                if (turnStat.isTraining && turnStat.venus_venusTrain == turnStat.playerChoice)
-                {
-                    venusCardFirstClick = true;
-                    break;
-                }
-            }
-            if (venusCardUnlockOutgoing)
-                venusCardFirstClick = true;//半途重启小黑板
-
-
-            {
-                //难以判断实际计数是多少，所以直接视为半级
-                int[] trainLevelCountEachLevel = new int[6] { 0, 6, 18, 30, 42, 48 };
-                trainLevelCount = new int[5];
-                for (int i = 0; i < 5; i++)
-                {
-                    trainLevelCount[i] = trainLevelCountEachLevel[@event.data.chara_info.training_level_info_array.First(x => x.command_id == GameGlobal.TrainIds[i]).level];
-                }
+                trainLevelCount[i] = (GameStats.stats[turnNum].trainLevel[i] - 1) * 4 + GameStats.stats[turnNum].trainLevelCount[i];
             }
 
             zhongMaBlueCount = new int[5];
             //用属性上限猜蓝因子个数
             {
-                int[] defaultLimit = new int[5] { 1800, 1600, 1800, 1400, 1400 };
+                int[] defaultLimit = new int[5] { 2000, 2000, 1800, 1800, 1400 };
                 double factor = 16;//每个三星因子可以提多少上限
                 if (turn >= 54)//第二次继承结束
                     factor = 22;
@@ -228,108 +185,274 @@ namespace UmamusumeResponseAnalyzer.AI
                     zhongMaBlueCount[i] = threeStarCount * 3;
                 }
             }
-            zhongMaExtraBonus = new int[6] { 20, 0, 40, 0, 20, 150 };//大师杯和青春杯因子各一半
+            zhongMaExtraBonus = new int[6] { 10, 10, 30, 0, 10, 70 };//大师杯,青春杯,凯旋门因子混合
+
+            motivationDropCount = GameStats.m_motDropCount;
+
+            if (turnNum >= 3)
+            {
+                larc_supportPtAll = @event.data.arc_data_set.arc_rival_array.Sum(x => x.approval_point);
+                larc_shixingPt = @event.data.arc_data_set.arc_info.global_exp;
+
+                larc_isSSS = @event.data.arc_data_set.selection_info != null && @event.data.arc_data_set.selection_info.is_special_match == 1;//是否为sss
+                larc_ssWin = @event.data.arc_data_set.arc_rival_array.Sum(x => x.star_lv);
+                larc_ssWinSinceLastSSS = GameStats.m_contNonSSS;
+
+                larc_levels = new int[10];
+                for (int i = 0; i < 10; i++)
+                    larc_levels[i] = @event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == GameGlobal.LArcLessonMappingInv[i]).level;
+            }
+            else
+            {
+                larc_supportPtAll = 0;
+                larc_shixingPt = 0;
+
+                larc_isSSS = false;
+                larc_ssWin = 0;
+                larc_ssWinSinceLastSSS = 0;
+
+                larc_levels = new int[10];
+                for (int i = 0; i < 10; i++)
+                    larc_levels[i] = 0;
+            }
 
 
-            cardDistribution = new bool[5, 8];
-            cardHint=new bool[6] {false,false,false,false,false,false};
+
+            //从游戏json的id到ai的人头编号的换算
+            Dictionary<int, int> headIdConvert = new Dictionary<int, int>();
+            foreach (var s in @event.data.chara_info.support_card_array)
+            {
+                int p = s.position - 1;
+                //突破数+10*卡原来的id，例如神团是30137，满破神团就是301374
+                cardId[p] = s.limit_break_count + s.support_card_id * 10;
+            }
+
+            int larc_zuoyueType = 0;
+            persons = new LArcPerson[18];
+            for (int i = 0; i < 18; i++)
+                persons[i] = new LArcPerson();
+            normalCardCount = 0;
+
+            {
+                //var friendCards = new List<int>  //各种友人团队卡
+                //{
+                //    30160,
+                //    10094
+                //};
+                for (int i = 0; i < 6; i++)
+                {
+                    if (cardId[i] / 10 == 30160)//ssr佐岳
+                    {
+                        larc_zuoyueType = 1;
+                        persons[17].cardIdInGame = i;
+                        headIdConvert[i + 1] = 17;
+                    }
+                    else if (cardId[i] / 10 == 10094)//r佐岳
+                    {
+                        larc_zuoyueType = 2;
+                        persons[17].cardIdInGame = i;
+                        headIdConvert[i + 1] = 17;
+                    }
+                    else
+                    {
+                        persons[normalCardCount].cardIdInGame = i;
+                        headIdConvert[i + 1] = normalCardCount;
+                        normalCardCount += 1;
+                    }
+                }
+            }
+
+            if (larc_zuoyueType != 0)
+            {
+
+
+
+                var d = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == headIdConvert.First(x => x.Value == 17).Key);
+                larc_zuoyueOutgoingUnlocked=d.is_outing==1;//佐岳外出解锁
+                larc_zuoyueOutgoingRefused=false;//无法从已知的信息中得出是否拒绝了外出。考虑到一般不会拒绝外出，所以默认没拒绝
+                larc_zuoyueOutgoingUsed = d.story_step;//佐岳外出走了几段了
+
+
+                larc_zuoyueFirstClick = false;//佐岳是否点过第一次
+                for (int t = GameStats.currentTurn; t >= 1; t--)
+                {
+                    if (GameStats.stats[t] == null)
+                    {
+                        break;
+                    }
+
+                    if (!GameGlobal.TrainIds.Any(x => x == GameStats.stats[t].playerChoice)) //没训练
+                        continue;
+                    if (GameStats.stats[t].isTrainingFailed)//训练失败
+                        continue;
+                    if (!GameStats.stats[t].larc_zuoyueAtTrain[GameGlobal.ToTrainIndex[GameStats.stats[t].playerChoice]])
+                        continue;//没点佐岳
+
+                    larc_zuoyueFirstClick = true;
+                    break;
+                }
+
+            }
+
+
+
+
+            for (int i = 0; i < normalCardCount; i++)
+            persons[i].personType = 2;
+            for (int i = normalCardCount; i < 15; i++)
+                persons[i].personType = 3;
+            persons[15].personType = 4;
+            persons[16].personType = 5;
+            if (larc_zuoyueType == 0)
+            {
+                persons[17].personType = 6;
+            }
+            else
+            {
+                persons[17].personType = 1;
+            }
+            headIdConvert[102] = 15;
+            headIdConvert[103] = 16;
+            if(larc_zuoyueType==0)
+            {
+                headIdConvert[110] = 17;
+            }
+
+            if (turnNum >= 3)
+            {
+                int i = normalCardCount;
+                foreach (var s in @event.data.arc_data_set.evaluation_info_array)
+                {
+                    //npc当且仅当s.chara_id==s.target_id
+                    if(s.chara_id==s.target_id)
+                    {
+                        headIdConvert[s.chara_id] = i;
+                        i += 1;
+                    }
+                }
+                if (i != 15)
+                {
+                    throw new Exception("npc人数不正确，可能是因为带了佐岳以外的友人团队卡");
+                }
+            }
+
+            //到目前为止，headIdConvert写完了
+
+            //羁绊
+            foreach (var s in @event.data.chara_info.evaluation_info_array)
+            {
+                if (!headIdConvert.ContainsKey(s.target_id))
+                    continue;
+                int p = headIdConvert[s.target_id];
+                persons[p].friendship = s.evaluation;
+            }
+
+
+            //larc信息
+            if (turnNum >= 3)
+            {
+                for (int i = 0; i < 15; i++)
+                {
+                    var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == headIdConvert.First(x => x.Value == i).Key).chara_id;
+                    var p = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+
+
+                    persons[i].larc_charge = p.rival_boost;
+                    persons[i].larc_statusType = GameGlobal.ToTrainIndex[p.command_id];
+                    persons[i].larc_specialBuff = GameStats.SSRivalsSpecialBuffs[chara_id];
+                    if (persons[i].larc_specialBuff == 0) //不知道是什么buff，有可能是因为小黑板是半途开启的
+                        persons[i].larc_specialBuff = 11;
+                    persons[i].larc_level = p.star_lv + 1;
+                    persons[i].larc_buffLevel = p.selection_peff_array.Min(x => x.effect_num);
+                    persons[i].larc_nextThreeBuffs = new int[3];
+                    for (int j = 0; j < 3; j++)
+                    {
+                        persons[i].larc_nextThreeBuffs[j] = p.selection_peff_array.First(x => x.effect_num == persons[i].larc_buffLevel + j).effect_group_id;
+                    }
+                }
+            }
+
+            personDistribution = new int[5, 5];
             for (int i = 0; i < 5; i++)
-                for (int j = 0; j < 8; j++)
-                    cardDistribution[i, j] = false;
-            isRacing = true;
+                for (int j = 0; j < 5; j++)
+                    personDistribution[i, j] = -1;
+
+
+
             foreach (var train in @event.data.home_info.command_info_array)
             {
                 if (!GameGlobal.ToTrainIndex.ContainsKey(train.command_id))//不是正常训练
                     continue;
                 int trainId = GameGlobal.ToTrainIndex[train.command_id];
-                if (train.is_enable > 0) isRacing = false;
+
+                int j = 0;
                 foreach(var p in train.training_partner_array)
                 {
-                    int pid = p <= 6 ? p - 1 : p == 102 ? 6 : 7;
-                    cardDistribution[trainId, pid] = true;
+                    int pid = headIdConvert[p];
+                    personDistribution[trainId, j] = pid;
+                    j += 1;
                 }
                 foreach (var p in train.tips_event_partner_array)
                 {
-                    int pid = p - 1;
-                    cardHint[pid] = true;
+                    int pid = headIdConvert[p];
+                    persons[pid].isHint = true;
                 }
-
             }
 
-            spiritDistribution = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            foreach (var i in @event.data.venus_data_set.venus_chara_command_info_array)
+
+
+
+            //SS Match
+            larc_ssPersonsCount = 0;
+            larc_ssPersons = new int[5] { -1, -1, -1, -1, -1 };
+            if (turnNum >= 3)
             {
-                int p = -1;
-                if (i.command_type == 1)
-                    p = GameGlobal.ToTrainIndex[i.command_id];
-                else if (i.command_type == 3)
-                    p = 6;
-                else if (i.command_type == 4)
-                    p = 7;
-                else if (i.command_type == 7)
-                    p = 5;
-                int s = i.spirit_id;
-                if (i.is_boost > 0)
-                    s += 32;
-                if(p!=-1)
-                    spiritDistribution[p] = s;
 
-            }
-            venusLevelRed = @event.data.venus_data_set.venus_chara_info_array.Any(x => x.chara_id == 9040) ?
-                @event.data.venus_data_set.venus_chara_info_array.First(x => x.chara_id == 9040).venus_level : 0;
-            venusLevelBlue = @event.data.venus_data_set.venus_chara_info_array.Any(x => x.chara_id == 9041) ?
-                @event.data.venus_data_set.venus_chara_info_array.First(x => x.chara_id == 9041).venus_level : 0;
-            venusLevelYellow = @event.data.venus_data_set.venus_chara_info_array.Any(x => x.chara_id == 9042) ?
-                @event.data.venus_data_set.venus_chara_info_array.First(x => x.chara_id == 9042).venus_level : 0;
-
-            venusSpiritsBottom = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            venusSpiritsUpper = new int[6] { 0, 0, 0, 0, 0, 0 };
-            venusAvailableWisdom = 0;
-            venusIsWisdomActive = false;
-
-            for (int spiritPlace = 1; spiritPlace <= 15 ; spiritPlace++)
-            {
-                int spiritId =
-                    @event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_num == spiritPlace)
-                    ? @event.data.venus_data_set.spirit_info_array.First(x => x.spirit_num == spiritPlace).spirit_id
-                    : 0;
-
-                if (spiritPlace < 9)
-                    venusSpiritsBottom[spiritPlace - 1] = spiritId;
-                else if (spiritPlace < 15)
-                    venusSpiritsUpper[spiritPlace - 9] = spiritId;
-                else
+                larc_ssPersonsCount = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
+                for (var i = 0; i < larc_ssPersonsCount; i++)
                 {
-                    if (spiritId == 9040)
-                        venusAvailableWisdom = 1;
-                    else if (spiritId == 9041)
-                        venusAvailableWisdom = 2;
-                    else if (spiritId == 9042)
-                        venusAvailableWisdom = 3;
+                    var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
+                    var pid = headIdConvert[@event.data.arc_data_set.evaluation_info_array.First(x => x.chara_id == chara_id).target_id];
+                    larc_ssPersons[i] = pid;
                 }
             }
-            if (@event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id >= 9040))
-                venusIsWisdomActive = true;
+
+
+
+
+
+
+
+
 
 
 
             trainValue = new int[5, 7];
             failRate = new int[5];
             {
-
-
                 var currentVital = @event.data.chara_info.vital;
                 //maxVital = @event.data.chara_info.max_vital;
                 var currentFiveValue = fiveStatus;
 
-                var trainItems = new Dictionary<int, SingleModeCommandInfo>
-                { //60x是合宿训练，10x是平时训练
-                    {101,@event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601): @event.data.home_info.command_info_array.First(x => x.command_id == 101)},
-                    {105,@event.data.home_info.command_info_array.Any(x => x.command_id == 602) ? @event.data.home_info.command_info_array.First(x => x.command_id == 602): @event.data.home_info.command_info_array.First(x => x.command_id == 105)},
-                    {102,@event.data.home_info.command_info_array.Any(x => x.command_id == 603) ? @event.data.home_info.command_info_array.First(x => x.command_id == 603): @event.data.home_info.command_info_array.First(x => x.command_id == 102)},
-                    {103,@event.data.home_info.command_info_array.Any(x => x.command_id == 604) ? @event.data.home_info.command_info_array.First(x => x.command_id == 604): @event.data.home_info.command_info_array.First(x => x.command_id == 103)},
-                    {106,@event.data.home_info.command_info_array.Any(x => x.command_id == 605) ? @event.data.home_info.command_info_array.First(x => x.command_id == 605): @event.data.home_info.command_info_array.First(x => x.command_id == 106)}
-                };
+                var trainItems = new Dictionary<int, SingleModeCommandInfo>();
+                if (@event.IsScenario(ScenarioType.LArc))
+                {
+                    //LArc的合宿ID不一样，所以要单独处理
+                    trainItems.Add(101, @event.data.home_info.command_info_array.Any(x => x.command_id == 1101) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1101) : @event.data.home_info.command_info_array.First(x => x.command_id == 101));
+                    trainItems.Add(105, @event.data.home_info.command_info_array.Any(x => x.command_id == 1102) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1102) : @event.data.home_info.command_info_array.First(x => x.command_id == 105));
+                    trainItems.Add(102, @event.data.home_info.command_info_array.Any(x => x.command_id == 1103) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1103) : @event.data.home_info.command_info_array.First(x => x.command_id == 102));
+                    trainItems.Add(103, @event.data.home_info.command_info_array.Any(x => x.command_id == 1104) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1104) : @event.data.home_info.command_info_array.First(x => x.command_id == 103));
+                    trainItems.Add(106, @event.data.home_info.command_info_array.Any(x => x.command_id == 1105) ? @event.data.home_info.command_info_array.First(x => x.command_id == 1105) : @event.data.home_info.command_info_array.First(x => x.command_id == 106));
+                }
+                else
+                {
+                    //速耐力根智，6xx为合宿时ID
+                    trainItems.Add(101, @event.data.home_info.command_info_array.Any(x => x.command_id == 601) ? @event.data.home_info.command_info_array.First(x => x.command_id == 601) : @event.data.home_info.command_info_array.First(x => x.command_id == 101));
+                    trainItems.Add(105, @event.data.home_info.command_info_array.Any(x => x.command_id == 602) ? @event.data.home_info.command_info_array.First(x => x.command_id == 602) : @event.data.home_info.command_info_array.First(x => x.command_id == 105));
+                    trainItems.Add(102, @event.data.home_info.command_info_array.Any(x => x.command_id == 603) ? @event.data.home_info.command_info_array.First(x => x.command_id == 603) : @event.data.home_info.command_info_array.First(x => x.command_id == 102));
+                    trainItems.Add(103, @event.data.home_info.command_info_array.Any(x => x.command_id == 604) ? @event.data.home_info.command_info_array.First(x => x.command_id == 604) : @event.data.home_info.command_info_array.First(x => x.command_id == 103));
+                    trainItems.Add(106, @event.data.home_info.command_info_array.Any(x => x.command_id == 605) ? @event.data.home_info.command_info_array.First(x => x.command_id == 605) : @event.data.home_info.command_info_array.First(x => x.command_id == 106));
+                }
 
                 var trainStats = new TrainStats[5];
                 var failureRate = new Dictionary<int, int>();
@@ -338,94 +461,37 @@ namespace UmamusumeResponseAnalyzer.AI
                     int tid = GameGlobal.TrainIds[t];
                     failureRate[tid] = trainItems[tid].failure_rate;
                     var trainParams = new Dictionary<int, int>()
-                {
-                    {1,0},
-                    {2,0},
-                    {3,0},
-                    {4,0},
-                    {5,0},
-                    {30,0},
-                    {10,0},
-                };
-                    var nonScenarioTrainParams = new Dictionary<int, int>()
-                {
-                    {1,0},
-                    {2,0},
-                    {3,0},
-                    {4,0},
-                    {5,0},
-                    {30,0},
-                    {10,0},
-                };
+                    {
+                        {1,0},
+                        {2,0},
+                        {3,0},
+                        {4,0},
+                        {5,0},
+                        {30,0},
+                        {10,0},
+                    };
                     //去掉剧本加成的训练值（游戏里的下层显示）
                     foreach (var item in @event.data.home_info.command_info_array)
                     {
-                        if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                        if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
+                            GameGlobal.ToTrainId[item.command_id] == tid)
                         {
                             foreach (var trainParam in item.params_inc_dec_info_array)
                             {
-                                nonScenarioTrainParams[trainParam.target_type] += trainParam.value;
                                 trainParams[trainParam.target_type] += trainParam.value;
                             }
                         }
                     }
 
-                    //青春杯
-                    if (@event.data.team_data_set != null)
+                    //剧本加成（上层显示）
+                    foreach (var item in @event.data.arc_data_set.command_info_array)
                     {
-                        foreach (var item in @event.data.team_data_set.command_info_array)
+                        if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
+                            GameGlobal.ToTrainId[item.command_id] == tid)
                         {
-                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
+                            foreach (var trainParam in item.params_inc_dec_info_array)
                             {
-                                foreach (var trainParam in item.params_inc_dec_info_array)
-                                {
-                                    trainParams[trainParam.target_type] += trainParam.value;
-                                    //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
-                                }
-                            }
-                        }
-                    }
-                    //巅峰杯
-                    if (@event.data.free_data_set != null)
-                    {
-                        foreach (var item in @event.data.free_data_set.command_info_array)
-                        {
-                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                            {
-                                foreach (var trainParam in item.params_inc_dec_info_array)
-                                {
-                                    trainParams[trainParam.target_type] += trainParam.value;
-                                    //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
-                                }
-                            }
-                        }
-                    }
-                    //偶像杯
-                    if (@event.data.live_data_set != null)
-                    {
-                        foreach (var item in @event.data.live_data_set.command_info_array)
-                        {
-                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                            {
-                                foreach (var trainParam in item.params_inc_dec_info_array)
-                                {
-                                    trainParams[trainParam.target_type] += trainParam.value;
-                                    //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
-                                }
-                            }
-                        }
-                    }
-                    //女神杯
-                    if (@event.IsScenario(ScenarioType.GrandMasters))
-                    {
-                        foreach (var item in @event.data.venus_data_set.command_info_array)
-                        {
-                            if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                            {
-                                foreach (var trainParam in item.params_inc_dec_info_array)
-                                {
-                                    trainParams[trainParam.target_type] += trainParam.value;
-                                }
+                                trainParams[trainParam.target_type] += trainParam.value;
                             }
                         }
                     }
@@ -441,31 +507,13 @@ namespace UmamusumeResponseAnalyzer.AI
                     for (int i = 0; i < 5; i++)
                         stats.FiveValueGain[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGain[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
                     stats.PtGain = trainParams[30];
-                    stats.FiveValueGainNonScenario = new int[] { nonScenarioTrainParams[1], nonScenarioTrainParams[2], nonScenarioTrainParams[3], nonScenarioTrainParams[4], nonScenarioTrainParams[5] };
-                    for (int i = 0; i < 5; i++)
-                        stats.FiveValueGainNonScenario[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGainNonScenario[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
-                    stats.PtGainNonScenario = nonScenarioTrainParams[30];
-
-
                     for (int i = 0; i < 5; i++)
                         trainValue[t, i] = stats.FiveValueGain[i];
                     trainValue[t, 5] = stats.PtGain;
                     trainValue[t, 6] = stats.VitalGain;
                     failRate[t] = stats.FailureRate;
-
-
-
-
-
                 }
-
-
-
             }
-
-
-
-        }
-    
+        }    
     }
 }

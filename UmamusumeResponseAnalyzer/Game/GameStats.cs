@@ -41,12 +41,14 @@ namespace UmamusumeResponseAnalyzer.Game
 
         public int playerChoice;//玩家最终点了哪个训练
         public bool isTrainingFailed;//是否训练失败
+        public int[] trainLevel;//训练等级
+        public int[] trainLevelCount;//训练等级计数，凯旋门每4为一级
 
 
         //凯旋门
         public bool[] larc_zuoyueAtTrain;//佐岳是否在这个训练
         public bool larc_playerChoiceSS;//这个回合玩家是不是点的ss训练
-        public bool larc_isFullSS;//这个回合ss训练有没有5个头
+        public int larc_SSPersonCount;//这个回合ss训练有几个头
         public bool larc_isSSS;//这个回合是不是sss训练
         public int larc_zuoyueEvent;//是否召唤出佐岳充电事件。有好几种：0没事件，1充电，2充电加心情，4海外，5第一次启动
         public int larc_totalApproval;//玩家与所有npc的总“支援pt”
@@ -69,11 +71,15 @@ namespace UmamusumeResponseAnalyzer.Game
             playerChoice = -1;
             isTrainingFailed = false;
             fiveTrainStats = new TrainStats[5];
+            trainLevel = new int[5];
+            trainLevelCount = new int[5];
+            for (int j = 0; j < 5; j++) trainLevel[j] = 1;
+            for (int j = 0; j < 5; j++) trainLevelCount[j] = 0;
 
             larc_zuoyueAtTrain = new bool[5];//佐岳是否在这个训练
             for(int j = 0; j < 5; j++) larc_zuoyueAtTrain[j] = false;
             larc_playerChoiceSS = false;
-            larc_isFullSS = false;
+            larc_SSPersonCount = 0;
             larc_isSSS = false;
             larc_zuoyueEvent = 0;
             larc_totalApproval = 0;
@@ -93,6 +99,12 @@ namespace UmamusumeResponseAnalyzer.Game
         public static int whichScenario = 0;
         public static int currentTurn = 0;
         public static TurnStats[] stats=new TurnStats[79];//从1开始
+        public static int m_motDropCount = 0;   // 保存当前值方便调取
+        //几次ss训练，几次sss，连着几回合没sss
+        public static int m_fullSSCount = 0;
+        public static int m_SSSCount = 0;
+        public static int m_contNonSSS = 0;
+        public static Dictionary<int,int> SSRivalsSpecialBuffs; //每个人头的特殊buff
 
         public static void print()
         {
@@ -112,7 +124,8 @@ namespace UmamusumeResponseAnalyzer.Game
                     if (stats[i].motivation < stats[i - 1].motivation)
                         motDropCount += (stats[i - 1].motivation - stats[i].motivation);
                 }
-                AnsiConsole.MarkupLine($"这局掉了[yellow]{motDropCount}[/]次心情（忽略刚掉就回的情况）");
+                AnsiConsole.MarkupLine($"这局掉了[yellow]{motDropCount}[/]级心情（忽略刚掉就回的情况）");
+                m_motDropCount = motDropCount;
             }
 
             //统计体力消耗和赌训练的次数
@@ -293,15 +306,17 @@ namespace UmamusumeResponseAnalyzer.Game
                         break;
                     }
 
-                    if (stats[i].larc_isFullSS && stats[i].larc_playerChoiceSS)//一次完整的ss训练
+                    if (stats[i].larc_playerChoiceSS)//一次完整的ss训练
                     {
                         fullSSCount += 1;
                         if (stats[i].larc_isSSS) SSSCount += 1;
-                        if (SSSCount == 0) contNonSSS += 1;
+                        if (SSSCount == 0) contNonSSS += stats[i].larc_SSPersonCount;
                     }
                 }
-                AnsiConsole.MarkupLine($"一共进行了[aqua]{fullSSCount}[/]次SS训练，其中[aqua]{SSSCount}[/]次为SSS，已经连续[#80ff00]{contNonSSS}[/]次不是SSS");
-
+                AnsiConsole.MarkupLine($"一共进行了[aqua]{fullSSCount}[/]次SS训练，其中[aqua]{SSSCount}[/]次为SSS，已经连续[#80ff00]{contNonSSS}[/]人头不是SSS{(contNonSSS >= 8 ? "，[aqua]下次必为SSS[/]" : "")}");
+                m_fullSSCount = fullSSCount;
+                m_SSSCount = SSSCount;
+                m_contNonSSS = contNonSSS;
 
                 //佐岳点了几次，来了几次
                 int zuoyueClickedTimesNonAbroad = 0;//非海外点了几次，不算启动
