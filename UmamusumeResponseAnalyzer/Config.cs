@@ -126,8 +126,14 @@ namespace UmamusumeResponseAnalyzer
             Save();
         }
         public static bool ContainsKey(string key) => Configuration.ContainsKey(key);
-        public static T Get<T>(string key) => (T)Configuration[key].Value;
-        public static bool Get(string key) => Configuration.ContainsKey(key) && Get<bool>(key);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T">bool||string</typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static T Get<T>(string key) => Configuration.ContainsKey(key) ? (T)Configuration[key].Value : default!;
+        public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)
         {
             if (!Configuration.ContainsKey(key)) Configuration.Add(key, new(key, false, false));
