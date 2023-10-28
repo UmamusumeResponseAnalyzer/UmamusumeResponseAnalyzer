@@ -77,6 +77,10 @@ namespace UmamusumeResponseAnalyzer
                     AnsiConsole.MarkupLine($"[red]读取配置文件时发生错误,已重新生成,请再次更改设置[/]");
                 }
             }
+            else
+            {
+                AddMissing();
+            }
         }
         public static void Save()
         {
@@ -101,10 +105,23 @@ namespace UmamusumeResponseAnalyzer
                 if (Configuration.ContainsKey(i.Key)) continue;
                 if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
                     i.Key == Resource.ConfigSet_EnableNetFilter ||
-                    i.Key == Resource.ConfigSet_DMMLaunch) //不默认开
+                    i.Key == Resource.ConfigSet_DMMLaunch ||
+                    i.Key == Resource.ConfigSet_SaveResponseForDebug) //不默认开
+                {
                     Configuration.Add(i.Key, new(i.Key, false));
+                }
                 else
-                    Configuration.Add(i.Key, new(i.Key, true));
+                {
+                    switch (Type.GetTypeCode(i.Value.GetType()))
+                    {
+                        case TypeCode.Boolean:
+                            Configuration.Add(i.Key, new(i.Key, true));
+                            break;
+                        case TypeCode.String:
+                            Configuration.Add(i.Key, new(i.Key, string.Empty));
+                            break;
+                    }
+                }
             }
             Save();
         }
@@ -131,7 +148,7 @@ namespace UmamusumeResponseAnalyzer
         }
 
         public static IEnumerable<ConfigItem> From(params string[] arr)
-            => arr.Select(x => new ConfigItem { Key = x });
+            => arr.Select(x => new ConfigItem { Key = x, Value = true });
         public override string ToString() => Value == null ? "NULL" : Value.ToString()!;
     }
 }
