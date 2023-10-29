@@ -13,6 +13,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -21,6 +22,9 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
+            var shouldWriteStatistics = true;
+            var turnNum = @event.data.chara_info.turn;
+            var LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
 
             var currentFiveValue = new int[]
             {
@@ -30,7 +34,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 @event.data.chara_info.guts ,
                 @event.data.chara_info.wiz ,
             };
-
             var fiveValueMaxRevised = new int[]
             {
                 ScoreUtils.ReviseOver1200(@event.data.chara_info.max_speed),
@@ -39,20 +42,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 ScoreUtils.ReviseOver1200(@event.data.chara_info.max_guts) ,
                 ScoreUtils.ReviseOver1200(@event.data.chara_info.max_wiz) ,
             };
-
-            var currentFiveValueRevised = currentFiveValue;
-            int totalValue = 0;
-            for (int i = 0; i < 5; i++)
-            {
-                currentFiveValueRevised[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i]);
-                totalValue += currentFiveValueRevised[i];
-            }
-
+            var currentFiveValueRevised = currentFiveValue.Select(x => ScoreUtils.ReviseOver1200(x)).ToArray();
+            var totalValue = currentFiveValueRevised.Sum();
             AnsiConsole.WriteLine(string.Empty);
-            int turnNum = @event.data.chara_info.turn;
-
-            bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
-            bool shouldWriteStatistics = true;
 
             if (GameStats.currentTurn != turnNum - 1 //正常情况
                 && GameStats.currentTurn != turnNum //重复显示
@@ -62,7 +54,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                 GameStats.isFullGame = false;
                 AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
             }
-            else if (turnNum == 1) GameStats.isFullGame = true;
+            else if (turnNum == 1)
+            {
+                GameStats.isFullGame = true;
+            }
 
             if (!@event.IsScenario(ScenarioType.LArc))
                 shouldWriteStatistics = false;
@@ -71,15 +66,15 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (!GameStats.isFullGame)
                 shouldWriteStatistics = false;
 
-
             //买技能，大师杯剧本年末比赛，会重复显示
-            bool isRepeat = @event.data.chara_info.playing_state != 1;
+            var isRepeat = @event.data.chara_info.playing_state != 1;
             //if(isRepeat)
             //    AnsiConsole.MarkupLine($"[yellow]******playingstate{@event.data.chara_info.playing_state}******[/]");
-
             //初始化TurnStats
             if (isRepeat)
+            {
                 AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
+            }
             else
             {
                 GameStats.whichScenario = @event.data.chara_info.scenario_id;
@@ -94,27 +89,23 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
 #endif
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
-            TurnStats turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
+            var turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
+            var gameYear = (turnNum - 1) / 24 + 1;
+            var gameMonth = ((turnNum - 1) % 24) / 2 + 1;
+            var halfMonth = (turnNum % 2 == 0) ? "后半" : "前半";
+            var totalTurns = @event.IsScenario(ScenarioType.LArc) ? 67 : 78;
 
-            int gameYear = (turnNum - 1) / 24 + 1;
-            int gameMonth = ((turnNum - 1) % 24) / 2 + 1;
-            string halfMonth = (turnNum % 2 == 0) ? "后半" : "前半";
-            int totalTurns = @event.IsScenario(ScenarioType.LArc) ? 67 : 78;
             AnsiConsole.MarkupLine($"[#00ffff]------------------------------------------------------------------------------------[/]");
             AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/{totalTurns}, 第{gameYear}年{gameMonth}月{halfMonth}[/]");
 
-
-            int motivation = @event.data.chara_info.motivation;
+            var motivation = @event.data.chara_info.motivation;
             turnStat.motivation = motivation;
 
             //显示统计信息
             GameStats.print();
 
-
-
-
-            int currentVital = @event.data.chara_info.vital;
-            int maxVital = @event.data.chara_info.max_vital;
+            var currentVital = @event.data.chara_info.vital;
+            var maxVital = @event.data.chara_info.max_vital;
             if (currentVital < 30)
                 AnsiConsole.MarkupLine($"[red]体力：{currentVital}[/]/{maxVital}");
             else if (currentVital < 50)
@@ -135,10 +126,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             else if (motivation == 1)
                 AnsiConsole.MarkupLine($"干劲[red]绝不调[/]");
 
-            double totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
-            double totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
+            var totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
+            var totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
             AnsiConsole.MarkupLine($"[aqua]总属性：{totalValue}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
 
+            #region LArc
             //计算训练等级
             if (@event.IsScenario(ScenarioType.LArc))//预测训练等级
             {
@@ -186,7 +178,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
-
             //额外显示LArc信息
             if (@event.IsScenario(ScenarioType.LArc))
             {
@@ -200,14 +191,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                     totalSSLevel += rival.star_lv;
                     rivalBoostCount[rival.rival_boost] += 1;
 
-                    foreach(var ef in rival.selection_peff_array)
+                    foreach (var ef in rival.selection_peff_array)
                     {
                         effectCount[ef.effect_group_id] += 1;
                     }
                 }
                 //显示所有npc升级奖励的统计
                 string toPrint = "";
-                foreach(var ef in GameGlobal.LArcSSEffectNameFullColored)
+                foreach (var ef in GameGlobal.LArcSSEffectNameFullColored)
                 {
                     toPrint += $"{ef.Value}:[#ff0000]{effectCount[ef.Key]}[/] ";
                 }
@@ -223,7 +214,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (approval_rate_level > 40) { approval_rate_level = 40; }
                 int approval_training_bonus = GameGlobal.LArcTrainBonusEvery5Percent[approval_rate_level];
 
-                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval-lastTurnTotalApproval}[/])");
+                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval - lastTurnTotalApproval}[/])");
 
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
@@ -233,7 +224,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //每局15个人头的每种特殊词条的总数是固定的。但是除了几个特殊的（体力最大值-茶座、爱娇-黄金船、练习上手-神鹰），其他都会随机分配给支援卡和路人
                 //支援卡相比路人点的次数更多，如果第三回合的支援卡随机分配的特殊词条不好，就可以重开了
 
-                if(turnNum <= 2)
+                if (turnNum <= 2)
                 {
                     //清空SSRivalsSpecialBuffs
                     GameStats.SSRivalsSpecialBuffs = new Dictionary<int, int>();
@@ -263,7 +254,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 var efid_old = GameStats.SSRivalsSpecialBuffs[arc_data.chara_id];
                                 if (efid_old == 0)
                                     GameStats.SSRivalsSpecialBuffs[arc_data.chara_id] = efid;
-                                else if(efid_old!=efid)//要么是出错，要么是神鹰的练习上手+适性pt
+                                else if (efid_old != efid)//要么是出错，要么是神鹰的练习上手+适性pt
                                 {
                                     if (efid_old == 7 && efid == 9)
                                     {
@@ -307,7 +298,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                             charaTrainingType = $"[red]({GameGlobal.TrainNames[arc_data.command_id]})[/]";
 
-                            if(GameStats.SSRivalsSpecialBuffs[arc_data.chara_id]!=0)
+                            if (GameStats.SSRivalsSpecialBuffs[arc_data.chara_id] != 0)
                                 specialBuffs = GameGlobal.LArcSSEffectNameFullColored[GameStats.SSRivalsSpecialBuffs[arc_data.chara_id]];
                             else
                                 specialBuffs = "?";
@@ -318,7 +309,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine(toPrint);
 
                 //游戏统计，用于测试游戏里各种概率
-                if (@event.data.arc_data_set.selection_info!=null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
+                if (@event.data.arc_data_set.selection_info != null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
                     turnStat.larc_isSSS = true;
 
                 if (@event.data.arc_data_set.selection_info != null && @event.data.arc_data_set.selection_info.params_inc_dec_info_array != null && @event.data.arc_data_set.selection_info.all_win_approval_point != 0)
@@ -371,9 +362,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     CalculateSkillScoreCost(@event);
                 }
             }
+            #endregion
 
-
-
+            #region Grand Masters
             //额外显示GM杯信息
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
@@ -467,8 +458,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     turnStat.venus_isVenusCountConcerned = false;
 
             }
-
-
             //女神情热状态，不统计女神召唤次数
             if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 102))
             {
@@ -484,6 +473,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 AnsiConsole.MarkupLine($"女神彩圈已持续[green]{continuousTurnNum}[/]回合");
             }
+            #endregion
 
             var trainItems = new Dictionary<int, SingleModeCommandInfo>();
             if (@event.IsScenario(ScenarioType.LArc))
@@ -800,6 +790,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             //table.AddRow(outputItems);
             //table.AddRow(separatorLine);
 
+            #region LArc
             //以下几项用于计算单次训练能充多少格
             var LArcRivalBoostCount = new int[,] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };// 五种训练的充电槽为0,1,2格的个数
             var LArcShiningCount = new int[] { 0, 0, 0, 0, 0 };//彩圈个数
@@ -978,17 +969,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 table.AddToRows(7, outputItems);
             }
             table.AddToRows(8, separatorLine);
-
+            #endregion
 
             for (var i = 0; i < 5; ++i)
             {
-                var rows = new List<string>();
-                foreach (var j in commandInfo)
-                {
-                    rows.Add(j.Value.Length > i ? j.Value[i] : string.Empty);
-                }
-                //table.AddRow(rows.ToArray());
-                table.AddToRows(9 + i, rows.ToArray());//第8行预留位置
+                table.AddToRows(9 + i, commandInfo.Select(x => x.Value.Length > i ? x.Value[i] : string.Empty).ToArray());//第8行预留位置
             }
 
             if (@event.IsScenario(ScenarioType.MakeANewTrack))
@@ -1166,8 +1151,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                         table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
 
                     turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
-                    
-                   
+
+
                     //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
                 }
 
@@ -1215,14 +1200,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                     AnsiConsole.MarkupLine($@"[#ff0000]还有{37 - turnNum}回合第二年远征！[/]");
                 if (turnNum < 60 && turnNum >= 55)
                     AnsiConsole.MarkupLine($@"[#ff0000]还有{60 - turnNum}回合第三年远征！[/]");
-                if(turnNum==59)
+                if (turnNum == 59)
                 {
                     AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！[/]");
                     AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！[/]");
                     AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！（重要的事情说三遍）[/]");
                 }
 
-                if(turnNum>42)
+                if (turnNum > 42)
                 {
                     //十个升级的id分别是
                     //  2 5
@@ -1275,26 +1260,30 @@ namespace UmamusumeResponseAnalyzer.Handler
                 bool success = false;
                 int tried = 0;
 
-                while (!success && tried < 10)
+                //while (!success && tried < 10)
+                //{
+                //    try
+                //    {
+                //        // 去掉空值避免C++端抽风
+                //        var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                //        File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                //        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                //        success = true; // 写入成功，跳出循环
+                //    }
+                //    catch
+                //    {
+                //        tried++;
+                //        AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                //        Thread.Sleep(500); // 等待0.5秒
+                //    }
+                //}
+                //if (!success)
+                //{
+                //    AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                //}
+                foreach (var i in Server.connectedWebsockets.Values)
                 {
-                    try
-                    {
-                        // 去掉空值避免C++端抽风
-                        var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-                        File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
-                        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
-                        success = true; // 写入成功，跳出循环
-                    }
-                    catch
-                    {
-                        tried++;
-                        AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
-                        Thread.Sleep(500); // 等待0.5秒
-                    }
-                }
-                if (!success)
-                {
-                    AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                    i.SendAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore })), System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
                 }
             }
 #endif
