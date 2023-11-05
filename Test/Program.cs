@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Test.Tests;
 using UmamusumeResponseAnalyzer;
+using UmamusumeResponseAnalyzer.Handler;
 
 namespace Test
 {
@@ -9,12 +10,12 @@ namespace Test
     {
         static void Main(string[] args)
         {
+            Config.Initialize();
             Database.Initialize();
-            var bytes = File.ReadAllBytes(@"C:\Users\micro\AppData\Local\UmamusumeResponseAnalyzer\packets\22-08-24 15-26-26-812R.msgpack");
+            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-05 23-08-07-633R.msgpack");
             var obj = JsonConvert.DeserializeObject<SingleModeCheckEventResponse>(MessagePack.MessagePackSerializer.ConvertToJson(bytes));
             if (obj == null) throw new Exception("反序列化失败");
-            obj.AsParseSingleModeCheckEventResponseTest()
-                .Run();
+            Handlers.ParseSkillTipsResponse(obj);
         }
     }
 }

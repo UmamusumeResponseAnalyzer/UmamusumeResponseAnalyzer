@@ -188,6 +188,10 @@ namespace UmamusumeResponseAnalyzer
                         {
                             data1.arc_data_set = data.arc_data_set;
                         }
+                        if (data.venus_data_set != null)
+                        {
+                            data1.venus_data_set = data.venus_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }

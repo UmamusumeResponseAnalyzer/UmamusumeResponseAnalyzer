@@ -359,7 +359,21 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //凯旋门前显示技能性价比
                 if (turnNum == 43 || turnNum == 67)
                 {
-                    CalculateSkillScoreCost(@event);
+                    var tips = CalculateSkillScoreCost(@event, false);
+
+                    var table1 = new Table();
+                    table1.Title("技能性价比排序");
+                    table1.AddColumns("技能名称", "pt", "评分", "性价比");
+                    table1.Columns[0].Centered();
+                    foreach (var i in tips
+                        // (string Name, int Cost, int Grade, double Cost-Performance)
+                        .Select(tip => (tip.Name, tip.GetRealCost(@event.data.chara_info), tip.GetRealGrade(@event.data.chara_info), (double)tip.GetRealGrade() / tip.GetRealCost()))
+                        .OrderByDescending(x => x.Item4))
+                    {
+                        table1.AddRow($"{i.Name}", $"{i.Item2}", $"{i.Item3}", $"{i.Item4:F3}");
+                    }
+
+                    AnsiConsole.Write(table1);
                 }
             }
             #endregion
