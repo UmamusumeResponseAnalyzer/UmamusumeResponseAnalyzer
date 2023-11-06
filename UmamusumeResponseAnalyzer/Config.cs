@@ -1,12 +1,7 @@
 ﻿using IniParser;
 using IniParser.Model;
-using MessagePack;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer

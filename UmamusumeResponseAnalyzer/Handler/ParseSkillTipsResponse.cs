@@ -85,9 +85,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             //双适性技能的评分计算有问题，需要重做数据库
             AnsiConsole.MarkupLine("[yellow]已知问题 [/]");
-            AnsiConsole.MarkupLine("[yellow]1.对于多距离或者多跑法的技能（例如英里/中距离），如果马娘对两种距离或跑法的适性不一样，评分计算可能错误 [/]");
-            AnsiConsole.MarkupLine("[yellow]2.暂时没考虑进化技能，若以上没有包括可进化技能，请自己决定是否购买 [/]");
-            AnsiConsole.MarkupLine("[yellow]3.没考虑紫色（负面）技能，请自己解除紫色技能 [/]");
+            AnsiConsole.MarkupLine("[yellow]1.对于学习技能后才能判定是否能进化的技能，暂时以无法进化考虑。若以上没有包括可进化技能，请自己决定是否购买 [/]");
+            AnsiConsole.MarkupLine("[yellow]2.没考虑紫色（负面）技能，请自己解除紫色技能 [/]");
             AnsiConsole.MarkupLine("[red]以上几种情况可以自己决定是否购买相应技能，购买之后重启游戏，即可重新计算 [/]");
             AnsiConsole.MarkupLine("[red]以下是一些参考指标 [/]");
 
