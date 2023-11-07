@@ -181,7 +181,8 @@ namespace UmamusumeResponseAnalyzer
                     if (dyn == default(dynamic)) return;
                     if (dyn == default(dynamic)) return;
                     var data = dyn.data;
-                    if (data.single_mode_load_common != null)//如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
+                    // 如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
+                    if (data.single_mode_load_common != null)
                     {
                         var data1 = data.single_mode_load_common;
                         if (data.arc_data_set != null)
@@ -195,14 +196,15 @@ namespace UmamusumeResponseAnalyzer
                         data = data1;
                         dyn.data = data;
                     }
-                    if (data.chara_info?.scenario_id == 5 || (data != null && data.venus_data_set != null))
+                    // 修复崩溃问题
+                    if (data.chara_info?.scenario_id == 5 || (data != null && data!.venus_data_set != null))
                     {
                         if (dyn.data.venus_data_set.race_start_info is JArray)
                             dyn.data.venus_data_set.race_start_info = null;
                         if (dyn.data.venus_data_set.venus_race_condition is JArray)
                             dyn.data.venus_data_set.venus_race_condition = null;
                     }
-                    if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
+                    if (data!.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
                             Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());

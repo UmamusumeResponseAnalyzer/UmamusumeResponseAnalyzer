@@ -192,8 +192,8 @@
   <data name="ConfigSet_ParseRoomMatchRaceStartResponse" xml:space="preserve">
     <value>ParseRoomMatchRaceStartResponse</value>
   </data>
-  <data name="LaunchMenu_Update_DownloadIdToNameInstruction" xml:space="preserve">
-    <value>Downloading id.json from GitHub</value>
+  <data name="LaunchMenu_Update_DownloadNamesInstruction" xml:space="preserve">
+    <value>Downloading names.json from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_DownloadProgramInstruction" xml:space="preserve">
     <value>Downloading program from GitHub</value>
@@ -252,17 +252,11 @@
   <data name="LaunchMenu_UninstallNetFilterDriver" xml:space="preserve">
     <value>Uninstall game accelerator driver</value>
   </data>
-  <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
-    <value>Downloading climaxitems.br from GitHub</value>
-  </data>
   <data name="LaunchMenu_Update_DownloadFactorIdsInstruction" xml:space="preserve">
     <value>Downloading factor_ids.br from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
     <value>Downloading talentskillsets.br from GitHub</value>
-  </data>
-  <data name="LaunchMenu_Update_DownloadTranslatedNameInstruction" xml:space="preserve">
-    <value>Downloading name_cn.br from GitHub</value>
   </data>
   <data name="MaximiumGradeSkillRecommendation_Caption" xml:space="preserve">
     <value>Predicted score: {0}(learned skills) + {1}(skills to be learned) + {2}(statuses) = {3}({4})</value>

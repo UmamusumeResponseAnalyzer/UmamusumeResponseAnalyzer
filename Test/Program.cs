@@ -11,7 +11,7 @@ namespace Test
         static void Main(string[] args)
         {
             Database.Initialize();
-            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-07 11-19-11-445R.msgpack");
+            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-07 16-46-03-039R.msgpack");
             var obj = JsonConvert.DeserializeObject<SingleModeCheckEventResponse>(MessagePack.MessagePackSerializer.ConvertToJson(bytes)) ?? throw new Exception("反序列化失败");
             Handlers.ParseSkillTipsResponse(obj);
         }

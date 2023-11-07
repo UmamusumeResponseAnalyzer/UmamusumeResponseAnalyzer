@@ -421,15 +421,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的climaxitems.br 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Update_DownloadClimaxItemInstruction {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Update_DownloadClimaxItemInstruction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 下载完成 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadedInstruction {
@@ -457,11 +448,11 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 正在从GitHub下载最新的id.br 的本地化字符串。
+        ///   查找类似 正在从GitHub下载最新的names.br 的本地化字符串。
         /// </summary>
-        public static string LaunchMenu_Update_DownloadIdToNameInstruction {
+        public static string LaunchMenu_Update_DownloadNamesInstruction {
             get {
-                return ResourceManager.GetString("LaunchMenu_Update_DownloadIdToNameInstruction", resourceCulture);
+                return ResourceManager.GetString("LaunchMenu_Update_DownloadNamesInstruction", resourceCulture);
             }
         }
         
@@ -498,15 +489,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Update_DownloadTalentSkillInstruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Update_DownloadTalentSkillInstruction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 正在从GitHub下载最新的name_cn.br 的本地化字符串。
-        /// </summary>
-        public static string LaunchMenu_Update_DownloadTranslatedNameInstruction {
-            get {
-                return ResourceManager.GetString("LaunchMenu_Update_DownloadTranslatedNameInstruction", resourceCulture);
             }
         }
         

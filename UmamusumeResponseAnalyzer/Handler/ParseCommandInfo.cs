@@ -232,8 +232,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else
                 {
                     //补全SSRivalsSpecialBuffs，或者检查是否和已存储的SSRivalsSpecialBuffs自洽
-                    if (GameStats.SSRivalsSpecialBuffs == null)
-                        GameStats.SSRivalsSpecialBuffs = new Dictionary<int, int>();
+                    GameStats.SSRivalsSpecialBuffs ??= new Dictionary<int, int>();
 
                     GameStats.SSRivalsSpecialBuffs[1014] = 9;
                     GameStats.SSRivalsSpecialBuffs[1007] = 8;
@@ -272,12 +271,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                             }
                         }
                     }
-
-
                 }
-
-
-
 
                 var supportCards1 = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
                 for (int cardCount = 0; cardCount < 8; cardCount++)
@@ -285,7 +279,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (supportCards1.Any(x => x.Key == cardCount))
                     {
 
-                        var name = Database.SupportIdToShortName[supportCards1[cardCount]].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
+                        var name = Database.Names[supportCards1[cardCount]].Cast<SupportCardName>().SimpleName.EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                         if (name.Length > 7)
                             name = name[..7];
 
@@ -804,13 +798,13 @@ namespace UmamusumeResponseAnalyzer.Handler
             //table.AddRow(outputItems);
             //table.AddRow(separatorLine);
 
-            #region LArc
             //以下几项用于计算单次训练能充多少格
             var LArcRivalBoostCount = new int[,] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };// 五种训练的充电槽为0,1,2格的个数
             var LArcShiningCount = new int[] { 0, 0, 0, 0, 0 };//彩圈个数
             var LArcfriendAppear = new bool[] { false, false, false, false, false };//友人在不在
 
-            var supportCards = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id); //当前S卡卡组
+            // 当前S卡卡组
+            var supportCards = @event.data.chara_info.support_card_array.ToDictionary(x => x.position, x => x.support_card_id);
             var commandInfo = new Dictionary<int, string[]>();
             foreach (var command in @event.data.home_info.command_info_array)
             {
@@ -826,7 +820,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                         turnStat.isTraining = true;
                         var priority = PartnerPriority.默认;
 
-                        var name = Database.SupportIdToShortName[(partner >= 1 && partner <= 7) ? supportCards[partner] : partner].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
+                        // partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
+                        string name = (partner >= 1 && partner <= 7 ? name = Database.Names[supportCards[partner]].Cast<SupportCardName>().SimpleName : Database.Names[partner].Name).EscapeMarkup();
                         if (name.Length > 7)
                             name = name[..7];
                         if (!(partner >= 1 && partner <= 7) && name.Length > 2)//非支援卡，名字可以更短
@@ -890,7 +885,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                                     shouldShining = true;
                                     nameColor = $"[#80ff00]";
                                 }
-
                             }
 
                             if (shouldShining)
@@ -926,7 +920,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                             if (friendship < 100) //羁绊不满100，显示羁绊
                                 nameAppend += $"[red]{friendship}[/]";
 
-
                         if (isArcPartner && !LArcIsAbroad)
                         {
                             var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == partner).chara_id;
@@ -948,7 +941,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
 
                         name = $"{nameColor}{name}[/]{nameAppend}";
-
                         name = tips.Contains(partner) ? $"[red]![/]{name}" : name; //有Hint就加个红感叹号，和游戏内表现一样
 
                         return (priority, name);
@@ -983,7 +975,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 table.AddToRows(7, outputItems);
             }
             table.AddToRows(8, separatorLine);
-            #endregion
 
             for (var i = 0; i < 5; ++i)
             {
@@ -1112,14 +1103,22 @@ namespace UmamusumeResponseAnalyzer.Handler
                 for (var i = 0; i < rivalNum; i++)
                 {
                     var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
-                    var rivalName = Database.SupportIdToShortName[chara_id];
+                    var rivalName = Database.Names[chara_id].Name;
                     if (rivalName.Length > 4)
                         rivalName = rivalName[..4];
                     if (rivalNum == 5)
                     {
+                        // SS Match中的S卡
+                        var sc = supportCards.Values.FirstOrDefault(sc => chara_id == Database.Names[sc].Cast<SupportCardName>().CharaId);
                         if (@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark != 1)
                             rivalName = $"[#ff0000]{rivalName}(可能失败)[/]";
-                        else if (@event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
+                        // 羁绊不满80的S卡
+                        else if (sc != default && @event.data.chara_info.evaluation_info_array[supportCards.First(x => x.Value == sc).Key - 1].evaluation < 80)
+                        {
+                            rivalName = $"[yellow]{rivalName}[/]";
+                        }
+                        // SSS Match
+                        else if (@event.data.arc_data_set.selection_info.is_special_match == 1)
                             rivalName = $"[#00ffff]{rivalName}[/]";
                         else
                             rivalName = $"[#00ff00]{rivalName}[/]";
@@ -1153,7 +1152,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         if (extraHeadCount > 5) //只能放得下5个人
                             continue;
 
-                        var rivalName = Database.SupportIdToShortName[chara_id];
+                        var rivalName = Database.Names[chara_id].Name;
                         if (rivalName.Length > 4)
                             rivalName = rivalName[..4];
 

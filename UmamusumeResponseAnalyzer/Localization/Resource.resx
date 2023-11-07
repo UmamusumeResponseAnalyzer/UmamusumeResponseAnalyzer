@@ -192,8 +192,8 @@
   <data name="ConfigSet_ParseRoomMatchRaceStartResponse" xml:space="preserve">
     <value>解析房间比赛</value>
   </data>
-  <data name="LaunchMenu_Update_DownloadIdToNameInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的id.br</value>
+  <data name="LaunchMenu_Update_DownloadNamesInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的names.br</value>
   </data>
   <data name="LaunchMenu_Update_DownloadProgramInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的主程序文件</value>
@@ -242,12 +242,6 @@
   </data>
   <data name="ConfigSet_ShowCommandInfo" xml:space="preserve">
     <value>显示训练人头信息</value>
-  </data>
-  <data name="LaunchMenu_Update_DownloadTranslatedNameInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的name_cn.br</value>
-  </data>
-  <data name="LaunchMenu_Update_DownloadClimaxItemInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的climaxitems.br</value>
   </data>
   <data name="LaunchMenu_Update_DownloadTalentSkillInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的talentskillsets.br</value>

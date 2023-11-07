@@ -10,12 +10,10 @@ namespace UmamusumeResponseAnalyzer
     {
         #region Paths
         internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.br");
-        internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "successevents.br");
-        internal static string ID_TO_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "id.br");
-        internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skilldata.br");
-        internal static string SUPPORT_ID_SHORTNAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "name_cn.br");
-        internal static string CLIMAX_ITEM_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "climaxitems.br");
-        internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talentskillsets.br");
+        internal static string SUCCESS_EVENT_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "success_events.br");
+        internal static string NAMES_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "names.br");
+        internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skill_data.br");
+        internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talent_skill_sets.br");
         internal static string FACTOR_IDS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "factor_ids.br");
         internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>("本地化文件路径");
         #endregion
@@ -43,15 +41,11 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
-        public static NullableIdNameDictionary IdToName { get; set; } = new();
-        /// <summary>
-        /// S卡ID到马娘名的Dictionary，用于显示训练时的人头信息
-        /// </summary>
-        public static NullableIdNameDictionary SupportIdToShortName { get; set; } = new();
+        public static Dictionary<int, BaseName> Names { get; set; } = null!;
         /// <summary>
         /// 巅峰杯道具的ID及其对应名称
         /// </summary>
-        public static NullableIdNameDictionary ClimaxItem { get; set; } = new();
+        public static NullableIdNameDictionary ClimaxItem { get; private set; } = new() { { 1001, "速+3" }, { 1002, "耐+3" }, { 1003, "力+3" }, { 1004, "根+3" }, { 1005, "智+3" }, { 1101, "速+7" }, { 1102, "耐+7" }, { 1103, "力+7" }, { 1104, "根+7" }, { 1105, "智+7" }, { 1201, "速+15" }, { 1202, "耐+15" }, { 1203, "力+15" }, { 1204, "根+15" }, { 1205, "智+15" }, { 2001, "体力+20" }, { 2002, "体力+40" }, { 2003, "体力+65" }, { 2101, "苦茶" }, { 2201, "体力上限+4" }, { 2202, "体力上限+8" }, { 2301, "干劲+1" }, { 2302, "干劲+2" }, { 3001, "猫罐头" }, { 3101, "BBQ" }, { 4001, "爱娇" }, { 4002, "注目株" }, { 4003, "练习上手" }, { 4004, "切者" }, { 4101, "解寝不足" }, { 4102, "解摸鱼癖" }, { 4103, "解肌荒" }, { 4104, "解发胖" }, { 4105, "解头痛" }, { 4106, "解练习下手" }, { 4201, "解全DB" }, { 5001, "速请愿书" }, { 5002, "耐请愿书" }, { 5003, "力请愿书" }, { 5004, "根请愿书" }, { 5005, "智请愿书" }, { 7001, "哨子" }, { 8001, "20%喇叭" }, { 8002, "40%喇叭" }, { 8003, "60%喇叭" }, { 9001, "速负重脚环" }, { 9002, "耐负重脚环" }, { 9003, "力负重脚环" }, { 9004, "根负重脚环" }, { 10001, "御守" }, { 11001, "蹄铁・匠" }, { 11002, "蹄铁・極" }, { 11003, "荧光棒" } };
         /// <summary>
         /// 马娘的天赋技能,Key是CardId
         /// </summary>
@@ -63,7 +57,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 可获得胜鞍的Id
         /// </summary>
-        public static int[] SaddleIds { get; set; } = new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184 };
+        public static int[] SaddleIds { get; } = new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184 };
         /// <summary>
         /// 胜鞍ID对应的比赛/奖章名
         /// </summary>
@@ -84,11 +78,11 @@ namespace UmamusumeResponseAnalyzer
                 if (successEvent != default)
                     SuccessEvent = successEvent;
             }
-            if (File.Exists(ID_TO_NAME_FILEPATH))
+            if (File.Exists(NAMES_FILEPATH))
             {
-                var idToName = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(ID_TO_NAME_FILEPATH));
-                if (idToName != default)
-                    IdToName = idToName;
+                var names = JsonConvert.DeserializeObject<List<BaseName>>(Load(NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+                if (names != default)
+                    Names = names.ToDictionary(x => x.Id, x => x);
             }
             if (File.Exists(SKILLS_FILEPATH))
             {
@@ -97,18 +91,6 @@ namespace UmamusumeResponseAnalyzer
                 {
                     Skills = new SkillManager(skills);
                 }
-            }
-            if (File.Exists(SUPPORT_ID_SHORTNAME_FILEPATH))
-            {
-                var supportIdToShortName = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(SUPPORT_ID_SHORTNAME_FILEPATH));
-                if (supportIdToShortName != default)
-                    SupportIdToShortName = supportIdToShortName;
-            }
-            if (File.Exists(CLIMAX_ITEM_FILEPATH))
-            {
-                var climaxItem = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(CLIMAX_ITEM_FILEPATH));
-                if (climaxItem != default)
-                    ClimaxItem = climaxItem;
             }
             if (File.Exists(TALENT_SKILLS_FILEPATH))
             {
@@ -133,11 +115,11 @@ namespace UmamusumeResponseAnalyzer
                         {
                             case TextDataCategory.CostumeName:
                                 foreach (var j in i.Value)
-                                    IdToName[j.Key] = j.Value;
+                                    Names[j.Key].Name = j.Value;
                                 break;
-                            case TextDataCategory.UmaName:
+                            case TextDataCategory.CharacterName:
                                 foreach (var j in i.Value)
-                                    SupportIdToShortName[j.Key] = j.Value;
+                                    Names[j.Key].Name = j.Value;
                                 break;
                             case TextDataCategory.SkillName:
                                 var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? new List<SkillData>();

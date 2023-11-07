@@ -12,13 +12,13 @@ namespace UmamusumeResponseAnalyzer.Entities
     public enum TextDataCategory
     {
         /// <summary>
-        /// 不同复制人的名字 100703 [La mode 564]黄金船
+        /// 不同复制人的称号 100703 [La mode 564]
         /// </summary>
-        CostumeName = 4,
+        CostumeName = 5,
         /// <summary>
         /// 马娘本体的名字 1025 曼城茶座
         /// </summary>
-        UmaName = 6,
+        CharacterName = 6,
         /// <summary>
         /// 技能名 100041 红焰齿轮/LP1211-M
         /// </summary>
