@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System.Linq;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Localization;
@@ -11,22 +12,23 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             var tips = CalculateSkillScoreCost(@event, true);
             var totalSP = @event.data.chara_info.skill_point;
+            // 可以进化的天赋技能，即觉醒3、5的那两个金技能
+            var upgradableTalentSkills = Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level && (x.Rank == 3 || x.Rank == 5));
+            var archivedConditions = @event.data.chara_info.skill_upgrade_info_array.Where(x => x.total_count == x.current_count).Select(x => x.condition_id);
 
             //把天赋技能替换成进化技能
             if (Database.TalentSkill.ContainsKey(@event.data.chara_info.card_id))
             {
-                var archivedConditions = @event.data.chara_info.skill_upgrade_info_array.Where(x => x.total_count == x.current_count).Select(x => x.condition_id);
-                foreach (var i in Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level))
+                foreach (var i in upgradableTalentSkills)
                 {
-                    if (i.Rank != 3 && i.Rank != 5) continue;
                     var notUpgradedIndex = tips.FindIndex(x => x.Id == i.SkillId);
+                    if (notUpgradedIndex == -1) continue;
                     var upgradableSkills = i.UpgradeSkills.Where(x => x.Value.Intersect(archivedConditions).Any());
                     if (upgradableSkills.Any())
                     {
                         var notUpgradedSkill = tips[notUpgradedIndex];
                         var upgradedSkill = Database.Skills[upgradableSkills.First().Key];
                         upgradedSkill = upgradedSkill.Apply(@event.data.chara_info, @event.data.chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == notUpgradedSkill.GroupId && x.rarity == notUpgradedSkill.Rarity)?.level ?? 0);
-                        Console.WriteLine($"{upgradedSkill.Name} {upgradedSkill.Grade}");
                         upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
                         upgradedSkill.Cost = notUpgradedSkill.GetRealCost(@event.data.chara_info);
                         tips[notUpgradedIndex] = upgradedSkill;
@@ -66,7 +68,17 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     if (Database.Skills[i.skill_id] == null) continue;
                     var (GroupId, Rarity, Rate) = Database.Skills.Deconstruction(i.skill_id);
-                    previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Apply(@event.data.chara_info, 0).Grade;
+                    var upgradableSkills = upgradableTalentSkills.FirstOrDefault(x => x.SkillId == i.skill_id);
+                    // 学了可进化的技能，且满足进化条件，则按进化计算分数
+                    if (upgradableSkills != default && upgradableSkills.UpgradeSkills.Values.SelectMany(x => x).Intersect(archivedConditions).Any())
+                    {
+                        var upgradedSkillId = upgradableSkills.UpgradeSkills.First().Key;
+                        previousLearnPoint += Database.Skills[upgradedSkillId] == null ? 0 : Database.Skills[upgradedSkillId].Apply(@event.data.chara_info, 0).Grade;
+                    }
+                    else
+                    {
+                        previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Apply(@event.data.chara_info, 0).Grade;
+                    }
                 }
             }
             var willLearnPoint = learn.Sum(x => x.GetRealGrade(@event.data.chara_info));
@@ -93,7 +105,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             #region 计算边际性价比与减少50/100/150/.../500pt的平均性价比
             //计算平均性价比
             var dp = dpResult.Item2;
-            var totalSP0 = totalSP;
+            var totalSP0 = @event.data.chara_info.skill_point;
             if (totalSP0 > 0)
                 AnsiConsole.MarkupLine($"[aqua]平均性价比：{(double)willLearnPoint / totalSP0:F3}[/]");
             //计算边际性价比，对totalSP正负50的范围做线性回归

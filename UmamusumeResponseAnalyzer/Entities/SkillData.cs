@@ -177,7 +177,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             return _realCost;
         }
         /// <summary>
-        /// 扣除已买技能的开销后的实际分数，*双适性技能的评分计算有问题，需要重做数据库*
+        /// 扣除已买技能的开销后的实际分数
         /// </summary>
         /// <param name="chara_info">角色信息</param>
         /// <returns></returns>
