@@ -49,12 +49,10 @@ namespace UmamusumeResponseAnalyzer.Entities
         public int Grade;
         public int Cost;
         public int DisplayOrder;
-        public GroundType Ground;
-        public DistanceType Distance;
-        public StyleType Style;
+        public SkillProper[] Propers;
 
         /// <summary>
-        /// 根据马的属性应用折扣及相性加成
+        /// 根据马的属性应用折扣，改变技能的价格
         /// </summary>
         /// <param name="chara_info">@event.data.chara_info</param>
         /// <param name="level">该技能的折扣等级</param>
@@ -73,58 +71,77 @@ namespace UmamusumeResponseAnalyzer.Entities
             };
             Cost = Cost * (100 - off - cutted) / 100;
         }
+        /// <summary>
+        /// 根据马的属性应用相性加成，改变技能的分数
+        /// </summary>
+        /// <param name="chara_info">@event.data.chara_info</param>
         private void ApplyProper(Gallop.SingleModeChara chara_info)
         {
-            switch (Ground)
+            // 仅在技能有触发条件时应用，假设通用技能分数固定不变
+            if (Propers.Any())
             {
-                case GroundType.Dirt:
-                    Grade = applyProperLevel(Grade, chara_info.proper_ground_dirt);
-                    break;
-                case GroundType.Turf:
-                    Grade = applyProperLevel(Grade, chara_info.proper_ground_turf);
-                    break;
-            }
-            switch (Distance)
-            {
-                case DistanceType.Short:
-                    Grade = applyProperLevel(Grade, chara_info.proper_distance_short);
-                    break;
-                case DistanceType.Mile:
-                    Grade = applyProperLevel(Grade, chara_info.proper_distance_mile);
-                    break;
-                case DistanceType.Middle:
-                    Grade = applyProperLevel(Grade, chara_info.proper_distance_middle);
-                    break;
-                case DistanceType.Long:
-                    Grade = applyProperLevel(Grade, chara_info.proper_distance_long);
-                    break;
-            }
-            switch (Style)
-            {
-                case StyleType.Nige:
-                    Grade = applyProperLevel(Grade, chara_info.proper_running_style_nige);
-                    break;
-                case StyleType.Senko:
-                    Grade = applyProperLevel(Grade, chara_info.proper_running_style_senko);
-                    break;
-                case StyleType.Sashi:
-                    Grade = applyProperLevel(Grade, chara_info.proper_running_style_sashi);
-                    break;
-                case StyleType.Oikomi:
-                    Grade = applyProperLevel(Grade, chara_info.proper_running_style_oikomi);
-                    break;
-            }
+                Grade = Propers.Max(i =>
+                {
+                    var grade = Grade;
+                    // 泥地技能似乎不受适性影响，gamewith报告为1.0，bwiki报告为+120，按gw的试试
+                    //switch (i.Ground)
+                    //{
+                    //    case SkillProper.GroundType.Dirt:
+                    //        grade = applyProperLevel(grade, chara_info.proper_ground_dirt);
+                    //        break;
+                    //    case SkillProper.GroundType.Turf:
+                    //        grade = applyProperLevel(grade, chara_info.proper_ground_turf);
+                    //        break;
+                    //}
+                    switch (i.Style)
+                    {
+                        case SkillProper.StyleType.Nige:
+                            grade = applyProperLevel(grade, chara_info.proper_running_style_nige);
+                            break;
+                        case SkillProper.StyleType.Senko:
+                            grade = applyProperLevel(grade, chara_info.proper_running_style_senko);
+                            break;
+                        case SkillProper.StyleType.Sashi:
+                            grade = applyProperLevel(grade, chara_info.proper_running_style_sashi);
+                            break;
+                        case SkillProper.StyleType.Oikomi:
+                            grade = applyProperLevel(grade, chara_info.proper_running_style_oikomi);
+                            break;
+                    }
+                    switch (i.Distance)
+                    {
+                        case SkillProper.DistanceType.Short:
+                            grade = applyProperLevel(grade, chara_info.proper_distance_short);
+                            break;
+                        case SkillProper.DistanceType.Mile:
+                            grade = applyProperLevel(grade, chara_info.proper_distance_mile);
+                            break;
+                        case SkillProper.DistanceType.Middle:
+                            grade = applyProperLevel(grade, chara_info.proper_distance_middle);
+                            break;
+                        case SkillProper.DistanceType.Long:
+                            grade = applyProperLevel(grade, chara_info.proper_distance_long);
+                            break;
+                    }
+                    return grade;
+                });
 
-            static int applyProperLevel(int grade, int level) => level switch
-            {
-                8 or 7 => (int)Math.Round(grade * 1.1), //S,A
-                6 or 5 => (int)Math.Round(grade * 0.9), //B,C
-                4 or 3 or 2 => (int)Math.Round(grade * 0.8), //D,E,F
-                1 => (int)Math.Round(grade * 0.7), //G
-                _ => 0,
-            };
-
+                static int applyProperLevel(int grade, int level) => level switch
+                {
+                    8 or 7 => (int)Math.Round(grade * 1.1), //S,A
+                    6 or 5 => (int)Math.Round(grade * 0.9), //B,C
+                    4 or 3 or 2 => (int)Math.Round(grade * 0.8), //D,E,F
+                    1 => (int)Math.Round(grade * 0.7), //G
+                    _ => 0,
+                };
+            }
         }
+        /// <summary>
+        /// 应用折扣及适性加成，返回的是一个新的对象
+        /// </summary>
+        /// <param name="chara_info"></param>
+        /// <param name="level"></param>
+        /// <returns>新的对象！！记得赋值</returns>
         public SkillData Apply(Gallop.SingleModeChara chara_info, int level = int.MinValue)
         {
             if (level == int.MinValue)
@@ -160,7 +177,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             return _realCost;
         }
         /// <summary>
-        /// 扣除已买技能的开销后的实际分数，*双适性技能的评分计算有问题，需要重做数据库*
+        /// 扣除已买技能的开销后的实际分数
         /// </summary>
         /// <param name="chara_info">角色信息</param>
         /// <returns></returns>
@@ -194,66 +211,43 @@ namespace UmamusumeResponseAnalyzer.Entities
                 Grade = Grade,
                 Cost = Cost,
                 DisplayOrder = DisplayOrder,
-                Ground = Ground,
-                Distance = Distance,
-                Style = Style
+                Propers = Propers
             };
-        public enum GroundType
+
+        public class SkillProper
         {
-            None,
-            /// <summary>
-            /// 芝
-            /// </summary>
-            Turf,
-            /// <summary>
-            /// 泥
-            /// </summary>
-            Dirt
-        }
-        public enum DistanceType
-        {
-            None,
-            /// <summary>
-            /// 短
-            /// </summary>
-            Short,
-            /// <summary>
-            /// 英
-            /// </summary>
-            Mile,
-            /// <summary>
-            /// 中
-            /// </summary>
-            Middle,
-            /// <summary>
-            /// 长
-            /// </summary>
-            Long
-        }
-        public enum StyleType
-        {
-            None,
-            /// <summary>
-            /// 逃
-            /// </summary>
-            Nige,
-            /// <summary>
-            /// 先
-            /// </summary>
-            Senko,
-            /// <summary>
-            /// 差
-            /// </summary>
-            Sashi,
-            /// <summary>
-            /// 追
-            /// </summary>
-            Oikomi
+            public GroundType Ground { get; set; } = GroundType.None;
+            public DistanceType Distance { get; set; } = DistanceType.None;
+            public StyleType Style { get; set; } = StyleType.None;
+
+            public enum GroundType
+            {
+                None,
+                Turf,
+                Dirt
+            }
+            public enum DistanceType
+            {
+                None,
+                Short,
+                Mile,
+                Middle,
+                Long
+            }
+            public enum StyleType
+            {
+                None,
+                Nige,
+                Senko,
+                Sashi,
+                Oikomi
+            }
         }
     }
     public class TalentSkillData
     {
-        public int SkillId { get; set; }
-        public int Rank { get; set; }
+        public int SkillId;
+        public int Rank;
+        public Dictionary<int, int[]> UpgradeSkills = new();
     }
 }

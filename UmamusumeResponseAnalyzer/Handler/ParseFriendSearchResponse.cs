@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -22,7 +23,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             AnsiConsole.Write(new Rule());
             AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
-            AnsiConsole.WriteLine($"种马：{Database.IdToName?[chara.card_id]}\t胜鞍：{win_saddle}\t\t评分：{chara.rank_score}");
+            AnsiConsole.WriteLine($"种马：{Database.Names[chara.card_id].Cast<UmaName>().FullName}\t胜鞍：{win_saddle}\t\t评分：{chara.rank_score}");
             AnsiConsole.WriteLine($"胜鞍列表：{string.Join(',', charaWinSaddle)}");
             if (Database.SaddleNames.Any())
                 AnsiConsole.WriteLine($"胜鞍详细：{string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x]))}{Environment.NewLine}");
@@ -45,7 +46,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             var data = @event.data;
             AnsiConsole.Write(new Rule());
             AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\t\tID：{data.user_info_summary.viewer_id}");
-            AnsiConsole.WriteLine($"种马：{Database.IdToName?[data.user_info_summary.user_trained_chara.card_id]}");
+            AnsiConsole.WriteLine($"种马：{Database.Names[data.user_info_summary.user_trained_chara.card_id].Cast<UmaName>().FullName}");
             var tree = new Tree("因子");
 
             var i = data.user_info_summary.user_trained_chara;

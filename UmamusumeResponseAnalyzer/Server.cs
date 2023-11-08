@@ -9,14 +9,17 @@ using UmamusumeResponseAnalyzer.Handler;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using UmamusumeResponseAnalyzer.Game;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace UmamusumeResponseAnalyzer
 {
     internal static class Server
     {
-        static HttpListener httpListener;
-        static readonly object _lock = new();
-        static Mutex Mutex;
+        private static HttpListener httpListener;
+        private static readonly object _lock = new();
+        private static Mutex Mutex;
+        public static Dictionary<string, WebSocket> connectedWebsockets = new();
         public static ManualResetEvent OnPing = new(false);
         public static void Start()
         {
@@ -63,13 +66,21 @@ namespace UmamusumeResponseAnalyzer
                     {
                         var ctx = await httpListener.GetContextAsync();
 
-                        using var ms = new MemoryStream();
-                        ctx.Request.InputStream.CopyTo(ms);
-                        var buffer = ms.ToArray();
-
-                        if (ctx.Request.RawUrl == "/notify/response")
+                        // 处理websocket请求
+                        if (ctx.Request.IsWebSocketRequest)
                         {
-                            Directory.CreateDirectory("packets");
+                            HandleWebsocket(ctx);
+                        }
+                        // 处理http请求
+                        else
+                        {
+                            using var ms = new MemoryStream();
+                            ctx.Request.InputStream.CopyTo(ms);
+                            var buffer = ms.ToArray();
+
+                            if (ctx.Request.RawUrl == "/notify/response")
+                            {
+                                Directory.CreateDirectory("packets");
 #if WRITE_GAME_STATISTICS
                             var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
                             if (!Directory.Exists(statsDirectory))
@@ -78,51 +89,52 @@ namespace UmamusumeResponseAnalyzer
                             }
 #endif
 
-#if DEBUG||WRITE_GAME_LOG
+#if DEBUG || WRITE_GAME_LOG
 
                             File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
                             File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
-                            if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
-                            {
-                                var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
-                                if (Directory.Exists(directory))
+                                if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
                                 {
-                                    foreach (var i in Directory.GetFiles(directory))
+                                    var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                                    if (Directory.Exists(directory))
                                     {
-                                        var fileInfo = new FileInfo(i);
-                                        if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
-                                            fileInfo.Delete();
+                                        foreach (var i in Directory.GetFiles(directory))
+                                        {
+                                            var fileInfo = new FileInfo(i);
+                                            if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
+                                                fileInfo.Delete();
+                                        }
                                     }
+                                    else
+                                    {
+                                        Directory.CreateDirectory(directory);
+                                    }
+                                    File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.msgpack", buffer);
                                 }
-                                else
-                                {
-                                    Directory.CreateDirectory(directory);
-                                }
-                                File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.msgpack", buffer);
+                                _ = Task.Run(() => ParseResponse(buffer));
                             }
-                            _ = Task.Run(() => ParseResponse(buffer));
-                        }
-                        else if (ctx.Request.RawUrl == "/notify/request")
-                        {
-                            Directory.CreateDirectory("packets");
-#if DEBUG||WRITE_GAME_LOG
+                            else if (ctx.Request.RawUrl == "/notify/request")
+                            {
+                                Directory.CreateDirectory("packets");
+#if DEBUG || WRITE_GAME_LOG
                             File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
 
 #endif
-                            _ = Task.Run(() => ParseRequest(buffer[170..]));
-                        }
-                        else if (ctx.Request.RawUrl == "/notify/ping")
-                        {
-                            AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
-                            await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
-                            ctx.Response.Close();
-                            OnPing.Signal();
-                            continue;
-                        }
+                                _ = Task.Run(() => ParseRequest(buffer[170..]));
+                            }
+                            else if (ctx.Request.RawUrl == "/notify/ping")
+                            {
+                                AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
+                                await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
+                                ctx.Response.Close();
+                                OnPing.Signal();
+                                continue;
+                            }
 
-                        await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
-                        ctx.Response.Close();
+                            await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
+                            ctx.Response.Close();
+                        }
                     }
                     catch
                     {
@@ -144,9 +156,9 @@ namespace UmamusumeResponseAnalyzer
 
                     if (dyn == default(dynamic)) return;
 
-                    if (dyn.command_type==1) //玩家点击了训练
+                    if (dyn.command_type == 1) //玩家点击了训练
                     {
-                       Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
+                        Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
 
 
@@ -165,28 +177,34 @@ namespace UmamusumeResponseAnalyzer
                 {
                     var jsonstr = MessagePackSerializer.ConvertToJson(buffer);
                     //AnsiConsole.WriteLine(jsonstr);
-                    var dyn = JsonConvert.DeserializeObject<dynamic>(jsonstr); 
+                    var dyn = JsonConvert.DeserializeObject<dynamic>(jsonstr);
                     if (dyn == default(dynamic)) return;
                     if (dyn == default(dynamic)) return;
                     var data = dyn.data;
-                    if (data.single_mode_load_common != null)//如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
+                    // 如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
+                    if (data.single_mode_load_common != null)
                     {
                         var data1 = data.single_mode_load_common;
                         if (data.arc_data_set != null)
                         {
                             data1.arc_data_set = data.arc_data_set;
                         }
+                        if (data.venus_data_set != null)
+                        {
+                            data1.venus_data_set = data.venus_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }
-                    if (data.chara_info?.scenario_id == 5 || (data != null && data.venus_data_set != null))
+                    // 修复崩溃问题
+                    if (data.chara_info?.scenario_id == 5 || (data != null && data!.venus_data_set != null))
                     {
                         if (dyn.data.venus_data_set.race_start_info is JArray)
                             dyn.data.venus_data_set.race_start_info = null;
                         if (dyn.data.venus_data_set.venus_race_condition is JArray)
                             dyn.data.venus_data_set.venus_race_condition = null;
                     }
-                    if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
+                    if (data!.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
                             Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
@@ -250,6 +268,42 @@ namespace UmamusumeResponseAnalyzer
                     AnsiConsole.MarkupLine("[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]");
                     AnsiConsole.WriteException(e);
                 }
+            }
+        }
+        static async void HandleWebsocket(HttpListenerContext ctx)
+        {
+            var wsctx = await ctx.AcceptWebSocketAsync(null);
+            var ws = wsctx.WebSocket;
+            try
+            {
+                connectedWebsockets.Add(wsctx.SecWebSocketKey, ws);
+                var wsbuffer = new byte[64];
+                var contentbuffer = new List<byte>();
+                while (ws.State == WebSocketState.Open)
+                {
+                    var msg = await ws.ReceiveAsync(wsbuffer, CancellationToken.None);
+                    contentbuffer.AddRange(msg.EndOfMessage ? wsbuffer[..msg.Count] : wsbuffer);
+
+                    if (msg.EndOfMessage)
+                    {
+                        if (msg.MessageType == WebSocketMessageType.Close)
+                        {
+                            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                        }
+                        else if (msg.MessageType == WebSocketMessageType.Text)
+                        {
+                            var str = Encoding.UTF8.GetString(contentbuffer.ToArray());
+                            await ws.SendAsync(contentbuffer.ToArray(), WebSocketMessageType.Text, msg.EndOfMessage, CancellationToken.None);
+                            contentbuffer.Clear();
+                        }
+                    }
+                }
+            }
+            catch { }
+            finally
+            {
+                ws.Dispose();
+                connectedWebsockets.Remove(wsctx.SecWebSocketKey);
             }
         }
     }

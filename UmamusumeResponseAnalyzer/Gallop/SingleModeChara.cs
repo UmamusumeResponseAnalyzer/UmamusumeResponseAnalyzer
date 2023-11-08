@@ -126,5 +126,7 @@ namespace Gallop
 		public int[] route_race_id_array; // 0x110
 		[Key("guest_outing_info_array")]
 		public GuestOutingInfo[] guest_outing_info_array; // 0x118
-	}
+		[Key("skill_upgrade_info_array")]
+		public SkillUpgradeInfo[] skill_upgrade_info_array;
+    }
 }

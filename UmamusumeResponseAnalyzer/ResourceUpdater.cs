@@ -107,17 +107,11 @@ namespace UmamusumeResponseAnalyzer
                     var successEventTask = Download(ctx, Resource.LaunchMenu_Update_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
                     tasks.Add(successEventTask);
 
-                    var idToNameTask = Download(ctx, Resource.LaunchMenu_Update_DownloadIdToNameInstruction, Database.ID_TO_NAME_FILEPATH);
-                    tasks.Add(idToNameTask);
+                    var namesTask = Download(ctx, Resource.LaunchMenu_Update_DownloadNamesInstruction, Database.NAMES_FILEPATH);
+                    tasks.Add(namesTask);
 
                     var skillTask = Download(ctx, Resource.LaunchMenu_Update_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
                     tasks.Add(skillTask);
-
-                    var translatedNameTask = Download(ctx, Resource.LaunchMenu_Update_DownloadTranslatedNameInstruction, Database.SUPPORT_ID_SHORTNAME_FILEPATH);
-                    tasks.Add(translatedNameTask);
-
-                    var climaxItemTask = Download(ctx, Resource.LaunchMenu_Update_DownloadClimaxItemInstruction, Database.CLIMAX_ITEM_FILEPATH);
-                    tasks.Add(climaxItemTask);
 
                     var talentSkillTask = Download(ctx, Resource.LaunchMenu_Update_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
                     tasks.Add(talentSkillTask);

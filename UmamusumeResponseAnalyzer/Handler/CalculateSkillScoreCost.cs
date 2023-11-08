@@ -14,13 +14,11 @@ namespace UmamusumeResponseAnalyzer.Handler
     public static partial class Handlers
     {
         //按技能性价比排序
-        public static void CalculateSkillScoreCost(Gallop.SingleModeCheckEventResponse @event)
+        public static List<SkillData> CalculateSkillScoreCost(Gallop.SingleModeCheckEventResponse @event, bool removeInferiors)
         {
-            //@event.data.chara_info.proper_running_style_senko = 7;//测试用，懒得删了
             AnsiConsole.MarkupLine($"[green]-----------------------------------------------------------------[/]");
             bool hasUnknownSkills = false;
             var totalSP = @event.data.chara_info.skill_point;
-            //
             var tipsRaw = @event.data.chara_info.skill_tips_array;
             var tipsExistInDatabase = tipsRaw.Where(x => Database.Skills[(x.group_id, x.rarity)] != null);//去掉数据库中没有的技能，避免报错
             var tipsNotExistInDatabase = tipsRaw.Where(x => Database.Skills[(x.group_id, x.rarity)] == null);//数据库中没有的技能
@@ -86,6 +84,26 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
+
+            if (removeInferiors)
+            {
+                // 保证技能列表中的列表都是最上位技能（有下位技能则去除）
+                // 理想中tips里应只保留最上位技能，其所有的下位技能都去除
+                var inferiors = tips
+                        .SelectMany(x => Database.Skills.GetAllByGroupId(x.GroupId))
+                        .DistinctBy(x => x.Id)
+                        .OrderByDescending(x => x.Rarity)
+                        .ThenByDescending(x => x.Rate)
+                        .GroupBy(x => x.GroupId)
+                        .Where(x => x.Any())
+                        .SelectMany(x => tips.Where(y => y.GroupId == x.Key)
+                            .OrderByDescending(y => y.Rarity)
+                            .ThenByDescending(y => y.Rate)
+                            .Skip(1) //跳过当前有的最高级的hint
+                            .Select(y => y.Id));
+                tips.RemoveAll(x => inferiors.Contains(x.Id)); //只保留最上位技能，下位技能去除
+            }
+
             //把已买技能和它们的下位去掉
             var boughtSkillsAndInferiors = new List<int>();
             foreach (var i in @event.data.chara_info.skill_array)
@@ -110,19 +128,15 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             tips.RemoveAll(x => boughtSkillsAndInferiors.Contains(x.Id));
 
-            var table = new Table();
-            table.Title("技能性价比排序");
-            table.AddColumns("技能名称", "pt", "评分", "性价比");
-            table.Columns[0].Centered();
-            foreach (var i in tips
-                // (string Name, int Cost, int Grade, double Cost-Performance)
-                .Select(tip => (tip.Name, tip.GetRealCost(@event.data.chara_info), tip.GetRealGrade(@event.data.chara_info), (double)tip.GetRealGrade() / tip.GetRealCost()))
-                .OrderByDescending(x => x.Item4))
+            if (unknownUma)
             {
-                table.AddRow($"{i.Name}", $"{i.Item2}", $"{i.Item3}", $"{i.Item4:F3}");
+                AnsiConsole.MarkupLine($"[red]未知马娘：{@event.data.chara_info.card_id}，无法获取觉醒技能，请自己决定是否购买。[/]");
             }
-
-            AnsiConsole.Write(table);
+            if (hasUnknownSkills)
+            {
+                AnsiConsole.MarkupLine($"[red]警告：存在未知技能[/]");
+            }
+            return tips;
         }
     }
 }
