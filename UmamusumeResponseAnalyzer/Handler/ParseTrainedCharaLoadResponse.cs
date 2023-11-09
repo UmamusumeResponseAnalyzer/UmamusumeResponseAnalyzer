@@ -23,7 +23,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var parentWinSaddle_b = i.succession_chara_array[1].win_saddle_id_array.Intersect(Database.SaddleIds);
                 var win_saddle = charaWinSaddle.Intersect(parentWinSaddle_a).Count() * 3
                     + charaWinSaddle.Intersect(parentWinSaddle_b).Count() * 3;
-                win_saddle_result.Add((Database.Names[i.card_id].Cast<UmaName>().FullName, win_saddle, string.Join(',', charaWinSaddle), i.rank_score));
+                win_saddle_result.Add((Database.Names[i.card_id], win_saddle, string.Join(',', charaWinSaddle), i.rank_score));
             }
             win_saddle_result.Sort((a, b) => b.WinSaddleBonus.CompareTo(a.WinSaddleBonus));
             var table = new Table
