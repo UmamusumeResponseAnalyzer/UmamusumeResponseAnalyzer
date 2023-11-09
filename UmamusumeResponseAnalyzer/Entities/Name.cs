@@ -10,10 +10,6 @@ namespace UmamusumeResponseAnalyzer.Entities
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public T Cast<T>() where T : BaseName
-        {
-            return (T)this;
-        }
 
         public BaseName(int id, string name)
         {
@@ -25,7 +21,7 @@ namespace UmamusumeResponseAnalyzer.Entities
     {
         public int CharaId { get; set; }
         public int Type { get; set; }
-        public string CharacterName => Database.Names[CharaId].Name;
+        public string CharacterName => Database.Names[CharaId];
         public string TypeName => Type switch { 101 => "[速]", 102 => "[力]", 103 => "[根]", 105 => "[耐]", 106 => "[智]", 0 => "[友]", _ => "" };
         public string FullName => $"{Name}{CharacterName}";
         public string SimpleName => $"{TypeName}{CharacterName}";
@@ -39,11 +35,19 @@ namespace UmamusumeResponseAnalyzer.Entities
     public class UmaName : BaseName
     {
         public int CharaId { get; set; }
-        public string CharacterName => Database.Names[CharaId].Name;
+        public string CharacterName => Database.Names[CharaId];
         public string FullName => $"{Name}{CharacterName}";
-        public UmaName(int id, string name) : base(id, name)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="charaId">int.MinValue被未知占用，所以默认值是0</param>
+        public UmaName(int id, string name, int charaId = 0) : base(id, name)
         {
-            CharaId = int.Parse(id.ToString()[0] == '9' ? id.ToString()[1..5] : id.ToString()[..4]);
+            if (charaId == 0)
+                CharaId = int.Parse(id.ToString()[0] == '9' ? id.ToString()[1..5] : id.ToString()[..4]);
         }
     }
 }

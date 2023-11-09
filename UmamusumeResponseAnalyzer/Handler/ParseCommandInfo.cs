@@ -279,7 +279,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (supportCards1.Any(x => x.Key == cardCount))
                     {
 
-                        var name = Database.Names[supportCards1[cardCount]].Cast<SupportCardName>().SimpleName.EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
+                        var name = Database.Names[supportCards1[cardCount]].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                         if (name.Length > 7)
                             name = name[..7];
 
@@ -821,7 +821,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var priority = PartnerPriority.默认;
 
                         // partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
-                        string name = (partner >= 1 && partner <= 7 ? name = Database.Names[supportCards[partner]].Cast<SupportCardName>().SimpleName : Database.Names[partner].Name).EscapeMarkup();
+                        string name = (partner >= 1 && partner <= 7 ? name = Database.Names[supportCards[partner]] : Database.Names[partner]).EscapeMarkup();
                         if (name.Length > 7)
                             name = name[..7];
                         if (!(partner >= 1 && partner <= 7) && name.Length > 2)//非支援卡，名字可以更短
@@ -1103,13 +1103,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                 for (var i = 0; i < rivalNum; i++)
                 {
                     var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
-                    var rivalName = Database.Names[chara_id].Name;
+                    var rivalName = Database.Names[chara_id];
                     if (rivalName.Length > 4)
                         rivalName = rivalName[..4];
                     if (rivalNum == 5)
                     {
                         // SS Match中的S卡
-                        var sc = supportCards.Values.FirstOrDefault(sc => chara_id == Database.Names[sc].Cast<SupportCardName>().CharaId);
+                        var sc = supportCards.Values.FirstOrDefault(sc => chara_id == Database.Names.GetSupportCard(sc).CharaId);
                         if (@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark != 1)
                             rivalName = $"[#ff0000]{rivalName}(可能失败)[/]";
                         // 羁绊不满80的S卡
@@ -1152,7 +1152,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         if (extraHeadCount > 5) //只能放得下5个人
                             continue;
 
-                        var rivalName = Database.Names[chara_id].Name;
+                        var rivalName = Database.Names[chara_id];
                         if (rivalName.Length > 4)
                             rivalName = rivalName[..4];
 

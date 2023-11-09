@@ -41,11 +41,11 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
-        public static Dictionary<int, BaseName> Names { get; set; } = null!;
+        public static NameManager Names { get; set; } = null!;
         /// <summary>
         /// 巅峰杯道具的ID及其对应名称
         /// </summary>
-        public static NullableIdNameDictionary ClimaxItem { get; private set; } = new() { { 1001, "速+3" }, { 1002, "耐+3" }, { 1003, "力+3" }, { 1004, "根+3" }, { 1005, "智+3" }, { 1101, "速+7" }, { 1102, "耐+7" }, { 1103, "力+7" }, { 1104, "根+7" }, { 1105, "智+7" }, { 1201, "速+15" }, { 1202, "耐+15" }, { 1203, "力+15" }, { 1204, "根+15" }, { 1205, "智+15" }, { 2001, "体力+20" }, { 2002, "体力+40" }, { 2003, "体力+65" }, { 2101, "苦茶" }, { 2201, "体力上限+4" }, { 2202, "体力上限+8" }, { 2301, "干劲+1" }, { 2302, "干劲+2" }, { 3001, "猫罐头" }, { 3101, "BBQ" }, { 4001, "爱娇" }, { 4002, "注目株" }, { 4003, "练习上手" }, { 4004, "切者" }, { 4101, "解寝不足" }, { 4102, "解摸鱼癖" }, { 4103, "解肌荒" }, { 4104, "解发胖" }, { 4105, "解头痛" }, { 4106, "解练习下手" }, { 4201, "解全DB" }, { 5001, "速请愿书" }, { 5002, "耐请愿书" }, { 5003, "力请愿书" }, { 5004, "根请愿书" }, { 5005, "智请愿书" }, { 7001, "哨子" }, { 8001, "20%喇叭" }, { 8002, "40%喇叭" }, { 8003, "60%喇叭" }, { 9001, "速负重脚环" }, { 9002, "耐负重脚环" }, { 9003, "力负重脚环" }, { 9004, "根负重脚环" }, { 10001, "御守" }, { 11001, "蹄铁・匠" }, { 11002, "蹄铁・極" }, { 11003, "荧光棒" } };
+        public static NullableIntStringDictionary ClimaxItem { get; private set; } = new() { { 1001, "速+3" }, { 1002, "耐+3" }, { 1003, "力+3" }, { 1004, "根+3" }, { 1005, "智+3" }, { 1101, "速+7" }, { 1102, "耐+7" }, { 1103, "力+7" }, { 1104, "根+7" }, { 1105, "智+7" }, { 1201, "速+15" }, { 1202, "耐+15" }, { 1203, "力+15" }, { 1204, "根+15" }, { 1205, "智+15" }, { 2001, "体力+20" }, { 2002, "体力+40" }, { 2003, "体力+65" }, { 2101, "苦茶" }, { 2201, "体力上限+4" }, { 2202, "体力上限+8" }, { 2301, "干劲+1" }, { 2302, "干劲+2" }, { 3001, "猫罐头" }, { 3101, "BBQ" }, { 4001, "爱娇" }, { 4002, "注目株" }, { 4003, "练习上手" }, { 4004, "切者" }, { 4101, "解寝不足" }, { 4102, "解摸鱼癖" }, { 4103, "解肌荒" }, { 4104, "解发胖" }, { 4105, "解头痛" }, { 4106, "解练习下手" }, { 4201, "解全DB" }, { 5001, "速请愿书" }, { 5002, "耐请愿书" }, { 5003, "力请愿书" }, { 5004, "根请愿书" }, { 5005, "智请愿书" }, { 7001, "哨子" }, { 8001, "20%喇叭" }, { 8002, "40%喇叭" }, { 8003, "60%喇叭" }, { 9001, "速负重脚环" }, { 9002, "耐负重脚环" }, { 9003, "力负重脚环" }, { 9004, "根负重脚环" }, { 10001, "御守" }, { 11001, "蹄铁・匠" }, { 11002, "蹄铁・極" }, { 11003, "荧光棒" } };
         /// <summary>
         /// 马娘的天赋技能,Key是CardId
         /// </summary>
@@ -53,7 +53,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 
         /// </summary>
-        public static NullableIdNameDictionary FactorIds { get; set; }
+        public static NullableIntStringDictionary FactorIds { get; set; }
         /// <summary>
         /// 可获得胜鞍的Id
         /// </summary>
@@ -82,7 +82,9 @@ namespace UmamusumeResponseAnalyzer
             {
                 var names = JsonConvert.DeserializeObject<List<BaseName>>(Load(NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
                 if (names != default)
-                    Names = names.ToDictionary(x => x.Id, x => x);
+                {
+                    Names = new(names);
+                }
             }
             if (File.Exists(SKILLS_FILEPATH))
             {
@@ -100,7 +102,7 @@ namespace UmamusumeResponseAnalyzer
             }
             if (File.Exists(FACTOR_IDS_FILEPATH))
             {
-                var factor_ids = JsonConvert.DeserializeObject<NullableIdNameDictionary>(Load(FACTOR_IDS_FILEPATH));
+                var factor_ids = JsonConvert.DeserializeObject<NullableIntStringDictionary>(Load(FACTOR_IDS_FILEPATH));
                 if (factor_ids != default)
                     FactorIds = factor_ids;
             }
@@ -115,11 +117,11 @@ namespace UmamusumeResponseAnalyzer
                         {
                             case TextDataCategory.CostumeName:
                                 foreach (var j in i.Value)
-                                    Names[j.Key].Name = j.Value;
+                                    Names.GetUmamusume(j.Key).Name = j.Value;
                                 break;
                             case TextDataCategory.CharacterName:
                                 foreach (var j in i.Value)
-                                    Names[j.Key].Name = j.Value;
+                                    Names.GetCharacter(j.Key).Name = j.Value;
                                 break;
                             case TextDataCategory.SkillName:
                                 var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? new List<SkillData>();
@@ -141,7 +143,7 @@ namespace UmamusumeResponseAnalyzer
                                         j.Value.Name = localized_name;
                                 break;
                             case TextDataCategory.ClimaxItemName:
-                                ClimaxItem = new NullableIdNameDictionary();
+                                ClimaxItem = new NullableIntStringDictionary();
                                 foreach (var j in i.Value)
                                     ClimaxItem.Add(j.Key, j.Value);
                                 break;
@@ -153,7 +155,7 @@ namespace UmamusumeResponseAnalyzer
         static string Load(string path) => Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));
     }
 
-    public class NullableIdNameDictionary : Dictionary<int, string>
+    public class NullableIntStringDictionary : Dictionary<int, string>
     {
         public new string this[int key]
         {
