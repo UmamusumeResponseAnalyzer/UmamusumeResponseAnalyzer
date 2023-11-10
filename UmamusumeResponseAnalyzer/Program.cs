@@ -141,7 +141,7 @@ namespace UmamusumeResponseAnalyzer
             // 仅在启用跳过DMM启动时显示相关设置
             if (Config.Get(Resource.ConfigSet_DMMLaunch))
             {
-                //管理DMM账号
+                selections.AddChoice(Resource.LaunchMenu_ManageDMMService);
             }
             #endregion
             var prompt = AnsiConsole.Prompt(selections);
@@ -370,6 +370,67 @@ namespace UmamusumeResponseAnalyzer
                 } while (!valid);
                 Config.Set("本地化文件路径", path);
                 Config.Save();
+            }
+            else if (prompt == Resource.LaunchMenu_ManageDMMService)
+            {
+                string dmmSelected;
+                var dmmSelections = new List<string>(new[] { "添加账号", "设置设备信息", "返回" });
+                foreach (var i in DMM.Accounts)
+                {
+                    dmmSelections = dmmSelections.Prepend(i.Name).ToList();
+                }
+                do
+                {
+                    dmmSelected = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                        .Title("选中对应的账号回车是删除")
+                        .AddChoices(dmmSelections));
+
+                    if (dmmSelected == "添加账号")
+                    {
+                        var secureId = AnsiConsole.Prompt(new TextPrompt<string>("请输入login_[red]secure[/]_id: "));
+                        var sessionId = AnsiConsole.Prompt(new TextPrompt<string>("请输入login_[green]session[/]_id: "));
+                        var savedataPath = AnsiConsole.Prompt(new TextPrompt<string>("请输入savedata_file_path(不知道是什么请留空): ").AllowEmpty());
+                        var executablePath = AnsiConsole.Prompt(new TextPrompt<string>("请输入split_umamusume_file_path(不知道是什么请留空): ").AllowEmpty());
+                        var name = AnsiConsole.Prompt(new TextPrompt<string>("请输入该账号的备注: "));
+
+                        var account = new DMM.DMMAccount
+                        {
+                            login_secure_id = secureId,
+                            login_session_id = sessionId,
+                            savedata_file_path = savedataPath,
+                            split_umamusume_file_path = executablePath,
+                            Name = name,
+                        };
+
+                        dmmSelections = dmmSelections.Prepend(name).ToList();
+                        AnsiConsole.Clear();
+                        DMM.Accounts.Add(account);
+                        DMM.Save();
+                    }
+                    else if (dmmSelected == "设置设备信息")
+                    {
+                        var macAddress = AnsiConsole.Prompt(new TextPrompt<string>($"请输入mac_address(当前值:{(string.IsNullOrEmpty(DMM.mac_address) ? "无" : DMM.mac_address)},留空不修改): ").AllowEmpty());
+                        var hddSerial = AnsiConsole.Prompt(new TextPrompt<string>($"请输入hdd_serial(当前值:{(string.IsNullOrEmpty(DMM.hdd_serial) ? "无" : DMM.hdd_serial)},留空不修改): ").AllowEmpty());
+                        var motherboard = AnsiConsole.Prompt(new TextPrompt<string>($"请输入motherboard(当前值:{(string.IsNullOrEmpty(DMM.motherboard) ? "无" : DMM.motherboard)},留空不修改): ").AllowEmpty());
+                        var userOS = AnsiConsole.Prompt(new TextPrompt<string>($"请输入user_os(当前值:{(string.IsNullOrEmpty(DMM.user_os) ? "无" : DMM.user_os)},留空不修改): ").AllowEmpty());
+                        var umamusumePath = AnsiConsole.Prompt(new TextPrompt<string>($"请输入umamusume_file_path(当前值:{(string.IsNullOrEmpty(DMM.umamusume_file_path) ? "无" : DMM.umamusume_file_path)},留空不修改): ").AllowEmpty());
+
+                        if (!string.IsNullOrEmpty(macAddress)) DMM.mac_address = macAddress;
+                        if (!string.IsNullOrEmpty(hddSerial)) DMM.hdd_serial = hddSerial;
+                        if (!string.IsNullOrEmpty(motherboard)) DMM.motherboard = motherboard;
+                        if (!string.IsNullOrEmpty(userOS)) DMM.user_os = userOS;
+                        if (!string.IsNullOrEmpty(umamusumePath)) DMM.umamusume_file_path = umamusumePath;
+
+                        AnsiConsole.Clear();
+                        DMM.Save();
+                    }
+                    else if (dmmSelected != "返回")
+                    {
+                        DMM.Accounts.RemoveAt(DMM.Accounts.FindIndex(x => x.Name == dmmSelected));
+                        dmmSelections.Remove(dmmSelected);
+                        DMM.Save();
+                    }
+                } while (dmmSelected != "返回");
             }
             AnsiConsole.Clear();
 
