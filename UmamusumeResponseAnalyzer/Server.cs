@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using UmamusumeResponseAnalyzer.Game;
 using System.Net.WebSockets;
 using System.Text;
+using UmamusumeResponseAnalyzer.Communications;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -19,8 +20,10 @@ namespace UmamusumeResponseAnalyzer
         private static HttpListener httpListener;
         private static readonly object _lock = new();
         private static Mutex Mutex;
-        public static Dictionary<string, WebSocket> connectedWebsockets = new();
+        private static Dictionary<string, WebSocket> connectedWebsockets = new();
+        private static readonly JsonSerializerSettings jsonSerializerSettings = new() { NullValueHandling = NullValueHandling.Ignore };
         public static ManualResetEvent OnPing = new(false);
+        public static bool IsRunning => httpListener.IsListening;
         public static void Start()
         {
             try
@@ -74,65 +77,7 @@ namespace UmamusumeResponseAnalyzer
                         // 处理http请求
                         else
                         {
-                            using var ms = new MemoryStream();
-                            ctx.Request.InputStream.CopyTo(ms);
-                            var buffer = ms.ToArray();
-
-                            if (ctx.Request.RawUrl == "/notify/response")
-                            {
-#if WRITE_GAME_STATISTICS
-                                Directory.CreateDirectory("packets");
-                                var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
-                                if (!Directory.Exists(statsDirectory))
-                                {
-                                    Directory.CreateDirectory(statsDirectory);
-                                }
-#endif
-
-#if DEBUG || WRITE_GAME_LOG
-                                Directory.CreateDirectory("packets");
-                                File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
-                                File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
-#endif
-                                if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
-                                {
-                                    var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
-                                    if (Directory.Exists(directory))
-                                    {
-                                        foreach (var i in Directory.GetFiles(directory))
-                                        {
-                                            var fileInfo = new FileInfo(i);
-                                            if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
-                                                fileInfo.Delete();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Directory.CreateDirectory(directory);
-                                    }
-                                    File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.msgpack", buffer);
-                                }
-                                _ = Task.Run(() => ParseResponse(buffer));
-                            }
-                            else if (ctx.Request.RawUrl == "/notify/request")
-                            {
-#if DEBUG || WRITE_GAME_LOG
-                                Directory.CreateDirectory("packets");
-                                File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
-#endif
-                                _ = Task.Run(() => ParseRequest(buffer[170..]));
-                            }
-                            else if (ctx.Request.RawUrl == "/notify/ping")
-                            {
-                                AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
-                                await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
-                                ctx.Response.Close();
-                                OnPing.Signal();
-                                continue;
-                            }
-
-                            await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
-                            ctx.Response.Close();
+                            HandleHttp(ctx);
                         }
                     }
                     catch
@@ -141,7 +86,20 @@ namespace UmamusumeResponseAnalyzer
                 }
             });
         }
-        public static bool IsRunning => httpListener.IsListening;
+        public static async Task<bool> Send(string wsKey, object response)
+        {
+            if (connectedWebsockets.ContainsKey(wsKey))
+            {
+                var ws = connectedWebsockets[wsKey];
+                var payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response, jsonSerializerSettings));
+                await ws.SendAsync(payload, WebSocketMessageType.Text, true, CancellationToken.None);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         static void ParseRequest(byte[] buffer)
         {
             try
@@ -277,21 +235,51 @@ namespace UmamusumeResponseAnalyzer
                 var contentbuffer = new List<byte>();
                 while (ws.State == WebSocketState.Open)
                 {
-                    var msg = await ws.ReceiveAsync(wsbuffer, CancellationToken.None);
-                    contentbuffer.AddRange(msg.EndOfMessage ? wsbuffer[..msg.Count] : wsbuffer);
-
-                    if (msg.EndOfMessage)
+                    try
                     {
-                        if (msg.MessageType == WebSocketMessageType.Close)
+                        var msg = await ws.ReceiveAsync(wsbuffer, CancellationToken.None);
+                        contentbuffer.AddRange(msg.EndOfMessage ? wsbuffer[..msg.Count] : wsbuffer);
+
+                        if (msg.EndOfMessage)
                         {
-                            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                            if (msg.MessageType == WebSocketMessageType.Close)
+                            {
+                                await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                            }
+                            else if (msg.MessageType == WebSocketMessageType.Text)
+                            {
+                                var req = JsonConvert.DeserializeObject<WSRequest>(Encoding.UTF8.GetString(contentbuffer.ToArray())) ?? throw new Exception("反序列化WSRequest失败");
+                                if (req.CommandType == CommandType.None) throw new Exception($"[WS]{wsctx.SecWebSocketKey}: CommandType不得为None");
+                                var commandName = req.CommandType switch
+                                {
+                                    CommandType.Action => $"UmamusumeResponseAnalyzer.Communications.Actions.{req.Command}",
+                                    CommandType.Subscribe or CommandType.Unsubscribe => $"UmamusumeResponseAnalyzer.Communications.Subscriptions.{req.Command}"
+                                };
+                                var commandParameters = req.CommandType switch
+                                {
+                                    CommandType.Action => req.Parameters,
+                                    CommandType.Subscribe or CommandType.Unsubscribe => req.Parameters.Prepend(wsctx.SecWebSocketKey).ToArray()
+                                };
+                                var commandType = Type.GetType(commandName) ?? throw new Exception($"未找到Command: {commandName}");
+                                var commandConstructor = commandType.GetConstructor(Enumerable.Repeat(typeof(string), commandParameters.Length).ToArray()) ?? throw new Exception("未找到对应构造函数");
+                                var command = (ICommand)commandConstructor.Invoke(commandParameters);
+                                var response = req.CommandType switch
+                                {
+                                    CommandType.Unsubscribe => commandType.GetMethod("Cancel").Invoke(command, null),
+                                    _ => command.Execute()
+                                };
+                                if (response != null)
+                                {
+                                    await ws.SendAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response)), WebSocketMessageType.Text, msg.EndOfMessage, CancellationToken.None);
+                                }
+                                contentbuffer.Clear();
+                            }
                         }
-                        else if (msg.MessageType == WebSocketMessageType.Text)
-                        {
-                            var str = Encoding.UTF8.GetString(contentbuffer.ToArray());
-                            await ws.SendAsync(contentbuffer.ToArray(), WebSocketMessageType.Text, msg.EndOfMessage, CancellationToken.None);
-                            contentbuffer.Clear();
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AnsiConsole.WriteException(ex);
+                        contentbuffer.Clear();
                     }
                 }
             }
@@ -301,6 +289,67 @@ namespace UmamusumeResponseAnalyzer
                 ws.Dispose();
                 connectedWebsockets.Remove(wsctx.SecWebSocketKey);
             }
+        }
+        static async void HandleHttp(HttpListenerContext ctx)
+        {
+            using var ms = new MemoryStream();
+            ctx.Request.InputStream.CopyTo(ms);
+            var buffer = ms.ToArray();
+
+            if (ctx.Request.RawUrl == "/notify/response")
+            {
+#if WRITE_GAME_STATISTICS
+                                Directory.CreateDirectory("packets");
+                                var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
+                                if (!Directory.Exists(statsDirectory))
+                                {
+                                    Directory.CreateDirectory(statsDirectory);
+                                }
+#endif
+
+#if DEBUG || WRITE_GAME_LOG
+                Directory.CreateDirectory("packets");
+                File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
+                File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
+#endif
+                if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
+                {
+                    var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                    if (Directory.Exists(directory))
+                    {
+                        foreach (var i in Directory.GetFiles(directory))
+                        {
+                            var fileInfo = new FileInfo(i);
+                            if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
+                                fileInfo.Delete();
+                        }
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
+                    File.WriteAllBytes($"{directory}/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.msgpack", buffer);
+                }
+                _ = Task.Run(() => ParseResponse(buffer));
+            }
+            else if (ctx.Request.RawUrl == "/notify/request")
+            {
+#if DEBUG || WRITE_GAME_LOG
+                Directory.CreateDirectory("packets");
+                File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+#endif
+                _ = Task.Run(() => ParseRequest(buffer[170..]));
+            }
+            else if (ctx.Request.RawUrl == "/notify/ping")
+            {
+                AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
+                await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
+                ctx.Response.Close();
+                OnPing.Signal();
+            }
+
+            await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
+            ctx.Response.Close();
         }
     }
 }
