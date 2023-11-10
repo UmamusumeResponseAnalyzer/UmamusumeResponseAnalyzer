@@ -80,19 +80,19 @@ namespace UmamusumeResponseAnalyzer
 
                             if (ctx.Request.RawUrl == "/notify/response")
                             {
-                                Directory.CreateDirectory("packets");
 #if WRITE_GAME_STATISTICS
-                            var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
-                            if (!Directory.Exists(statsDirectory))
-                            {
-                                Directory.CreateDirectory(statsDirectory);
-                            }
+                                Directory.CreateDirectory("packets");
+                                var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
+                                if (!Directory.Exists(statsDirectory))
+                                {
+                                    Directory.CreateDirectory(statsDirectory);
+                                }
 #endif
 
 #if DEBUG || WRITE_GAME_LOG
-
-                            File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
-                            File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
+                                Directory.CreateDirectory("packets");
+                                File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
+                                File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
                                 if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
                                 {
@@ -116,10 +116,9 @@ namespace UmamusumeResponseAnalyzer
                             }
                             else if (ctx.Request.RawUrl == "/notify/request")
                             {
-                                Directory.CreateDirectory("packets");
 #if DEBUG || WRITE_GAME_LOG
-                            File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
-
+                                Directory.CreateDirectory("packets");
+                                File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
 #endif
                                 _ = Task.Run(() => ParseRequest(buffer[170..]));
                             }
@@ -138,7 +137,6 @@ namespace UmamusumeResponseAnalyzer
                     }
                     catch
                     {
-
                     }
                 }
             });
@@ -160,8 +158,6 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
-
-
                 }
             }
             catch (Exception e)
