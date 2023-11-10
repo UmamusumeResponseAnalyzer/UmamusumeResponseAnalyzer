@@ -115,17 +115,22 @@ namespace UmamusumeResponseAnalyzer
             // Windows限定功能，其他平台不显示
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
+                if (Config.Get(Resource.ConfigSet_EnableNetFilter))
                 {
-                    selections.AddChoice(Resource.LaunchMenu_SetNetfilterTarget);
-                    selections.AddChoice(Resource.LaunchMenu_UninstallNetFilterDriver);
-                }
-                else
-                {
-                    selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
+                    if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
+                    {
+                        selections.AddChoice(Resource.LaunchMenu_SetNetfilterTarget);
+                        selections.AddChoice(Resource.LaunchMenu_UninstallNetFilterDriver);
+                    }
+                    else
+                    {
+                        selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
+                    }
                 }
                 if (UraCoreHelper.GamePaths.Any())
+                {
                     selections.AddChoice(Resource.LaunchMenu_InstallUraCore);
+                }
             }
             var prompt = AnsiConsole.Prompt(selections);
             if (prompt == Resource.LaunchMenu_Options)
