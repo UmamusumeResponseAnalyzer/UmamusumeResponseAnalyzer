@@ -14,6 +14,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Text;
+using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -22,6 +23,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
+            SubscribeCommandInfo.Signal(@event);
             var shouldWriteStatistics = true;
             var turnNum = @event.data.chara_info.turn;
             var LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
@@ -1261,43 +1263,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (@event.IsScenario(ScenarioType.LArc))
             {
                 var gameStatusToSend = new GameStatusSend_LArc(@event);
-
-
-                //var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
-                var currentGSdirectory = "./gameData";
-                if (!Directory.Exists(currentGSdirectory))
-                {
-                    Directory.CreateDirectory(currentGSdirectory);
-                }
-
-                bool success = false;
-                int tried = 0;
-
-                //while (!success && tried < 10)
-                //{
-                //    try
-                //    {
-                //        // 去掉空值避免C++端抽风
-                //        var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-                //        File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
-                //        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
-                //        success = true; // 写入成功，跳出循环
-                //    }
-                //    catch
-                //    {
-                //        tried++;
-                //        AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
-                //        Thread.Sleep(500); // 等待0.5秒
-                //    }
-                //}
-                //if (!success)
-                //{
-                //    AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
-                //}
-                foreach (var i in Server.connectedWebsockets.Values)
-                {
-                    i.SendAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore })), System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
-                }
+                SubscribeAiInfo.Signal(gameStatusToSend);
             }
 #endif
 #if WRITE_GAME_STATISTICS

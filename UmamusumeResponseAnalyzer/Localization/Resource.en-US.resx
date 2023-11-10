@@ -297,4 +297,10 @@
   <data name="ConfigSet_LoadLocalizedData" xml:space="preserve">
     <value>Load localized data from other plugins</value>
   </data>
+  <data name="LaunchMenu_SetLocalizedDataFilePath" xml:space="preserve">
+    <value>Set localized data filepath</value>
+  </data>
+  <data name="LaunchMenu_ManageDMMService" xml:space="preserve">
+    <value>Manage DMM service information</value>
+  </data>
 </root>

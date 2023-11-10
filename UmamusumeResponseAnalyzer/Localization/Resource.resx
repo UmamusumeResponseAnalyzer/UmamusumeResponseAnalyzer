@@ -297,4 +297,10 @@
   <data name="ConfigSet_LoadLocalizedData" xml:space="preserve">
     <value>加载本地化插件的数据</value>
   </data>
+  <data name="LaunchMenu_SetLocalizedDataFilePath" xml:space="preserve">
+    <value>设置本地化文件路径</value>
+  </data>
+  <data name="LaunchMenu_ManageDMMService" xml:space="preserve">
+    <value>管理DMM服务信息</value>
+  </data>
 </root>

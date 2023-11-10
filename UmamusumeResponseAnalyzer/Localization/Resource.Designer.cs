@@ -223,6 +223,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 管理DMM服务信息 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_ManageDMMService {
+            get {
+                return ResourceManager.GetString("LaunchMenu_ManageDMMService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 选项 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Options {
@@ -246,6 +255,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         public static string LaunchMenu_Options_Instruction {
             get {
                 return ResourceManager.GetString("LaunchMenu_Options_Instruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 设置本地化文件路径 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetLocalizedDataFilePath {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetLocalizedDataFilePath", resourceCulture);
             }
         }
         
