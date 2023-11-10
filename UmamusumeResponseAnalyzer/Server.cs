@@ -276,6 +276,7 @@ namespace UmamusumeResponseAnalyzer
                             }
                         }
                     }
+                    catch (WebSocketException) { }
                     catch (Exception ex)
                     {
                         AnsiConsole.WriteException(ex);
