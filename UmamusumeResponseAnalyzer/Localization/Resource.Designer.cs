@@ -250,6 +250,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 设置本地化文件路径 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_SetLocalizedDataFilePath {
+            get {
+                return ResourceManager.GetString("LaunchMenu_SetLocalizedDataFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 设置加速服务器 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_SetNetfilterTarget {

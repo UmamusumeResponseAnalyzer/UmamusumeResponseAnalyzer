@@ -1,11 +1,11 @@
-﻿using Microsoft.Win32;
+﻿using Newtonsoft.Json;
 using Spectre.Console;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using UmamusumeResponseAnalyzer.Game;
+using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
@@ -112,6 +112,7 @@ namespace UmamusumeResponseAnalyzer
                     Resource.LaunchMenu_UpdateProgram
                 }
                 );
+            #region 条件显示功能
             // Windows限定功能，其他平台不显示
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -132,6 +133,17 @@ namespace UmamusumeResponseAnalyzer
                     selections.AddChoice(Resource.LaunchMenu_InstallUraCore);
                 }
             }
+            // 仅在启用本地化设置时显示相关设置
+            if (Config.Get(Resource.ConfigSet_LoadLocalizedData) && (string.IsNullOrEmpty(Config.Get<string>("本地化文件路径")) || (!string.IsNullOrEmpty(Config.Get<string>("本地化文件路径")) && !File.Exists(Config.Get<string>("本地化文件路径")))))
+            {
+                selections.AddChoice(Resource.LaunchMenu_SetLocalizedDataFilePath);
+            }
+            // 仅在启用跳过DMM启动时显示相关设置
+            if (Config.Get(Resource.ConfigSet_DMMLaunch))
+            {
+                //管理DMM账号
+            }
+            #endregion
             var prompt = AnsiConsole.Prompt(selections);
             if (prompt == Resource.LaunchMenu_Options)
             {
@@ -166,14 +178,11 @@ namespace UmamusumeResponseAnalyzer
                 }
 
                 var options = AnsiConsole.Prompt(multiSelection);
-
                 foreach (var i in Config.Configuration.Keys)
                 {
-                    if (Config.Get<object>(i).GetType() != typeof(bool)) continue;
-                    if (options.Contains(i))
-                        Config.Set(i, true);
-                    else
-                        Config.Set(i, false);
+                    if (Config.Get<object>(i).GetType() != typeof(bool))
+                        continue;
+                    Config.Set(i, options.Contains(i));
                 }
                 Config.Save();
             }
@@ -337,6 +346,30 @@ namespace UmamusumeResponseAnalyzer
                 }
                 Console.ReadKey();
 #pragma warning restore CA1416
+            }
+            else if (prompt == Resource.LaunchMenu_SetLocalizedDataFilePath)
+            {
+                AnsiConsole.Clear();
+                AnsiConsole.MarkupLine($"本地化仅支持格式为Dictionary<textdata.category, Dictionary<textdata.index, string>>的JSON");
+                string path;
+                var valid = false;
+                do
+                {
+                    path = AnsiConsole.Prompt(new TextPrompt<string>(@"请输入完整的文件路径(如G:\Umamusume\localized_data\text_data.json"));
+                    try
+                    {
+                        JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(path));
+                        valid = true;
+                    }
+                    catch (Exception)
+                    {
+                        AnsiConsole.WriteLine("未找到目标文件或目标文件不符合格式");
+                        valid = false;
+                        continue;
+                    }
+                } while (!valid);
+                Config.Set("本地化文件路径", path);
+                Config.Save();
             }
             AnsiConsole.Clear();
 
