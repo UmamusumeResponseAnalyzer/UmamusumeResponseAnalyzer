@@ -39,7 +39,7 @@ namespace UmamusumeResponseAnalyzer
 
         static DMM()
         {
-            if (!File.Exists(DMM_CONFIG_FILEPATH)) File.Create(DMM_CONFIG_FILEPATH);
+            if (!File.Exists(DMM_CONFIG_FILEPATH)) File.Create(DMM_CONFIG_FILEPATH).Dispose();
             var config = new FileIniDataParser().ReadFile(DMM_CONFIG_FILEPATH, Encoding.UTF8);
             if (config.Sections.Any(x => x.SectionName == "information"))
             {
@@ -119,7 +119,7 @@ namespace UmamusumeResponseAnalyzer
                     config[account.Name].AddKey(nameof(account.split_umamusume_file_path), account.split_umamusume_file_path);
                 }
             }
-            foreach(var removed in config.Sections.Where(x => x.SectionName != "information" && !Accounts.Any(y => y.Name == x.SectionName)))
+            foreach (var removed in config.Sections.Where(x => x.SectionName != "information" && !Accounts.Any(y => y.Name == x.SectionName)))
             {
                 config.Sections.RemoveSection(removed.SectionName);
             }

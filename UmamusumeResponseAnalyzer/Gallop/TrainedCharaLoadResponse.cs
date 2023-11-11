@@ -106,7 +106,9 @@ namespace Gallop
 		//public int[] factor_id_array; // 0xD0
 		[Key("factor_info_array")]
 		public FactorInfo[] factor_info_array; // 0xD8
-		[Key("succession_chara_array")]
+		[Key("factor_extend_array")]
+		public FactorExtendInfo[] factor_extend_array;
+        [Key("succession_chara_array")]
 		public SuccessionChara[] succession_chara_array; // 0xE0
 		[Key("succession_history_array")]
 		public SuccessionHistory[] succession_history_array; // 0xE8
