@@ -29,7 +29,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 技能
         /// </summary>
-        public static SkillManager Skills { get; private set; } = null!;
+        public static SkillManager Skills { get; private set; } = new SkillManager(new List<SkillData>());
         /// <summary>
         /// 育成事件
         /// </summary>
@@ -41,7 +41,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
-        public static NameManager Names { get; set; } = null!;
+        public static NameManager Names { get; set; } = new NameManager(new List<BaseName>());
         /// <summary>
         /// 巅峰杯道具的ID及其对应名称
         /// </summary>
