@@ -135,7 +135,7 @@ namespace UmamusumeResponseAnalyzer
                                 break;
                             case TextDataCategory.FactorName:
                                 foreach (var j in i.Value)
-                                    FactorIds[j.Key] = $"{j.Value}{string.Join(string.Empty, Enumerable.Repeat('★', int.Parse(j.Key.ToString()[..1])))}";
+                                    FactorIds[j.Key] = $"{j.Value}{string.Join(string.Empty, Enumerable.Repeat('★', int.Parse(j.Key.ToString()[^1..])))}";
                                 break;
                             case TextDataCategory.EventName:
                                 foreach (var j in Events)

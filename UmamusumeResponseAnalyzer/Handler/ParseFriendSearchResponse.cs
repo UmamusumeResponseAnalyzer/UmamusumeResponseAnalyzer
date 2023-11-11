@@ -14,12 +14,30 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             var data = @event.data;
             var chara = data.practice_partner_info;
-            //每个相同的重赏胜场加3胜鞍加成
+            // 每个相同的重赏胜场加3胜鞍加成
             var charaWinSaddle = chara.win_saddle_id_array.Intersect(Database.SaddleIds);
             var parentWinSaddle_a = chara.succession_chara_array[0].win_saddle_id_array.Intersect(Database.SaddleIds);
             var parentWinSaddle_b = chara.succession_chara_array[1].win_saddle_id_array.Intersect(Database.SaddleIds);
             var win_saddle = charaWinSaddle.Intersect(parentWinSaddle_a).Count() * 3
                 + charaWinSaddle.Intersect(parentWinSaddle_b).Count() * 3;
+            // 应用因子强化
+            foreach(var i in chara.factor_extend_array)
+            {
+                switch(i.position_id)
+                {
+                    case 1:
+                        chara.factor_info_array.First(x => x.factor_id == i.base_factor_id).factor_id = i.factor_id;
+                        break;
+                    case 10:
+                        chara.succession_chara_array[0].factor_info_array.First(x => x.factor_id == i.base_factor_id).factor_id = i.factor_id;
+                        break;
+                    case 20:
+                        chara.succession_chara_array[1].factor_info_array.First(x => x.factor_id == i.base_factor_id).factor_id = i.factor_id;
+                        break;
+                    default:
+                        throw new Exception("发现未知factor_extend.position_id");
+                }
+            }
 
             AnsiConsole.Write(new Rule());
             AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
