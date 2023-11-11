@@ -347,6 +347,7 @@ namespace UmamusumeResponseAnalyzer
                 await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
                 ctx.Response.Close();
                 OnPing.Signal();
+                return;
             }
 
             await ctx.Response.OutputStream.WriteAsync(Array.Empty<byte>());
