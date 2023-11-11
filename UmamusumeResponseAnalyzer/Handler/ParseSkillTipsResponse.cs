@@ -31,6 +31,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                         upgradedSkill = upgradedSkill.Apply(@event.data.chara_info, @event.data.chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == notUpgradedSkill.GroupId && x.rarity == notUpgradedSkill.Rarity)?.level ?? 0);
                         upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
                         upgradedSkill.Cost = notUpgradedSkill.GetRealCost(@event.data.chara_info);
+                        // 进化技能分数 -= 金技能总分数 - 金技能分数(即-=基础已学习技能分数)
+                        upgradedSkill.Grade -= notUpgradedSkill.Grade - notUpgradedSkill.GetRealGrade(@event.data.chara_info);
                         tips[notUpgradedIndex] = upgradedSkill;
                     }
                 }
