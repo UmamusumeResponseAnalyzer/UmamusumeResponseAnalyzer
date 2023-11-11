@@ -281,10 +281,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (supportCards1.Any(x => x.Key == cardCount))
                     {
 
-                        var name = Database.Names[supportCards1[cardCount]].EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
-                        if (name.Length > 7)
-                            name = name[..7];
-
+                        var name = Database.Names.GetCharacter(supportCards1[cardCount]).Nickname.EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
                         string charaTrainingType = "";
                         string specialBuffs = "";
                         var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == cardCount).chara_id;
@@ -823,11 +820,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var priority = PartnerPriority.默认;
 
                         // partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
-                        string name = (partner >= 1 && partner <= 7 ? name = Database.Names[supportCards[partner]] : Database.Names[partner]).EscapeMarkup();
-                        if (name.Length > 7)
-                            name = name[..7];
-                        if (!(partner >= 1 && partner <= 7) && name.Length > 2)//非支援卡，名字可以更短
-                            name = name[..2];
+                        var name = (partner >= 1 && partner <= 7 ? Database.Names.GetSupportCard(supportCards[partner]).Nickname : Database.Names.GetCharacter(partner).Nickname).EscapeMarkup();
                         var friendship = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == partner).evaluation;
                         bool isArcPartner = @event.IsScenario(ScenarioType.LArc) && (partner > 1000 || (partner >= 1 && partner <= 7)) && @event.data.arc_data_set.evaluation_info_array.Any(x => x.target_id == partner);
                         var nameColor = "[#ffffff]";
@@ -1105,9 +1098,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 for (var i = 0; i < rivalNum; i++)
                 {
                     var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
-                    var rivalName = Database.Names[chara_id];
-                    if (rivalName.Length > 4)
-                        rivalName = rivalName[..4];
+                    var rivalName = Database.Names.GetCharacter(chara_id).Nickname;
                     if (rivalNum == 5)
                     {
                         // SS Match中的S卡
@@ -1154,9 +1145,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         if (extraHeadCount > 5) //只能放得下5个人
                             continue;
 
-                        var rivalName = Database.Names[chara_id];
-                        if (rivalName.Length > 4)
-                            rivalName = rivalName[..4];
+                        var rivalName = Database.Names.GetCharacter(chara_id).Nickname;
 
                         var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                         rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
