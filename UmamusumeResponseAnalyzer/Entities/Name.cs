@@ -10,6 +10,7 @@ namespace UmamusumeResponseAnalyzer.Entities
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Nickname { get; set; } = string.Empty;
 
         public BaseName(int id, string name)
         {
@@ -46,8 +47,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// <param name="charaId">int.MinValue被未知占用，所以默认值是0</param>
         public UmaName(int id, string name, int charaId = 0) : base(id, name)
         {
-            if (charaId == 0)
-                CharaId = int.Parse(id.ToString()[0] == '9' ? id.ToString()[1..5] : id.ToString()[..4]);
+            CharaId = charaId == 0 ? int.Parse(id.ToString()[0] == '9' ? id.ToString()[1..5] : id.ToString()[..4]) : charaId;
         }
     }
 }
