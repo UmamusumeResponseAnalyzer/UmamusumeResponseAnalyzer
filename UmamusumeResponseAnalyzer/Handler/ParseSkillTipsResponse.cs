@@ -91,7 +91,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
-                GameStats.print();
+                GameStats.Print();
                 AnsiConsole.MarkupLine("");
             }
 
@@ -148,9 +148,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     var s = tips[i];
                     // 读取此技能可以点的所有情况
-                    int[] SuperiorId = { 0, 0, 0 };
-                    int[] SuperiorCost = { int.MaxValue, int.MaxValue, int.MaxValue };
-                    int[] SuperiorGrade = { int.MinValue, int.MinValue, int.MinValue };
+                    int[] SuperiorId = [0, 0, 0];
+                    int[] SuperiorCost = [int.MaxValue, int.MaxValue, int.MaxValue];
+                    int[] SuperiorGrade = [int.MinValue, int.MinValue, int.MinValue];
 
                     SuperiorId[0] = s.Id;
                     SuperiorCost[0] = s.GetRealCost(chara_info);
@@ -193,20 +193,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                         // 2-选这个技能和它的上一级技能
                         // 3-选这个技能的最高位技（全点）
                         int[] choice =
-                        {
+                        [
                         dp[j],
-                        j  - SuperiorCost[0] >= 0 ?
+                            j - SuperiorCost[0] >= 0 ?
                             dp[j - SuperiorCost[0]] + SuperiorGrade[0] :
                             -1,
 
-                        j  - SuperiorCost[1] >= 0 ?
+                            j - SuperiorCost[1] >= 0 ?
                             dp[j - SuperiorCost[1]] + SuperiorGrade[1] :
                             -1,
 
-                        j  - SuperiorCost[2] >= 0 ?
+                            j - SuperiorCost[2] >= 0 ?
                             dp[j - SuperiorCost[2]] + SuperiorGrade[2] :
                             -1
-                    };
+                        ];
                         // 判断是否为四种选法中的最优选择
                         if (IsBestOption(0))
                         {
@@ -273,7 +273,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
                     }
                 }
-                learn = learn.OrderBy(x => x.DisplayOrder).ToList();
+                learn = [.. learn.OrderBy(x => x.DisplayOrder)];
                 return (learn, dp);
             }
         }

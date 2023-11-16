@@ -24,7 +24,6 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             SubscribeCommandInfo.Signal(@event);
-            var shouldWriteStatistics = true;
             var turnNum = @event.data.chara_info.turn;
             var LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
 
@@ -61,17 +60,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 GameStats.isFullGame = true;
             }
 
-            if (!@event.IsScenario(ScenarioType.LArc))
-                shouldWriteStatistics = false;
-            if (GameStats.currentTurn != turnNum - 1)
-                shouldWriteStatistics = false;
-            if (!GameStats.isFullGame)
-                shouldWriteStatistics = false;
-
             //买技能，大师杯剧本年末比赛，会重复显示
             var isRepeat = @event.data.chara_info.playing_state != 1;
-            //if(isRepeat)
-            //    AnsiConsole.MarkupLine($"[yellow]******playingstate{@event.data.chara_info.playing_state}******[/]");
+
             //初始化TurnStats
             if (isRepeat)
             {
@@ -84,12 +75,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 GameStats.stats[turnNum] = new TurnStats();
             }
 
-#if WRITE_GAME_STATISTICS
-            if (shouldWriteStatistics)
-            {
-                GameStats.LArcWriteStatsLastTurn(@event);
-            }
-#endif
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
             var turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
             var gameYear = (turnNum - 1) / 24 + 1;
@@ -102,31 +87,45 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             var motivation = @event.data.chara_info.motivation;
             turnStat.motivation = motivation;
-
             //显示统计信息
-            GameStats.print();
+            GameStats.Print();
 
             var currentVital = @event.data.chara_info.vital;
             var maxVital = @event.data.chara_info.max_vital;
-            if (currentVital < 30)
-                AnsiConsole.MarkupLine($"[red]体力：{currentVital}[/]/{maxVital}");
-            else if (currentVital < 50)
-                AnsiConsole.MarkupLine($"[darkorange]体力：{currentVital}[/]/{maxVital}");
-            else if (currentVital < 70)
-                AnsiConsole.MarkupLine($"[yellow]体力：{currentVital}[/]/{maxVital}");
-            else
-                AnsiConsole.MarkupLine($"[green]体力：{currentVital}[/]/{maxVital}");
+            switch (currentVital)
+            {
+                case < 30:
+                    AnsiConsole.MarkupLine($"[red]体力：{currentVital}[/]/{maxVital}");
+                    break;
+                case < 50:
+                    AnsiConsole.MarkupLine($"[darkorange]体力：{currentVital}[/]/{maxVital}");
+                    break;
+                case < 70:
+                    AnsiConsole.MarkupLine($"[yellow]体力：{currentVital}[/]/{maxVital}");
+                    break;
+                default:
+                    AnsiConsole.MarkupLine($"[green]体力：{currentVital}[/]/{maxVital}");
+                    break;
+            }
 
-            if (motivation == 5)
-                AnsiConsole.MarkupLine($"干劲[green]绝好调[/]");
-            else if (motivation == 4)
-                AnsiConsole.MarkupLine($"干劲[yellow]好调[/]");
-            else if (motivation == 3)
-                AnsiConsole.MarkupLine($"干劲[red]普通[/]");
-            else if (motivation == 2)
-                AnsiConsole.MarkupLine($"干劲[red]不调[/]");
-            else if (motivation == 1)
-                AnsiConsole.MarkupLine($"干劲[red]绝不调[/]");
+            switch (motivation)
+            {
+                case 5:
+                    AnsiConsole.MarkupLine($"干劲[green]绝好调[/]");
+                    break;
+                case 4:
+                    AnsiConsole.MarkupLine($"干劲[yellow]好调[/]");
+                    break;
+                case 3:
+                    AnsiConsole.MarkupLine($"干劲[red]普通[/]");
+                    break;
+                case 2:
+                    AnsiConsole.MarkupLine($"干劲[red]不调[/]");
+                    break;
+                case 1:
+                    AnsiConsole.MarkupLine($"干劲[red]绝不调[/]");
+                    break;
+            }
 
             var totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
             var totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
@@ -136,7 +135,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             //计算训练等级
             if (@event.IsScenario(ScenarioType.LArc))//预测训练等级
             {
-                for (int i = 0; i < 5; i++)
+                for (var i = 0; i < 5; i++)
                 {
                     if (turnNum == 1)
                     {
@@ -162,8 +161,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                             turnStat.trainLevel[i] += 1;
                         }
                         //检查是否有期待度上升
-                        int appRate = @event.data.arc_data_set.arc_info.approval_rate;
-                        int oldAppRate = GameStats.stats[turnNum - 1] != null ? (GameStats.stats[turnNum - 1].larc_totalApproval + 85) / 170 : 0;
+                        var appRate = @event.data.arc_data_set.arc_info.approval_rate;
+                        var oldAppRate = GameStats.stats[turnNum - 1] != null ? (GameStats.stats[turnNum - 1].larc_totalApproval + 85) / 170 : 0;
                         if (oldAppRate < 200 && appRate >= 200)
                             turnStat.trainLevel[i] += 1;
                         if (oldAppRate < 600 && appRate >= 600)
@@ -176,52 +175,37 @@ namespace UmamusumeResponseAnalyzer.Handler
                             turnStat.trainLevel[i] = 5;
                             turnStat.trainLevelCount[i] = 0;
                         }
-
                     }
                 }
             }
             //额外显示LArc信息
             if (@event.IsScenario(ScenarioType.LArc))
             {
-                int totalSSLevel = 0;
-                int[] rivalBoostCount = new int[4] { 0, 0, 0, 0 };
-                int[] effectCount = new int[13] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                turnStat.larc_isSSS = @event.data.arc_data_set.selection_info?.is_special_match == 1;
+                turnStat.larc_totalApproval = @event.data.arc_data_set.arc_rival_array.Sum(x => x.approval_point);
+                var totalSSLevel = @event.data.arc_data_set.arc_rival_array.Sum(x => x.star_lv);
+                var rivalBoostCount = new int[] { 0, 0, 0, 0 };
+                var effectCount = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
                 foreach (var rival in @event.data.arc_data_set.arc_rival_array)
                 {
-                    if (rival.selection_peff_array == null)//马娘自身
-                        continue;
-                    totalSSLevel += rival.star_lv;
+                    if (rival.selection_peff_array == null)
+                        continue; ///马娘自身
                     rivalBoostCount[rival.rival_boost] += 1;
-
                     foreach (var ef in rival.selection_peff_array)
                     {
                         effectCount[ef.effect_group_id] += 1;
                     }
                 }
-                //显示所有npc升级奖励的统计
-                string toPrint = "";
-                foreach (var ef in GameGlobal.LArcSSEffectNameFullColored)
-                {
-                    toPrint += $"{ef.Value}:[#ff0000]{effectCount[ef.Key]}[/] ";
-                }
-                //AnsiConsole.MarkupLine(toPrint);//永远固定，所以不用显示
-                int totalApproval = @event.data.arc_data_set.arc_rival_array.Sum(x => x.approval_point);
-                turnStat.larc_totalApproval = totalApproval;
-                int approval_rate = @event.data.arc_data_set.arc_info.approval_rate;
-                int shixingPt = @event.data.arc_data_set.arc_info.global_exp;
-
-                int lastTurnTotalApproval = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].larc_totalApproval : 0;
-
-                int approval_rate_level = approval_rate / 50;
-                if (approval_rate_level > 40) { approval_rate_level = 40; }
-                int approval_training_bonus = GameGlobal.LArcTrainBonusEvery5Percent[approval_rate_level];
-
-                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{shixingPt}[/]    总支援pt：[#00ff00]{totalApproval}[/]([aqua]+{totalApproval - lastTurnTotalApproval}[/])");
+                var approval_rate = @event.data.arc_data_set.arc_info.approval_rate;
+                var approval_rate_level = approval_rate / 50;
+                var approval_training_bonus = GameGlobal.LArcTrainBonusEvery5Percent[approval_rate_level > 40 ? 40 : approval_rate_level];
+                var lastTurnTotalApproval = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].larc_totalApproval : 0;
+                AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{@event.data.arc_data_set.arc_info.global_exp}[/]    总支援pt：[#00ff00]{turnStat.larc_totalApproval}[/]([aqua]+{turnStat.larc_totalApproval - lastTurnTotalApproval}[/])");
 
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
                 AnsiConsole.MarkupLine($"总格数：[#00ff00]{totalCount}[/]    总SS数：[#00ff00]{totalSSLevel}[/]    0123格：[aqua]{rivalBoostCount[0]} {rivalBoostCount[1]} {rivalBoostCount[2]} [/][#00ff00]{rivalBoostCount[3]}[/]");
 
-                toPrint = "";
+                var toPrint = string.Empty;
                 //每个人头（包括支援卡）每3级一定有一个属性，一个pt，一个特殊词条。其中特殊词条在一局内是固定的
                 //每局15个人头的每种特殊词条的总数是固定的。但是除了几个特殊的（体力最大值-茶座、爱娇-黄金船、练习上手-神鹰），其他都会随机分配给支援卡和路人
                 //支援卡相比路人点的次数更多，如果第三回合的支援卡随机分配的特殊词条不好，就可以重开了
@@ -229,12 +213,12 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (turnNum <= 2)
                 {
                     //清空SSRivalsSpecialBuffs
-                    GameStats.SSRivalsSpecialBuffs = new Dictionary<int, int>();
+                    GameStats.SSRivalsSpecialBuffs.Clear();
                 }
                 else
                 {
                     //补全SSRivalsSpecialBuffs，或者检查是否和已存储的SSRivalsSpecialBuffs自洽
-                    GameStats.SSRivalsSpecialBuffs ??= new Dictionary<int, int>();
+                    GameStats.SSRivalsSpecialBuffs.Clear();
 
                     GameStats.SSRivalsSpecialBuffs[1014] = 9;
                     GameStats.SSRivalsSpecialBuffs[1007] = 8;
@@ -282,8 +266,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                     {
 
                         var name = Database.Names.GetCharacter(supportCards1[cardCount]).Nickname.EscapeMarkup(); //partner是当前S卡卡组的index（1~6，7是啥？我忘了）或者charaId（10xx)
-                        string charaTrainingType = "";
-                        string specialBuffs = "";
+                        var charaTrainingType = string.Empty;
+                        var specialBuffs = string.Empty;
                         var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == cardCount).chara_id;
                         if (@event.data.arc_data_set.arc_rival_array.Any(x => x.chara_id == chara_id))
                         {
@@ -300,55 +284,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
                 AnsiConsole.MarkupLine(toPrint);
-
-                //游戏统计，用于测试游戏里各种概率
-                if (@event.data.arc_data_set.selection_info != null && @event.data.arc_data_set.selection_info.is_special_match == 1)//sss对战
-                    turnStat.larc_isSSS = true;
-
-                if (@event.data.arc_data_set.selection_info != null && @event.data.arc_data_set.selection_info.params_inc_dec_info_array != null && @event.data.arc_data_set.selection_info.all_win_approval_point != 0)
-                {
-                    var ssStatus = @event.data.arc_data_set.selection_info.params_inc_dec_info_array;
-                    int totalStatusBonus = 0;
-
-                    for (int i = 0; i < 5; i++)
-                        totalStatusBonus += ScoreUtils.ReviseOver1200(currentFiveValue[i] + ssStatus.First(x => x.target_type == i + 1).value) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
-
-                    int headnum = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
-                    int linkNum = 0;
-                    //数一下有几个link卡
-                    foreach (var sshead in @event.data.arc_data_set.selection_info.selection_rival_info_array)
-                    {
-                        if (GameGlobal.LArcScenarioLinkCharas.Any(x => x == sshead.chara_id))
-                        {
-                            int cardPos = @event.data.arc_data_set.evaluation_info_array.First(x => x.chara_id == sshead.chara_id).target_id;
-                            if (cardPos <= 6 && cardPos >= 1)//是支援卡
-                                linkNum += 1;
-                        }
-
-                    }
-                    int headBonus = 4 * headnum + 2 * linkNum;//link卡+6属性，非link卡+4
-                    double approvalBonus = approval_rate <= 250 ? 0.0 : (approval_rate - 200) / 500.0;
-                    //if (turnNum >= 67) approvalBonus += 0.2;
-                    double predictValue = headBonus + headnum * (1.0 + approvalBonus) * 5;
-                    if (@event.data.arc_data_set.selection_info.is_special_match == 1)
-                        predictValue += 5 * 15;
-
-                    //AnsiConsole.MarkupLine($"SS Match属性（只算下层）：[#00ff00]{totalStatusBonus}[/]，预测[#ff8000]{predictValue:F2}[/]，预测误差[#ff8000]{predictValue - totalStatusBonus:F2}[/]，除以人头[#00ffff]{(double)(totalStatusBonus - headBonus) / headnum:F2}[/]");
-                    int selfApprovalPoint = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == @event.data.chara_info.card_id / 100).approval_point;
-
-                    int rivalApprovalPoint = 0;
-
-                    foreach (var sshead in @event.data.arc_data_set.selection_info.selection_rival_info_array)
-                    {
-                        rivalApprovalPoint += @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == sshead.chara_id).approval_point;
-                    }
-                    //AnsiConsole.MarkupLine($"自己pt：[#00ff00]{selfApprovalPoint}[/]，其他人pt：[#00ff00]{rivalApprovalPoint}[/]");
-
-#if WRITE_GAME_STATISTICS
-                    GameStats.writeGameStatistics("ssValue", $"{totalStatusBonus} {headnum} {linkNum} {approval_rate} {approval_training_bonus} {selfApprovalPoint} {rivalApprovalPoint} {turnNum}");
-
-#endif
-                }
                 //凯旋门前显示技能性价比
                 if (turnNum == 43 || turnNum == 67)
                 {
@@ -375,45 +310,17 @@ namespace UmamusumeResponseAnalyzer.Handler
             //额外显示GM杯信息
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
-                var spiritNames = new Dictionary<int, string>
+                var outputLine = "当前碎片组：";
+                var spiritColors = new int[8]; //0空，1红，2蓝，3黄
+                for (var spiritPlace = 1; spiritPlace < 9; spiritPlace++)
                 {
-                    { -1, "⚪" },
-                    { 1, "[red]速[/]" },
-                    { 2, "[red]耐[/]" },
-                    { 3, "[red]力[/]" },
-                    { 4, "[red]根[/]" },
-                    { 5, "[red]智[/]" },
-                    { 6, "[red]星[/]" },
-                    { 9, "[blue]速[/]" },
-                    { 10,"[blue]耐[/]" },
-                    { 11,"[blue]力[/]" },
-                    { 12,"[blue]根[/]" },
-                    { 13,"[blue]智[/]" },
-                    { 14,"[blue]星[/]" },
-                    { 17,"[yellow]速[/]" },
-                    { 18,"[yellow]耐[/]" },
-                    { 19,"[yellow]力[/]" },
-                    { 20,"[yellow]根[/]" },
-                    { 21,"[yellow]智[/]" },
-                    { 22,"[yellow]星[/]" },
-                };
-
-                string outputLine = "当前碎片组：";
-                int[] spiritColors = new int[8]; //0空，1红，2蓝，3黄
-                for (int spiritPlace = 1; spiritPlace < 9; spiritPlace++)
-                {
-                    int spiritId =
+                    var spiritId =
                         @event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_num == spiritPlace)
                         ? @event.data.venus_data_set.spirit_info_array.First(x => x.spirit_num == spiritPlace).spirit_id
                         : -1;
                     spiritColors[spiritPlace - 1] = (8 + spiritId) / 8;  //0空，1红，2蓝，3黄
-                    string spiritStr = spiritNames[spiritId];
-
-                    if (spiritPlace == 1 || spiritPlace == 5)
-                        spiritStr = $"{{{spiritStr}}} ";
-                    else
-                        spiritStr = $"{spiritStr} ";
-                    outputLine = outputLine + spiritStr;
+                    var spiritStr = GameGlobal.GrandMastersSpiritNamesColored[spiritId];
+                    outputLine += (spiritPlace == 1 || spiritPlace == 5) ? $"{{{spiritStr}}} " : $"{spiritStr} ";
                 }
                 AnsiConsole.MarkupLine(outputLine);
 
@@ -423,13 +330,15 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else if (@event.data.venus_data_set.spirit_info_array.Any(x => x.spirit_id == 9042)) AnsiConsole.MarkupLine("当前女神睿智：[yellow]黄[/]");
                 else //预测下一个女神
                 {
-                    string[] colorStrs = { "⚪", "[red]红[/]", "[blue]蓝[/]", "[yellow]黄[/]" };
+                    var colorStrs = new string[] { "⚪", "[red]红[/]", "[blue]蓝[/]", "[yellow]黄[/]" };
                     if (spiritColors[0] == 0)
+                    {
                         AnsiConsole.MarkupLine("下一个女神：⚪ [green]vs[/] ⚪");
+                    }
                     else if (spiritColors[0] != 0 && spiritColors[4] == 0)
                     {
-                        int color1 = spiritColors[0];
-                        int color1count = spiritColors.Count(x => x == color1);
+                        var color1 = spiritColors[0];
+                        var color1count = spiritColors.Count(x => x == color1);
                         AnsiConsole.MarkupLine($"下一个女神：{colorStrs[color1]}x{color1count} [green]vs[/] ⚪");
                     }
                     else
@@ -460,10 +369,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                         $"[blue]{turnStat.venus_blueVenusLevel}[/] "
                         );
                 }
-                bool isBlueActive = @event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9041);//是否开蓝了
-                if (isBlueActive)
+                // 是否开蓝了
+                if (@event.data.venus_data_set.venus_spirit_active_effect_info_array.Any(x => x.chara_id == 9041))
+                {
                     turnStat.venus_isVenusCountConcerned = false;
-
+                }
             }
             //女神情热状态，不统计女神召唤次数
             if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 102))
@@ -471,8 +381,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 turnStat.venus_isVenusCountConcerned = false;
                 turnStat.venus_isEffect102 = true;
                 //统计一下女神情热持续了几回合
-                int continuousTurnNum = 0;
-                for (int i = turnNum; i >= 1; i--)
+                var continuousTurnNum = 0;
+                for (var i = turnNum; i >= 1; i--)
                 {
                     if (GameStats.stats[i] == null || !GameStats.stats[i].venus_isEffect102)
                         break;
@@ -504,10 +414,10 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             var trainStats = new TrainStats[5];
             var failureRate = new Dictionary<int, int>();
-            for (int t = 0; t < 5; t++)
+            for (var i = 0; i < 5; i++)
             {
-                int tid = GameGlobal.TrainIds[t];
-                failureRate[tid] = trainItems[tid].failure_rate;
+                var trainId = GameGlobal.TrainIds[i];
+                failureRate[trainId] = trainItems[trainId].failure_rate;
                 var trainParams = new Dictionary<int, int>()
                 {
                     {1,0},
@@ -518,122 +428,47 @@ namespace UmamusumeResponseAnalyzer.Handler
                     {30,0},
                     {10,0},
                 };
-                var nonScenarioTrainParams = new Dictionary<int, int>()
-                {
-                    {1,0},
-                    {2,0},
-                    {3,0},
-                    {4,0},
-                    {5,0},
-                    {30,0},
-                    {10,0},
-                };
+                dynamic commandInfoArray = @event.data.home_info.command_info_array;
                 //去掉剧本加成的训练值（游戏里的下层显示）
-                foreach (var item in @event.data.home_info.command_info_array)
-                {
-                    if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
-                        GameGlobal.ToTrainId[item.command_id] == tid)
-                    {
+                foreach (var item in commandInfoArray)
+                    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out int value) && value == trainId)
                         foreach (var trainParam in item.params_inc_dec_info_array)
-                        {
-                            nonScenarioTrainParams[trainParam.target_type] += trainParam.value;
                             trainParams[trainParam.target_type] += trainParam.value;
-                        }
-                    }
-                }
+                var nonScenarioTrainParams = new Dictionary<int, int>(trainParams);
+                if (@event.data.team_data_set != null) // 青春杯
+                    commandInfoArray = @event.data.team_data_set.command_info_array;
+                else if (@event.data.free_data_set != null) // 巅峰杯
+                    commandInfoArray = @event.data.free_data_set.command_info_array;
+                else if (@event.data.live_data_set != null) // 偶像杯
+                    commandInfoArray = @event.data.live_data_set.command_info_array;
+                else if (@event.IsScenario(ScenarioType.GrandMasters)) // 女神杯
+                    commandInfoArray = @event.data.venus_data_set.command_info_array;
+                else if (@event.IsScenario(ScenarioType.LArc)) // 凯旋门
+                    commandInfoArray = @event.data.arc_data_set.command_info_array;
+                if (commandInfoArray is System.Collections.IEnumerable and not null)
+                    foreach (var item in commandInfoArray)
+                        if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out int value) && value == trainId)
+                            foreach (var trainParam in item.params_inc_dec_info_array)
+                                trainParams[trainParam.target_type] += trainParam.value;
 
-                //青春杯
-                if (@event.data.team_data_set != null)
+                var stats = new TrainStats
                 {
-                    foreach (var item in @event.data.team_data_set.command_info_array)
-                    {
-                        if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                        {
-                            foreach (var trainParam in item.params_inc_dec_info_array)
-                            {
-                                trainParams[trainParam.target_type] += trainParam.value;
-                                //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
-                            }
-                        }
-                    }
-                }
-                //巅峰杯
-                if (@event.data.free_data_set != null)
-                {
-                    foreach (var item in @event.data.free_data_set.command_info_array)
-                    {
-                        if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                        {
-                            foreach (var trainParam in item.params_inc_dec_info_array)
-                            {
-                                trainParams[trainParam.target_type] += trainParam.value;
-                                //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
-                            }
-                        }
-                    }
-                }
-                //偶像杯
-                if (@event.data.live_data_set != null)
-                {
-                    foreach (var item in @event.data.live_data_set.command_info_array)
-                    {
-                        if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                        {
-                            foreach (var trainParam in item.params_inc_dec_info_array)
-                            {
-                                trainParams[trainParam.target_type] += trainParam.value;
-                                //AnsiConsole.WriteLine($"{tid} {trainParam.target_type} {trainParam.value}");
-                            }
-                        }
-                    }
-                }
-                //女神杯
-                if (@event.IsScenario(ScenarioType.GrandMasters))
-                {
-                    foreach (var item in @event.data.venus_data_set.command_info_array)
-                    {
-                        if (item.command_id == tid || item.command_id == GameGlobal.XiahesuIds[tid])
-                        {
-                            foreach (var trainParam in item.params_inc_dec_info_array)
-                            {
-                                trainParams[trainParam.target_type] += trainParam.value;
-                            }
-                        }
-                    }
-                }
-
-                //凯旋门
-                if (@event.IsScenario(ScenarioType.LArc))
-                {
-                    foreach (var item in @event.data.arc_data_set.command_info_array)
-                    {
-                        if (GameGlobal.ToTrainId.ContainsKey(item.command_id) &&
-                            GameGlobal.ToTrainId[item.command_id] == tid)
-                        {
-                            foreach (var trainParam in item.params_inc_dec_info_array)
-                            {
-                                trainParams[trainParam.target_type] += trainParam.value;
-                            }
-                        }
-                    }
-                }
-
-                var stats = new TrainStats();
-                stats.FailureRate = trainItems[tid].failure_rate;
-                stats.VitalGain = trainParams[10];
+                    FailureRate = trainItems[trainId].failure_rate,
+                    VitalGain = trainParams[10]
+                };
                 if (currentVital + stats.VitalGain > maxVital)
                     stats.VitalGain = maxVital - currentVital;
                 if (stats.VitalGain < -currentVital)
                     stats.VitalGain = -currentVital;
-                stats.FiveValueGain = new int[] { trainParams[1], trainParams[2], trainParams[3], trainParams[4], trainParams[5] };
-                for (int i = 0; i < 5; i++)
-                    stats.FiveValueGain[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGain[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
+                stats.FiveValueGain = [trainParams[1], trainParams[2], trainParams[3], trainParams[4], trainParams[5]];
+                for (var j = 0; j < 5; j++)
+                    stats.FiveValueGain[j] = ScoreUtils.ReviseOver1200(currentFiveValue[j] + stats.FiveValueGain[j]) - ScoreUtils.ReviseOver1200(currentFiveValue[j]);
                 stats.PtGain = trainParams[30];
-                stats.FiveValueGainNonScenario = new int[] { nonScenarioTrainParams[1], nonScenarioTrainParams[2], nonScenarioTrainParams[3], nonScenarioTrainParams[4], nonScenarioTrainParams[5] };
-                for (int i = 0; i < 5; i++)
-                    stats.FiveValueGainNonScenario[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGainNonScenario[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
+                stats.FiveValueGainNonScenario = [nonScenarioTrainParams[1], nonScenarioTrainParams[2], nonScenarioTrainParams[3], nonScenarioTrainParams[4], nonScenarioTrainParams[5]];
+                for (var j = 0; j < 5; j++)
+                    stats.FiveValueGainNonScenario[j] = ScoreUtils.ReviseOver1200(currentFiveValue[j] + stats.FiveValueGainNonScenario[j]) - ScoreUtils.ReviseOver1200(currentFiveValue[j]);
                 stats.PtGainNonScenario = nonScenarioTrainParams[30];
-                trainStats[t] = stats;
+                trainStats[i] = stats;
             }
             turnStat.fiveTrainStats = trainStats;
             var table = new Table();
@@ -643,75 +478,62 @@ namespace UmamusumeResponseAnalyzer.Handler
             for (int i = 0; i < 5; i++)
             {
                 int thisFailureRate = failureRate[GameGlobal.TrainIds[i]];
-                string outputItem = $"({thisFailureRate}%)";
-                if (thisFailureRate >= 40)
-                    outputItem = "[red]" + outputItem + "[/]";
-                else if (thisFailureRate >= 20)
-                    outputItem = "[darkorange]" + outputItem + "[/]";
-                else if (thisFailureRate > 0)
-                    outputItem = "[yellow]" + outputItem + "[/]";
-                failureRateStr[i] = outputItem;
+                failureRateStr[i] = thisFailureRate switch
+                {
+                    >= 40 => $"[red]({thisFailureRate}%)[/]",
+                    >= 20 => $"[darkorange]({thisFailureRate}%)[/]",
+                    > 0 => $"[yellow]({thisFailureRate}%)[/]",
+                    _ => string.Empty
+                };
             }
-            int tableWidth = 15;
             table.AddColumns(
-                  new TableColumn($"速{failureRateStr[0]}").Width(tableWidth)
-                , new TableColumn($"耐{failureRateStr[1]}").Width(tableWidth)
-                , new TableColumn($"力{failureRateStr[2]}").Width(tableWidth)
-                , new TableColumn($"根{failureRateStr[3]}").Width(tableWidth)
-                , new TableColumn($"智{failureRateStr[4]}").Width(tableWidth));
+                  new TableColumn($"速{failureRateStr[0]}").Width(15)
+                , new TableColumn($"耐{failureRateStr[1]}").Width(15)
+                , new TableColumn($"力{failureRateStr[2]}").Width(15)
+                , new TableColumn($"根{failureRateStr[3]}").Width(15)
+                , new TableColumn($"智{failureRateStr[4]}").Width(15));
             if (@event.IsScenario(ScenarioType.LArc))
             {
-                table.AddColumn(new TableColumn("SS Match").Width(tableWidth));
+                table.AddColumn(new TableColumn("SS Match").Width(15));
             }
             var separatorLine = Enumerable.Repeat(new string(Enumerable.Repeat('-', table.Columns.Max(x => x.Width.GetValueOrDefault())).ToArray()), 5).ToArray();
-            var separatorLineSSMatch = new string(Enumerable.Repeat('-', tableWidth).ToArray());
-            var outputItems = new string[5];
+            var separatorLineSSMatch = new string(Enumerable.Repeat('-', 15).ToArray());
 
-            //table.AddRow(Enumerable.Repeat("当前:可获得", 5).ToArray());
+            var outputItems = new string[5];
             table.AddToRows(0, Enumerable.Repeat("当前:可获得", 5).ToArray());
             //显示此属性的当前属性及还差多少属性达到上限
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
-                int remainValue = fiveValueMaxRevised[i] - currentFiveValueRevised[i];
-                outputItems[i] = $"{currentFiveValueRevised[i]}:";
-                if (remainValue > 400)
-                    outputItems[i] += $"{remainValue}属性";
-                else if (remainValue > 200)
-                    outputItems[i] += $"[yellow]{remainValue}[/]属性";
-                else
-                    outputItems[i] += $"[red]{remainValue}[/]属性";
+                var remainValue = fiveValueMaxRevised[i] - currentFiveValueRevised[i];
+                outputItems[i] = remainValue switch
+                {
+                    > 400 => $"{currentFiveValueRevised[i]}: {remainValue}属性",
+                    > 200 => $"{currentFiveValueRevised[i]}: [yellow]{remainValue}[/]属性",
+                    _ => $"{currentFiveValueRevised[i]}: [red]{remainValue}[/]属性"
+                };
             }
-            //table.AddRow(outputItems);
-            //table.AddRow(separatorLine);
             table.AddToRows(1, outputItems);
             table.AddToRows(2, separatorLine);
-
             //显示训练后的剩余体力
             for (int i = 0; i < 5; i++)
             {
                 int tid = GameGlobal.TrainIds[i];
                 var VitalGain = trainStats[i].VitalGain;
                 var newVital = VitalGain + currentVital;
-
-                string outputItem;
-                if (newVital < 30)
-                    outputItem = $"体力:[red]{newVital}[/]/{maxVital}";
-                else if (newVital < 50)
-                    outputItem = $"体力:[darkorange]{newVital}[/]/{maxVital}";
-                else if (newVital < 70)
-                    outputItem = $"体力:[yellow]{newVital}[/]/{maxVital}";
-                else
-                    outputItem = $"体力:[green]{newVital}[/]/{maxVital}";
-
-                outputItems[i] = outputItem;
+                outputItems[i] = newVital switch
+                {
+                    < 30 => $"体力:[red]{newVital}[/]/{maxVital}",
+                    < 50 => $"体力:[darkorange]{newVital}[/]/{maxVital}",
+                    < 70 => $"体力:[yellow]{newVital}[/]/{maxVital}",
+                    _ => $"体力:[green]{newVital}[/]/{maxVital}"
+                };
             }
-            //table.AddRow(outputItems);
             table.AddToRows(3, outputItems);
 
             //显示此训练的训练等级
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
-                int normalId = GameGlobal.TrainIds[i];
+                var normalId = GameGlobal.TrainIds[i];
                 if (@event.data.home_info.command_info_array.Any(x => x.command_id == GameGlobal.XiahesuIds[normalId]))
                 {
                     outputItems[i] = "[green]夏合宿[/]";
@@ -736,19 +558,17 @@ namespace UmamusumeResponseAnalyzer.Handler
                         outputItems[i] = lv < 5 ? $"[yellow]Lv{lv}[/]" : $"Lv{lv}";
                 }
             }
-            //table.AddRow(outputItems);
-            //table.AddRow(separatorLine);
             table.AddToRows(4, outputItems);
             table.AddToRows(5, separatorLine);
 
             //显示此次训练可获得的属性和Pt
-            int bestScore = -100;
-            int bestTrain = -1;
-            for (int i = 0; i < 5; i++)
+            var bestScore = -100;
+            var bestTrain = -1;
+            for (var i = 0; i < 5; i++)
             {
-                int tid = GameGlobal.TrainIds[i];
+                var tid = GameGlobal.TrainIds[i];
                 var stats = trainStats[i];
-                int score = stats.FiveValueGain.Sum();
+                var score = stats.FiveValueGain.Sum();
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -763,39 +583,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else
                     outputItems[i] = $"属性:[green]{outputItems[i]}[/]|Pt:{trainStats[i].PtGain}";
             }
-            //table.AddRow(outputItems);
-            //table.AddRow(separatorLine);
             table.AddToRows(6, outputItems);
-
-            //显示此次训练可获得的打分
-            double bestValue = -100;
-            bestTrain = -1;
-            for (int i = 0; i < 5; i++)
-            {
-                int tid = GameGlobal.TrainIds[i];
-                var stats = trainStats[i];
-                double score = 1.0 * stats.FiveValueGain[0]
-                    + 1.1 * stats.FiveValueGain[1]
-                    + 1.1 * stats.FiveValueGain[2]
-                    + 1.1 * stats.FiveValueGain[3]
-                    + 0.9 * stats.FiveValueGain[4]
-                    + 0.4 * stats.PtGain;
-                if (score > bestValue)
-                {
-                    bestValue = score;
-                    bestTrain = i;
-                }
-                outputItems[i] = $"{score:F1}";
-            }
-            for (int i = 0; i < 5; i++)
-            {
-                if (i == bestTrain)
-                    outputItems[i] = $"打分:[aqua]{outputItems[i]}[/]";
-                else
-                    outputItems[i] = $"打分:[green]{outputItems[i]}[/]"; ;
-            }
-            //table.AddRow(outputItems);
-            //table.AddRow(separatorLine);
 
             //以下几项用于计算单次训练能充多少格
             var LArcRivalBoostCount = new int[,] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };// 五种训练的充电槽为0,1,2格的个数
@@ -808,8 +596,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             foreach (var command in @event.data.home_info.command_info_array)
             {
                 if (!GameGlobal.ToTrainIndex.ContainsKey(command.command_id)) continue;
-
-
                 var trainIdx = GameGlobal.ToTrainIndex[command.command_id];
 
                 var tips = command.tips_event_partner_array.Intersect(command.training_partner_array); //红感叹号 || Hint
@@ -825,28 +611,27 @@ namespace UmamusumeResponseAnalyzer.Handler
                         bool isArcPartner = @event.IsScenario(ScenarioType.LArc) && (partner > 1000 || (partner >= 1 && partner <= 7)) && @event.data.arc_data_set.evaluation_info_array.Any(x => x.target_id == partner);
                         var nameColor = "[#ffffff]";
                         var nameAppend = "";
-                        bool shouldShining = false;//是不是友情训练
+                        bool shouldShining = false; // 是不是友情训练
                         if (partner >= 1 && partner <= 7)
                         {
                             priority = PartnerPriority.其他;
-                            if (name.Contains("[友]")) //友人单独标绿
+                            if (name.Contains("[友]")) // 友人单独标绿
                             {
                                 priority = PartnerPriority.友人;
                                 nameColor = $"[green]";
 
-                                //三女神团队卡的友情训练
-                                if (supportCards[partner] == 30137)
+                                switch (supportCards[partner])
                                 {
-                                    turnStat.venus_venusTrain = GameGlobal.ToTrainId[command.command_id];
-                                }
-
-                                if (supportCards[partner] == 30160 || supportCards[partner] == 10094)//佐岳友人卡
-                                {
-                                    LArcfriendAppear[trainIdx] = true;
-                                    turnStat.larc_zuoyueAtTrain[trainIdx] = true;
+                                    case 30137: // 三女神团队卡的友情训练
+                                        turnStat.venus_venusTrain = GameGlobal.ToTrainId[command.command_id];
+                                        break;
+                                    case 30160 or 10094: // 佐岳友人卡
+                                        LArcfriendAppear[trainIdx] = true;
+                                        turnStat.larc_zuoyueAtTrain[trainIdx] = true;
+                                        break;
                                 }
                             }
-                            else if (friendship < 80) //羁绊不满80，无法触发友情训练标黄
+                            else if (friendship < 80) // 羁绊不满80，无法触发友情训练标黄
                             {
                                 priority = PartnerPriority.羁绊不足;
                                 nameColor = $"[yellow]";
@@ -945,14 +730,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                 commandInfo.Add(command.command_id, partners.OrderBy(s => s.priority).Select(x => x.name).ToArray());
             }
             if (!commandInfo.SelectMany(x => x.Value).Any()) return;
-
             //LArc充电槽计数
-            if (@event.IsScenario(ScenarioType.LArc) && (!LArcIsAbroad))
+            if (@event.IsScenario(ScenarioType.LArc) && !LArcIsAbroad)
             {
-                for (int i = 0; i < 5; i++)
+                for (var i = 0; i < 5; i++)
                 {
-                    int chargedNum = LArcRivalBoostCount[i, 0] + LArcRivalBoostCount[i, 1] + LArcRivalBoostCount[i, 2];
-                    int chargedFullNum = LArcRivalBoostCount[i, 2];
+                    var chargedNum = LArcRivalBoostCount[i, 0] + LArcRivalBoostCount[i, 1] + LArcRivalBoostCount[i, 2];
+                    var chargedFullNum = LArcRivalBoostCount[i, 2];
                     if (LArcShiningCount[i] >= 1)
                     {
                         chargedNum += LArcRivalBoostCount[i, 0] + LArcRivalBoostCount[i, 1];
@@ -963,234 +747,181 @@ namespace UmamusumeResponseAnalyzer.Handler
                         chargedNum += LArcRivalBoostCount[i, 0];
                         chargedFullNum += LArcRivalBoostCount[i, 0];
                     }
-                    var maybefriendStr = LArcfriendAppear[i] ? "+友" : "";
-                    outputItems[i] = $"格数[#00ff00]{chargedNum}{maybefriendStr}[/]|满数[#00ff00]{chargedFullNum}[/]";
+                    outputItems[i] = $"格数[#00ff00]{chargedNum}{(LArcfriendAppear[i] ? "+友" : string.Empty)}[/]|满数[#00ff00]{chargedFullNum}[/]";
                 }
-
                 table.AddToRows(7, outputItems);
             }
-            table.AddToRows(8, separatorLine);
 
+            table.AddToRows(8, separatorLine);
             for (var i = 0; i < 5; ++i)
             {
                 table.AddToRows(9 + i, commandInfo.Select(x => x.Value.Length > i ? x.Value[i] : string.Empty).ToArray());//第8行预留位置
             }
 
-            if (@event.IsScenario(ScenarioType.MakeANewTrack))
+            if (@event.IsScenario(ScenarioType.MakeANewTrack) && @event.data.free_data_set != null)
             {
                 var freeDataSet = @event.data.free_data_set;
                 var coinNum = freeDataSet.coin_num;
-                var inventory = freeDataSet.user_item_info_array?.ToDictionary(x => x.item_id, x => x.num);
-                var shouldPromoteTea = (inventory?.ContainsKey(2301) ?? false) ||  //包里或者商店里有加干劲的道具
-                    (inventory?.ContainsKey(2302) ?? false) ||
+                var inventory = freeDataSet.user_item_info_array?.ToDictionary(x => x.item_id, x => x.num) ?? [];
+                var shouldPromoteTea = inventory.ContainsKey(2301) ||  //包里或者商店里有加干劲的道具
+                    inventory.ContainsKey(2302) ||
                     freeDataSet.pick_up_item_info_array.Any(x => x.item_id == 2301) ||
                     freeDataSet.pick_up_item_info_array.Any(x => x.item_id == 2302);
                 var currentTurn = @event.data.chara_info.turn;
 
                 var rows = new List<List<string>> { new(), new(), new(), new(), new() };
+                var k = 0;
+                foreach (var j in freeDataSet.pick_up_item_info_array
+                    .Where(x => x.item_buy_num != 1)
+                    .GroupBy(x => x.item_id))
                 {
-                    var k = 0;
-                    foreach (var j in freeDataSet.pick_up_item_info_array
-                        .Where(x => x.item_buy_num != 1)
-                        .GroupBy(x => x.item_id))
-                    {
-                        if (k == 5) k = 0;
-                        var name = Database.ClimaxItem[j.First().item_id];
-                        if (name.Contains("+15") ||
-                            name.Contains("体力+") ||
-                            (name == "苦茶" && shouldPromoteTea) ||
-                            name == "BBQ" ||
-                            name == "切者" ||
-                            name == "哨子" ||
-                            name == "60%喇叭" ||
-                            name == "御守" ||
-                            name == "蹄铁・極"
-                            )
-                            name = $"[green]{name}[/]";
-                        var itemCount = j.Count();
-                        var remainTurn = j.First().limit_turn == 0 ? ((currentTurn - 1) / 6 + 1) * 6 + 1 - currentTurn : j.First().limit_turn + 1 - currentTurn;
-                        var remainTurnRemind = $"{remainTurn}T";
-                        if (remainTurn == 3)
-                            remainTurnRemind = $"[green1]{remainTurnRemind}[/]";
-                        else if (remainTurn == 2)
-                            remainTurnRemind = $"[orange1]{remainTurnRemind}[/]";
-                        else if (remainTurn == 1)
-                            remainTurnRemind = $"[red]{remainTurnRemind}[/]";
-                        rows[k].Add($"{name}:{itemCount}/{remainTurnRemind}");
-                        k++;
-                    }
+                    if (k == 5) k = 0;
+                    var name = Database.ClimaxItem[j.First().item_id];
+                    if (name.Contains("+15") ||
+                        name.Contains("体力+") ||
+                        (name == "苦茶" && shouldPromoteTea) ||
+                        name == "BBQ" ||
+                        name == "切者" ||
+                        name == "哨子" ||
+                        name == "60%喇叭" ||
+                        name == "御守" ||
+                        name == "蹄铁・極"
+                        )
+                        name = $"[green]{name}[/]";
+                    var itemCount = j.Count();
+                    var remainTurn = j.First().limit_turn == 0 ? ((currentTurn - 1) / 6 + 1) * 6 + 1 - currentTurn : j.First().limit_turn + 1 - currentTurn;
+                    var remainTurnRemind = $"{remainTurn}T";
+                    if (remainTurn == 3)
+                        remainTurnRemind = $"[green1]{remainTurnRemind}[/]";
+                    else if (remainTurn == 2)
+                        remainTurnRemind = $"[orange1]{remainTurnRemind}[/]";
+                    else if (remainTurn == 1)
+                        remainTurnRemind = $"[red]{remainTurnRemind}[/]";
+                    rows[k].Add($"{name}:{itemCount}/{remainTurnRemind}");
+                    k++;
                 }
                 for (var i = 0; i < 5; ++i)
+                {
                     table.Columns[i].Footer = new Rows(rows[i].Select(x => new Markup(x)));
+                }
             }
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
-                var spiritId = new Dictionary<int, string>
-                {
-                    { 1, "[red]速[/]" },
-                    { 2, "[red]耐[/]" },
-                    { 3, "[red]力[/]" },
-                    { 4, "[red]根[/]" },
-                    { 5, "[red]智[/]" },
-                    { 6, "[red]星[/]" },
-                    { 9, "[blue]速[/]" },
-                    { 10,"[blue]耐[/]" },
-                    { 11,"[blue]力[/]" },
-                    { 12,"[blue]根[/]" },
-                    { 13,"[blue]智[/]" },
-                    { 14,"[blue]星[/]" },
-                    { 17,"[yellow]速[/]" },
-                    { 18,"[yellow]耐[/]" },
-                    { 19,"[yellow]力[/]" },
-                    { 20,"[yellow]根[/]" },
-                    { 21,"[yellow]智[/]" },
-                    { 22,"[yellow]星[/]" },
-                };
                 foreach (var i in @event.data.venus_data_set.venus_chara_command_info_array)
                 {
                     switch (i.command_type)
                     {
                         case 1:
+                            switch (i.command_id)
                             {
-                                switch (i.command_id)
-                                {
-                                    case 101:
-                                    case 601:
-                                        table.Columns[0].Header = new Markup($"速{failureRateStr[0]} | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
-                                    case 102:
-                                    case 603:
-                                        table.Columns[2].Header = new Markup($"力{failureRateStr[2]} | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
-                                    case 103:
-                                    case 604:
-                                        table.Columns[3].Header = new Markup($"根{failureRateStr[3]} | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
-                                    case 105:
-                                    case 602:
-                                        table.Columns[1].Header = new Markup($"耐{failureRateStr[1]} | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
-                                    case 106:
-                                    case 605:
-                                        table.Columns[4].Header = new Markup($"智{failureRateStr[4]} | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
-                                }
-                                break;
+                                case 101 or 601:
+                                    table.Columns[0].Header = new Markup($"速{failureRateStr[0]} | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
+                                case 102 or 603:
+                                    table.Columns[2].Header = new Markup($"力{failureRateStr[2]} | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
+                                case 103 or 604:
+                                    table.Columns[3].Header = new Markup($"根{failureRateStr[3]} | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
+                                case 105 or 602:
+                                    table.Columns[1].Header = new Markup($"耐{failureRateStr[1]} | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
+                                case 106 or 605:
+                                    table.Columns[4].Header = new Markup($"智{failureRateStr[4]} | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"); break;
                             }
+                            break;
                         case 3:
-                            {
-                                table.Columns[0].Footer = new Rows(new Markup($"出行 | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"));
-                                break;
-                            }
+                            table.Columns[0].Footer = new Rows(new Markup($"出行 | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"));
+                            break;
                         case 4:
-                            {
-                                table.Columns[2].Footer = new Rows(new Markup($"比赛 | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"));
-                                break;
-                            }
+                            table.Columns[2].Footer = new Rows(new Markup($"比赛 | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"));
+                            break;
                         case 7:
-                            {
-                                table.Columns[1].Footer = new Rows(new Markup($"休息 | {spiritId[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"));
-                                break;
-                            }
+                            table.Columns[1].Footer = new Rows(new Markup($"休息 | {GameGlobal.GrandMastersSpiritNamesColored[i.spirit_id]}{(i.is_boost == 1 ? "[aqua]x2[/]" : string.Empty)}"));
+                            break;
                     }
                 }
             }
-            if (@event.IsScenario(ScenarioType.LArc))
+            if (@event.IsScenario(ScenarioType.LArc) && @event.data.arc_data_set.selection_info != null)
             {
-
-                int rivalNum = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
-                turnStat.larc_SSPersonCount = rivalNum;
-                for (var i = 0; i < rivalNum; i++)
+                var totalRivalCount = @event.data.arc_data_set.arc_rival_array.Length;
+                var selectedRivalCount = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
+                turnStat.larc_SSPersonCount = selectedRivalCount;
+                for (var i = 0; i < selectedRivalCount; i++)
                 {
-                    var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
-                    var rivalName = Database.Names.GetCharacter(chara_id).Nickname;
-                    if (rivalNum == 5)
+                    var rival = @event.data.arc_data_set.selection_info.selection_rival_info_array[i];
+                    var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
+                    if (selectedRivalCount == 5)
                     {
-                        // SS Match中的S卡
-                        var sc = supportCards.Values.FirstOrDefault(sc => chara_id == Database.Names.GetSupportCard(sc).CharaId);
+                        var sc = supportCards.Values.FirstOrDefault(sc => rival.chara_id == Database.Names.GetSupportCard(sc).CharaId); // SS Match中的S卡，值为defau时即为NPC
                         if (@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark != 1)
                             rivalName = $"[#ff0000]{rivalName}(可能失败)[/]";
-                        // 羁绊不满80的S卡
                         else if (sc != default && @event.data.chara_info.evaluation_info_array[supportCards.First(x => x.Value == sc).Key - 1].evaluation < 80)
-                        {
-                            rivalName = $"[yellow]{rivalName}[/]";
-                        }
-                        // SSS Match
+                            rivalName = $"[yellow]{rivalName}[/]"; // 羁绊不满80的S卡
                         else if (@event.data.arc_data_set.selection_info.is_special_match == 1)
-                            rivalName = $"[#00ffff]{rivalName}[/]";
+                            rivalName = $"[#00ffff]{rivalName}[/]"; // SSS Match
                         else
                             rivalName = $"[#00ff00]{rivalName}[/]";
                     }
 
-                    var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
+                    var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == rival.chara_id);
                     var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                     rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
                     table.Edit(5, i, rivalName);
                 }
-
-                if (rivalNum == 5)//把攒满但没进ss的人头也显示在下面
+                // 把攒满但没进ss的人头也显示在下面
+                if (selectedRivalCount == 5)
                 {
                     table.Edit(5, 5, separatorLineSSMatch);
                     table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
 
-                    int extraHeadCount = 0;
-
-                    foreach (var rival in @event.data.arc_data_set.arc_rival_array)
+                    foreach (var rival in @event.data.arc_data_set.arc_rival_array[..5]) // 只能放得下5个人
                     {
-                        if (rival.selection_peff_array == null)//马娘自身
-                            continue;
-                        var chara_id = rival.chara_id;
-                        var rival_boost = rival.rival_boost;
-                        if (rival_boost != 3)//没攒满
-                            continue;
-                        if (@event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == chara_id))//已经在ss训练中了
+                        if (rival.selection_peff_array == null // 马娘自身
+                            || rival.rival_boost != 3 // 没攒满
+                            || @event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == rival.chara_id) // 已经在ss训练中了
+                            )
                             continue;
 
-                        extraHeadCount += 1;
-                        if (extraHeadCount > 5) //只能放得下5个人
-                            continue;
-
-                        var rivalName = Database.Names.GetCharacter(chara_id).Nickname;
-
+                        var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
                         var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                         rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
-                        table.Edit(5, extraHeadCount + 6, rivalName);
+                        table.Edit(5, selectedRivalCount + 6, rivalName);
                     }
-                    if (extraHeadCount > 5)//有没显示的
-                        table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
+                    if (totalRivalCount > 5)//有没显示的
+                    {
+                        table.Edit(5, 12, $"[#ffff00]... + {totalRivalCount - 5} 人[/]");
+                    }
 
                     turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
-
-
-                    //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
                 }
-
                 // 增加当前SS训练属性和PT的显示
-                if (rivalNum > 0)
+                if (selectedRivalCount > 0)
                 {
-                    int totalStats = 0;
-                    int totalPt = 0;
-                    int totalVital = 0;
-                    foreach (var item in @event.data.arc_data_set.selection_info.params_inc_dec_info_array)
+                    var totalStats = 0;
+                    var totalPt = 0;
+                    var totalVital = 0;
+                    if (@event.data.arc_data_set.selection_info.params_inc_dec_info_array != null)
                     {
-                        if (item.target_type >= 1 && item.target_type <= 5)
-                            totalStats += item.value;
-                        else if (item.target_type == 30)
-                            totalPt += item.value;
-                        else if (item.target_type == 10)
-                            totalVital += item.value;
-                        else
-                            AnsiConsole.MarkupLine($"{item.target_type} = {item.value}");
+                        totalStats += @event.data.arc_data_set.selection_info.params_inc_dec_info_array
+                            .Where(x => x.target_type >= 1 && x.target_type <= 5)
+                            .Sum(x => x.value);
+                        totalPt += @event.data.arc_data_set.selection_info.params_inc_dec_info_array
+                            .Where(x => x.target_type == 30)
+                            .Sum(x => x.value);
+                        totalVital += @event.data.arc_data_set.selection_info.params_inc_dec_info_array
+                            .Where(x => x.target_type == 10)
+                            .Sum(x => x.value);
                     }
-                    foreach (var item in @event.data.arc_data_set.selection_info.bonus_params_inc_dec_info_array)
+                    if (@event.data.arc_data_set.selection_info.bonus_params_inc_dec_info_array != null)
                     {
-                        if (item.target_type >= 1 && item.target_type <= 5)
-                            totalStats += item.value;
-                        else if (item.target_type == 30)
-                            totalPt += item.value;
-                        else if (item.target_type == 10)
-                            totalVital += item.value;
-                        else
-                            AnsiConsole.MarkupLine($"{item.target_type} = {item.value}");
+                        totalStats += @event.data.arc_data_set.selection_info.bonus_params_inc_dec_info_array
+                            .Where(x => x.target_type >= 1 && x.target_type <= 5)
+                            .Sum(x => x.value);
+                        totalPt += @event.data.arc_data_set.selection_info.bonus_params_inc_dec_info_array
+                            .Where(x => x.target_type == 30)
+                            .Sum(x => x.value);
+                        totalVital += @event.data.arc_data_set.selection_info.bonus_params_inc_dec_info_array
+                            .Where(x => x.target_type == 10)
+                            .Sum(x => x.value);
                     }
-                    string line = $"[#00ffff]属性:{totalStats}|Pt:{totalPt}[/]";
-
-                    table.Edit(5, 13, line);
+                    table.Edit(5, 13, $"[#00ffff]属性:{totalStats}|Pt:{totalPt}[/]");
                 }
             }
             table.Finish();
@@ -1200,9 +931,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (@event.IsScenario(ScenarioType.LArc))
             {
                 //两次远征分别是37,60回合
-                if (turnNum < 37 && turnNum >= 34)
+                if (turnNum >= 34 && turnNum < 37)
                     AnsiConsole.MarkupLine($@"[#ff0000]还有{37 - turnNum}回合第二年远征！[/]");
-                if (turnNum < 60 && turnNum >= 55)
+                else if (turnNum >= 55 && turnNum < 60)
                     AnsiConsole.MarkupLine($@"[#ff0000]还有{60 - turnNum}回合第三年远征！[/]");
                 if (turnNum == 59)
                 {
@@ -1219,11 +950,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                     // 3 7 8
                     //  9 10
                     //检查是否买了友情+20
-                    int friendLevel = @event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 8).level;
-                    int ptLevel = @event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level;
+                    var friendLevel = @event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 8).level;
+                    var ptLevel = @event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == 3).level;
                     if (friendLevel < 3)//没买友情
                     {
-                        int cost = friendLevel == 2 ? 300 : 500;
+                        var cost = friendLevel == 2 ? 300 : 500;
                         if (@event.data.arc_data_set.arc_info.global_exp >= cost)
                         {
                             AnsiConsole.MarkupLine($@"[#00ffff]没买友情+20%！[/]");
@@ -1233,7 +964,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     else if (ptLevel < 3)//买了友情但没买pt+10
                     {
-                        int cost = ptLevel == 2 ? 200 : 400;
+                        var cost = ptLevel == 2 ? 200 : 400;
                         if (@event.data.arc_data_set.arc_info.global_exp >= cost)
                         {
                             AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！[/]");
@@ -1241,26 +972,18 @@ namespace UmamusumeResponseAnalyzer.Handler
                             AnsiConsole.MarkupLine($@"[#00ffff]没买pt+10！（重要的事情说三遍）[/]");
                         }
                     }
-                    // 增加大逃日本杯提示
+
+                    // 大逃日本杯提示
                     if (turnNum == 46)
                         AnsiConsole.MarkupLine($@"[#ffff00]日本杯！拿大逃别忘了打！[/]");
                 }
             }
-
-            //把当前游戏状态写入一个文件，用于与ai通信。放到最后以收集GameStats数据
-#if WRITE_AI
+            //发送AI所需信息
             if (@event.IsScenario(ScenarioType.LArc))
             {
                 var gameStatusToSend = new GameStatusSend_LArc(@event);
                 SubscribeAiInfo.Signal(gameStatusToSend);
             }
-#endif
-#if WRITE_GAME_STATISTICS
-            if(shouldWriteStatistics)
-            {
-                GameStats.LArcWriteStatsBeforeTrain(@event);
-            }
-#endif
         }
     }
 }

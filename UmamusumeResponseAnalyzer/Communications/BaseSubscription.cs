@@ -7,18 +7,14 @@ using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer.Communications
 {
-    public class BaseSubscription<T> : ICommand
+    public class BaseSubscription<T>(string webSocketKey) : ICommand
     {
         public CommandType CommandType { get => CommandType.Subscribe; }
-        public string WebSocketKey { get; init; }
+        public string WebSocketKey { get; init; } = webSocketKey;
 
-        public BaseSubscription(string webSocketKey)
-        {
-            WebSocketKey = webSocketKey;
-        }
         private async void Handler(object? _, T e)
         {
-            if (!await Server.Send(WebSocketKey, e))
+            if (!await Server.Send(WebSocketKey, e!))
                 BaseSubscriptionHandler -= Handler;
         }
         public WSResponse? Execute()
@@ -30,9 +26,9 @@ namespace UmamusumeResponseAnalyzer.Communications
         public WSResponse? Cancel()
         {
             var response = new WSResponse() { Result = WSResponse.WSResponseResultCode.Success };
-            if (SubscribedClients.ContainsKey(WebSocketKey))
+            if (SubscribedClients.TryGetValue(WebSocketKey, out BaseSubscription<T>? value))
             {
-                BaseSubscriptionHandler -= SubscribedClients[WebSocketKey].Handler;
+                BaseSubscriptionHandler -= value.Handler;
                 SubscribedClients.Remove(WebSocketKey);
             }
             else
@@ -43,7 +39,7 @@ namespace UmamusumeResponseAnalyzer.Communications
             return response;
         }
 
-        public static readonly Dictionary<string, BaseSubscription<T>> SubscribedClients = new();
+        public static readonly Dictionary<string, BaseSubscription<T>> SubscribedClients = [];
         public static event EventHandler<T> BaseSubscriptionHandler;
         public static void Signal(T ev)
         {

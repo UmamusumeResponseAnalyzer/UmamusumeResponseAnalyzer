@@ -1,15 +1,4 @@
-﻿using Gallop;
-using Spectre.Console;
-using Spectre.Console.Cli;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Game;
-
-namespace UmamusumeResponseAnalyzer.AI
+﻿namespace UmamusumeResponseAnalyzer.AI
 {
     public class LArcPerson
     {
@@ -47,7 +36,7 @@ namespace UmamusumeResponseAnalyzer.AI
             larc_specialBuff = 0;
             larc_level = 0;
             larc_buffLevel = 0;
-            larc_nextThreeBuffs = new int[3] { 0, 0, 0 };
+            larc_nextThreeBuffs = [0, 0, 0];
         }
     }
 }

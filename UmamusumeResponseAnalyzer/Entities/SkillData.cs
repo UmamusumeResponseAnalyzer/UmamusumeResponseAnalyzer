@@ -282,6 +282,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             public UpgradeCondition[] Conditions;
             public bool CanUpgrade(Gallop.SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
             {
+                if (chara_info.skill_upgrade_info_array == null) return false;
                 if (chara_info.skill_upgrade_info_array.Any(x => x.condition_id == Id && x.current_count == x.total_count))
                     return true;
                 var skills = chara_info.skill_array.Select(x => Database.Skills[x.skill_id]).Concat(willLearnSkills);

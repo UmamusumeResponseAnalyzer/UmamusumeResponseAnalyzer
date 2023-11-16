@@ -10,10 +10,10 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class NetFilter
     {
-        static string applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-        static string nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
-        static string nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
-        static string redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
+        static readonly string applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+        static readonly string nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
+        static readonly string nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
+        static readonly string redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
         static NetFilter()
         {
             try
@@ -42,9 +42,9 @@ namespace UmamusumeResponseAnalyzer
                 AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
                 return;
             }
-            NFAPI.Host = Config.Get<string>("加速服务器地址");
-            NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口"));
-            NFAPI.HandleList = new List<string> { "umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe" };
+            NFAPI.Host = Config.Get<string>("加速服务器地址") ?? string.Empty;
+            NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口") ?? string.Empty);
+            NFAPI.HandleList = ["umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe"];
 
             if (Config.Get<string>("加速服务器类型") == "http")
             {

@@ -8,7 +8,7 @@ namespace Test
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Database.Initialize();
             var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-11 13-56-01-015R.msgpack");

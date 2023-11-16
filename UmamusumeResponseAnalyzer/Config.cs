@@ -9,8 +9,8 @@ namespace UmamusumeResponseAnalyzer
     internal static class Config
     {
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
-        internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = new();
-        internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = new();
+        internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = [];
+        internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = [];
         internal static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -127,7 +127,7 @@ namespace UmamusumeResponseAnalyzer
         /// <typeparam name="T">bool||string</typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T Get<T>(string key) => Configuration.ContainsKey(key) ? (T)Configuration[key].Value : default!;
+        public static T? Get<T>(string key) => Configuration.TryGetValue(key, out ConfigItem? value) ? (T)value.Value : default;
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)
         {

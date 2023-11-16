@@ -21,21 +21,24 @@ namespace UmamusumeResponseAnalyzer.Handler
             var win_saddle = charaWinSaddle.Intersect(parentWinSaddle_a).Count() * 3
                 + charaWinSaddle.Intersect(parentWinSaddle_b).Count() * 3;
             // 应用因子强化
-            foreach (var i in chara.factor_extend_array)
+            if (chara.factor_extend_array != null)
             {
-                if (i.position_id == 1)
+                foreach (var i in chara.factor_extend_array)
                 {
-                    var extendedFactor = chara.factor_info_array.FirstOrDefault(x => x.factor_id == i.base_factor_id);
-                    if (extendedFactor == default) continue;
-                    extendedFactor.factor_id = i.factor_id;
-                }
-                else
-                {
-                    var successionChara = chara.succession_chara_array.FirstOrDefault(x => x.position_id == i.position_id);
-                    if (successionChara == default) continue;
-                    var extendedFactor = successionChara.factor_info_array.FirstOrDefault(x => x.factor_id == i.base_factor_id);
-                    if (extendedFactor == default) continue;
-                    extendedFactor.factor_id = i.factor_id;
+                    if (i.position_id == 1)
+                    {
+                        var extendedFactor = chara.factor_info_array.FirstOrDefault(x => x.factor_id == i.base_factor_id);
+                        if (extendedFactor == default) continue;
+                        extendedFactor.factor_id = i.factor_id;
+                    }
+                    else
+                    {
+                        var successionChara = chara.succession_chara_array.FirstOrDefault(x => x.position_id == i.position_id);
+                        if (successionChara == default) continue;
+                        var extendedFactor = successionChara.factor_info_array.FirstOrDefault(x => x.factor_id == i.base_factor_id);
+                        if (extendedFactor == default) continue;
+                        extendedFactor.factor_id = i.factor_id;
+                    }
                 }
             }
 
@@ -43,7 +46,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
             AnsiConsole.WriteLine($"种马：{Database.Names.GetUmamusume(chara.card_id).FullName}\t胜鞍：{win_saddle}\t\t评分：{chara.rank_score}");
             AnsiConsole.WriteLine($"胜鞍列表：{string.Join(',', charaWinSaddle)}");
-            if (Database.SaddleNames.Any())
+            if (Database.SaddleNames.Count != 0)
                 AnsiConsole.WriteLine($"胜鞍详细：{string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x]))}{Environment.NewLine}");
             var tree = new Tree("因子");
 
