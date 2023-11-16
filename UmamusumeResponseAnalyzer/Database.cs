@@ -15,7 +15,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skill_data.br");
         internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talent_skill_sets.br");
         internal static string FACTOR_IDS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "factor_ids.br");
-        internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>("本地化文件路径");
+        internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>("本地化文件路径") ?? string.Empty;
         #endregion
         #region Properties
         /// <summary>
@@ -29,19 +29,19 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 技能
         /// </summary>
-        public static SkillManager Skills { get; private set; } = new SkillManager(new List<SkillData>());
+        public static SkillManager Skills { get; private set; } = new SkillManager([]);
         /// <summary>
         /// 育成事件
         /// </summary>
-        public static Dictionary<int, Story> Events { get; set; } = new();
+        public static Dictionary<int, Story> Events { get; set; } = [];
         /// <summary>
         /// 需要手动记录的成功育成事件
         /// </summary>
-        public static Dictionary<int, SuccessStory> SuccessEvent { get; set; } = new();
+        public static Dictionary<int, SuccessStory> SuccessEvent { get; set; } = [];
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
-        public static NameManager Names { get; set; } = new NameManager(new List<BaseName>());
+        public static NameManager Names { get; set; } = new NameManager([]);
         /// <summary>
         /// 巅峰杯道具的ID及其对应名称
         /// </summary>
@@ -49,7 +49,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 马娘的天赋技能,Key是CardId
         /// </summary>
-        public static Dictionary<int, TalentSkillData[]> TalentSkill { get; set; } = new();
+        public static Dictionary<int, TalentSkillData[]> TalentSkill { get; set; } = [];
         /// <summary>
         /// 
         /// </summary>
@@ -57,11 +57,11 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 可获得胜鞍的Id
         /// </summary>
-        public static int[] SaddleIds { get; } = new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184 };
+        public static int[] SaddleIds { get; } = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184];
         /// <summary>
         /// 胜鞍ID对应的比赛/奖章名
         /// </summary>
-        public static Dictionary<int, string> SaddleNames { get; set; } = new();
+        public static Dictionary<int, string> SaddleNames { get; set; } = [];
         #endregion
         public static void Initialize()
         {
@@ -124,7 +124,7 @@ namespace UmamusumeResponseAnalyzer
                                     Names.GetCharacter(j.Key).Name = j.Value;
                                 break;
                             case TextDataCategory.SkillName:
-                                var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? new List<SkillData>();
+                                var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? [];
                                 foreach (var j in skills)
                                     if (i.Value.TryGetValue(j.Id, out var localized_name))
                                         j.Name = localized_name;
@@ -143,7 +143,7 @@ namespace UmamusumeResponseAnalyzer
                                         j.Value.Name = localized_name;
                                 break;
                             case TextDataCategory.ClimaxItemName:
-                                ClimaxItem = new NullableIntStringDictionary();
+                                ClimaxItem = [];
                                 foreach (var j in i.Value)
                                     ClimaxItem.Add(j.Key, j.Value);
                                 break;
