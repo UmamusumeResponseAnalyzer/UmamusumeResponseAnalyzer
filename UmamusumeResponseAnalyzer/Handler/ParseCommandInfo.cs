@@ -213,12 +213,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (turnNum <= 2)
                 {
                     //清空SSRivalsSpecialBuffs
-                    GameStats.SSRivalsSpecialBuffs.Clear();
+                    GameStats.SSRivalsSpecialBuffs = new Dictionary<int, int>();
                 }
                 else
                 {
                     //补全SSRivalsSpecialBuffs，或者检查是否和已存储的SSRivalsSpecialBuffs自洽
-                    GameStats.SSRivalsSpecialBuffs.Clear();
+                    if (GameStats.SSRivalsSpecialBuffs == null)
+                        GameStats.SSRivalsSpecialBuffs = new Dictionary<int, int>();
 
                     GameStats.SSRivalsSpecialBuffs[1014] = 9;
                     GameStats.SSRivalsSpecialBuffs[1007] = 8;
@@ -838,61 +839,69 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
-            if (@event.IsScenario(ScenarioType.LArc) && @event.data.arc_data_set.selection_info != null)
+            if (@event.IsScenario(ScenarioType.LArc))
             {
-                var totalRivalCount = @event.data.arc_data_set.arc_rival_array.Length;
-                var selectedRivalCount = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
-                turnStat.larc_SSPersonCount = selectedRivalCount;
-                for (var i = 0; i < selectedRivalCount; i++)
+                int rivalNum = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
+                turnStat.larc_SSPersonCount = rivalNum;
+                for (var i = 0; i < rivalNum; i++)
                 {
-                    var rival = @event.data.arc_data_set.selection_info.selection_rival_info_array[i];
-                    var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
-                    if (selectedRivalCount == 5)
+                    var chara_id = @event.data.arc_data_set.selection_info.selection_rival_info_array[i].chara_id;
+                    var rivalName = Database.Names.GetCharacter(chara_id).Nickname;
+                    if (rivalNum == 5)
                     {
-                        var sc = supportCards.Values.FirstOrDefault(sc => rival.chara_id == Database.Names.GetSupportCard(sc).CharaId); // SS Match中的S卡，值为defau时即为NPC
+                        // SS Match中的S卡
+                        var sc = supportCards.Values.FirstOrDefault(sc => chara_id == Database.Names.GetSupportCard(sc).CharaId);
                         if (@event.data.arc_data_set.selection_info.selection_rival_info_array[i].mark != 1)
                             rivalName = $"[#ff0000]{rivalName}(可能失败)[/]";
+                        // 羁绊不满80的S卡
                         else if (sc != default && @event.data.chara_info.evaluation_info_array[supportCards.First(x => x.Value == sc).Key - 1].evaluation < 80)
-                            rivalName = $"[yellow]{rivalName}[/]"; // 羁绊不满80的S卡
+                        {
+                            rivalName = $"[yellow]{rivalName}[/]";
+                        }
+                        // SSS Match
                         else if (@event.data.arc_data_set.selection_info.is_special_match == 1)
-                            rivalName = $"[#00ffff]{rivalName}[/]"; // SSS Match
+                            rivalName = $"[#00ffff]{rivalName}[/]";
                         else
                             rivalName = $"[#00ff00]{rivalName}[/]";
                     }
-
-                    var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == rival.chara_id);
+                    var arc_data = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
                     var effectId = arc_data.selection_peff_array.First(x => x.effect_num == arc_data.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                     rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
                     table.Edit(5, i, rivalName);
                 }
-                // 把攒满但没进ss的人头也显示在下面
-                if (selectedRivalCount == 5)
+                if (rivalNum == 5)//把攒满但没进ss的人头也显示在下面
                 {
                     table.Edit(5, 5, separatorLineSSMatch);
                     table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
-
-                    foreach (var rival in @event.data.arc_data_set.arc_rival_array[..5]) // 只能放得下5个人
+                    int extraHeadCount = 0;
+                    foreach (var rival in @event.data.arc_data_set.arc_rival_array)
                     {
-                        if (rival.selection_peff_array == null // 马娘自身
-                            || rival.rival_boost != 3 // 没攒满
-                            || @event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == rival.chara_id) // 已经在ss训练中了
-                            )
+                        if (rival.selection_peff_array == null)//马娘自身
+                            continue;
+                        var chara_id = rival.chara_id;
+                        var rival_boost = rival.rival_boost;
+                        if (rival_boost != 3)//没攒满
+                            continue;
+                        if (@event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == chara_id))//已经在ss训练中了
+                            continue;
+                        extraHeadCount += 1;
+                        if (extraHeadCount > 5) //只能放得下5个人
                             continue;
 
-                        var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
+                        var rivalName = Database.Names.GetCharacter(chara_id).Nickname;
+
                         var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                         rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
-                        table.Edit(5, selectedRivalCount + 6, rivalName);
+                        table.Edit(5, extraHeadCount + 6, rivalName);
                     }
-                    if (totalRivalCount > 5)//有没显示的
-                    {
-                        table.Edit(5, 12, $"[#ffff00]... + {totalRivalCount - 5} 人[/]");
-                    }
-
+                    if (extraHeadCount > 5)//有没显示的
+                        table.Edit(5, 12, $"[#ffff00]... + {extraHeadCount - 5} 人[/]");
                     turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
+                    //table.Edit(5, rivalNum + 1, $"全胜奖励: {@event.data.arc_data_set.selection_info.all_win_approval_point}");
                 }
+
                 // 增加当前SS训练属性和PT的显示
-                if (selectedRivalCount > 0)
+                if (rivalNum > 0)
                 {
                     var totalStats = 0;
                     var totalPt = 0;
@@ -983,6 +992,37 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 var gameStatusToSend = new GameStatusSend_LArc(@event);
                 SubscribeAiInfo.Signal(gameStatusToSend);
+                //var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
+                var currentGSdirectory = "./gameData";
+                if (!Directory.Exists(currentGSdirectory))
+                {
+                    Directory.CreateDirectory(currentGSdirectory);
+                }
+
+                bool success = false;
+                int tried = 0;
+
+                while (!success && tried < 10)
+                {
+                    try
+                    {
+                        // 去掉空值避免C++端抽风
+                        var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                        File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                        File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", Newtonsoft.Json.JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                        success = true; // 写入成功，跳出循环
+                    }
+                    catch
+                    {
+                        tried++;
+                        AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                        Thread.Sleep(500); // 等待0.5秒
+                    }
+                }
+                if (!success)
+                {
+                    AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                }
             }
         }
     }
