@@ -45,7 +45,8 @@ namespace UmamusumeResponseAnalyzer
             });
             ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
             ConfigSet.Add("其他", ConfigItem.From(
-                Resource.ConfigSet_DMMLaunch
+                Resource.ConfigSet_DMMLaunch,
+                Resource.ConfigSet_WriteAIInfo
                 ));
             if (File.Exists(CONFIG_FILEPATH))
             {
@@ -101,7 +102,8 @@ namespace UmamusumeResponseAnalyzer
                 if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
                     i.Key == Resource.ConfigSet_EnableNetFilter ||
                     i.Key == Resource.ConfigSet_DMMLaunch ||
-                    i.Key == Resource.ConfigSet_SaveResponseForDebug) //不默认开
+                    i.Key == Resource.ConfigSet_SaveResponseForDebug ||
+                    i.Key == Resource.ConfigSet_WriteAIInfo) //不默认开
                 {
                     Configuration.Add(i.Key, new(i.Key, false));
                 }

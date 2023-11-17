@@ -20,7 +20,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 {
     public static partial class Handlers
     {
-        public static void ParseCommandInfo(Gallop.SingleModeCheckEventResponse @event)
+        public static async void ParseCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             SubscribeCommandInfo.Signal(@event);
@@ -840,7 +840,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             if (@event.IsScenario(ScenarioType.LArc) && @event.data.arc_data_set.selection_info != null)
             {
-                var totalRivalCount = @event.data.arc_data_set.arc_rival_array.Length;
                 var selectedRivalCount = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
                 turnStat.larc_SSPersonCount = selectedRivalCount;
                 for (var i = 0; i < selectedRivalCount; i++)
@@ -871,22 +870,27 @@ namespace UmamusumeResponseAnalyzer.Handler
                     table.Edit(5, 5, separatorLineSSMatch);
                     table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
 
-                    foreach (var rival in @event.data.arc_data_set.arc_rival_array[..5]) // 只能放得下5个人
+                    var chargedRivalCount = 0;
+                    foreach (var rival in @event.data.arc_data_set.arc_rival_array)
                     {
                         if (rival.selection_peff_array == null // 马娘自身
                             || rival.rival_boost != 3 // 没攒满
                             || @event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == rival.chara_id) // 已经在ss训练中了
                             )
                             continue;
+                        chargedRivalCount++;
+                        if (chargedRivalCount > 5)
+                            continue;  // 只能放得下5个人
 
                         var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
                         var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
                         rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
-                        table.Edit(5, selectedRivalCount + 6, rivalName);
+                        table.Edit(5, chargedRivalCount + 6, rivalName);
                     }
-                    if (totalRivalCount > 5)//有没显示的
+
+                    if (chargedRivalCount > 5)//有没显示的
                     {
-                        table.Edit(5, 12, $"[#ffff00]... + {totalRivalCount - 5} 人[/]");
+                        table.Edit(5, 12, $"[#ffff00]... + {chargedRivalCount - 5} 人[/]");
                     }
 
                     turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
@@ -983,6 +987,36 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 var gameStatusToSend = new GameStatusSend_LArc(@event);
                 SubscribeAiInfo.Signal(gameStatusToSend);
+
+                if (Config.Get(Localization.Resource.ConfigSet_WriteAIInfo))
+                {
+                    var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
+                    Directory.CreateDirectory(currentGSdirectory);
+
+                    var success = false;
+                    var tried = 0;
+                    do
+                    {
+                        try
+                        {
+                            var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }; // 去掉空值避免C++端抽风
+                            File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                            File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                            success = true; // 写入成功，跳出循环
+                            break;
+                        }
+                        catch
+                        {
+                            tried++;
+                            AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                            await Task.Delay(500); // 等待0.5秒
+                        }
+                    } while (!success && tried < 10);
+                    if (!success)
+                    {
+                        AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                    }
+                }
             }
         }
     }

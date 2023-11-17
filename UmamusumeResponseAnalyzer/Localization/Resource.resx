@@ -303,4 +303,7 @@
   <data name="LaunchMenu_ManageDMMService" xml:space="preserve">
     <value>管理DMM服务信息</value>
   </data>
+  <data name="ConfigSet_WriteAIInfo" xml:space="preserve">
+    <value>回合信息写入文件以方便AI读取</value>
+  </data>
 </root>

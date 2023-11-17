@@ -149,7 +149,7 @@ namespace UmamusumeResponseAnalyzer
                 var multiSelection = new MultiSelectionPrompt<string>()
                     .Title(Resource.LaunchMenu_Options)
                     .Mode(SelectionMode.Leaf)
-                    .PageSize(20)
+                    .PageSize(25)
                     .InstructionsText(Resource.LaunchMenu_Options_Instruction);
 
                 // 根据预设值添加选项

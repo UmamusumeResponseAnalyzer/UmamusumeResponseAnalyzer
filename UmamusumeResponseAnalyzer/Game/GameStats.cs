@@ -105,7 +105,7 @@ namespace UmamusumeResponseAnalyzer.Game
         public static int m_fullSSCount = 0;
         public static int m_SSSCount = 0;
         public static int m_contNonSSS = 0;
-        public static Dictionary<int, int> SSRivalsSpecialBuffs; //每个人头的特殊buff
+        public static Dictionary<int, int> SSRivalsSpecialBuffs = []; //每个人头的特殊buff
 
         public static void Print()
         {

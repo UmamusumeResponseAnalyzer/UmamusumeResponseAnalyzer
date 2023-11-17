@@ -79,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         private void ApplyProper(Gallop.SingleModeChara chara_info)
         {
             // 仅在技能有触发条件时应用，假设通用技能分数固定不变
-            if (Propers.Any())
+            if (Propers.Length != 0)
             {
                 Grade = Propers.Max(i =>
                 {
@@ -258,7 +258,7 @@ namespace UmamusumeResponseAnalyzer.Entities
     {
         public int SkillId;
         public int Rank;
-        public Dictionary<int, UpgradeDetail[]> UpgradeSkills = new();
+        public Dictionary<int, UpgradeDetail[]> UpgradeSkills = [];
         public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId, IEnumerable<SkillData> willLearnSkills = null!)
         {
             foreach (var i in UpgradeSkills)
@@ -285,7 +285,9 @@ namespace UmamusumeResponseAnalyzer.Entities
                 if (chara_info.skill_upgrade_info_array == null) return false;
                 if (chara_info.skill_upgrade_info_array.Any(x => x.condition_id == Id && x.current_count == x.total_count))
                     return true;
-                var skills = chara_info.skill_array.Select(x => Database.Skills[x.skill_id]).Concat(willLearnSkills);
+                var skills = chara_info.skill_array.Select(x => Database.Skills[x.skill_id]);
+                if (willLearnSkills != null)
+                    skills = [.. skills, .. willLearnSkills];
                 foreach (var condition in Conditions)
                 {
                     switch (condition.Type)
