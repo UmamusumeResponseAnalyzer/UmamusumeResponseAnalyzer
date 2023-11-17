@@ -217,9 +217,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 else
                 {
-                    //补全SSRivalsSpecialBuffs，或者检查是否和已存储的SSRivalsSpecialBuffs自洽
-                    GameStats.SSRivalsSpecialBuffs.Clear();
-
                     GameStats.SSRivalsSpecialBuffs[1014] = 9;
                     GameStats.SSRivalsSpecialBuffs[1007] = 8;
 
@@ -287,7 +284,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //凯旋门前显示技能性价比
                 if (turnNum == 43 || turnNum == 67)
                 {
-                    var tips = CalculateSkillScoreCost(@event, false);
+                    var tips = CalculateSkillScoreCost(@event,Database.Skills.Apply(@event.data.chara_info), false);
 
                     var table1 = new Table();
                     table1.Title("技能性价比排序");
@@ -295,10 +292,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                     table1.Columns[0].Centered();
                     foreach (var i in tips
                         // (string Name, int Cost, int Grade, double Cost-Performance)
-                        .Select(tip => (tip.Name, tip.GetRealCost(@event.data.chara_info), tip.GetRealGrade(@event.data.chara_info), (double)tip.GetRealGrade() / tip.GetRealCost()))
+                        .Select(tip => (tip.Name, tip.Cost, tip.Grade, (double)tip.Grade / tip.Cost))
                         .OrderByDescending(x => x.Item4))
                     {
-                        table1.AddRow($"{i.Name}", $"{i.Item2}", $"{i.Item3}", $"{i.Item4:F3}");
+                        table1.AddRow($"{i.Name}", $"{i.Cost}", $"{i.Grade}", $"{i.Item4:F3}");
                     }
 
                     AnsiConsole.Write(table1);
@@ -842,6 +839,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 var selectedRivalCount = @event.data.arc_data_set.selection_info.selection_rival_info_array.Length;
                 turnStat.larc_SSPersonCount = selectedRivalCount;
+                turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
                 for (var i = 0; i < selectedRivalCount; i++)
                 {
                     var rival = @event.data.arc_data_set.selection_info.selection_rival_info_array[i];
@@ -868,32 +866,32 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (selectedRivalCount == 5)
                 {
                     table.Edit(5, 5, separatorLineSSMatch);
-                    table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
 
-                    var chargedRivalCount = 0;
-                    foreach (var rival in @event.data.arc_data_set.arc_rival_array)
-                    {
-                        if (rival.selection_peff_array == null // 马娘自身
+                    var otherChargedRivals = @event.data.arc_data_set.arc_rival_array
+                        .Where(rival =>
+                               !(rival.selection_peff_array == null // 马娘自身
                             || rival.rival_boost != 3 // 没攒满
-                            || @event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == rival.chara_id) // 已经在ss训练中了
-                            )
-                            continue;
-                        chargedRivalCount++;
-                        if (chargedRivalCount > 5)
-                            continue;  // 只能放得下5个人
-
-                        var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
-                        var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
-                        rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
-                        table.Edit(5, chargedRivalCount + 6, rivalName);
-                    }
-
-                    if (chargedRivalCount > 5)//有没显示的
+                            || @event.data.arc_data_set.selection_info.selection_rival_info_array.Any(x => x.chara_id == rival.chara_id)) // 已经在ss训练中了
+                            );
+                    if (otherChargedRivals.Any())
                     {
-                        table.Edit(5, 12, $"[#ffff00]... + {chargedRivalCount - 5} 人[/]");
-                    }
+                        table.Edit(5, 6, "[#ffff00]其他满格人头:[/]");
+                        var chargedRivalCount = 0;
+                        foreach (var rival in otherChargedRivals)
+                        {
+                            chargedRivalCount++;
+                            if (chargedRivalCount > 5) break;
+                            var rivalName = Database.Names.GetCharacter(rival.chara_id).Nickname;
+                            var effectId = rival.selection_peff_array.First(x => x.effect_num == rival.selection_peff_array.Min(x => x.effect_num)).effect_group_id;
+                            rivalName += $"({GameGlobal.LArcSSEffectNameColored[effectId]})";
+                            table.Edit(5, chargedRivalCount + 6, rivalName);
+                        }
 
-                    turnStat.larc_isSSS = @event.data.arc_data_set.selection_info.is_special_match == 1;
+                        if (chargedRivalCount > 5)//有没显示的
+                        {
+                            table.Edit(5, 12, $"[#ffff00]... + {chargedRivalCount - 5} 人[/]");
+                        }
+                    }
                 }
                 // 增加当前SS训练属性和PT的显示
                 if (selectedRivalCount > 0)
