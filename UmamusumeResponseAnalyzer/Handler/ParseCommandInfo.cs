@@ -284,7 +284,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //凯旋门前显示技能性价比
                 if (turnNum == 43 || turnNum == 67)
                 {
-                    var tips = CalculateSkillScoreCost(@event,Database.Skills.Apply(@event.data.chara_info), false);
+                    var tips = CalculateSkillScoreCost(@event, Database.Skills.Apply(@event.data.chara_info), false);
 
                     var table1 = new Table();
                     table1.Title("技能性价比排序");
@@ -292,6 +292,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     table1.Columns[0].Centered();
                     foreach (var i in tips
                         // (string Name, int Cost, int Grade, double Cost-Performance)
+                        .Where(x => x.Cost != int.MaxValue)
                         .Select(tip => (tip.Name, tip.Cost, tip.Grade, (double)tip.Grade / tip.Cost))
                         .OrderByDescending(x => x.Item4))
                     {
