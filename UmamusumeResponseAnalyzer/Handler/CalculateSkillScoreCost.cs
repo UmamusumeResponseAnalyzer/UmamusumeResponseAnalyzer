@@ -16,7 +16,6 @@ namespace UmamusumeResponseAnalyzer.Handler
         //按技能性价比排序
         public static List<SkillData> CalculateSkillScoreCost(Gallop.SingleModeCheckEventResponse @event, SkillManager skills, bool removeInferiors)
         {
-            AnsiConsole.MarkupLine($"[green]-----------------------------------------------------------------[/]");
             bool hasUnknownSkills = false;
             var totalSP = @event.data.chara_info.skill_point;
             var tipsRaw = @event.data.chara_info.skill_tips_array;
