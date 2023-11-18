@@ -10,7 +10,8 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseSkillTipsResponse(Gallop.SingleModeCheckEventResponse @event)
         {
-            var tips = CalculateSkillScoreCost(@event, true);
+            var skills = Database.Skills.Apply(@event.data.chara_info);
+            var tips = CalculateSkillScoreCost(@event, skills, true);
             var totalSP = @event.data.chara_info.skill_point;
             // 可以进化的天赋技能，即觉醒3、5的那两个金技能
             var upgradableTalentSkills = Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level && (x.Rank == 3 || x.Rank == 5));
@@ -28,12 +29,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     // 加上要学习的技能后再判定是否能进化
                     if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, dpResult.Item1))
                     {
-                        var upgradedSkill = Database.Skills[upgradedSkillId];
-                        upgradedSkill = upgradedSkill.Apply(@event.data.chara_info, @event.data.chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == notUpgradedSkill.GroupId && x.rarity == notUpgradedSkill.Rarity)?.level ?? 0);
+                        var upgradedSkill = skills[upgradedSkillId];
                         upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
-                        upgradedSkill.Cost = notUpgradedSkill.GetRealCost(@event.data.chara_info);
-                        // 进化技能分数 -= 金技能总分数 - 金技能分数(即-=基础已学习技能分数)
-                        upgradedSkill.Grade -= notUpgradedSkill.Grade - notUpgradedSkill.GetRealGrade(@event.data.chara_info);
+                        upgradedSkill.Cost = notUpgradedSkill.Cost;
                         tips[notUpgradedIndex] = upgradedSkill;
                     }
                 }
@@ -45,7 +43,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             table.Columns[0].Centered();
             foreach (var i in learn)
             {
-                table.AddRow($"{i.Name}", $"{i.GetRealCost(@event.data.chara_info)}", $"{i.GetRealGrade(@event.data.chara_info)}");
+                table.AddRow($"{i.Name}", $"{i.Cost}", $"{i.Grade}");
             }
             var statusPoint = Database.StatusToPoint[@event.data.chara_info.speed]
                             + Database.StatusToPoint[@event.data.chara_info.stamina]
@@ -56,8 +54,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             var previousLearnPoint = 0; //之前学的技能的累计评价点
             foreach (var i in @event.data.chara_info.skill_array)
             {
-                if (i.skill_id >= 1000000) continue; // Carnival bonus
-                if (i.skill_id.ToString()[..1] == "1" && i.skill_id > 100000) //3*固有
+                if (i.skill_id > 1000000 && i.skill_id < 2000000) continue; // 嘉年华&LoH技能
+                if (i.skill_id.ToString()[0] == '1' && i.skill_id > 100000 && i.skill_id < 200000) //3*固有
                 {
                     previousLearnPoint += 170 * i.level;
                 }
@@ -67,32 +65,32 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 else
                 {
-                    if (Database.Skills[i.skill_id] == null) continue;
-                    var (GroupId, Rarity, Rate) = Database.Skills.Deconstruction(i.skill_id);
+                    if (skills[i.skill_id] == null) continue;
+                    var (GroupId, Rarity, Rate) = skills.Deconstruction(i.skill_id);
                     var upgradableSkills = upgradableTalentSkills.FirstOrDefault(x => x.SkillId == i.skill_id);
                     // 学了可进化的技能，且满足进化条件，则按进化计算分数
-                    if (upgradableSkills != default && upgradableSkills.CanUpgrade(@event.data.chara_info, out var upgradedSkillId))
+                    if (upgradableSkills != default && upgradableSkills.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, dpResult.Item1))
                     {
-                        previousLearnPoint += Database.Skills[upgradedSkillId] == null ? 0 : Database.Skills[upgradedSkillId].Apply(@event.data.chara_info, 0).Grade;
+                        previousLearnPoint += skills[upgradedSkillId] == null ? 0 : skills[upgradedSkillId].Grade;
                     }
                     else
                     {
-                        previousLearnPoint += Database.Skills[i.skill_id] == null ? 0 : Database.Skills[i.skill_id].Apply(@event.data.chara_info, 0).Grade;
+                        previousLearnPoint += skills[i.skill_id] == null ? 0 : skills[i.skill_id].Grade;
                     }
                 }
             }
-            var willLearnPoint = learn.Sum(x => x.GetRealGrade(@event.data.chara_info));
+            var willLearnPoint = learn.Sum(x => x.Grade);
             var totalPoint = willLearnPoint + previousLearnPoint + statusPoint;
             var thisLevelId = Database.GradeToRank.First(x => x.Min <= totalPoint && totalPoint <= x.Max).Id;
             table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
             AnsiConsole.Write(table);
             AnsiConsole.MarkupLine($"距离{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Rank}还有[yellow]{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Min - totalPoint}[/]分");
-            AnsiConsole.MarkupLine("");
+            AnsiConsole.MarkupLine(string.Empty);
 
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
                 GameStats.Print();
-                AnsiConsole.MarkupLine("");
+                AnsiConsole.MarkupLine(string.Empty);
             }
 
             //双适性技能的评分计算有问题，需要重做数据库
@@ -137,145 +135,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine($"[green]{t * 50}pt技能的期望性价比：{eff:F3}[/]");
             }
             #endregion
-
-            (List<SkillData>, int[]) DP(List<SkillData> tips, ref int totalSP, Gallop.SingleModeChara chara_info)
-            {
-                var learn = new List<SkillData>();
-                // 01背包变种
-                var dp = new int[totalSP + 101]; //多计算100pt，用于计算“边际性价比”
-                var dpLog = Enumerable.Range(0, totalSP + 101).Select(x => new List<int>()).ToList(); // 记录dp时所选的技能，存技能Id
-                for (int i = 0; i < tips.Count; i++)
-                {
-                    var s = tips[i];
-                    // 读取此技能可以点的所有情况
-                    int[] SuperiorId = [0, 0, 0];
-                    int[] SuperiorCost = [int.MaxValue, int.MaxValue, int.MaxValue];
-                    int[] SuperiorGrade = [int.MinValue, int.MinValue, int.MinValue];
-
-                    SuperiorId[0] = s.Id;
-                    SuperiorCost[0] = s.GetRealCost(chara_info);
-                    SuperiorGrade[0] = s.GetRealGrade(chara_info);
-
-                    //if (SuperiorCost[0] == 234)//skill_id=202531, debug
-                    //    AnsiConsole.WriteLine($"{s.Name} {s.Id} {s.Grade} {s.Inferior.Apply(chara_info).Name} {s.Inferior.Apply(chara_info).Id} {s.Inferior.Apply(chara_info).Grade}");
-
-                    if (SuperiorCost[0] != 0 && s.Inferior != null)
-                    {
-                        s = s.Inferior.Apply(chara_info);
-                        SuperiorId[1] = s.Id;
-                        SuperiorCost[1] = s.GetRealCost(chara_info);
-                        SuperiorGrade[1] = s.GetRealGrade(chara_info);
-                        if (SuperiorCost[1] != 0 && s.Inferior != null)
-                        {
-                            s = s.Inferior.Apply(chara_info);
-                            SuperiorId[2] = s.Id;
-                            SuperiorCost[2] = s.GetRealCost(chara_info);
-                            SuperiorGrade[2] = s.GetRealGrade(chara_info);
-                        }
-                    }
-
-                    if (SuperiorGrade[0] == 0)
-                        SuperiorCost[0] = int.MaxValue;
-                    if (SuperiorGrade[1] == 0)
-                        SuperiorCost[1] = int.MaxValue;
-                    if (SuperiorGrade[2] == 0)
-                        SuperiorCost[2] = int.MaxValue;
-
-                    // 退化技能到最低级，方便选择
-
-
-
-                    for (int j = totalSP + 100; j >= 0; j--)
-                    {
-                        // 背包四种选法
-                        // 0-不选
-                        // 1-只选此技能
-                        // 2-选这个技能和它的上一级技能
-                        // 3-选这个技能的最高位技（全点）
-                        int[] choice =
-                        [
-                        dp[j],
-                            j - SuperiorCost[0] >= 0 ?
-                            dp[j - SuperiorCost[0]] + SuperiorGrade[0] :
-                            -1,
-
-                            j - SuperiorCost[1] >= 0 ?
-                            dp[j - SuperiorCost[1]] + SuperiorGrade[1] :
-                            -1,
-
-                            j - SuperiorCost[2] >= 0 ?
-                            dp[j - SuperiorCost[2]] + SuperiorGrade[2] :
-                            -1
-                        ];
-                        // 判断是否为四种选法中的最优选择
-                        if (IsBestOption(0))
-                        {
-                            dp[j] = choice[0];
-                        }
-                        else if (IsBestOption(1))
-                        {
-                            dp[j] = choice[1];
-                            dpLog[j] = new(dpLog[j - SuperiorCost[0]])
-                        {
-                            SuperiorId[0]
-                        };
-                        }
-                        else if (IsBestOption(2))
-                        {
-                            dp[j] = choice[2];
-                            dpLog[j] = new(dpLog[j - SuperiorCost[1]])
-                        {
-                            SuperiorId[1]
-                        };
-                        }
-                        else if (IsBestOption(3))
-                        {
-                            dp[j] = choice[3];
-                            dpLog[j] = new(dpLog[j - SuperiorCost[2]])
-                        {
-                            SuperiorId[2]
-                        };
-                        }
-
-                        bool IsBestOption(int index)
-                        {
-                            bool IsBest = true;
-                            for (int k = 0; k < 4; k++)
-                                IsBest = choice[index] >= choice[k] && IsBest;
-                            return IsBest;
-                        };
-                    }
-                }
-                // 读取最终选择的技能
-                var learnSkillId = dpLog[totalSP];
-                foreach (var id in learnSkillId)
-                {
-                    foreach (var skill in tips)
-                    {
-                        var inferior = skill.Inferior?.Apply(chara_info);
-                        var inferiorest = inferior?.Inferior?.Apply(chara_info);
-                        if (skill.Id == id)
-                        {
-                            learn.Add(skill);
-                            totalSP -= skill.GetRealCost(chara_info);
-                            continue;
-                        }
-                        else if (inferior != null && inferior.Id == id)
-                        {
-                            learn.Add(inferior);
-                            totalSP -= inferior.GetRealCost(chara_info);
-                            continue;
-                        }
-                        else if (inferiorest != null && inferiorest.Id == id)
-                        {
-                            learn.Add(inferiorest);
-                            totalSP -= inferiorest.GetRealCost(chara_info);
-                        }
-                    }
-                }
-                learn = [.. learn.OrderBy(x => x.DisplayOrder)];
-                return (learn, dp);
-            }
         }
     }
 }

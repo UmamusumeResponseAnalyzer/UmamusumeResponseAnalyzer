@@ -72,12 +72,12 @@ namespace UmamusumeResponseAnalyzer
                         // 处理websocket请求
                         if (ctx.Request.IsWebSocketRequest)
                         {
-                            HandleWebsocket(ctx);
+                            _ = HandleWebsocket(ctx);
                         }
                         // 处理http请求
                         else
                         {
-                            HandleHttp(ctx);
+                            _ = HandleHttp(ctx);
                         }
                     }
                     catch
@@ -106,9 +106,7 @@ namespace UmamusumeResponseAnalyzer
                 lock (_lock)
                 {
                     var str = MessagePackSerializer.ConvertToJson(buffer);
-                    //AnsiConsole.WriteLine(str);
                     var dyn = JsonConvert.DeserializeObject<dynamic>(str);
-
                     if (dyn == default(dynamic)) return;
 
                     if (dyn.command_type == 1) //玩家点击了训练
@@ -224,7 +222,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
-        static async void HandleWebsocket(HttpListenerContext ctx)
+        static async Task HandleWebsocket(HttpListenerContext ctx)
         {
             var wsctx = await ctx.AcceptWebSocketAsync(null);
             var ws = wsctx.WebSocket;
@@ -291,7 +289,7 @@ namespace UmamusumeResponseAnalyzer
                 connectedWebsockets.Remove(wsctx.SecWebSocketKey);
             }
         }
-        static async void HandleHttp(HttpListenerContext ctx)
+        static async Task HandleHttp(HttpListenerContext ctx)
         {
             using var ms = new MemoryStream();
             ctx.Request.InputStream.CopyTo(ms);
@@ -299,16 +297,7 @@ namespace UmamusumeResponseAnalyzer
 
             if (ctx.Request.RawUrl == "/notify/response")
             {
-#if WRITE_GAME_STATISTICS
-                                Directory.CreateDirectory("packets");
-                                var statsDirectory = "./gameStatistics";//各种游戏统计信息存这里
-                                if (!Directory.Exists(statsDirectory))
-                                {
-                                    Directory.CreateDirectory(statsDirectory);
-                                }
-#endif
-
-#if DEBUG || WRITE_GAME_LOG
+#if DEBUG
                 Directory.CreateDirectory("packets");
                 File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
                 File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
@@ -335,7 +324,7 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (ctx.Request.RawUrl == "/notify/request")
             {
-#if DEBUG || WRITE_GAME_LOG
+#if DEBUG
                 Directory.CreateDirectory("packets");
                 File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
 #endif

@@ -29,7 +29,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 技能
         /// </summary>
-        public static SkillManager Skills { get; private set; } = new SkillManager([]);
+        public static SkillManagerGenerator Skills { get; private set; } = new SkillManagerGenerator([]);
         /// <summary>
         /// 育成事件
         /// </summary>
@@ -91,7 +91,8 @@ namespace UmamusumeResponseAnalyzer
                 var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH));
                 if (skills != default)
                 {
-                    Skills = new SkillManager(skills);
+                    Skills = new SkillManagerGenerator(skills);
+                    SkillManagerGenerator.Default = new(skills);
                 }
             }
             if (File.Exists(TALENT_SKILLS_FILEPATH))
@@ -128,7 +129,8 @@ namespace UmamusumeResponseAnalyzer
                                 foreach (var j in skills)
                                     if (i.Value.TryGetValue(j.Id, out var localized_name))
                                         j.Name = localized_name;
-                                Skills = new SkillManager(skills);
+                                Skills = new SkillManagerGenerator(skills);
+                                SkillManagerGenerator.Default = new(skills);
                                 break;
                             case TextDataCategory.WinSaddleName:
                                 SaddleNames = i.Value;
