@@ -55,7 +55,7 @@ namespace UmamusumeResponseAnalyzer
             if (Config.Get(Resource.ConfigSet_EnableNetFilter))
                 await NetFilter.Enable();
             //如果存在DMM的token文件则启用直接登录功能
-            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch) && DMM.Accounts.Any())
+            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch) && DMM.Accounts.Count != 0)
             {
                 if (DMM.Accounts.Count == 1)
                 {
@@ -66,8 +66,7 @@ namespace UmamusumeResponseAnalyzer
                     prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
                         .Title("发现多个帐号，请选择要启动的那个")
                         .AddChoices(DMM.Accounts.Select(x => x.Name))
-                        .AddChoices(new[] { "启动全部" })
-                        .AddChoices(new[] { "取消" }));
+                        .AddChoices(["启动全部", "取消"]));
                     if (prompt == "启动全部")
                     {
                         DMM.IgnoreExistProcess = true;
@@ -104,13 +103,13 @@ namespace UmamusumeResponseAnalyzer
         {
             var selections = new SelectionPrompt<string>()
                 .Title(Resource.LaunchMenu)
-                .AddChoices(new[]
-                {
+                .AddChoices(
+                [
                     Resource.LaunchMenu_Start,
                     Resource.LaunchMenu_Options,
                     Resource.LaunchMenu_UpdateAssets,
                     Resource.LaunchMenu_UpdateProgram
-                }
+                ]
                 );
             #region 条件显示功能
             // Windows限定功能，其他平台不显示
@@ -128,7 +127,7 @@ namespace UmamusumeResponseAnalyzer
                         selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
                     }
                 }
-                if (UraCoreHelper.GamePaths.Any())
+                if (UraCoreHelper.GamePaths.Count != 0)
                 {
                     selections.AddChoice(Resource.LaunchMenu_InstallUraCore);
                 }
@@ -150,7 +149,7 @@ namespace UmamusumeResponseAnalyzer
                 var multiSelection = new MultiSelectionPrompt<string>()
                     .Title(Resource.LaunchMenu_Options)
                     .Mode(SelectionMode.Leaf)
-                    .PageSize(20)
+                    .PageSize(25)
                     .InstructionsText(Resource.LaunchMenu_Options_Instruction);
 
                 // 根据预设值添加选项
@@ -180,7 +179,7 @@ namespace UmamusumeResponseAnalyzer
                 var options = AnsiConsole.Prompt(multiSelection);
                 foreach (var i in Config.Configuration.Keys)
                 {
-                    if (Config.Get<object>(i).GetType() != typeof(bool))
+                    if (Config.Get<object>(i)?.GetType() != typeof(bool))
                         continue;
                     Config.Set(i, options.Contains(i));
                 }
@@ -282,7 +281,6 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (prompt == Resource.LaunchMenu_InstallUraCore)
             {
-#pragma warning disable CA1416
                 AnsiConsole.Clear();
                 using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UmamusumeResponseAnalyzer.ura-core.dll");
                 if (stream == null)
@@ -345,7 +343,6 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
                 Console.ReadKey();
-#pragma warning restore CA1416
             }
             else if (prompt == Resource.LaunchMenu_SetLocalizedDataFilePath)
             {
@@ -374,7 +371,7 @@ namespace UmamusumeResponseAnalyzer
             else if (prompt == Resource.LaunchMenu_ManageDMMService)
             {
                 string dmmSelected;
-                var dmmSelections = new List<string>(new[] { "添加账号", "设置设备信息", "返回" });
+                var dmmSelections = new List<string>(["添加账号", "设置设备信息", "返回"]);
                 foreach (var i in DMM.Accounts)
                 {
                     dmmSelections = dmmSelections.Prepend(i.Name).ToList();
@@ -513,7 +510,7 @@ namespace UmamusumeResponseAnalyzer
     ///     Adapted from
     ///     http://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
     /// </summary>
-    internal static class ConsoleHelper
+    internal static partial class ConsoleHelper
     {
         private const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
         private const uint ENABLE_MOUSE_INPUT = 0x0010;
@@ -521,14 +518,16 @@ namespace UmamusumeResponseAnalyzer
         // STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
         private const int StdInputHandle = -10;
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetStdHandle(int nStdHandle);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        private static partial IntPtr GetStdHandle(int nStdHandle);
 
-        [DllImport("kernel32.dll")]
-        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+        [LibraryImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
 
-        [DllImport("kernel32.dll")]
-        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+        [LibraryImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
 
         internal static bool DisableQuickEditMode()
         {

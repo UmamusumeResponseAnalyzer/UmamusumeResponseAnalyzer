@@ -20,9 +20,9 @@ namespace UmamusumeResponseAnalyzer
         private static HttpListener httpListener;
         private static readonly object _lock = new();
         private static Mutex Mutex;
-        private static Dictionary<string, WebSocket> connectedWebsockets = new();
+        private static readonly Dictionary<string, WebSocket> connectedWebsockets = [];
         private static readonly JsonSerializerSettings jsonSerializerSettings = new() { NullValueHandling = NullValueHandling.Ignore };
-        public static ManualResetEvent OnPing = new(false);
+        public static readonly ManualResetEvent OnPing = new(false);
         public static bool IsRunning => httpListener.IsListening;
         public static void Start()
         {
@@ -88,9 +88,8 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async Task<bool> Send(string wsKey, object response)
         {
-            if (connectedWebsockets.ContainsKey(wsKey))
+            if (connectedWebsockets.TryGetValue(wsKey, out var ws))
             {
-                var ws = connectedWebsockets[wsKey];
                 var payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response, jsonSerializerSettings));
                 await ws.SendAsync(payload, WebSocketMessageType.Text, true, CancellationToken.None);
                 return true;
@@ -130,11 +129,11 @@ namespace UmamusumeResponseAnalyzer
                 try
                 {
                     var jsonstr = MessagePackSerializer.ConvertToJson(buffer);
-                    //AnsiConsole.WriteLine(jsonstr);
                     var dyn = JsonConvert.DeserializeObject<dynamic>(jsonstr);
-                    if (dyn == default(dynamic)) return;
-                    if (dyn == default(dynamic)) return;
+                    if (dyn == null) return;
+                    if (dyn.data == null) return;
                     var data = dyn.data;
+                    #region pre-fix
                     // 如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
                     if (data.single_mode_load_common != null)
                     {
@@ -151,14 +150,15 @@ namespace UmamusumeResponseAnalyzer
                         dyn.data = data;
                     }
                     // 修复崩溃问题
-                    if (data.chara_info?.scenario_id == 5 || (data != null && data!.venus_data_set != null))
+                    if (data.chara_info?.scenario_id == 5 || data.venus_data_set != null)
                     {
                         if (dyn.data.venus_data_set.race_start_info is JArray)
                             dyn.data.venus_data_set.race_start_info = null;
                         if (dyn.data.venus_data_set.venus_race_condition is JArray)
                             dyn.data.venus_data_set.venus_race_condition = null;
                     }
-                    if (data!.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
+                    #endregion
+                    if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
                             Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
@@ -265,7 +265,7 @@ namespace UmamusumeResponseAnalyzer
                                 var command = (ICommand)commandConstructor.Invoke(commandParameters);
                                 var response = req.CommandType switch
                                 {
-                                    CommandType.Unsubscribe => commandType.GetMethod("Cancel").Invoke(command, null),
+                                    CommandType.Unsubscribe => commandType?.GetMethod("Cancel")?.Invoke(command, null),
                                     _ => command.Execute()
                                 };
                                 if (response != null)

@@ -14,20 +14,21 @@ namespace UmamusumeResponseAnalyzer.Handler
             var totalSP = @event.data.chara_info.skill_point;
             // 可以进化的天赋技能，即觉醒3、5的那两个金技能
             var upgradableTalentSkills = Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level && (x.Rank == 3 || x.Rank == 5));
-            var archivedConditions = @event.data.chara_info.skill_upgrade_info_array.Where(x => x.total_count == x.current_count).Select(x => x.condition_id);
 
-            //把天赋技能替换成进化技能
+            var dpResult = DP(tips, ref totalSP, @event.data.chara_info);
+            // 把天赋技能替换成进化技能
             if (Database.TalentSkill.ContainsKey(@event.data.chara_info.card_id))
             {
-                foreach (var i in upgradableTalentSkills)
+                foreach (var upgradableSkill in upgradableTalentSkills)
                 {
-                    var notUpgradedIndex = tips.FindIndex(x => x.Id == i.SkillId);
+                    var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId);
                     if (notUpgradedIndex == -1) continue;
-                    var upgradableSkills = i.UpgradeSkills.Where(x => x.Value.Intersect(archivedConditions).Any());
-                    if (upgradableSkills.Any())
+                    var notUpgradedSkill = tips[notUpgradedIndex];
+
+                    // 加上要学习的技能后再判定是否能进化
+                    if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, dpResult.Item1))
                     {
-                        var notUpgradedSkill = tips[notUpgradedIndex];
-                        var upgradedSkill = Database.Skills[upgradableSkills.First().Key];
+                        var upgradedSkill = Database.Skills[upgradedSkillId];
                         upgradedSkill = upgradedSkill.Apply(@event.data.chara_info, @event.data.chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == notUpgradedSkill.GroupId && x.rarity == notUpgradedSkill.Rarity)?.level ?? 0);
                         upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
                         upgradedSkill.Cost = notUpgradedSkill.GetRealCost(@event.data.chara_info);
@@ -37,8 +38,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
-            var dpResult = DP(tips, ref totalSP, @event.data.chara_info);
-
             var learn = dpResult.Item1;
             var table = new Table();
             table.Title(string.Format(Resource.MaximiumGradeSkillRecommendation_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
@@ -72,9 +71,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                     var (GroupId, Rarity, Rate) = Database.Skills.Deconstruction(i.skill_id);
                     var upgradableSkills = upgradableTalentSkills.FirstOrDefault(x => x.SkillId == i.skill_id);
                     // 学了可进化的技能，且满足进化条件，则按进化计算分数
-                    if (upgradableSkills != default && upgradableSkills.UpgradeSkills.Values.SelectMany(x => x).Intersect(archivedConditions).Any())
+                    if (upgradableSkills != default && upgradableSkills.CanUpgrade(@event.data.chara_info, out var upgradedSkillId))
                     {
-                        var upgradedSkillId = upgradableSkills.UpgradeSkills.First().Key;
                         previousLearnPoint += Database.Skills[upgradedSkillId] == null ? 0 : Database.Skills[upgradedSkillId].Apply(@event.data.chara_info, 0).Grade;
                     }
                     else
@@ -93,7 +91,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (@event.IsScenario(ScenarioType.GrandMasters))
             {
-                GameStats.print();
+                GameStats.Print();
                 AnsiConsole.MarkupLine("");
             }
 
@@ -150,9 +148,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     var s = tips[i];
                     // 读取此技能可以点的所有情况
-                    int[] SuperiorId = { 0, 0, 0 };
-                    int[] SuperiorCost = { int.MaxValue, int.MaxValue, int.MaxValue };
-                    int[] SuperiorGrade = { int.MinValue, int.MinValue, int.MinValue };
+                    int[] SuperiorId = [0, 0, 0];
+                    int[] SuperiorCost = [int.MaxValue, int.MaxValue, int.MaxValue];
+                    int[] SuperiorGrade = [int.MinValue, int.MinValue, int.MinValue];
 
                     SuperiorId[0] = s.Id;
                     SuperiorCost[0] = s.GetRealCost(chara_info);
@@ -195,20 +193,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                         // 2-选这个技能和它的上一级技能
                         // 3-选这个技能的最高位技（全点）
                         int[] choice =
-                        {
+                        [
                         dp[j],
-                        j  - SuperiorCost[0] >= 0 ?
+                            j - SuperiorCost[0] >= 0 ?
                             dp[j - SuperiorCost[0]] + SuperiorGrade[0] :
                             -1,
 
-                        j  - SuperiorCost[1] >= 0 ?
+                            j - SuperiorCost[1] >= 0 ?
                             dp[j - SuperiorCost[1]] + SuperiorGrade[1] :
                             -1,
 
-                        j  - SuperiorCost[2] >= 0 ?
+                            j - SuperiorCost[2] >= 0 ?
                             dp[j - SuperiorCost[2]] + SuperiorGrade[2] :
                             -1
-                    };
+                        ];
                         // 判断是否为四种选法中的最优选择
                         if (IsBestOption(0))
                         {
@@ -275,7 +273,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
                     }
                 }
-                learn = learn.OrderBy(x => x.DisplayOrder).ToList();
+                learn = [.. learn.OrderBy(x => x.DisplayOrder)];
                 return (learn, dp);
             }
         }

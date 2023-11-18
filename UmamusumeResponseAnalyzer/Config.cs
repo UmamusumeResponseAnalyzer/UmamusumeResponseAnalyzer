@@ -9,8 +9,8 @@ namespace UmamusumeResponseAnalyzer
     internal static class Config
     {
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
-        internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = new();
-        internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = new();
+        internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = [];
+        internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = [];
         internal static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
@@ -45,7 +45,8 @@ namespace UmamusumeResponseAnalyzer
             });
             ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
             ConfigSet.Add("其他", ConfigItem.From(
-                Resource.ConfigSet_DMMLaunch
+                Resource.ConfigSet_DMMLaunch,
+                Resource.ConfigSet_WriteAIInfo
                 ));
             if (File.Exists(CONFIG_FILEPATH))
             {
@@ -101,7 +102,8 @@ namespace UmamusumeResponseAnalyzer
                 if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
                     i.Key == Resource.ConfigSet_EnableNetFilter ||
                     i.Key == Resource.ConfigSet_DMMLaunch ||
-                    i.Key == Resource.ConfigSet_SaveResponseForDebug) //不默认开
+                    i.Key == Resource.ConfigSet_SaveResponseForDebug ||
+                    i.Key == Resource.ConfigSet_WriteAIInfo) //不默认开
                 {
                     Configuration.Add(i.Key, new(i.Key, false));
                 }
@@ -127,7 +129,7 @@ namespace UmamusumeResponseAnalyzer
         /// <typeparam name="T">bool||string</typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T Get<T>(string key) => Configuration.ContainsKey(key) ? (T)Configuration[key].Value : default!;
+        public static T? Get<T>(string key) => Configuration.TryGetValue(key, out ConfigItem? value) ? (T)value.Value : default;
         public static bool Get(string key) => Get<bool>(key);
         public static void Set(string key, object value)
         {

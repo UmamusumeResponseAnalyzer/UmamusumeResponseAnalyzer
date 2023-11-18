@@ -303,4 +303,7 @@
   <data name="LaunchMenu_ManageDMMService" xml:space="preserve">
     <value>Manage DMM service information</value>
   </data>
+  <data name="ConfigSet_WriteAIInfo" xml:space="preserve">
+    <value>Write turn stats for external plugins reading</value>
+  </data>
 </root>

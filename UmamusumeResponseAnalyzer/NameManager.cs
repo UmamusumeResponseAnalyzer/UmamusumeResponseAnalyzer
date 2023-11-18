@@ -13,6 +13,10 @@ namespace UmamusumeResponseAnalyzer
         public NameManager(List<BaseName> data)
         {
             names = data.ToDictionary(x => x.Id, x => x);
+            foreach (var i in names.Where(x => x.Value is SupportCardName))
+            {
+                i.Value.Nickname = $"{((SupportCardName)i.Value).TypeName}{i.Value.Nickname}";
+            }
         }
 
         public string this[int id] => GetSimpleName(id);
@@ -29,7 +33,6 @@ namespace UmamusumeResponseAnalyzer
             if (names[id] is not UmaName) throw new Exception($"无法从{names[id].GetType()}转换到UmaName");
             return (UmaName)names[id];
         }
-
         private string GetSimpleName(int id)
         {
             if (!names.ContainsKey(id)) return "未知";

@@ -196,6 +196,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 回合信息写入文件以方便AI读取 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_WriteAIInfo {
+            get {
+                return ResourceManager.GetString("ConfigSet_WriteAIInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 启动菜单(用↑和↓切换选项,回车确认) 的本地化字符串。
         /// </summary>
         public static string LaunchMenu {
