@@ -71,11 +71,23 @@ namespace UmamusumeResponseAnalyzer.Entities
     }
     public class TalentSkillData
     {
+        public static IEnumerable<(int ScenarioId, int Rank, int ConditionId)> SCENARIO_CONDITIONS = new int[] { 6030101, 6030201, 6050101, 6050201 }.Select(x =>
+        {
+            var str = x.ToString();
+            return ((int)char.GetNumericValue(str[0]), (int)char.GetNumericValue(str[2]), x);
+        });
         public int SkillId;
         public int Rank;
         public Dictionary<int, UpgradeDetail[]> UpgradeSkills = [];
         public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId, IEnumerable<SkillData> willLearnSkills = null!)
         {
+            var currentScenarioConditions = SCENARIO_CONDITIONS.Where(x => x.ScenarioId == chara_info.scenario_id && x.Rank == Rank);
+            var upgradeInfo = chara_info.skill_upgrade_info_array.Where(x => currentScenarioConditions.Any(y => y.ConditionId == x.condition_id));
+            if (upgradeInfo.All(x => x.current_count == x.total_count))
+            {
+                upgradedSkillId = UpgradeSkills.Keys.First();
+                return true;
+            }
             foreach (var i in UpgradeSkills)
             {
                 if (i.Value.Any(x => x.CanUpgrade(chara_info, willLearnSkills)))
