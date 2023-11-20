@@ -110,6 +110,7 @@ namespace UmamusumeResponseAnalyzer.Game
         public static void Print()
         {
             //统计掉心情次数
+            m_motDropCount = 0;
             for (var i = currentTurn; i >= 2; i--)
             {
                 if (stats[i] == null || stats[i - 1] == null) break;
