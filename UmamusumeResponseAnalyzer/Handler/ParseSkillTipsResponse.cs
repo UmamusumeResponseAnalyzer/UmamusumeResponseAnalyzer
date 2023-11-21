@@ -158,6 +158,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                     var upgradedSkill = skills[upgradedSkillId];
                     upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
                     upgradedSkill.Cost = notUpgradedSkill.Cost;
+                    upgradedSkill.Inferior = notUpgradedSkill.Inferior;
+
+                    var inferior = upgradedSkill.Inferior;
+                    while (inferior != null)
+                    {
+                        // 学了
+                        if (@event.data.chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
+                        {
+                            upgradedSkill.Grade -= inferior.Grade;
+                            break;
+                        }
+                        inferior = inferior.Inferior;
+                    }
+
                     tips[notUpgradedIndex] = upgradedSkill;
                 }
                 else // 有技能不可进化，考虑学完技能之后再计算

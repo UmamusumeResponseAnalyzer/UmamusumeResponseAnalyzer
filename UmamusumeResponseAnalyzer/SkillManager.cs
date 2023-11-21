@@ -134,6 +134,7 @@ namespace UmamusumeResponseAnalyzer
                     if (chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
                     {
                         skill.Grade -= inferior.Grade;
+                        break;
                     }
                     else
                     {
