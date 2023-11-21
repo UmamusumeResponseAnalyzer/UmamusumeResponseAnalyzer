@@ -139,9 +139,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 SuperiorCost[0] = s.Cost;
                 SuperiorGrade[0] = s.Grade;
 
-                //if (SuperiorCost[0] == 234)//skill_id=202531, debug
-                //    AnsiConsole.WriteLine($"{s.Name} {s.Id} {s.Grade} {s.Inferior.Apply(chara_info).Name} {s.Inferior.Apply(chara_info).Id} {s.Inferior.Apply(chara_info).Grade}");
-
                 if (SuperiorCost[0] != 0 && s.Inferior != null)
                 {
                     s = s.Inferior;

@@ -1,5 +1,4 @@
 ﻿using Spectre.Console;
-using System.Linq;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Localization;
@@ -155,15 +154,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                 // 判定不学习时是否能进化，有多个可进化技能时按第一个计算
                 if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, willLearnSkills))
                 {
-                    var upgradedSkill = skills[upgradedSkillId];
+                    var upgradedSkill = skills[upgradedSkillId].Clone();
                     upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
                     upgradedSkill.Cost = notUpgradedSkill.Cost;
-                    upgradedSkill.Inferior = notUpgradedSkill.Inferior;
 
-                    var inferior = upgradedSkill.Inferior;
+                    var inferior = notUpgradedSkill.Inferior;
                     while (inferior != null)
                     {
-                        // 学了
+                        // 学了下位技能，则减去下位技能的分数
                         if (@event.data.chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
                         {
                             upgradedSkill.Grade -= inferior.Grade;
