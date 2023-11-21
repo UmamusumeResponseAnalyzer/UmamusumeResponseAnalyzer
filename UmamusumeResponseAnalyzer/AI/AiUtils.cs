@@ -66,7 +66,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     var (GroupId, Rarity, Rate) = skills.Deconstruction(i.skill_id);
                     var upgradableSkills = upgradableTalentSkills.FirstOrDefault(x => x.SkillId == i.skill_id);
                     // 学了可进化的技能，且满足进化条件，则按进化计算分数
-                    if (upgradableSkills != default && upgradableSkills.CanUpgrade(@event.data.chara_info, out var upgradedSkillId))
+                    if (upgradableSkills != default && upgradableSkills.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, learn))
                     {
                         previousLearnPoint += skills[upgradedSkillId] == null ? 0 : skills[upgradedSkillId].Grade;
                     }

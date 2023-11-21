@@ -79,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         public int SkillId;
         public int Rank;
         public Dictionary<int, UpgradeDetail[]> UpgradeSkills = [];
-        public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId, IEnumerable<SkillData> willLearnSkills = null!)
+        public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId, IEnumerable<SkillData>? willLearnSkills)
         {
             var currentScenarioConditions = SCENARIO_CONDITIONS.Where(x => x.ScenarioId == chara_info.scenario_id && x.Rank == Rank);
             var upgradeInfo = chara_info.skill_upgrade_info_array.Where(x => currentScenarioConditions.Any(y => y.ConditionId == x.condition_id));
@@ -107,7 +107,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             /// </summary>
             public int UpgradedSkillId;
             public UpgradeCondition[] Conditions;
-            public bool CanUpgrade(Gallop.SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
+            public bool CanUpgrade(Gallop.SingleModeChara chara_info, IEnumerable<SkillData>? willLearnSkills)
             {
                 if (chara_info.skill_upgrade_info_array == null) return false;
                 var serverCondition = chara_info.skill_upgrade_info_array.FirstOrDefault(x => Conditions.Any(y => y.ConditionId == x.condition_id));

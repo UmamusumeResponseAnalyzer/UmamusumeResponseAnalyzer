@@ -15,28 +15,35 @@ namespace UmamusumeResponseAnalyzer.Handler
             var totalSP = @event.data.chara_info.skill_point;
             // 可以进化的天赋技能，即觉醒3、5的那两个金技能
             var upgradableTalentSkills = Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level && (x.Rank == 3 || x.Rank == 5));
+            // 把天赋技能替换成进化技能
+            var allTalentSkillUpgradable = ReplaceTalentSkillWithUpgradeSkill(@event, skills, tips, upgradableTalentSkills);
 
             var dpResult = DP(tips, ref totalSP, @event.data.chara_info);
-            // 把天赋技能替换成进化技能
-            if (Database.TalentSkill.ContainsKey(@event.data.chara_info.card_id))
+            var learn = dpResult.Item1;
+            var willLearnPoint = learn.Sum(x => x.Grade);
+            if (!allTalentSkillUpgradable)
             {
-                foreach (var upgradableSkill in upgradableTalentSkills)
+                allTalentSkillUpgradable = ReplaceTalentSkillWithUpgradeSkill(@event, skills, tips, upgradableTalentSkills, dpResult.Item1);
+                var newDpResult = DP(tips, ref totalSP, @event.data.chara_info);
+                var newWillLearnPoint = newDpResult.Item1.Sum(x => x.Grade);
+                if (newWillLearnPoint > willLearnPoint)
                 {
-                    var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId);
-                    if (notUpgradedIndex == -1) continue;
-                    var notUpgradedSkill = tips[notUpgradedIndex];
-
-                    // 加上要学习的技能后再判定是否能进化
-                    if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, dpResult.Item1))
-                    {
-                        var upgradedSkill = skills[upgradedSkillId];
-                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
-                        upgradedSkill.Cost = notUpgradedSkill.Cost;
-                        tips[notUpgradedIndex] = upgradedSkill;
-                    }
+                    AnsiConsole.MarkupLine($"由于有技能不满足进化条件，本次结果以<有技能无法进化时的最大化推荐>为基准进行二次计算");
+                    AnsiConsole.MarkupLine($"且二次计算后的总分[green]高于[/]无法进化时的结果，请确保按推荐学完技能之后两个天赋技能均满足进化条件");
+                    AnsiConsole.MarkupLine($"如遇到此提示，请打开选项中的\"保存用于调试的通讯包\"后再次进入育成界面");
+                    AnsiConsole.MarkupLine($"并将%LOCALAPPDATA%/UmamusumeResponseAnalyzer/packets目录下的所有文件打包发送到频道/github issue中以便调试");
+                    dpResult = newDpResult;
+                    learn = newDpResult.Item1;
+                    willLearnPoint = newWillLearnPoint;
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"由于有技能不满足进化条件，本次结果以<有技能无法进化时的最大化推荐>为基准进行二次计算");
+                    AnsiConsole.MarkupLine($"且二次计算后的总分[red]低于[/]无法进化时的结果，因此按(全部/部分)技能无法进化给出建议");
+                    AnsiConsole.MarkupLine($"如遇到此提示，请打开选项中的\"保存用于调试的通讯包\"后再次进入育成界面");
+                    AnsiConsole.MarkupLine($"并将%LOCALAPPDATA%/UmamusumeResponseAnalyzer/packets目录下的所有文件打包发送到频道/github issue中以便调试");
                 }
             }
-            var learn = dpResult.Item1;
             var table = new Table();
             table.Title(string.Format(Resource.MaximiumGradeSkillRecommendation_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
             table.AddColumns(Resource.MaximiumGradeSkillRecommendation_Columns_SkillName, Resource.MaximiumGradeSkillRecommendation_Columns_RequireSP, Resource.MaximiumGradeSkillRecommendation_Columns_Grade);
@@ -79,7 +86,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
-            var willLearnPoint = learn.Sum(x => x.Grade);
             var totalPoint = willLearnPoint + previousLearnPoint + statusPoint;
             var thisLevelId = Database.GradeToRank.First(x => x.Min <= totalPoint && totalPoint <= x.Max).Id;
             table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
@@ -135,6 +141,31 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine($"[green]{t * 50}pt技能的期望性价比：{eff:F3}[/]");
             }
             #endregion
+        }
+        public static bool ReplaceTalentSkillWithUpgradeSkill(Gallop.SingleModeCheckEventResponse @event, SkillManager skills, List<SkillData> tips, IEnumerable<TalentSkillData>? upgradableTalentSkills, List<SkillData>? willLearnSkills = null)
+        {
+            if (upgradableTalentSkills == null) return false;
+            var allTalentSkillUpgradable = true;
+            foreach (var upgradableSkill in upgradableTalentSkills)
+            {
+                var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId); // 天赋技能在tips中的位置
+                if (notUpgradedIndex == -1) continue; // 如果没找到则说明已学会，不再需要
+                var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
+
+                // 判定不学习时是否能进化，有多个可进化技能时按第一个计算
+                if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, willLearnSkills))
+                {
+                    var upgradedSkill = skills[upgradedSkillId];
+                    upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
+                    upgradedSkill.Cost = notUpgradedSkill.Cost;
+                    tips[notUpgradedIndex] = upgradedSkill;
+                }
+                else // 有技能不可进化，考虑学完技能之后再计算
+                {
+                    allTalentSkillUpgradable = false;
+                }
+            }
+            return allTalentSkillUpgradable;
         }
     }
 }

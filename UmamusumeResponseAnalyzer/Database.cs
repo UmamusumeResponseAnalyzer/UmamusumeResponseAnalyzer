@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Spectre.Console;
 using System.Text;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
@@ -154,7 +155,18 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
-        static string Load(string path) => Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));
+        static string Load(string path)
+        {
+            try
+            {
+                return Encoding.UTF8.GetString(Brotli.Decompress(File.ReadAllBytes(path)));
+            }
+            catch (InvalidOperationException)
+            {
+                AnsiConsole.MarkupLine($"[red]读取数据文件{Path.GetFileName(path)}时出现错误，请先更新程序，再更新数据[/]");
+                return string.Empty;
+            }
+        }
     }
 
     public class NullableIntStringDictionary : Dictionary<int, string>
