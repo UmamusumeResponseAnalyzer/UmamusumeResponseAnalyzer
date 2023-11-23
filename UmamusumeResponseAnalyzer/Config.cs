@@ -144,13 +144,13 @@ namespace UmamusumeResponseAnalyzer
         {
             if (Configuration.TryGetValue(key, out ConfigItem? value))
             {
-                if (value is T)
+                if (value.Value is T t)
                 {
-                    return (T)value.Value;
+                    return t;
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[red]读取配置<{key}>时出现类型错误[/]");
+                    AnsiConsole.MarkupLine($"[red]读取配置<{key}>时出现类型错误: 请求的类型为{typeof(T)}，而实际的类型为{value.GetType()}[/]");
                 }
             }
             return default;

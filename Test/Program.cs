@@ -13,7 +13,7 @@ namespace Test
         static void Main()
         {
             Database.Initialize();
-            var bytes = File.ReadAllBytes(@".\23-11-22 01-01-18-029R.bin");
+            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-24 04-43-21-858R.msgpack");
             dynamic dyn = JObject.Parse(MessagePack.MessagePackSerializer.ConvertToJson(bytes)) ?? throw new Exception("反序列化失败");
             if (dyn.data.single_mode_load_common != null)
             {
@@ -29,6 +29,7 @@ namespace Test
                 dyn.data = data1;
             }
             SingleModeCheckEventResponse obj = dyn.ToObject<SingleModeCheckEventResponse>();
+            Handlers.ParseFriendSearchResponse(dyn.ToObject<FriendSearchResponse>());
             if (false)
             {
                 obj.data.chara_info.card_id = 103102;
@@ -62,7 +63,7 @@ namespace Test
                     ];
                 obj.data.chara_info.skill_array = [];
             }
-            Handlers.ParseSkillTipsResponse(obj);
+            //Handlers.ParseSkillTipsResponse(obj);
         }
     }
 }

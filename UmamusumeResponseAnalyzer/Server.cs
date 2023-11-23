@@ -219,6 +219,9 @@ namespace UmamusumeResponseAnalyzer
                 {
                     AnsiConsole.MarkupLine("[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]");
                     AnsiConsole.WriteException(e);
+#if DEBUG
+                    throw;
+#endif
                 }
             }
         }

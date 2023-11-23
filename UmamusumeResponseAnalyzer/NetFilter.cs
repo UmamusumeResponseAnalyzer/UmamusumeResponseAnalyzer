@@ -57,12 +57,9 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else
                 {
-                    if (Config.TryGetValue("加速服务器用户名",out var username) || Config.TryGetValue("加速服务器密码",out var password))
+                    if (Config.TryGetValue("加速服务器用户名", out var username) && Config.TryGetValue("加速服务器密码", out var password) && username is not null && password is not null)
                     {
-                        if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
-                            await NFAPI.StartAsync(false, username, password);
-                        else
-                            await NFAPI.StartAsync();
+                        await NFAPI.StartAsync(false, (string)username.Value, (string)password.Value);
                     }
                     else
                     {

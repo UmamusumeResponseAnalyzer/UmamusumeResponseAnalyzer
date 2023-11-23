@@ -90,7 +90,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 var sb = new StringBuilder();
                 sb.Append(FactorName(even[index]));
-                sb.Append(string.Join(string.Empty, Enumerable.Repeat(' ', 12 + max - GetRenderWidth(Database.FactorIds[even[index]]))));
+                var gap = 12 + max - GetRenderWidth(Database.FactorIds[even[index]]);
+                if (gap < 0) { gap = 2; }
+                sb.Append(string.Join(string.Empty, Enumerable.Repeat(' ', gap)));
                 sb.Append(odd.Length > index ? FactorName(odd[index]) : "");
                 tree.AddNode(sb.ToString());
             }
@@ -101,10 +103,10 @@ namespace UmamusumeResponseAnalyzer.Handler
             var name = Database.FactorIds[factorId];
             return factorId.ToString().Length switch
             {
-                3 => $"[white on #37B8F4]{name}[/]",
-                4 => $"[white on #FF78B2]{name}[/]",
-                8 => $"[white on #91D02E]{name}[/]",
-                _ => $"[#794016 on #E1E2E1]{name}[/]",
+                3 => $"[#FFFFFF on #37B8F4]{name}[/]", // 蓝
+                4 => $"[#FFFFFF on #FF78B2]{name}[/]", // 红
+                8 => $"[#794016 on #91D02E]{name}[/]", // 固有
+                _ => $"[#794016 on #E1E2E1]{name}[/]", // 白
             };
         }
         static int GetRenderWidth(string text)
