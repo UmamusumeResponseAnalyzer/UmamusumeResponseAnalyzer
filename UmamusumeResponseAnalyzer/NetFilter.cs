@@ -35,36 +35,44 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async Task Enable()
         {
-            if (!File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
-                return;
-            if (!Config.ContainsKey("加速服务器地址") || !Config.ContainsKey("加速服务器端口"))
+            try
             {
-                AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
-                return;
-            }
-            NFAPI.Host = Config.Get<string>("加速服务器地址") ?? string.Empty;
-            NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口") ?? string.Empty);
-            NFAPI.HandleList = ["umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe"];
-
-            if (Config.Get<string>("加速服务器类型") == "http")
-            {
-                await NFAPI.StartAsync(true);
-            }
-            else
-            {
-                if (Config.ContainsKey("加速服务器用户名") || Config.ContainsKey("加速服务器密码"))
+                if (!File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                 {
-                    var username = Config.Get<string>("加速服务器用户名");
-                    var password = Config.Get<string>("加速服务器密码");
-                    if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
-                        await NFAPI.StartAsync(false, username, password);
-                    else
-                        await NFAPI.StartAsync();
+                    AnsiConsole.MarkupLine("加速功能未启动：NetFilter驱动未安装");
+                    return;
+                }
+                if (!Config.ContainsKey("加速服务器地址") || !Config.ContainsKey("加速服务器端口") || !Config.ContainsKey("加速服务器类型"))
+                {
+                    AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
+                    return;
+                }
+                NFAPI.Host = Config.Get<string>("加速服务器地址") ?? string.Empty;
+                NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口") ?? string.Empty);
+                NFAPI.HandleList = ["umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe"];
+
+                if (Config.Get<string>("加速服务器类型") == "http")
+                {
+                    await NFAPI.StartAsync(true);
                 }
                 else
                 {
-                    await NFAPI.StartAsync();
+                    if (Config.TryGetValue("加速服务器用户名",out var username) || Config.TryGetValue("加速服务器密码",out var password))
+                    {
+                        if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
+                            await NFAPI.StartAsync(false, username, password);
+                        else
+                            await NFAPI.StartAsync();
+                    }
+                    else
+                    {
+                        await NFAPI.StartAsync();
+                    }
                 }
+            }
+            catch
+            {
+                AnsiConsole.MarkupLine("[red]NetFilter服务启动时出现错误，请检查相关设置[/]");
             }
         }
         public static async Task Disable() => await NFAPI.StopAsync();

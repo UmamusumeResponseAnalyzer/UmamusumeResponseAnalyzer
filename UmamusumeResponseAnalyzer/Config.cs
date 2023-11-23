@@ -122,15 +122,58 @@ namespace UmamusumeResponseAnalyzer
             }
             Save();
         }
-        public static bool ContainsKey(string key) => Configuration.ContainsKey(key);
+        public static bool ContainsKey(string key)
+        {
+            if (Configuration.TryGetValue(key, out ConfigItem? value))
+            {
+                return !string.IsNullOrEmpty(value.Value.ToString());
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static bool Get(string key) => Get<bool>(key);
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T">bool||string</typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T? Get<T>(string key) => Configuration.TryGetValue(key, out ConfigItem? value) ? (T)value.Value : default;
-        public static bool Get(string key) => Get<bool>(key);
+        public static T? Get<T>(string key)
+        {
+            if (Configuration.TryGetValue(key, out ConfigItem? value))
+            {
+                if (value is T)
+                {
+                    return (T)value.Value;
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"[red]读取配置<{key}>时出现类型错误[/]");
+                }
+            }
+            return default;
+        }
+        public static bool TryGetValue(string key, out ConfigItem? value)
+        {
+            if (Configuration.TryGetValue(key, out value))
+            {
+                if (!string.IsNullOrEmpty(value.Value.ToString()))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                value = default;
+                return false;
+            }
+        }
         public static void Set(string key, object value)
         {
             if (!Configuration.ContainsKey(key)) Configuration.Add(key, new(key, false, false));
