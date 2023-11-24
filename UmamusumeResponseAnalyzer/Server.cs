@@ -109,7 +109,7 @@ namespace UmamusumeResponseAnalyzer
                     var dyn = JsonConvert.DeserializeObject<dynamic>(str);
                     if (dyn == default(dynamic)) return;
 
-                    if (dyn.command_type == 1) //玩家点击了训练
+                    if (!dyn.GetType().IsValueType && dyn.command_type != null && dyn.command_type == 1) //玩家点击了训练
                     {
                         Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
