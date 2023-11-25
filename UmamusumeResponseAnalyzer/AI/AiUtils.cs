@@ -18,30 +18,9 @@ namespace UmamusumeResponseAnalyzer.AI
             var tips = Handler.Handlers.CalculateSkillScoreCost(@event, skills, true);
             var totalSP = @event.data.chara_info.skill_point;
             // 可以进化的天赋技能，即觉醒3、5的那两个金技能
-            var upgradableTalentSkills = Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level && (x.Rank == 3 || x.Rank == 5));
-
+            
             var dpResult = Handler.Handlers.DP(tips, ref totalSP, @event.data.chara_info);
-            // 把天赋技能替换成进化技能
-            if (Database.TalentSkill.ContainsKey(@event.data.chara_info.card_id))
-            {
-                foreach (var upgradableSkill in upgradableTalentSkills)
-                {
-                    var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId);
-                    if (notUpgradedIndex == -1) continue;
-                    var notUpgradedSkill = tips[notUpgradedIndex];
-
-                    // 加上要学习的技能后再判定是否能进化
-                    if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, dpResult.Item1))
-                    {
-                        var upgradedSkill = skills[upgradedSkillId];
-                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
-                        upgradedSkill.Cost = notUpgradedSkill.Cost;
-                        // 进化技能分数 -= 金技能总分数 - 金技能分数(即-=基础已学习技能分数)
-                        upgradedSkill.Grade -= notUpgradedSkill.Grade;
-                        tips[notUpgradedIndex] = upgradedSkill;
-                    }
-                }
-            }
+            
             var learn = dpResult.Item1;
             var statusPoint = Database.StatusToPoint[@event.data.chara_info.speed]
                             + Database.StatusToPoint[@event.data.chara_info.stamina]
@@ -64,16 +43,8 @@ namespace UmamusumeResponseAnalyzer.AI
                 {
                     if (skills[i.skill_id] == null) continue;
                     var (GroupId, Rarity, Rate) = skills.Deconstruction(i.skill_id);
-                    var upgradableSkills = upgradableTalentSkills.FirstOrDefault(x => x.SkillId == i.skill_id);
-                    // 学了可进化的技能，且满足进化条件，则按进化计算分数
-                    if (upgradableSkills != default && upgradableSkills.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, learn))
-                    {
-                        previousLearnPoint += skills[upgradedSkillId] == null ? 0 : skills[upgradedSkillId].Grade;
-                    }
-                    else
-                    {
-                        previousLearnPoint += skills[i.skill_id] == null ? 0 : skills[i.skill_id].Grade;
-                    }
+                    previousLearnPoint += skills[i.skill_id] == null ? 0 : skills[i.skill_id].Grade;
+                    
                 }
             }
             var willLearnPoint = learn.Sum(x => x.Grade);
