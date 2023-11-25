@@ -72,7 +72,7 @@ namespace UmamusumeResponseAnalyzer.AI
 
 
             //计算边际性价比与减少50/100/150/.../500pt的平均性价比
-            AnsiConsole.MarkupLine($"{previousLearnPoint} {willLearnPoint} {remainPt}");
+            //AnsiConsole.MarkupLine($"{previousLearnPoint} {willLearnPoint} {remainPt}");
             return willLearnPoint + previousLearnPoint + ptRate * remainPt;
         }
     }
