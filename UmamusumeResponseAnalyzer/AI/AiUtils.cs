@@ -16,17 +16,39 @@ namespace UmamusumeResponseAnalyzer.AI
         {
             var skills = Database.Skills.Apply(@event.data.chara_info);
             var tips = Handler.Handlers.CalculateSkillScoreCost(@event, skills, true);
-            var totalSP = @event.data.chara_info.skill_point;
-            // 可以进化的天赋技能，即觉醒3、5的那两个金技能
-            
+
+            int turn = @event.data.chara_info.turn;
+            //向未来借一些pt
+            var borrowPtFromFuture = turn >= 60 ? 300 + 80 * (67 - turn) :
+                turn >= 40 ? 300 + 80 * (67 - 60) + 40 * (60 - turn) :
+                300 + 80 * (67 - 60) + 40 * (60 - 40);
+
+            var originSP = @event.data.chara_info.skill_point;
+            var totalSP = @event.data.chara_info.skill_point + borrowPtFromFuture;
+
+
             var dpResult = Handler.Handlers.DP(tips, ref totalSP, @event.data.chara_info);
-            
-            var learn = dpResult.Item1;
-            var statusPoint = Database.StatusToPoint[@event.data.chara_info.speed]
-                            + Database.StatusToPoint[@event.data.chara_info.stamina]
-                            + Database.StatusToPoint[@event.data.chara_info.power]
-                            + Database.StatusToPoint[@event.data.chara_info.guts]
-                            + Database.StatusToPoint[@event.data.chara_info.wiz];
+
+
+            var dpScore = dpResult.Item2;//多少pt能买多少分的技能
+
+            double maxValue = Double.MinValue;
+            int maxIndex = -1;
+
+            for (int i = originSP; i <= originSP + borrowPtFromFuture; i++)
+            {
+                double currentValue = dpScore[i] - ptRate * i;
+                if (currentValue > maxValue)
+                {
+                    maxValue = currentValue;
+                    maxIndex = i;
+                }
+            }
+
+            var willLearnPoint = dpScore[maxIndex];
+            var remainPt = originSP - maxIndex;
+
+
             var previousLearnPoint = 0; //之前学的技能的累计评价点
             foreach (var i in @event.data.chara_info.skill_array)
             {
@@ -47,9 +69,11 @@ namespace UmamusumeResponseAnalyzer.AI
                     
                 }
             }
-            var willLearnPoint = learn.Sum(x => x.Grade);
+
+
             //计算边际性价比与减少50/100/150/.../500pt的平均性价比
-            return willLearnPoint + previousLearnPoint + ptRate * totalSP;
+            AnsiConsole.MarkupLine($"{previousLearnPoint} {willLearnPoint} {remainPt}");
+            return willLearnPoint + previousLearnPoint + ptRate * remainPt;
         }
     }
 }
