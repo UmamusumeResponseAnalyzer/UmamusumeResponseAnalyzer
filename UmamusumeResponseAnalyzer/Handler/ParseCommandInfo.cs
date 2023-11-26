@@ -890,9 +890,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                             table.Edit(5, chargedRivalCount + 6, rivalName);
                         }
 
-                        if (chargedRivalCount > 5)//有没显示的
+                        if (otherChargedRivals.Count() > 5)//有没显示的
                         {
-                            table.Edit(5, 12, $"[#ffff00]... + {chargedRivalCount - 5} 人[/]");
+                            table.Edit(5, 12, $"[#ffff00]... + {otherChargedRivals.Count() - 5} 人[/]");
                         }
                     }
                 }
