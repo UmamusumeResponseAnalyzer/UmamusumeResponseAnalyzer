@@ -92,7 +92,7 @@ namespace UmamusumeResponseAnalyzer
         }
         public SkillManager Apply(Gallop.SingleModeChara chara_info)
         {
-            var skills = new List<SkillData>(list.Select(x=>x.Clone()));
+            var skills = new List<SkillData>(list.Select(x => x.Clone()));
             foreach (var skill in skills)
             {
                 // 计算折扣
@@ -125,7 +125,7 @@ namespace UmamusumeResponseAnalyzer
                         skill.Inferior = lowerInferior;
                 }
             }
-            foreach(var skill in skills)
+            foreach (var skill in skills.OrderByDescending(x => x.Rate))
             {
                 var inferior = skill.Inferior;
                 while (inferior != null)
@@ -134,6 +134,7 @@ namespace UmamusumeResponseAnalyzer
                     if (chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
                     {
                         skill.Grade -= inferior.Grade;
+                        break;
                     }
                     else
                     {

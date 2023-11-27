@@ -317,8 +317,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                         ? @event.data.venus_data_set.spirit_info_array.First(x => x.spirit_num == spiritPlace).spirit_id
                         : -1;
                     spiritColors[spiritPlace - 1] = (8 + spiritId) / 8;  //0空，1红，2蓝，3黄
-                    var spiritStr = GameGlobal.GrandMastersSpiritNamesColored[spiritId];
-                    outputLine += (spiritPlace == 1 || spiritPlace == 5) ? $"{{{spiritStr}}} " : $"{spiritStr} ";
+                    if (GameGlobal.GrandMastersSpiritNamesColored.TryGetValue(spiritId, out var spiritStr))
+                    {
+                        outputLine += (spiritPlace == 1 || spiritPlace == 5) ? $"{{{spiritStr}}} " : $"{spiritStr} ";
+                    }
                 }
                 AnsiConsole.MarkupLine(outputLine);
 
@@ -888,9 +890,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                             table.Edit(5, chargedRivalCount + 6, rivalName);
                         }
 
-                        if (chargedRivalCount > 5)//有没显示的
+                        if (otherChargedRivals.Count() > 5)//有没显示的
                         {
-                            table.Edit(5, 12, $"[#ffff00]... + {chargedRivalCount - 5} 人[/]");
+                            table.Edit(5, 12, $"[#ffff00]... + {otherChargedRivals.Count() - 5} 人[/]");
                         }
                     }
                 }

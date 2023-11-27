@@ -20,27 +20,27 @@ namespace UmamusumeResponseAnalyzer
         }
 
         public string this[int id] => GetSimpleName(id);
-        public BaseName GetCharacter(int id) => names.ContainsKey(id) ? names[id] : nullBaseName;
+        public BaseName GetCharacter(int id) => names.TryGetValue(id, out BaseName? value) ? value : nullBaseName;
         public SupportCardName GetSupportCard(int id)
         {
-            if (!names.ContainsKey(id)) return nullSupportCardName;
-            if (names[id] is not SupportCardName) throw new Exception($"无法从{names[id].GetType()}转换到SupportCardName");
-            return (SupportCardName)names[id];
+            if (!names.TryGetValue(id, out BaseName? value)) return nullSupportCardName;
+            if (value is not SupportCardName) throw new Exception($"无法从{value.GetType()}转换到SupportCardName");
+            return (SupportCardName)value;
         }
         public UmaName GetUmamusume(int id)
         {
-            if (!names.ContainsKey(id)) return nullUmaName;
-            if (names[id] is not UmaName) throw new Exception($"无法从{names[id].GetType()}转换到UmaName");
-            return (UmaName)names[id];
+            if (!names.TryGetValue(id, out BaseName? value)) return nullUmaName;
+            if (value is not UmaName) throw new Exception($"无法从{value.GetType()}转换到UmaName");
+            return (UmaName)value;
         }
         private string GetSimpleName(int id)
         {
-            if (!names.ContainsKey(id)) return "未知";
-            return names[id] switch
+            if (!names.TryGetValue(id, out BaseName? value)) return "未知";
+            return value switch
             {
                 SupportCardName scn => scn.SimpleName,
                 UmaName un => un.CharacterName,
-                _ => names[id].Name,
+                _ => value.Name,
             };
         }
     }
