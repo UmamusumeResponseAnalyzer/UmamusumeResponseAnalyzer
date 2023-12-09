@@ -67,46 +67,43 @@ namespace UmamusumeResponseAnalyzer
         public static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
-            if (File.Exists(EVENT_NAME_FILEPATH))
+            if (TryDeserialize(EVENT_NAME_FILEPATH, out var events, x => x.ToObject<List<Story>>()!.ToDictionary(y => y.Id, y => y)))
             {
-                var events = JArray.Parse(Load(EVENT_NAME_FILEPATH)).ToObject<List<Story>>()?.ToDictionary(x => x.Id, x => x);
-                if (events != default)
-                    Events = events;
+                Events = events;
             }
-            if (File.Exists(SUCCESS_EVENT_FILEPATH))
+            if (TryDeserialize(SUCCESS_EVENT_FILEPATH, out var successEvent, x => x.ToObject<List<SuccessStory>>()!.ToDictionary(y => y.Id, y => y)))
             {
-                var successEvent = JArray.Parse(Load(SUCCESS_EVENT_FILEPATH)).ToObject<List<SuccessStory>>()?.ToDictionary(x => x.Id, x => x);
-                if (successEvent != default)
-                    SuccessEvent = successEvent;
+                SuccessEvent = successEvent;
             }
+            // Names需要额外设定TypeNameHandling，所以要单独处理
             if (File.Exists(NAMES_FILEPATH))
             {
-                var names = JsonConvert.DeserializeObject<List<BaseName>>(Load(NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-                if (names != default)
+                try
                 {
+                    var names = JsonConvert.DeserializeObject<List<BaseName>>(Load(NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All })!;
                     Names = new(names);
                 }
-            }
-            if (File.Exists(SKILLS_FILEPATH))
-            {
-                var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH));
-                if (skills != default)
+                catch
                 {
-                    Skills = new SkillManagerGenerator(skills);
-                    SkillManagerGenerator.Default = new(skills);
+                    AnsiConsole.MarkupLine($"[red]加载{Path.GetFileName(NAMES_FILEPATH)}时出现错误，请尝试重新更新数据[/]");
                 }
             }
-            if (File.Exists(TALENT_SKILLS_FILEPATH))
+            else
             {
-                var talentSkill = JsonConvert.DeserializeObject<Dictionary<int, TalentSkillData[]>>(Load(TALENT_SKILLS_FILEPATH));
-                if (talentSkill != default)
-                    TalentSkill = talentSkill;
+                AnsiConsole.MarkupLine($"[red]数据文件{Path.GetFileName(NAMES_FILEPATH)}不存在，请尝试重新更新数据[/]");
             }
-            if (File.Exists(FACTOR_IDS_FILEPATH))
+            if (TryDeserialize(SKILLS_FILEPATH, out var skills, x => x.ToObject<List<SkillData>>()!))
             {
-                var factor_ids = JsonConvert.DeserializeObject<NullableIntStringDictionary>(Load(FACTOR_IDS_FILEPATH));
-                if (factor_ids != default)
-                    FactorIds = factor_ids;
+                Skills = new(skills);
+                SkillManagerGenerator.Default = new(skills);
+            }
+            if (TryDeserialize(TALENT_SKILLS_FILEPATH, out var talentSkill, x => x.ToObject<Dictionary<int, TalentSkillData[]>>()!))
+            {
+                TalentSkill = talentSkill;
+            }
+            if (TryDeserialize(FACTOR_IDS_FILEPATH, out var factorIds, x => x.ToObject<NullableIntStringDictionary>()!))
+            {
+                FactorIds = factorIds;
             }
             if (Config.Get(Resource.ConfigSet_LoadLocalizedData) && !string.IsNullOrEmpty(LOCALIZED_DATA_FILEPATH) && File.Exists(LOCALIZED_DATA_FILEPATH))
             {
@@ -126,12 +123,12 @@ namespace UmamusumeResponseAnalyzer
                                     Names.GetCharacter(j.Key).Name = j.Value;
                                 break;
                             case TextDataCategory.SkillName:
-                                var skills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? [];
-                                foreach (var j in skills)
+                                var translatedSkills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? [];
+                                foreach (var j in translatedSkills)
                                     if (i.Value.TryGetValue(j.Id, out var localized_name))
                                         j.Name = localized_name;
-                                Skills = new SkillManagerGenerator(skills);
-                                SkillManagerGenerator.Default = new(skills);
+                                Skills = new SkillManagerGenerator(translatedSkills);
+                                SkillManagerGenerator.Default = new(translatedSkills);
                                 break;
                             case TextDataCategory.WinSaddleName:
                                 SaddleNames = i.Value;
@@ -153,6 +150,29 @@ namespace UmamusumeResponseAnalyzer
                         }
                     }
                 }
+            }
+
+            static bool TryDeserialize<T>(string filepath, out T result, Func<JToken, T> func)
+            {
+                if (File.Exists(filepath))
+                {
+                    try
+                    {
+                        var json = JToken.Parse(Load(filepath));
+                        result = func(json);
+                        return true;
+                    }
+                    catch
+                    {
+                        AnsiConsole.MarkupLine($"[red]加载{Path.GetFileName(filepath)}时出现错误，请尝试重新更新数据[/]");
+                    }
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"[red]数据文件{Path.GetFileName(filepath)}不存在，请尝试重新更新数据[/]");
+                }
+                result = default!;
+                return false;
             }
         }
         static string Load(string path)

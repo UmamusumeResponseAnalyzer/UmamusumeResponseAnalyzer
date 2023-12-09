@@ -13,7 +13,7 @@ namespace Test
         static void Main()
         {
             Database.Initialize();
-            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-24 04-43-21-858R.msgpack");
+            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-28 08-15-17-525R.msgpack");
             dynamic dyn = JObject.Parse(MessagePack.MessagePackSerializer.ConvertToJson(bytes)) ?? throw new Exception("反序列化失败");
             if (dyn.data.single_mode_load_common != null)
             {
@@ -28,8 +28,14 @@ namespace Test
                 }
                 dyn.data = data1;
             }
+            if (dyn.data.chara_info?.scenario_id == 5 || dyn.data.venus_data_set != null)
+            {
+                if (dyn.data.venus_data_set.race_start_info is JArray)
+                    dyn.data.venus_data_set.race_start_info = null;
+                if (dyn.data.venus_data_set.venus_race_condition is JArray)
+                    dyn.data.venus_data_set.venus_race_condition = null;
+            }
             SingleModeCheckEventResponse obj = dyn.ToObject<SingleModeCheckEventResponse>();
-            Handlers.ParseFriendSearchResponse(dyn.ToObject<FriendSearchResponse>());
             if (false)
             {
                 obj.data.chara_info.card_id = 103102;
@@ -63,7 +69,7 @@ namespace Test
                     ];
                 obj.data.chara_info.skill_array = [];
             }
-            //Handlers.ParseSkillTipsResponse(obj);
+            Handlers.ParseSkillTipsResponse(obj);
         }
     }
 }
