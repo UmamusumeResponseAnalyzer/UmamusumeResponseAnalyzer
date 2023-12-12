@@ -56,19 +56,8 @@ namespace UmamusumeResponseAnalyzer.AI
         public bool larc_zuoyueOutgoingRefused;//是否拒绝了佐岳外出
         public int larc_zuoyueOutgoingUsed;//佐岳外出走了几段了
 
-
-
-
-
-
-
-
-
-
-
         // 额外信息
         //public int fans; // 粉丝数，用于计算固有
-
 
         //当前回合的训练信息
         public int[,] personDistribution;//每个训练有哪些人头id，personDistribution[哪个训练][第几个人头]，空人头为-1

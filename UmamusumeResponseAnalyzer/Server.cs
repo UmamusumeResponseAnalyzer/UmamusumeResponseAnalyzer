@@ -12,6 +12,7 @@ using UmamusumeResponseAnalyzer.Game;
 using System.Net.WebSockets;
 using System.Text;
 using UmamusumeResponseAnalyzer.Communications;
+using UmamusumeResponseAnalyzer.AI;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -161,11 +162,15 @@ namespace UmamusumeResponseAnalyzer
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
                             Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                     }
-                    if (dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result != null && dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result.result_state == 1)//训练失败
+                    if (dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result != null) // 训练结果
                     {
-                        AnsiConsole.MarkupLine($"[red]训练失败！[/]");
-                        if (GameStats.stats[GameStats.currentTurn] != null)
-                            GameStats.stats[GameStats.currentTurn].isTrainingFailed = true;
+                        if (dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result.result_state == 1) //训练失败
+                        {
+                            AnsiConsole.MarkupLine($"[red]训练失败！[/]");
+                            if (GameStats.stats[GameStats.currentTurn] != null)
+                                GameStats.stats[GameStats.currentTurn].isTrainingFailed = true;
+                        }
+                        EventLogger.start(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());    // 开始记录事件，跳过从上一次调用update到这里的所有事件和训练
                     }
                     if (data.chara_info != null && data.unchecked_event_array?.Count > 0)
                     {
