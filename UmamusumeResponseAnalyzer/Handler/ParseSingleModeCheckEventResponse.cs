@@ -7,14 +7,17 @@ using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
 using UmamusumeResponseAnalyzer.Game;
+using UmamusumeResponseAnalyzer.AI;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
     public static partial class Handlers
     {
-
         public static void ParseSingleModeCheckEventResponse(Gallop.SingleModeCheckEventResponse @event)
         {
+            // 这时当前事件还没有生效，先显示上一个事件的收益
+            EventLogger.update(@event);
+
             foreach (var i in @event.data.unchecked_event_array)
             {
                 if (GameStats.stats[GameStats.currentTurn] != null)
@@ -135,8 +138,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     mainTree.AddNode(eventTree);
                     AnsiConsole.Write(mainTree);
-                }
-            }
+                } // if
+            } // foreach
+
         }
     }
 }

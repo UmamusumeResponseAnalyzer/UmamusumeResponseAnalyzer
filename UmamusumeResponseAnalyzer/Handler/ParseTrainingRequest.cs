@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
 
-
-
 namespace UmamusumeResponseAnalyzer.Handler
 {
     public static partial class Handlers

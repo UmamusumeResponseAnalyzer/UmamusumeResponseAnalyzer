@@ -50,6 +50,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
+		<PackageReference Include="MathNet.Numerics" Version="5.0.0" />
 		<PackageReference Include="MessagePack" Version="2.5.129" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Spectre.Console" Version="0.47.0" />
