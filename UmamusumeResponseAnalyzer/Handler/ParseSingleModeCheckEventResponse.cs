@@ -16,7 +16,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseSingleModeCheckEventResponse(Gallop.SingleModeCheckEventResponse @event)
         {
             // 这时当前事件还没有生效，先显示上一个事件的收益
-            EventLogger.update(@event);
+            EventLogger.Update(@event);
 
             foreach (var i in @event.data.unchecked_event_array)
             {
@@ -138,8 +138,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     mainTree.AddNode(eventTree);
                     AnsiConsole.Write(mainTree);
-                } // if
-            } // foreach
+                }
+            }
 
         }
     }

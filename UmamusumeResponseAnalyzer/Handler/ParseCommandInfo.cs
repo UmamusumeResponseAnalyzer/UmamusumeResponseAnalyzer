@@ -54,12 +54,12 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 GameStats.isFullGame = false;
                 AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
-                EventLogger.init();
+                EventLogger.Init();
             }
             else if (turnNum == 1)
             {
                 GameStats.isFullGame = true;
-                EventLogger.init();
+                EventLogger.Init();
             }
 
             //买技能，大师杯剧本年末比赛，会重复显示
@@ -79,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             #region 事件监测
             if (!isRepeat)
-                EventLogger.update(@event);
+                EventLogger.Update(@event);
             #endregion
 
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
