@@ -352,7 +352,7 @@ namespace UmamusumeResponseAnalyzer.Game
                 {
                     // (p(n<=k-1) + p(n<=k)) / 2
                     double bn = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, (double)zuoyueChargedTimes);
-                    double bn_1 = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, Math.Max(0, (double)zuoyueChargedTimes - 1));
+                    double bn_1 = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, (double)zuoyueChargedTimes - 1);
                     zuoyuePerformance = $"，超过了[aqua]{((bn + bn_1)/2 * 100).ToString("0.0")}%[/]的佐岳";
                 }
                 AnsiConsole.MarkupLine($"远征点了[#80ff00]{zuoyueClickedTimesAbroad}[/]次佐岳，加了[#80ff00]{zuoyueEventTimesAbroad}[/]次适性pt");
