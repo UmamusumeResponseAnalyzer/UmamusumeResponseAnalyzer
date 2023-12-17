@@ -347,25 +347,24 @@ namespace UmamusumeResponseAnalyzer.Game
                 }
 
                 // 计算佐岳表现（分位数）
-                string zuoyuePerformance = "";
+                string zuoyuePerformance = string.Empty;
                 if (zuoyueClickedTimesNonAbroad > 1)
                 {
                     // (p(n<=k-1) + p(n<=k)) / 2
-                    double bn = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, (double)zuoyueChargedTimes);
-                    double bn_1 = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, (double)zuoyueChargedTimes - 1);
-                    zuoyuePerformance = $"，超过了[aqua]{((bn + bn_1)/2 * 100).ToString("0.0")}%[/]的佐岳";
+                    double bn = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, zuoyueChargedTimes);
+                    double bn_1 = Binomial.CDF(0.4, zuoyueClickedTimesNonAbroad, zuoyueChargedTimes - 1);
+                    zuoyuePerformance = $"，超过了[aqua]{(bn + bn_1) / 2 * 100:0.0}%[/]的佐岳";
                 }
                 AnsiConsole.MarkupLine($"远征点了[#80ff00]{zuoyueClickedTimesAbroad}[/]次佐岳，加了[#80ff00]{zuoyueEventTimesAbroad}[/]次适性pt");
                 AnsiConsole.MarkupLine($"非远征点了[aqua]{zuoyueClickedTimesNonAbroad}[/]次佐岳，充了[aqua]{zuoyueChargedTimes}[/]次电" + zuoyuePerformance);
 
                 // 统计事件收益
-                if (EventLogger.allEvents.Count > 0)
+                if (EventLogger.AllEvents.Count > 0)
                 {
-                    AnsiConsole.MarkupLine($"事件数：[cyan]{EventLogger.allEvents.Count}[/]"
-                                          + $"，平均事件强度: [cyan]{EventLogger.allEvents.Average(x => x.value.eventStrength).ToString("#.##")}[/]"
-                                          + $"，继承属性：[cyan]{string.Join('+', EventLogger.inheritStats)}[/]");
-                    AnsiConsole.MarkupLine($"连续事件出现 [yellow]{EventLogger.cardEventCount}[/] 次，已走完 [yellow]{EventLogger.cardEventFinishCount}[/] 张卡。");
-                    //+ EventLogger.estimateCardEventRate(currentTurn));
+                    AnsiConsole.MarkupLine($"事件数：[cyan]{EventLogger.AllEvents.Count}[/]"
+                                          + $"，平均事件强度: [cyan]{EventLogger.AllEvents.Average(x => x.EventStrength):#.##}[/]"
+                                          + $"，继承属性：[cyan]{string.Join('+', EventLogger.InheritStats)}[/]");
+                    AnsiConsole.MarkupLine($"连续事件出现 [yellow]{EventLogger.CardEventCount}[/] 次，已走完 [yellow]{EventLogger.CardEventFinishCount}[/] 张卡。");
                 }
             }
         }
