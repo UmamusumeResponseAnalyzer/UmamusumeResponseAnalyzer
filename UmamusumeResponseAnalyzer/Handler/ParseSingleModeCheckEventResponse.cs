@@ -137,6 +137,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     mainTree.AddNode(eventTree);
                     AnsiConsole.Write(mainTree);
+
                 }
             }
 
