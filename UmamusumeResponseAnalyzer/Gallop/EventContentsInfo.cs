@@ -18,7 +18,7 @@ namespace Gallop
 		public int show_clear_sort_id; // 0x18
 		[Key("choice_array")]
 		public ChoiceArray[] choice_array; // 0x20
-		[Key("is_effected_multi_chara")]
-		public bool is_effected_multi_chara; // 0x28
+		[Key("tips_training_partner_id")]
+		public int tips_training_partner_id; // 0x28
 	}
 }

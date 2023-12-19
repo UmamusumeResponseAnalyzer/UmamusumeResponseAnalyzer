@@ -12,7 +12,9 @@ namespace Gallop
 	{
 		[Key("target_id")]
 		public int target_id; // 0x10
-		[Key("evaluation")]
+		[Key("training_partner_id")]
+		public int training_partner_id;
+        [Key("evaluation")]
 		public int evaluation; // 0x14
 		[Key("is_outing")]
 		public int is_outing; // 0x18

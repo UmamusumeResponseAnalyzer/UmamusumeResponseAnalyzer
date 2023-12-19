@@ -49,31 +49,31 @@ namespace UmamusumeResponseAnalyzer
                     //}
                     switch (i.Style)
                     {
-                        case SkillProper.StyleType.Nige:
+                        case StyleType.Nige:
                             grade = applyProperLevel(grade, chara_info.proper_running_style_nige);
                             break;
-                        case SkillProper.StyleType.Senko:
+                        case StyleType.Senko:
                             grade = applyProperLevel(grade, chara_info.proper_running_style_senko);
                             break;
-                        case SkillProper.StyleType.Sashi:
+                        case StyleType.Sashi:
                             grade = applyProperLevel(grade, chara_info.proper_running_style_sashi);
                             break;
-                        case SkillProper.StyleType.Oikomi:
+                        case StyleType.Oikomi:
                             grade = applyProperLevel(grade, chara_info.proper_running_style_oikomi);
                             break;
                     }
                     switch (i.Distance)
                     {
-                        case SkillProper.DistanceType.Short:
+                        case DistanceType.Short:
                             grade = applyProperLevel(grade, chara_info.proper_distance_short);
                             break;
-                        case SkillProper.DistanceType.Mile:
+                        case DistanceType.Mile:
                             grade = applyProperLevel(grade, chara_info.proper_distance_mile);
                             break;
-                        case SkillProper.DistanceType.Middle:
+                        case DistanceType.Middle:
                             grade = applyProperLevel(grade, chara_info.proper_distance_middle);
                             break;
-                        case SkillProper.DistanceType.Long:
+                        case DistanceType.Long:
                             grade = applyProperLevel(grade, chara_info.proper_distance_long);
                             break;
                     }

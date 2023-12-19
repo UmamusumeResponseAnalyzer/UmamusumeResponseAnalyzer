@@ -38,12 +38,18 @@ namespace Gallop
         public int global_exp; // 0x20
         [Key("sp_tag_boost_type")]
         public int sp_tag_boost_type; // 0x24
+        [Key("ss_match_win_count")]
+        public int ss_match_win_count;
+        [Key("special_ss_match_win_count")]
+        public int special_ss_match_win_count;
     }
     [MessagePackObject]
     public class SingleModeArcRival
     {
         [Key("chara_id")]
         public int chara_id; // 0x10
+        [Key("scout_chara_id")]
+        public int scout_chara_id;
         [Key("speed")]
         public int speed; // 0x14
         [Key("stamina")]

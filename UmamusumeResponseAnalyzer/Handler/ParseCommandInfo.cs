@@ -1,20 +1,10 @@
 ﻿using Gallop;
+using Newtonsoft.Json;
 using Spectre.Console;
-using System.Text.RegularExpressions;
+using UmamusumeResponseAnalyzer.AI;
+using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
-using UmamusumeResponseAnalyzer.AI;
-using MessagePack;
-using Newtonsoft.Json.Linq;
-using System;
-using System.ComponentModel.Design;
-using System.IO.Pipes;
-using System.Linq;
-using System.Xml.Linq;
-using Newtonsoft.Json;
-using System.Security.Cryptography;
-using System.Text;
-using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {

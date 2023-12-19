@@ -24,5 +24,7 @@ namespace Gallop
 		public SingleModeParamsIncDecInfo[] params_inc_dec_info_array; // 0x30
 		[Key("failure_rate")]
 		public int failure_rate; // 0x38
+		[Key("level")]
+		public int level;
 	}
 }

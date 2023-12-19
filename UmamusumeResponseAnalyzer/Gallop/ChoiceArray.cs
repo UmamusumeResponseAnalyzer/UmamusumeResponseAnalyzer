@@ -16,5 +16,9 @@ namespace Gallop
         public int receive_item_id; // 0x14
         [Key("target_race_id")]
         public int target_race_id; // 0x18
+        [Key("gain_select_id_index")]
+        public int gain_select_id_index;
+        [Key("select_icon")]
+        public int select_icon;
     }
 }
