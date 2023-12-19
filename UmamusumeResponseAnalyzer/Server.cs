@@ -162,25 +162,15 @@ namespace UmamusumeResponseAnalyzer
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
                             Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                     }
-<<<<<<< HEAD
-                    if (dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result != null) // 训练结果
-                    {
-                        if (dyn.ToObject<Gallop.SingleModeCheckEventResponse>().data.command_result.result_state == 1) //训练失败
-=======
                     if (dyn.data.command_result != null) // 训练结果
                     {
                         if (dyn.data.command_result.result_state == 1) // 训练失败
->>>>>>> 8ad106218b7e0e9c5d10e50905c0544af9201ce2
                         {
                             AnsiConsole.MarkupLine($"[red]训练失败！[/]");
                             if (GameStats.stats[GameStats.currentTurn] != null)
                                 GameStats.stats[GameStats.currentTurn].isTrainingFailed = true;
                         }
-<<<<<<< HEAD
-                        EventLogger.start(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());    // 开始记录事件，跳过从上一次调用update到这里的所有事件和训练
-=======
                         EventLogger.Start(dyn.ToObject<Gallop.SingleModeCheckEventResponse>()); // 开始记录事件，跳过从上一次调用update到这里的所有事件和训练
->>>>>>> 8ad106218b7e0e9c5d10e50905c0544af9201ce2
                     }
                     if (data.chara_info != null && data.unchecked_event_array?.Count > 0)
                     {

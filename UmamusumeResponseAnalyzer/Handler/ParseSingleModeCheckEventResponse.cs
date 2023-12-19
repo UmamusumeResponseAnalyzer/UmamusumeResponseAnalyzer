@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
 using UmamusumeResponseAnalyzer.Game;
-using UmamusumeResponseAnalyzer.AI;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -16,11 +15,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseSingleModeCheckEventResponse(Gallop.SingleModeCheckEventResponse @event)
         {
             // 这时当前事件还没有生效，先显示上一个事件的收益
-<<<<<<< HEAD
-            EventLogger.update(@event);
-=======
             EventLogger.Update(@event);
->>>>>>> 8ad106218b7e0e9c5d10e50905c0544af9201ce2
 
             foreach (var i in @event.data.unchecked_event_array)
             {
@@ -142,13 +137,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     mainTree.AddNode(eventTree);
                     AnsiConsole.Write(mainTree);
-<<<<<<< HEAD
-                } // if
-            } // foreach
-=======
+
                 }
             }
->>>>>>> 8ad106218b7e0e9c5d10e50905c0544af9201ce2
 
         }
     }

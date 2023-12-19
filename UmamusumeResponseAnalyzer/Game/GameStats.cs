@@ -48,7 +48,6 @@ namespace UmamusumeResponseAnalyzer.Game
         public int[] trainLevel;//训练等级
         public int[] trainLevelCount;//训练等级计数，凯旋门每4为一级
 
-
         //凯旋门
         public bool[] larc_zuoyueAtTrain;//佐岳是否在这个训练
         public bool larc_playerChoiceSS;//这个回合玩家是不是点的ss训练
@@ -56,8 +55,6 @@ namespace UmamusumeResponseAnalyzer.Game
         public bool larc_isSSS;//这个回合是不是sss训练
         public int larc_zuoyueEvent;//是否召唤出佐岳充电事件。有好几种：0没事件，1充电，2充电加心情，4海外，5第一次启动
         public int larc_totalApproval;//玩家与所有npc的总“支援pt”
-
-
 
         //大师杯
         //三女神等级
