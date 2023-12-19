@@ -8,7 +8,7 @@ using UmamusumeResponseAnalyzer.Localization;
 
 namespace UmamusumeResponseAnalyzer
 {
-    public static class Database
+    public static partial class Database
     {
         #region Paths
         internal static string EVENT_NAME_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "events.br");
@@ -109,8 +109,9 @@ namespace UmamusumeResponseAnalyzer
             if (Config.Get(Resource.ConfigSet_LoadLocalizedData) && !string.IsNullOrEmpty(LOCALIZED_DATA_FILEPATH) && File.Exists(LOCALIZED_DATA_FILEPATH))
             {
                 var textData = JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(LOCALIZED_DATA_FILEPATH));
-                var localizedSkillNames = new Dictionary<string, string>();  // 暂存日文-中文技能名
-                var localizedUmaNames = new Dictionary<string, string>();  // 暂存日文-中文角色和马娘全名
+                var staticTranslation = JsonConvert.DeserializeObject<Dictionary<string, string>>("{\"ウマ娘の\":\"马娘的\",\"スピード\":\"速度\",\"スタミナ\":\"耐力\",\"パワー\":\"力量\",\"根性\":\"根性\",\"賢さ\":\"智力\",\"マイナススキル\":\"负面寄能\",\"スキル\":\"技能\",\"ヒント\":\"Hint \",\"やる気\":\"干劲\",\"の絆ゲージ\":\"的羁绊\",\"ステータス\":\"属性\",\"ランダムな\":\"随机\",\"つの\":\"项\",\"〜\":\"~\",\"練習上手\":\"擅长练习\",\"愛嬌\":\"惹人怜爱\",\"切れ者\":\"能人（概率获得）\",\"直前のトレーニング能力\":\"之前训练的属性\",\"直前のトレーニングに応じた\":\"之前训练的\",\"太り気味\":\"变胖\",\"練習ベタ\":\"不擅长练习\",\"夜ふかし気味\":\"熬夜\",\"バッドコンディションが治る\":\"治疗负面状态\",\"バッドコンディションが解消\":\"解除部分负面状态\",\"確率で\":\"概率\",\"なまけ癖\":\"摸鱼癖\",\"進行イベント打ち切り\":\"事件中断\",\"アタシに指図しないで！！！\":\"别对我指指点点！\",\"スターゲージ\":\"明星量表\",\"お出かけ不可になる\":\"不能外出\",\"とお出かけできる\":\"外出解锁\",\"ようになる\":\"\",\"ポジティブ思考\":\"正向思考\",\"ファン\":\"粉丝\",\"ランダム\":\"随机\",\"」の\":\"」的\"}")!;
+                var localizedSkillNames = new Dictionary<string, string>();  // 日文-中文技能名
+                var localizedUmaNames = new Dictionary<string, string>();  // 日文-中文角色和马娘全名
                 if (textData != default)
                 {
                     foreach (var i in textData)
@@ -135,11 +136,13 @@ namespace UmamusumeResponseAnalyzer
                             case TextDataCategory.SkillName:
                                 var translatedSkills = JsonConvert.DeserializeObject<List<SkillData>>(Load(SKILLS_FILEPATH)) ?? [];
                                 foreach (var j in translatedSkills)
+                                {
                                     if (i.Value.TryGetValue(j.Id, out var localized_name))
                                     {
                                         localizedSkillNames[j.Name] = localized_name;   // 暂存技能名字
                                         j.Name = localized_name;
                                     }
+                                }
                                 Skills = new SkillManagerGenerator(translatedSkills);
                                 SkillManagerGenerator.Default = new(translatedSkills);
                                 break;
@@ -161,32 +164,7 @@ namespace UmamusumeResponseAnalyzer
                                     ClimaxItem.Add(j.Key, j.Value);
                                 break;
                         }
-                    }  // foreach
-
-                    Dictionary<string, string> staticTranslation = default;
-                    bool hasStaticTranslation = (Resource.Translation != null);                    
-                    if (hasStaticTranslation)
-                    {
-                        string text = Encoding.UTF8.GetString(Resource.Translation);
-                        staticTranslation = JsonConvert.DeserializeObject<Dictionary<string, string>>(text);
                     }
-
-                    // 用lambda嵌套是为了避免污染Database公共区，是否有更合适的写法.
-                    var TranslateLine = (string s) =>
-                    {
-                        s = DictionaryReplace(s, localizedUmaNames); // 替换马娘名字
-                        MatchCollection m = Regex.Matches(s, @"「(.*?)」");   // 技能名字
-                        foreach (Match match in m)
-                            if (match.Success)
-                            {
-                                string skillName = match.Groups[1].Value;
-                                if (localizedSkillNames.ContainsKey(skillName))
-                                    s = s.Replace(skillName, $"{skillName}/{localizedSkillNames[skillName]}");
-                            }
-                        if (hasStaticTranslation)
-                            s = DictionaryReplace(s, staticTranslation);    // 替换固定文本
-                        return s;
-                    };
 
                     // 替换事件触发者名字和效果行
                     foreach (var j in Events)
@@ -206,20 +184,36 @@ namespace UmamusumeResponseAnalyzer
 
                     // 替换成功失败事件效果行
                     foreach (var j in SuccessEvent)
-                    { 
+                    {
                         foreach (var choiceList in j.Value.Choices)
                             foreach (var choice in choiceList)
                                 choice.Effect = TranslateLine(choice.Effect);
                     }
-                }
-            }
 
-            static string DictionaryReplace(string line, Dictionary<string, string> dict)
-            {
-                StringBuilder s = new StringBuilder(line);
-                foreach (var item in dict)
-                    s.Replace(item.Key, item.Value);
-                return s.ToString();
+                    string TranslateLine(string s)
+                    {
+                        s = DictionaryReplace(s, localizedUmaNames); // 替换马娘名字
+                        // 技能名字
+                        foreach (var match in LocalizedLineRegex().Matches(s).Cast<Match>())
+                        {
+                            if (match.Success)
+                            {
+                                var skillName = match.Groups[1].Value;
+                                if (localizedSkillNames.TryGetValue(skillName, out string? value))
+                                    s = s.Replace(skillName, $"{skillName}/{value}");
+                            }
+                        }
+                        s = DictionaryReplace(s, staticTranslation);    // 替换固定文本
+                        return s;
+                    }
+                    static string DictionaryReplace(string line, Dictionary<string, string> dict)
+                    {
+                        var s = new StringBuilder(line);
+                        foreach (var item in dict)
+                            s.Replace(item.Key, item.Value);
+                        return s.ToString();
+                    }
+                }
             }
 
             static bool TryDeserialize<T>(string filepath, out T result, Func<JToken, T> func)
@@ -257,6 +251,9 @@ namespace UmamusumeResponseAnalyzer
                 return string.Empty;
             }
         }
+
+        [GeneratedRegex(@"「(.*?)」")]
+        private static partial Regex LocalizedLineRegex();
     }
 
     public class NullableIntStringDictionary : Dictionary<int, string>

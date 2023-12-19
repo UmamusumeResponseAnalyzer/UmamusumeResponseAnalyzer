@@ -626,15 +626,5 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("SingleModeCheckEvent_Event_UnknownSource", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找 System.Byte[] 类型的本地化资源。
-        /// </summary>
-        public static byte[] Translation {
-            get {
-                object obj = ResourceManager.GetObject("Translation", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }
