@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Localization;
 using UmamusumeResponseAnalyzer.Game;
-using UmamusumeResponseAnalyzer.AI;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {

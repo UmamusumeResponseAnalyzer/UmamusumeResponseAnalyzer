@@ -12,6 +12,10 @@ namespace UmamusumeResponseAnalyzer.Entities
     public enum TextDataCategory
     {
         /// <summary>
+        /// 不同复制人的全名 100703 [La mode 564]ゴールドシップ；用于翻译
+        /// </summary>
+        UmamusumeFullName = 4,
+        /// <summary>
         /// 不同复制人的称号 100703 [La mode 564]
         /// </summary>
         CostumeName = 5,

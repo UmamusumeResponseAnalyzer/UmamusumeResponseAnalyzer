@@ -70,6 +70,8 @@ namespace UmamusumeResponseAnalyzer.Game
         public const int MinEventStrength = 3;
         // 排除佐岳充电,SS,继承,第三年凯旋门（输/赢）,以及无事发生直接到下一回合的情况
         public static readonly int[] ExcludedEvents = [809043003, 400006112, 400000040, 400006474, 400006439, -1];
+        // 友人和团队卡不计入连续事件，这里仅排除这几个
+        public static readonly int[] ExcludedFriendCards = [30160, 30137, 30067];
         // 这些回合不能触发连续事件
         private static readonly int[] ExcludedTurns = [1, 31, 37, 38, 39, 40, 41, 42, 43, 55, 61, 62, 63, 64, 65, 66, 67];
 
@@ -168,7 +170,8 @@ namespace UmamusumeResponseAnalyzer.Game
                         // 支援卡事件，如"8 30161 003"
                         var rarity = LastEvent.StoryId / 10000000 % 10;    // 取第二位-稀有度
                         var which = LastEvent.StoryId % 100;   // 取低2位
-                        if (rarity > 1 && which <= rarity)    // 是连续事件
+                        var cardId = LastEvent.StoryId / 1000 % 100000;
+                        if (rarity > 1 && which <= rarity && !ExcludedFriendCards.Contains(cardId))    // 是连续事件
                         {
                             ++CardEventCount;
                             if (which == rarity)
