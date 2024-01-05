@@ -1030,7 +1030,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 catch (Exception e)
                 {
-                    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：\n{e.Message}[/]");
+                    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：{Environment.NewLine}{e.Message}[/]");
                 }
             } // if
         }
