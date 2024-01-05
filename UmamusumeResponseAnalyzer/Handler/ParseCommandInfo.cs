@@ -5,6 +5,7 @@ using UmamusumeResponseAnalyzer.AI;
 using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
+using UmamusumeResponseAnalyzer.Game.TurnInfo;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -14,39 +15,26 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             SubscribeCommandInfo.Signal(@event);
-            var turnNum = @event.data.chara_info.turn;
-            var LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
+            var turn = new TurnInfo(@event);
+            switch (@event.data.chara_info.scenario_id)
+            {
+                case (int)ScenarioType.LArc:
+                    turn = new TurnInfoArc(@event);
+                    break;
+            }
 
-            var currentFiveValue = new int[]
-            {
-                @event.data.chara_info.speed,
-                @event.data.chara_info.stamina,
-                @event.data.chara_info.power ,
-                @event.data.chara_info.guts ,
-                @event.data.chara_info.wiz ,
-            };
-            var fiveValueMaxRevised = new int[]
-            {
-                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_speed),
-                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_stamina),
-                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_power) ,
-                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_guts) ,
-                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_wiz) ,
-            };
-            var currentFiveValueRevised = currentFiveValue.Select(x => ScoreUtils.ReviseOver1200(x)).ToArray();
-            var totalValue = currentFiveValueRevised.Sum();
             AnsiConsole.WriteLine(string.Empty);
 
-            if (GameStats.currentTurn != turnNum - 1 //正常情况
-                && GameStats.currentTurn != turnNum //重复显示
-                && turnNum != 1 //第一个回合
+            if (GameStats.currentTurn != turn.Turn - 1 //正常情况
+                && GameStats.currentTurn != turn.Turn //重复显示
+                && turn.Turn != 1 //第一个回合
                 )
             {
                 GameStats.isFullGame = false;
-                AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
+                AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turn.Turn}[/]");
                 EventLogger.Init();
             }
-            else if (turnNum == 1)
+            else if (turn.Turn == 1)
             {
                 GameStats.isFullGame = true;
                 EventLogger.Init();
@@ -63,8 +51,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             else
             {
                 GameStats.whichScenario = @event.data.chara_info.scenario_id;
-                GameStats.currentTurn = turnNum;
-                GameStats.stats[turnNum] = new TurnStats();
+                GameStats.currentTurn = turn.Turn;
+                GameStats.stats[turn.Turn] = new TurnStats();
             }
 
             #region 事件监测
@@ -73,39 +61,32 @@ namespace UmamusumeResponseAnalyzer.Handler
             #endregion
 
             //为了避免写判断，对于重复回合，直接让turnStat指向一个无用的TurnStats类
-            var turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
-            var gameYear = (turnNum - 1) / 24 + 1;
-            var gameMonth = ((turnNum - 1) % 24) / 2 + 1;
-            var halfMonth = (turnNum % 2 == 0) ? "后半" : "前半";
-            var totalTurns = @event.IsScenario(ScenarioType.LArc) ? 67 : 78;
+            var turnStat = isRepeat ? new TurnStats() : GameStats.stats[turn.Turn];
 
             AnsiConsole.MarkupLine($"[#00ffff]------------------------------------------------------------------------------------[/]");
-            AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/{totalTurns}, 第{gameYear}年{gameMonth}月{halfMonth}[/]");
+            AnsiConsole.MarkupLine($"[green]回合数：{@event.data.chara_info.turn}/{turn.TotalStats}, 第{turn.Year}年{turn.Month}月{turn.HalfMonth}[/]");
 
-            var motivation = @event.data.chara_info.motivation;
-            turnStat.motivation = motivation;
+            turnStat.motivation = turn.Motivation;
             //显示统计信息
             GameStats.Print();
 
-            var currentVital = @event.data.chara_info.vital;
-            var maxVital = @event.data.chara_info.max_vital;
-            switch (currentVital)
+            switch (turn.Vital)
             {
                 case < 30:
-                    AnsiConsole.MarkupLine($"[red]体力：{currentVital}[/]/{maxVital}");
+                    AnsiConsole.MarkupLine($"[red]体力：{turn.Vital}[/]/{turn.MaxVital}");
                     break;
                 case < 50:
-                    AnsiConsole.MarkupLine($"[darkorange]体力：{currentVital}[/]/{maxVital}");
+                    AnsiConsole.MarkupLine($"[darkorange]体力：{turn.Vital}[/]/{turn.MaxVital}");
                     break;
                 case < 70:
-                    AnsiConsole.MarkupLine($"[yellow]体力：{currentVital}[/]/{maxVital}");
+                    AnsiConsole.MarkupLine($"[yellow]体力：{turn.Vital}[/]/{turn.MaxVital}");
                     break;
                 default:
-                    AnsiConsole.MarkupLine($"[green]体力：{currentVital}[/]/{maxVital}");
+                    AnsiConsole.MarkupLine($"[green]体力：{turn.Vital}[/]/{turn.MaxVital}");
                     break;
             }
 
-            switch (motivation)
+            switch (turn.Motivation)
             {
                 case 5:
                     AnsiConsole.MarkupLine($"干劲[green]绝好调[/]");
@@ -124,9 +105,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     break;
             }
 
-            var totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
-            var totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
-            AnsiConsole.MarkupLine($"[aqua]总属性：{totalValue}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
+            var totalValueWithPt = turn.TotalStats + @event.data.chara_info.skill_point;
+            var totalValueWithHalfPt = turn.TotalStats + 0.5 * @event.data.chara_info.skill_point;
+            AnsiConsole.MarkupLine($"[aqua]总属性：{turn.TotalStats}[/]\t[aqua]总属性+0.5*pt：{totalValueWithHalfPt}[/]");
 
             #region LArc
             //计算训练等级
@@ -134,22 +115,22 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 for (var i = 0; i < 5; i++)
                 {
-                    if (turnNum == 1)
+                    if (turn.Turn == 1)
                     {
                         turnStat.trainLevel[i] = 1;
                         turnStat.trainLevelCount[i] = 0;
                     }
                     else
                     {
-                        var lastTrainLevel = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].trainLevel[i] : 1;
-                        var lastTrainLevelCount = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].trainLevelCount[i] : 0;
+                        var lastTrainLevel = GameStats.stats[turn.Turn - 1] != null ? GameStats.stats[turn.Turn - 1].trainLevel[i] : 1;
+                        var lastTrainLevelCount = GameStats.stats[turn.Turn - 1] != null ? GameStats.stats[turn.Turn - 1].trainLevelCount[i] : 0;
 
                         turnStat.trainLevel[i] = lastTrainLevel;
                         turnStat.trainLevelCount[i] = lastTrainLevelCount;
-                        if (GameStats.stats[turnNum - 1] != null &&
-                            GameStats.stats[turnNum - 1].playerChoice == GameGlobal.TrainIds[i] &&
-                            !GameStats.stats[turnNum - 1].isTrainingFailed &&
-                            !((turnNum - 1 >= 37 && turnNum - 1 <= 43) || (turnNum - 1 >= 61 && turnNum - 1 <= 67))
+                        if (GameStats.stats[turn.Turn - 1] != null &&
+                            GameStats.stats[turn.Turn - 1].playerChoice == GameGlobal.TrainIds[i] &&
+                            !GameStats.stats[turn.Turn - 1].isTrainingFailed &&
+                            !((turn.Turn - 1 >= 37 && turn.Turn - 1 <= 43) || (turn.Turn - 1 >= 61 && turn.Turn - 1 <= 67))
                             )//上回合点的这个训练，计数+1
                             turnStat.trainLevelCount[i] += 1;
                         if (turnStat.trainLevelCount[i] >= 4)
@@ -159,7 +140,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
                         //检查是否有期待度上升
                         var appRate = @event.data.arc_data_set.arc_info.approval_rate;
-                        var oldAppRate = GameStats.stats[turnNum - 1] != null ? (GameStats.stats[turnNum - 1].larc_totalApproval + 85) / 170 : 0;
+                        var oldAppRate = GameStats.stats[turn.Turn - 1] != null ? (GameStats.stats[turn.Turn - 1].larc_totalApproval + 85) / 170 : 0;
                         if (oldAppRate < 200 && appRate >= 200)
                             turnStat.trainLevel[i] += 1;
                         if (oldAppRate < 600 && appRate >= 600)
@@ -196,7 +177,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var approval_rate = @event.data.arc_data_set.arc_info.approval_rate;
                 var approval_rate_level = approval_rate / 50;
                 var approval_training_bonus = GameGlobal.LArcTrainBonusEvery5Percent[approval_rate_level > 40 ? 40 : approval_rate_level];
-                var lastTurnTotalApproval = GameStats.stats[turnNum - 1] != null ? GameStats.stats[turnNum - 1].larc_totalApproval : 0;
+                var lastTurnTotalApproval = GameStats.stats[turn.Turn - 1] != null ? GameStats.stats[turn.Turn - 1].larc_totalApproval : 0;
                 AnsiConsole.MarkupLine($"期待度：[#00ff00]{approval_rate / 10}.{approval_rate % 10}%[/]（训练[#00ffff]+{approval_training_bonus}%[/]）    适性pt：[#00ff00]{@event.data.arc_data_set.arc_info.global_exp}[/]    总支援pt：[#00ff00]{turnStat.larc_totalApproval}[/]([aqua]+{turnStat.larc_totalApproval - lastTurnTotalApproval}[/])");
 
                 int totalCount = totalSSLevel * 3 + rivalBoostCount[1] * 1 + rivalBoostCount[2] * 2 + rivalBoostCount[3] * 3;
@@ -207,7 +188,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //每局15个人头的每种特殊词条的总数是固定的。但是除了几个特殊的（体力最大值-茶座、爱娇-黄金船、练习上手-神鹰），其他都会随机分配给支援卡和路人
                 //支援卡相比路人点的次数更多，如果第三回合的支援卡随机分配的特殊词条不好，就可以重开了
 
-                if (turnNum <= 2)
+                if (turn.Turn <= 2)
                 {
                     //清空SSRivalsSpecialBuffs
                     GameStats.SSRivalsSpecialBuffs.Clear();
@@ -279,7 +260,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 AnsiConsole.MarkupLine(toPrint);
                 //凯旋门前显示技能性价比
-                if (turnNum == 43 || turnNum == 67)
+                if (turn.Turn == 43 || turn.Turn == 67)
                 {
                     var tips = CalculateSkillScoreCost(@event, Database.Skills.Apply(@event.data.chara_info), false);
 
@@ -378,14 +359,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                 turnStat.venus_isVenusCountConcerned = false;
                 turnStat.venus_isEffect102 = true;
                 //统计一下女神情热持续了几回合
-                var continuousTurnNum = 0;
-                for (var i = turnNum; i >= 1; i--)
+                var continuousturn.Turn = 0;
+                for (var i = turn.Turn; i >= 1; i--)
                 {
                     if (GameStats.stats[i] == null || !GameStats.stats[i].venus_isEffect102)
                         break;
-                    continuousTurnNum++;
+                    continuousturn.Turn++;
                 }
-                AnsiConsole.MarkupLine($"女神彩圈已持续[green]{continuousTurnNum}[/]回合");
+                AnsiConsole.MarkupLine($"女神彩圈已持续[green]{continuousturn.Turn}[/]回合");
             }
             #endregion
 
@@ -933,18 +914,18 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (@event.IsScenario(ScenarioType.LArc))
             {
                 //两次远征分别是37,60回合
-                if (turnNum >= 34 && turnNum < 37)
-                    AnsiConsole.MarkupLine($@"[#ff0000]还有{37 - turnNum}回合第二年远征！[/]");
-                else if (turnNum >= 55 && turnNum < 60)
-                    AnsiConsole.MarkupLine($@"[#ff0000]还有{60 - turnNum}回合第三年远征！[/]");
-                if (turnNum == 59)
+                if (turn.Turn >= 34 && turn.Turn < 37)
+                    AnsiConsole.MarkupLine($@"[#ff0000]还有{37 - turn.Turn}回合第二年远征！[/]");
+                else if (turn.Turn >= 55 && turn.Turn < 60)
+                    AnsiConsole.MarkupLine($@"[#ff0000]还有{60 - turn.Turn}回合第三年远征！[/]");
+                if (turn.Turn == 59)
                 {
                     AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！[/]");
                     AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！[/]");
                     AnsiConsole.MarkupLine($@"[#00ffff]下回合第三年远征！（重要的事情说三遍）[/]");
                 }
 
-                if (turnNum > 42)
+                if (turn.Turn > 42)
                 {
                     //十个升级的id分别是
                     //  2 5
@@ -976,7 +957,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
 
                     // 大逃日本杯提示
-                    if (turnNum == 46)
+                    if (turn.Turn == 46)
                         AnsiConsole.MarkupLine($@"[#ffff00]日本杯！拿大逃别忘了打！[/]");
                 }
             }

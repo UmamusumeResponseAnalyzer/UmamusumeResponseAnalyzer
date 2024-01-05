@@ -15,6 +15,9 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         public new ArcEvaluationInfo[] EvaluationInfoArray { get; }
         public (int[] RivalBoostCharaIdArray, bool AllRivalBoostFlag) NotUpArcParameterInfo { get; }
 
+        public new int TotalTurns = 67;
+        public bool IsAbroad => (Turn >= 37 && Turn <= 43) || (Turn >= 61 && Turn <= 67);
+
         public TurnInfoArc(SingleModeCheckEventResponse ev) : base(ev)
         {
             var arc = ev.data.arc_data_set;

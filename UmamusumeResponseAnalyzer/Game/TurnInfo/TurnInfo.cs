@@ -15,6 +15,14 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         public int PowerRevised => ScoreUtils.ReviseOver1200(Power);
         public int WizRevised => ScoreUtils.ReviseOver1200(Wiz);
         public int GutsRevised => ScoreUtils.ReviseOver1200(Guts);
+        public int[] Stats => [Speed, Stamina, Power, Wiz, Guts];
+        public int[] StatsRevised => [SpeedRevised, StaminaRevised, PowerRevised, WizRevised, GutsRevised];
+        public int[] MaxStatsRevised => [ScoreUtils.ReviseOver1200(MaxSpeed), ScoreUtils.ReviseOver1200(MaxStamina), ScoreUtils.ReviseOver1200(MaxPower), ScoreUtils.ReviseOver1200(MaxWiz), ScoreUtils.ReviseOver1200(MaxGuts)];
+        public int TotalStats => StatsRevised.Sum();
+        public int Year => (Turn - 1) / 24 + 1;
+        public int Month => ((Turn - 1) % 24) / 2 + 1;
+        public string HalfMonth => (Turn % 2 == 0) ? "后半" : "前半";
+        public int TotalTurns = 78;
         public bool IsFreeContinueAvailable => FreeContinueTime < DateTimeOffset.Now.ToUnixTimeSeconds();
         #region chara_info
         /// <summary>
@@ -371,6 +379,9 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         /// </summary>
         public int PlayingTime { get; } = ei.play_timing;
         public EventContent EventContentsInfo { get; } = new(ei.event_contents_info);
+        public int? SuccessionEffectType { get; } = ei.succession_event_info?.effect_type;
+
+        public bool IsGoldenSuccession => SuccessionEffectType != null && SuccessionEffectType == 2;
 
         public class EventContent(EventContentsInfo eci)
         {

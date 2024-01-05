@@ -206,10 +206,10 @@ namespace UmamusumeResponseAnalyzer.Entities
                             {
                                 var properType = Requirement switch
                                 {
-                                    1 => SkillProper.StyleType.Nige,
-                                    2 => SkillProper.StyleType.Senko,
-                                    3 => SkillProper.StyleType.Sashi,
-                                    4 => SkillProper.StyleType.Oikomi,
+                                    1 => StyleType.Nige,
+                                    2 => StyleType.Senko,
+                                    3 => StyleType.Sashi,
+                                    4 => StyleType.Oikomi,
                                 };
                                 return skills.Count(x => x.Propers.Any(y => y.Style == properType)) >= AdditionalRequirement;
                             }
@@ -217,16 +217,16 @@ namespace UmamusumeResponseAnalyzer.Entities
                             {
                                 var properType = Requirement switch
                                 {
-                                    5 => SkillProper.DistanceType.Short,
-                                    6 => SkillProper.DistanceType.Mile,
-                                    7 => SkillProper.DistanceType.Middle,
-                                    8 => SkillProper.DistanceType.Long,
+                                    5 => DistanceType.Short,
+                                    6 => DistanceType.Mile,
+                                    7 => DistanceType.Middle,
+                                    8 => DistanceType.Long,
                                 };
                                 return skills.Count(x => x.Propers.Any(y => y.Distance == properType)) >= AdditionalRequirement;
                             }
                             if (Requirement == 9)
                             {
-                                var properType = SkillProper.GroundType.Dirt;
+                                var properType = GroundType.Dirt;
                                 return skills.Count(x => x.Propers.Any(y => y.Ground == properType)) >= AdditionalRequirement;
                             }
                             throw new Exception($"出现了预料外的Requirement");
