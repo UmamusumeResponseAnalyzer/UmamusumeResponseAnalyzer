@@ -87,7 +87,6 @@ namespace UmamusumeResponseAnalyzer.AI
 
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
 
-
             umaId = @event.data.chara_info.card_id + 1000000 * @event.data.chara_info.rarity;
             int turnNum = @event.data.chara_info.turn;//游戏里回合数从1开始
             turn = turnNum - 1;//ai里回合数从0开始
@@ -104,7 +103,6 @@ namespace UmamusumeResponseAnalyzer.AI
             {
                 failureRateBias = -2;
             }
-
 
             fiveStatus = new int[]
             {
@@ -123,7 +121,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 ScoreUtils.ReviseOver1200(@event.data.chara_info.max_guts) ,
                 ScoreUtils.ReviseOver1200(@event.data.chara_info.max_wiz) ,
             };
-
 
             skillPt = @event.data.chara_info.skill_point;
 
@@ -148,8 +145,6 @@ namespace UmamusumeResponseAnalyzer.AI
             isPositiveThinking = @event.data.chara_info.chara_effect_id_array.Contains(25);
 
             bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
-
-
 
             trainLevelCount = new int[5];
             for (int i = 0; i < 5; i++)
@@ -205,8 +200,6 @@ namespace UmamusumeResponseAnalyzer.AI
                     larc_levels[i] = 0;
             }
 
-
-
             //从游戏json的id到ai的人头编号的换算
             Dictionary<int, int> headIdConvert = new Dictionary<int, int>();
             foreach (var s in @event.data.chara_info.support_card_array)
@@ -254,8 +247,6 @@ namespace UmamusumeResponseAnalyzer.AI
             if (larc_zuoyueType != 0)
             {
 
-
-
                 var d = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == headIdConvert.First(x => x.Value == 17).Key);
                 larc_zuoyueOutgoingUnlocked=d.is_outing==1;//佐岳外出解锁
                 larc_zuoyueOutgoingRefused=false;//无法从已知的信息中得出是否拒绝了外出。考虑到一般不会拒绝外出，所以默认没拒绝
@@ -283,11 +274,8 @@ namespace UmamusumeResponseAnalyzer.AI
 
             }
 
-
-
-
             for (int i = 0; i < normalCardCount; i++)
-            persons[i].personType = 2;
+                persons[i].personType = 2;
             for (int i = normalCardCount; i < 15; i++)
                 persons[i].personType = 3;
             persons[15].personType = 4;
@@ -336,7 +324,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 persons[p].friendship = s.evaluation;
             }
 
-
             //larc信息
             if (turnNum >= 3)
             {
@@ -344,7 +331,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 {
                     var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == headIdConvert.First(x => x.Value == i).Key).chara_id;
                     var p = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
-
 
                     persons[i].larc_charge = p.rival_boost;
                     persons[i].larc_statusType = GameGlobal.ToTrainIndex[p.command_id];
@@ -366,8 +352,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 for (int j = 0; j < 5; j++)
                     personDistribution[i, j] = -1;
 
-
-
             foreach (var train in @event.data.home_info.command_info_array)
             {
                 if (!GameGlobal.ToTrainIndex.ContainsKey(train.command_id))//不是正常训练
@@ -388,9 +372,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 }
             }
 
-
-
-
             //SS Match
             larc_ssPersonsCount = 0;
             larc_ssPersons = new int[5] { -1, -1, -1, -1, -1 };
@@ -405,16 +386,6 @@ namespace UmamusumeResponseAnalyzer.AI
                     larc_ssPersons[i] = pid;
                 }
             }
-
-
-
-
-
-
-
-
-
-
 
             trainValue = new int[5, 7];
             failRate = new int[5];
