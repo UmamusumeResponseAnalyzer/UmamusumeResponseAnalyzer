@@ -306,4 +306,7 @@
   <data name="ConfigSet_WriteAIInfo" xml:space="preserve">
     <value>回合信息写入文件以方便AI读取</value>
   </data>
+  <data name="ConfigSet_DisableSelectIndex" xml:space="preserve">
+    <value>隐藏SelectIndex</value>
+  </data>
 </root>

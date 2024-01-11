@@ -82,8 +82,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                             originalChoice = story.Choices[j][0]; //因为kamigame的事件无法直接根据SelectIndex区分成功与否，所以必然只会有一个Choice;
                         }
                         //显示选项
-                        var tree = new Tree($"{(string.IsNullOrEmpty(originalChoice.Option) ? Resource.SingleModeCheckEvent_Event_NoOption : originalChoice.Option)} @ {i.event_contents_info.choice_array[j].select_index}".EscapeMarkup());
-                        if (Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中
+                        var tree = new Tree($"{(string.IsNullOrEmpty(originalChoice.Option) ? Resource.SingleModeCheckEvent_Event_NoOption : originalChoice.Option)}{(Config.Get(Resource.ConfigSet_DisableSelectIndex) ? string.Empty : $" @ {i.event_contents_info.choice_array[j].select_index}")}".EscapeMarkup());
+                        if (!Config.Get(Resource.ConfigSet_DisableSelectIndex) && Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中
                             AddLoggedEvent(successEvent.Choices[j]);
                         else
                             AddNormalEvent();
