@@ -46,6 +46,7 @@ namespace UmamusumeResponseAnalyzer
             ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
             ConfigSet.Add("其他", ConfigItem.From(
                 Resource.ConfigSet_DMMLaunch,
+                Resource.ConfigSet_DisableSelectIndex,
                 Resource.ConfigSet_WriteAIInfo
                 ));
             if (File.Exists(CONFIG_FILEPATH))

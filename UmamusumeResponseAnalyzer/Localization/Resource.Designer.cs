@@ -61,6 +61,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 隐藏SelectIndex 的本地化字符串。
+        /// </summary>
+        public static string ConfigSet_DisableSelectIndex {
+            get {
+                return ResourceManager.GetString("ConfigSet_DisableSelectIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 跳过DMM启动游戏 的本地化字符串。
         /// </summary>
         public static string ConfigSet_DMMLaunch {

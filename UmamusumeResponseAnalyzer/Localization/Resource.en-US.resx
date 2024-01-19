@@ -306,4 +306,7 @@
   <data name="ConfigSet_WriteAIInfo" xml:space="preserve">
     <value>Write turn stats for external plugins reading</value>
   </data>
+  <data name="ConfigSet_DisableSelectIndex" xml:space="preserve">
+    <value>Hide select_index</value>
+  </data>
 </root>
