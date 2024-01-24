@@ -1,10 +1,13 @@
 ﻿using Gallop;
+using MathNet.Numerics.RootFinding;
 using Spectre.Console;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Numerics;
 using UmamusumeResponseAnalyzer;
+using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer.Game
 {
@@ -47,6 +50,7 @@ namespace UmamusumeResponseAnalyzer.Game
         public LogValue Value;
         public int Turn = 0;
         public int StoryId = -1;
+        public ChoiceArray[]? ChoiceResult;  // 透视值
         public int Pt => Value.Pt;
         public int Vital => Value.Vital;
         public int Stats => Value.Stats;
@@ -57,6 +61,7 @@ namespace UmamusumeResponseAnalyzer.Game
         {
             Turn = ev.Turn;
             StoryId = ev.StoryId;
+            ChoiceResult = ev.ChoiceResult;
             Value = new LogValue
             {
                 Pt = ev.Pt,
@@ -80,6 +85,10 @@ namespace UmamusumeResponseAnalyzer.Game
         public static int CardEventCount = 0;   // 连续事件发生数
         public static int CardEventFinishCount = 0; // 连续事件完成数
         public static int CardEventFinishTurn = 0;  // 如果连续事件全走完，记录回合数
+        public static int SuccessEventCount = 0;    // 赌狗事件发生数
+        public static int SuccessEventSelectCount = 0;  // 赌的次数
+        public static int SuccessEventSuccessCount = 0; // 成功数
+        public static int CurrentScenario = 0;  // 记录当前剧本，用于判断成功事件
         public static List<int> InheritStats;   // 两次继承属性
 
         public static LogValue LastValue;   // 前一次调用时的总属性
@@ -103,6 +112,7 @@ namespace UmamusumeResponseAnalyzer.Game
             var totalValue = currentFiveValueRevised.Sum();
             var pt = @event.data.chara_info.skill_point;
             var vital = @event.data.chara_info.vital;
+            CurrentScenario = @event.data.chara_info.scenario_id;
             return new LogValue()
             {
                 Stats = totalValue,
@@ -140,6 +150,10 @@ namespace UmamusumeResponseAnalyzer.Game
             CardEventCount = 0;
             CardEventFinishTurn = 0;
             CardEventFinishCount = 0;
+            SuccessEventCount = 0;
+            SuccessEventSuccessCount = 0;
+            SuccessEventSelectCount = 0;
+            CurrentScenario = 0;
             IsStart = false;
         }
         // 开始记录属性变化
@@ -215,6 +229,38 @@ namespace UmamusumeResponseAnalyzer.Game
                 LastValue = currentValue;
                 LastEvent.Turn = @event.data.chara_info.turn;
                 LastEvent.StoryId = @event.data.unchecked_event_array.Count() > 0 ? @event.data.unchecked_event_array.First().story_id : -1;
+                LastEvent.ChoiceResult = @event.data.unchecked_event_array.Count() > 0 ? @event.data.unchecked_event_array.First().event_contents_info.choice_array : null;
+            }
+        }
+
+        // 当玩家选择选项时进行记录
+        public static void UpdatePlayerChoice(Gallop.SingleModeChoiceRequest @event)
+        {
+            int choiceIndex = @event.choice_number - 1;
+            if (LastEvent != null)
+            {
+                if (Database.SuccessEvent.TryGetValue(LastEvent.StoryId, out var successEvent)
+                        && successEvent.Choices.Length > choiceIndex
+                        && LastEvent.ChoiceResult != null) //是可以成功的事件，已在数据库中，已经记录到选项结果
+                {
+                    ++SuccessEventCount;
+                    // 判断当前选项是否有成功、失败的区别
+                    bool choiceCanSuccess = successEvent.Choices[choiceIndex].Any(x => x.State > 0 && x.State != State.None
+                        && (x.Scenario == 0 || x.Scenario == CurrentScenario));
+                    if (choiceCanSuccess)
+                    {
+                        ++SuccessEventSelectCount;
+                        int selectIndex = LastEvent.ChoiceResult[choiceIndex].select_index;    // 获得EventLogger之前记录的选项结果
+                        // 判断当前选项是否成功
+                        var choice = successEvent.Choices[choiceIndex].FirstOrDefault(
+                            x => x.SelectIndex == selectIndex && (x.Scenario == 0 || x.Scenario == CurrentScenario),
+                            new());
+                        if (choice.State > 0 && choice.State != State.None)
+                            ++SuccessEventSuccessCount; // 暂时不区分大成功
+                        AnsiConsole.MarkupLine($">> {choice.State}");
+                    }
+                    
+                }
             }
         }
     }

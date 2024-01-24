@@ -114,6 +114,10 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
+                    if (dyn.choice_number != null && dyn.choice_number > 0)  // 玩家点击了事件
+                    {
+                        Handlers.ParseChoiceRequest(dyn.ToObject<Gallop.SingleModeChoiceRequest>());
+                    }
                 }
             }
             catch (Exception e)
