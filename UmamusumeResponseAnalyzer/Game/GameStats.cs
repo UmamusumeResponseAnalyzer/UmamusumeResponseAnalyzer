@@ -362,7 +362,7 @@ namespace UmamusumeResponseAnalyzer.Game
                                           + $"，平均事件强度: [cyan]{EventLogger.AllEvents.Average(x => x.EventStrength):#.##}[/]"
                                           + $"，继承属性：[cyan]{string.Join('+', EventLogger.InheritStats)}[/]");
                     AnsiConsole.MarkupLine($"连续事件出现 [yellow]{EventLogger.CardEventCount}[/] 次，已走完 [yellow]{EventLogger.CardEventFinishCount}[/] 张卡。");
-                    AnsiConsole.MarkupLine($"本局出现了[yellow] {EventLogger.SuccessEventCount} [/]次赌狗事件，" +
+                    AnsiConsole.MarkupLine($"赌狗事件出现[yellow] {EventLogger.SuccessEventCount} [/]次，" +
                         $"赌了[yellow] {EventLogger.SuccessEventSelectCount}[/] 次，成功 [yellow]{EventLogger.SuccessEventSuccessCount}[/] 次");
                 }
             }
