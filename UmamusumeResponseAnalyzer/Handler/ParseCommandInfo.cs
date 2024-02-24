@@ -636,6 +636,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                                         LArcfriendAppear[trainIdx] = true;
                                         turnStat.larc_zuoyueAtTrain[trainIdx] = true;
                                         break;
+                                    case 30188 or 10104:    // 都留岐涼花
+                                        turnStat.uaf_friendAtTrain[trainIdx] = true;
+                                        break;
                                 }
                             }
                             else if (friendship < 80) // 羁绊不满80，无法触发友情训练标黄
