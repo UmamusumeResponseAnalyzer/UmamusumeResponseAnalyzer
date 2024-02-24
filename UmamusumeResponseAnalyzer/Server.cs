@@ -149,6 +149,10 @@ namespace UmamusumeResponseAnalyzer
                         {
                             data1.venus_data_set = data.venus_data_set;
                         }
+                        if (data.sport_data_set != null)
+                        {
+                            data1.sport_data_set = data.sport_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }
@@ -164,7 +168,12 @@ namespace UmamusumeResponseAnalyzer
                     if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
-                            Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                        {
+                            if (data.chara_info.scenario_id == 7)
+                                Handlers.ParseSportCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                            else
+                                Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                        }
                     }
                     if (dyn.data.command_result != null) // 训练结果
                     {
