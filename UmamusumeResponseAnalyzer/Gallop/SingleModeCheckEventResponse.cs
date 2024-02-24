@@ -40,6 +40,8 @@ namespace Gallop
             public SingleModeVenusDataSet venus_data_set;
             [Key("arc_data_set")] //LArc
             public SingleModeArcDataSet arc_data_set;
+            [Key("sport_data_set")]
+            public SingleModeSportDataSet sport_data_set;
         }
     }
     [MessagePackObject]
