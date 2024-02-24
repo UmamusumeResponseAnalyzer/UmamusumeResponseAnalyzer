@@ -23,6 +23,7 @@ namespace UmamusumeResponseAnalyzer
         MakeANewTrack = 4, //巅峰杯
         GrandMasters = 5,
         LArc = 6,
+        UAF = 7,
         Unknown = int.MaxValue
     }
     public static class Extensions

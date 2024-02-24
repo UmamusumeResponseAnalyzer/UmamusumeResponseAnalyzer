@@ -61,6 +61,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                     {
                         GameStats.stats[GameStats.currentTurn].larc_zuoyueEvent = 4;
                     }
+                    if (i.story_id == 809044002) // 凉花出门
+                    {
+                        GameStats.stats[GameStats.currentTurn].uaf_friendEvent = 5;
+                    }
+                    if (i.story_id == 809044003) // 凉花加体力
+                    {
+                        GameStats.stats[GameStats.currentTurn].uaf_friendEvent = 1;
+                    }
                 }
 
                 //收录在数据库中

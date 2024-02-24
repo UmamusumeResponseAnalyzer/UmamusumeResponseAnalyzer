@@ -1,4 +1,5 @@
 ﻿using Gallop;
+using MathNet.Numerics.Distributions;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -21,42 +22,44 @@ namespace UmamusumeResponseAnalyzer.Handler
             var gameYear = (turnNum - 1) / 24 + 1;
             var gameMonth = ((turnNum - 1) % 24) / 2 + 1;
             var halfMonth = (turnNum % 2 == 0) ? "后半" : "前半";
+
+            if (GameStats.currentTurn != turnNum - 1 //正常情况
+            && GameStats.currentTurn != turnNum //重复显示
+            && turnNum != 1 //第一个回合
+            )
             {
-                if (GameStats.currentTurn != turnNum - 1 //正常情况
-                && GameStats.currentTurn != turnNum //重复显示
-                && turnNum != 1 //第一个回合
-                )
-                {
-                    GameStats.isFullGame = false;
-                    AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
-                    EventLogger.Init();
-                }
-                else if (turnNum == 1)
-                {
-                    GameStats.isFullGame = true;
-                    EventLogger.Init();
-                }
-
-                //买技能，大师杯剧本年末比赛，会重复显示
-                var isRepeat = @event.data.chara_info.playing_state != 1;
-
-                //初始化TurnStats
-                if (isRepeat)
-                {
-                    AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
-                }
-                else
-                {
-                    GameStats.whichScenario = @event.data.chara_info.scenario_id;
-                    GameStats.currentTurn = turnNum;
-                    GameStats.stats[turnNum] = new TurnStats();
-                }
-
-                #region 事件监测
-                if (!isRepeat)
-                    EventLogger.Update(@event);
-                #endregion
+                GameStats.isFullGame = false;
+                AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
+                EventLogger.Init();
             }
+            else if (turnNum == 1)
+            {
+                GameStats.isFullGame = true;
+                EventLogger.Init();
+            }
+
+            //买技能，大师杯剧本年末比赛，会重复显示
+            var isRepeat = @event.data.chara_info.playing_state != 1;
+
+            //初始化TurnStats
+            if (isRepeat)
+            {
+                AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
+            }
+            else
+            {
+                GameStats.whichScenario = @event.data.chara_info.scenario_id;
+                GameStats.currentTurn = turnNum;
+                GameStats.stats[turnNum] = new TurnStats();
+            }
+
+            var turnStat = isRepeat ? new TurnStats() : GameStats.stats[turnNum];
+
+            #region 事件监测
+            if (!isRepeat)
+                EventLogger.Update(@event);
+            #endregion
+
             var currentFiveValue = new int[]
             {
                 @event.data.chara_info.speed,
@@ -222,6 +225,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                             {
                                 priority = PartnerPriority.友人;
                                 nameColor = $"[green]";
+
+                                switch (supportCards[partner])
+                                {
+                                    case 30188 or 10104:    // 都留岐涼花
+                                        turnStat.uaf_friendAtTrain[command-1] = true;
+                                        break;
+                                }
                             }
                             else if (friendship < 80) // 羁绊不满80，无法触发友情训练标黄
                             {
@@ -385,6 +395,45 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
                 extInfos.Add($"❗当前时期的运动等级最低为{nextRank}");
             }
+
+            //友人点了几次，来了几次
+            int friendClickedTimes = 0;
+            int friendChargedTimes = 0; //友人冲了几次体力
+
+            for (int turn = turnNum; turn >= 1; turn--)
+            {
+                if (GameStats.stats[turn] == null)
+                {
+                    break;
+                }
+
+                if (!GameGlobal.TrainIds.Any(x => x == GameStats.stats[turn].playerChoice)) //没训练
+                    continue;
+                if (GameStats.stats[turn].isTrainingFailed)//训练失败
+                    continue;
+                if (!GameStats.stats[turn].uaf_friendAtTrain[GameGlobal.ToTrainIndex[GameStats.stats[turn].playerChoice]])
+                    continue;//没点友人
+                if (GameStats.stats[turn].uaf_friendEvent == 5)//启动事件
+                    continue;//没点佐岳
+
+                friendClickedTimes += 1;
+                if (GameStats.stats[turn].uaf_friendEvent == 1 || GameStats.stats[turn].uaf_friendEvent == 2)
+                    friendChargedTimes += 1;
+            }
+
+            // 计算佐岳表现（分位数）
+            string friendPerformance = string.Empty;
+            if (friendClickedTimes > 1)
+            {
+                // (p(n<=k-1) + p(n<=k)) / 2
+                double bn = Binomial.CDF(0.4, friendClickedTimes, friendChargedTimes);
+                double bn_1 = Binomial.CDF(0.4, friendClickedTimes, friendChargedTimes - 1);
+                friendPerformance = $"，超过了[aqua]{(bn + bn_1) / 2 * 100:0}%[/]的凉花";
+            }
+
+            extInfos.Add($"共点了[aqua]{friendClickedTimes}[/]次凉花");
+            extInfos.Add($"加了[aqua]{friendChargedTimes}[/]次体力");
+            extInfos.Add(friendPerformance);
 
             layout["日期"].Update(new Panel($"{gameYear}年 {gameMonth}月{halfMonth}").Expand());
             layout["赛程倒计时"].Update(new Panel("占位-占位").Expand());

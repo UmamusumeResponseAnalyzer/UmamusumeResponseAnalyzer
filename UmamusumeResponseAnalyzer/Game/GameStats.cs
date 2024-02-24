@@ -66,6 +66,12 @@ namespace UmamusumeResponseAnalyzer.Game
         public int venus_venusTrain;//女神在哪个训练
         public bool venus_isVenusCountConcerned;//非情热，且无蓝女神
         public bool venus_venusEvent;//成功召唤出女神三选一事件
+
+        // UAF
+        // 凉花
+        public bool[] uaf_friendAtTrain; // 友人（凉花）是否在这个训练
+        public int uaf_friendEvent;
+
         public TurnStats()
         {
             isTraining = false;
@@ -93,6 +99,10 @@ namespace UmamusumeResponseAnalyzer.Game
             venus_venusTrain = -100;
             venus_isVenusCountConcerned = true;
             venus_venusEvent = false;
+
+            uaf_friendAtTrain = new bool[5];
+            for (int j = 0; j < 5; j++) uaf_friendAtTrain[j] = false;
+            uaf_friendEvent = 0;
         }
     }
     public static class GameStats
@@ -366,7 +376,39 @@ namespace UmamusumeResponseAnalyzer.Game
                         $"赌了[yellow] {EventLogger.SuccessEventSelectCount}[/] 次，成功 [yellow]{EventLogger.SuccessEventSuccessCount}[/] 次");
                 }
             }
+            if (whichScenario == (int)ScenarioType.UAF)
+            {
+
+                //友人点了几次，来了几次
+                int friendClickedTimes = 0;
+                int friendChargedTimes = 0; //友人冲了几次体力
+                
+                for (int turn = currentTurn; turn >= 1; turn--)
+                {
+                    if (stats[turn] == null)
+                    {
+                        break;
+                    }
+
+                    if (!GameGlobal.TrainIds.Any(x => x == stats[turn].playerChoice)) //没训练
+                        continue;
+                    if (stats[turn].isTrainingFailed)//训练失败
+                        continue;
+                    if (!stats[turn].uaf_friendAtTrain[GameGlobal.ToTrainIndex[stats[turn].playerChoice]])
+                        continue;//没点友人
+                    if (stats[turn].uaf_friendEvent == 5)//启动事件
+                        continue;//没点佐岳
+
+                    friendClickedTimes += 1;
+                    if (stats[turn].uaf_friendEvent == 1 || stats[turn].uaf_friendEvent == 2)
+                        friendChargedTimes += 1;
+                }
+
+                AnsiConsole.MarkupLine($"共点了[aqua]{friendClickedTimes}[/]次凉花，加了[aqua]{friendChargedTimes}[/]次体力");
+            }
         }
+        
+
     }
 
 }
