@@ -13,7 +13,7 @@ namespace Test
         static void Main()
         {
             Database.Initialize();
-            var bytes = File.ReadAllBytes(@"C:\Users\Lipi\AppData\Local\UmamusumeResponseAnalyzer\packets\23-11-28 08-15-17-525R.msgpack");
+            var bytes = File.ReadAllBytes(@"K:\repos\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\bin\x64\Debug\net8.0\packets\24-02-25 21-09-24-813R.bin");
             dynamic dyn = JObject.Parse(MessagePack.MessagePackSerializer.ConvertToJson(bytes)) ?? throw new Exception("反序列化失败");
             if (dyn.data.single_mode_load_common != null)
             {
@@ -25,6 +25,10 @@ namespace Test
                 if (dyn.data.venus_data_set != null)
                 {
                     data1.venus_data_set = dyn.data.venus_data_set;
+                }
+                if (dyn.data.sport_data_set != null)
+                {
+                    data1.sport_data_set = dyn.data.sport_data_set;
                 }
                 dyn.data = data1;
             }
@@ -69,7 +73,7 @@ namespace Test
                     ];
                 obj.data.chara_info.skill_array = [];
             }
-            Handlers.ParseSkillTipsResponse(obj);
+            Handlers.ParseSportCommandInfo(obj);
         }
     }
 }
