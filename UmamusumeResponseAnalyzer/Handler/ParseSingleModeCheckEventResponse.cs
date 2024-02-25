@@ -115,7 +115,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                             else if (originalChoice.SuccessEffect == "未知效果" && originalChoice.FailedEffect == "未知效果")
                                 tree.AddNode(MarkupText($"未知效果", State.None));
                             else
-                                tree.AddNode(MarkupText($"(成功时){originalChoice.SuccessEffect}{Environment.NewLine}(失败时){originalChoice.FailedEffect}{Environment.NewLine}", State.Fail));
+                                tree.AddNode($"[mediumspringgreen on #081129](成功时){originalChoice.SuccessEffect}[/]{Environment.NewLine}[#FF0050 on #081129](失败时){originalChoice.FailedEffect}[/]{Environment.NewLine}");
                         }
                         string MarkupText(string text, State state)
                         {

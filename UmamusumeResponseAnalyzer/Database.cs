@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
+using System.Collections.Frozen;
 using System.Text;
 using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Entities;
@@ -17,6 +18,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skill_data.br");
         internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talent_skill_sets.br");
         internal static string FACTOR_IDS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "factor_ids.br");
+        internal static string SKILL_UPGRADE_SPECIALITY_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skill_upgrade_speciality.br");
         internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>("本地化文件路径") ?? string.Empty;
         #endregion
         #region Properties
@@ -32,6 +34,10 @@ namespace UmamusumeResponseAnalyzer
         /// 技能
         /// </summary>
         public static SkillManagerGenerator Skills { get; private set; } = new SkillManagerGenerator([]);
+        /// <summary>
+        /// 剧本限定进化技能
+        /// </summary>
+        public static FrozenDictionary<int, SkillUpgradeSpeciality> SkillUpgradeSpeciality { get; private set; }
         /// <summary>
         /// 育成事件
         /// </summary>
@@ -97,6 +103,10 @@ namespace UmamusumeResponseAnalyzer
             {
                 Skills = new(skills);
                 SkillManagerGenerator.Default = new(skills);
+            }
+            if (TryDeserialize(SKILL_UPGRADE_SPECIALITY_FILEPATH, out var skillUpgradeSpeciality, x => x.ToObject<List<SkillUpgradeSpeciality>>()!))
+            {
+                SkillUpgradeSpeciality = skillUpgradeSpeciality.ToDictionary(x => x.BaseSkillId, x => x).ToFrozenDictionary();
             }
             if (TryDeserialize(TALENT_SKILLS_FILEPATH, out var talentSkill, x => x.ToObject<Dictionary<int, TalentSkillData[]>>()!))
             {

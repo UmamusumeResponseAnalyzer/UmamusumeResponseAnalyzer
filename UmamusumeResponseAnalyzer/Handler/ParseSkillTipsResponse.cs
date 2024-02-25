@@ -141,40 +141,80 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             #endregion
         }
-        public static bool ReplaceTalentSkillWithUpgradeSkill(Gallop.SingleModeCheckEventResponse @event, SkillManager skills, List<SkillData> tips, IEnumerable<TalentSkillData>? upgradableTalentSkills, List<SkillData>? willLearnSkills = null)
+        public static bool ReplaceTalentSkillWithUpgradeSkill(Gallop.SingleModeCheckEventResponse @event, SkillManager skillmanager, List<SkillData> tips, IEnumerable<TalentSkillData>? upgradableTalentSkills, List<SkillData>? willLearnSkills = null)
         {
-            if (upgradableTalentSkills == null) return false;
             var allTalentSkillUpgradable = true;
-            foreach (var upgradableSkill in upgradableTalentSkills)
+            var skills = @event.data.chara_info.skill_array.Select(x => SkillManagerGenerator.Default[x.skill_id]);
+            // 加入即将学习的技能(如果有)
+            if (willLearnSkills != null) skills = [.. skills, .. willLearnSkills];
+            if (upgradableTalentSkills != null)
             {
-                var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId); // 天赋技能在tips中的位置
-                if (notUpgradedIndex == -1) continue; // 如果没找到则说明已学会，不再需要
-                var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
-
-                // 判定不学习时是否能进化，有多个可进化技能时按第一个计算
-                if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, willLearnSkills))
+                foreach (var upgradableSkill in upgradableTalentSkills)
                 {
-                    var upgradedSkill = skills[upgradedSkillId].Clone();
-                    upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
-                    upgradedSkill.Cost = notUpgradedSkill.Cost;
+                    var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId); // 天赋技能在tips中的位置
+                    if (notUpgradedIndex == -1) continue; // 如果没找到则说明已学会，不再需要
+                    var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
 
-                    var inferior = notUpgradedSkill.Inferior;
-                    while (inferior != null)
+                    // 判定不学习时是否能进化，有多个可进化技能时按第一个计算
+                    if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, skills))
                     {
-                        // 学了下位技能，则减去下位技能的分数
-                        if (@event.data.chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
-                        {
-                            upgradedSkill.Grade -= inferior.Grade;
-                            break;
-                        }
-                        inferior = inferior.Inferior;
-                    }
+                        var upgradedSkill = skillmanager[upgradedSkillId].Clone();
+                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
+                        upgradedSkill.Cost = notUpgradedSkill.Cost;
 
-                    tips[notUpgradedIndex] = upgradedSkill;
+                        var inferior = notUpgradedSkill.Inferior;
+                        while (inferior != null)
+                        {
+                            // 学了下位技能，则减去下位技能的分数
+                            if (@event.data.chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
+                            {
+                                upgradedSkill.Grade -= inferior.Grade;
+                                break;
+                            }
+                            inferior = inferior.Inferior;
+                        }
+
+                        tips[notUpgradedIndex] = upgradedSkill;
+                    }
+                    else // 有技能不可进化，考虑学完技能之后再计算
+                    {
+                        allTalentSkillUpgradable = false;
+                    }
                 }
-                else // 有技能不可进化，考虑学完技能之后再计算
+            }
+            foreach (var i in Database.SkillUpgradeSpeciality.Keys)
+            {
+                var baseSkillId = i;
+                var spec = Database.SkillUpgradeSpeciality[baseSkillId];
+                // 如果不是对应剧本或没有可进化的基础技能的Hint
+                if (@event.data.chara_info.scenario_id != spec.ScenarioId || !skillmanager.TryGetValue(baseSkillId, out var _)) continue;
+                foreach (var j in spec.UpgradeSkills)
                 {
-                    allTalentSkillUpgradable = false;
+                    var upgradedSkillId = j.Key;
+                    if (j.Value.All(x => x.IsArchived(@event.data.chara_info, skills)))
+                    {
+                        var notUpgradedIndex = tips.FindIndex(x => x.Id == baseSkillId); // 天赋技能在tips中的位置
+                        if (notUpgradedIndex == -1) continue; // 如果没找到则说明已学会，不再需要
+                        var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
+
+                        var upgradedSkill = skillmanager[upgradedSkillId].Clone();
+                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
+                        upgradedSkill.Cost = notUpgradedSkill.Cost;
+
+                        var inferior = notUpgradedSkill.Inferior;
+                        while (inferior != null)
+                        {
+                            // 学了下位技能，则减去下位技能的分数
+                            if (@event.data.chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
+                            {
+                                upgradedSkill.Grade -= inferior.Grade;
+                                break;
+                            }
+                            inferior = inferior.Inferior;
+                        }
+                        tips[notUpgradedIndex] = upgradedSkill;
+                    }
+                    break;
                 }
             }
             return allTalentSkillUpgradable;

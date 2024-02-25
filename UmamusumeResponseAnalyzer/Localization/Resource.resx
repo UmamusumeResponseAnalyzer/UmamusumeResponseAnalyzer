@@ -309,4 +309,7 @@
   <data name="ConfigSet_DisableSelectIndex" xml:space="preserve">
     <value>隐藏SelectIndex</value>
   </data>
+  <data name="LaunchMenu_Update_DownloadSkillUpgradeSpecialityInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的skill_upgrade_speciality.br</value>
+  </data>
 </root>

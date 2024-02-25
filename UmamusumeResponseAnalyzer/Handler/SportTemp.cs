@@ -1,5 +1,6 @@
 ﻿using Gallop;
 using MathNet.Numerics.Distributions;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -81,6 +82,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             var commandInfoArray = @event.data.home_info.command_info_array.Where(x => x.command_id > 1000);
             var trains = @event.data.sport_data_set.training_array.Chunk(5).ToArray();
             var (blue, red, yellow) = (trains[0].Sum(x => x.sport_rank) % 50, trains[1].Sum(x => x.sport_rank) % 50, trains[2].Sum(x => x.sport_rank) % 50);
+            var blueFever = false;
+            var redFever = false;
+            var yellowFever = false;
 
             var currentVital = @event.data.chara_info.vital;
             var maxVital = @event.data.chara_info.max_vital;
@@ -170,8 +174,15 @@ namespace UmamusumeResponseAnalyzer.Handler
                     3 => Color.Yellow,
                 });
 
+                var currentStat = currentFiveValueRevised[command - 1];
+                var statUpToMax = fiveValueMaxRevised[command - 1] - currentFiveValueRevised[command - 1];
                 table.AddRow("当前:可获得");
-                table.AddRow($"{currentFiveValueRevised[command - 1]}:{fiveValueMaxRevised[command - 1] - currentFiveValueRevised[command - 1]}");
+                table.AddRow($"{currentStat}:{statUpToMax switch
+                {
+                    > 400 => $"{statUpToMax}",
+                    > 200 => $"[yellow]{statUpToMax}[/]",
+                    _ => $"[red]{statUpToMax}[/]"
+                }}");
                 table.AddRow(new Rule());
 
                 var afterVital = trainStats[command - 1].VitalGain + currentVital;
@@ -182,7 +193,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                     < 70 => $"体力:[yellow]{afterVital}[/]/{maxVital}",
                     _ => $"体力:[green]{afterVital}[/]/{maxVital}"
                 });
-                table.AddRow($"Lv{@event.data.chara_info.training_level_info_array.First(y => y.command_id == x.command_id).level}");
+                var trainLv = @event.data.chara_info.training_level_info_array.First(y => y.command_id == x.command_id).level;
+                var sportLv = @event.data.sport_data_set.training_array.First(y => y.command_id == x.command_id).sport_rank;
+                table.AddRow($"Lv{trainLv} | Sp{sportLv}");
                 table.AddRow(new Rule());
 
                 var stats = trainStats[command - 1];
@@ -192,16 +205,19 @@ namespace UmamusumeResponseAnalyzer.Handler
                 else
                     table.AddRow($"属:{score}|Pt:{stats.PtGain}");
                 var gotRank = @event.data.sport_data_set.command_info_array[command - 1].gain_sport_rank_array.Sum(x => x.gain_rank);
+                blueFever = (blue % 50 + gotRank) >= 50;
+                redFever = (red % 50 + gotRank) >= 50;
+                yellowFever = (yellow % 50 + gotRank) >= 50;
                 switch (color)
                 {
                     case 1:
-                        table.AddRow((blue % 50 + gotRank > 50) ? $"[blue]获得Rank:{gotRank}[/]" : $"获得Rank:{gotRank}");
+                        table.AddRow(blueFever ? $"[blue]获得Rank:{gotRank}[/]" : $"获得Rank:{gotRank}");
                         break;
                     case 2:
-                        table.AddRow((red % 50 + gotRank > 50) ? $"[red]获得Rank:{gotRank}[/]" : $"获得Rank:{gotRank}");
+                        table.AddRow(redFever ? $"[red]获得Rank:{gotRank}[/]" : $"获得Rank:{gotRank}");
                         break;
                     case 3:
-                        table.AddRow((yellow % 50 + gotRank > 50) ? $"[yellow]获得Rank:{gotRank}[/]" : $"获得Rank:{gotRank}");
+                        table.AddRow(yellowFever ? $"[yellow]获得Rank:{gotRank}[/]" : $"获得Rank:{gotRank}");
                         break;
                 }
                 table.AddRow(new Rule());
@@ -229,7 +245,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 switch (supportCards[partner])
                                 {
                                     case 30188 or 10104:    // 都留岐涼花
-                                        turnStat.uaf_friendAtTrain[command-1] = true;
+                                        turnStat.uaf_friendAtTrain[command - 1] = true;
                                         break;
                                 }
                             }
@@ -307,7 +323,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             grids.AddRow([.. commands]);
             layout["训练信息"].Update(grids);
 
-            if (@event.data.sport_data_set.item_id_array.Any(x => x == 6))
+            var haveTalk = @event.data.sport_data_set.item_id_array.Any(x => x == 6);
+            if (haveTalk)
             {
                 var groupByColorOrderByRank = @event.data.sport_data_set.command_info_array
                     .SelectMany(x => x.gain_sport_rank_array)
@@ -317,7 +334,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var nonBlue = groupByColorOrderByRank.FirstOrDefault(x => x.Key != '1');
                 var nonRed = groupByColorOrderByRank.FirstOrDefault(x => x.Key != '2');
                 var nonYellow = groupByColorOrderByRank.FirstOrDefault(x => x.Key != '3');
-                if (nonBlue != default)
+                if (!blueFever && nonBlue != default)
                 {
                     var totalRank = 0;
                     foreach (var i in nonBlue)
@@ -335,7 +352,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (blue + totalRank >= 50)
                         extInfos.Add($"✨{CharToColor(nonBlue.Key)}变[blue]蓝[/]可爆");
                 }
-                if (nonRed != default)
+                if (!redFever && nonRed != default)
                 {
                     var totalRank = 0;
                     foreach (var i in nonRed)
@@ -353,7 +370,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (red + totalRank >= 50)
                         extInfos.Add($"✨{CharToColor(nonRed.Key)}变[red]红[/]可爆");
                 }
-                if (nonYellow != default)
+                if (!yellowFever && nonYellow != default)
                 {
                     var totalRank = 0;
                     foreach (var i in nonYellow)
@@ -394,6 +411,38 @@ namespace UmamusumeResponseAnalyzer.Handler
                     extInfos.Add($"❗{color}色的{command}等级过低");
                 }
                 extInfos.Add($"❗当前时期的运动等级最低为{nextRank}");
+                if (haveTalk)
+                {
+                    var groupByColor = lowRankSports.GroupBy(x => int.Parse(x.command_id.ToString()[1].ToString())).OrderByDescending(x => x.Count());
+                    var requireRankGroup = groupByColor.FirstOrDefault();
+                    if (requireRankGroup?.Count() >= 2)
+                    {
+                        var requireRankColor = requireRankGroup.Key;
+                        var requireSportCmd = requireRankGroup.Select(x => int.Parse(x.command_id.ToString()[3].ToString()));
+                        var otherColorCommands = commandInfoArray.Select(x =>
+                        {
+                            var str = x.command_id.ToString();
+                            var color = int.Parse(str[1].ToString());
+                            var cmd = int.Parse(str[3].ToString());
+                            var gainRank = @event.data.sport_data_set.command_info_array[cmd - 1].gain_sport_rank_array.First(y => y.command_id == x.command_id).gain_rank;
+                            if (color != requireRankColor && requireSportCmd.Contains(cmd))
+                                return (color, cmd, gainRank);
+                            else
+                                return default;
+                        }).Where(x => x != default);
+                        if (otherColorCommands.Any())
+                        {
+                            var maxEffective = otherColorCommands
+                                .GroupBy(x => x.color)
+                                .OrderByDescending(x => x.Sum(y => y.gainRank))
+                                .FirstOrDefault();
+                            if (maxEffective != default)
+                            {
+                                extInfos.Add($"❗{IntToColor(maxEffective.Key)}转换为{IntToColor(requireRankColor)}为最大等级提升{maxEffective.Sum(y => y.gainRank)}");
+                            }
+                        }
+                    }
+                }
             }
 
             //友人点了几次，来了几次
@@ -455,6 +504,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                     '1' => "[blue]蓝[/]",
                     '2' => "[red]红[/]",
                     '3' => "[yellow]黄[/]"
+                };
+            static string IntToColor(int i) =>
+                i switch
+                {
+                    1 => "[blue]蓝[/]",
+                    2 => "[red]红[/]",
+                    3 => "[yellow]黄[/]"
                 };
         }
     }

@@ -119,6 +119,9 @@ namespace UmamusumeResponseAnalyzer
                     var factorIdTask = Download(ctx, Resource.LaunchMenu_Update_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH);
                     tasks.Add(factorIdTask);
 
+                    var skillUpgradeSpecialityTask = Download(ctx, Resource.LaunchMenu_Update_DownloadSkillUpgradeSpecialityInstruction, Database.SKILL_UPGRADE_SPECIALITY_FILEPATH);
+                    tasks.Add(skillUpgradeSpecialityTask);
+
                     await Task.WhenAll(tasks);
                 });
             AnsiConsole.MarkupLine(Resource.LaunchMenu_Update_DownloadedInstruction);

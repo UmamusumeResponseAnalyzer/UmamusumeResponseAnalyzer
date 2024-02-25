@@ -511,6 +511,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 正在从GitHub下载最新的skill_upgrade_speciality.br 的本地化字符串。
+        /// </summary>
+        public static string LaunchMenu_Update_DownloadSkillUpgradeSpecialityInstruction {
+            get {
+                return ResourceManager.GetString("LaunchMenu_Update_DownloadSkillUpgradeSpecialityInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 正在从GitHub下载最新的successevents.br 的本地化字符串。
         /// </summary>
         public static string LaunchMenu_Update_DownloadSuccessEventsInstruction {

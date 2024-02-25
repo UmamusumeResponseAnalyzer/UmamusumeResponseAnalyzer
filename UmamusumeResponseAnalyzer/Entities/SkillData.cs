@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static UmamusumeResponseAnalyzer.Entities.TalentSkillData;
 
 namespace UmamusumeResponseAnalyzer.Entities
 {
@@ -134,7 +135,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// <param name="upgradedSkillId">存在可进化的技能时为对应的技能ID(存在多个可进化的技能时为第一个)，否则为default</param>
         /// <param name="willLearnSkills">部分条件需要学习指定技能才能达成，传入的是额外纳入计算的技能</param>
         /// <returns></returns>
-        public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId, IEnumerable<SkillData>? willLearnSkills)
+        public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId,IEnumerable<SkillData> skills)
         {
             upgradedSkillId = default;
             // 不存在技能进化信息时直接返回，是针对繁中服的兼容性判断
@@ -152,10 +153,6 @@ namespace UmamusumeResponseAnalyzer.Entities
                 upgradedSkillId = UpgradeSkills.Keys.First();
                 return true;
             }
-
-            var skills = chara_info.skill_array.Select(x => SkillManagerGenerator.Default[x.skill_id]);
-            // 加入需要额外考虑的技能(如果有)
-            if (willLearnSkills != null) skills = [.. skills, .. willLearnSkills];
 
             // 依次判断，返回第一个可进化的
             foreach (var i in UpgradeSkills)
@@ -279,5 +276,12 @@ namespace UmamusumeResponseAnalyzer.Entities
                 Stat
             }
         }
+    }
+    public class SkillUpgradeSpeciality
+    {
+        public int ScenarioId;
+        public int BaseSkillId;
+        public int SkillId;
+        public Dictionary<int, UpgradeCondition[]> UpgradeSkills = new();
     }
 }

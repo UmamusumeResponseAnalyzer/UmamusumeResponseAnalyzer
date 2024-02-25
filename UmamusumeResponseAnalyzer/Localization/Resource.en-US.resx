@@ -154,10 +154,10 @@
     <value>Download completed</value>
   </data>
   <data name="LaunchMenu_Update_DownloadEventsInstruction" xml:space="preserve">
-    <value>Downloading events.json from GitHub</value>
+    <value>Downloading events.br from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_DownloadSuccessEventsInstruction" xml:space="preserve">
-    <value>Downloading successevents.json from GitHub</value>
+    <value>Downloading successevents.br from GitHub</value>
   </data>
   <data name="LaunchMenu_Start_Checking" xml:space="preserve">
     <value>[yellow]Check if umamusume.exe is running[/]</value>
@@ -193,7 +193,7 @@
     <value>ParseRoomMatchRaceStartResponse</value>
   </data>
   <data name="LaunchMenu_Update_DownloadNamesInstruction" xml:space="preserve">
-    <value>Downloading names.json from GitHub</value>
+    <value>Downloading names.br from GitHub</value>
   </data>
   <data name="LaunchMenu_Update_DownloadProgramInstruction" xml:space="preserve">
     <value>Downloading program from GitHub</value>
@@ -205,7 +205,7 @@
     <value>Newer version of program not found</value>
   </data>
   <data name="LaunchMenu_Update_DownloadSkillDataInstruction" xml:space="preserve">
-    <value>Downloading skilldata.json from GitHub</value>
+    <value>Downloading skilldata.br from GitHub</value>
   </data>
   <data name="ConfigSet_MaximiumGradeSkillRecommendation" xml:space="preserve">
     <value>MaximiumGradeSkillRecommendation</value>
@@ -308,5 +308,8 @@
   </data>
   <data name="ConfigSet_DisableSelectIndex" xml:space="preserve">
     <value>Hide select_index</value>
+  </data>
+  <data name="LaunchMenu_Update_DownloadSkillUpgradeSpecialityInstruction" xml:space="preserve">
+    <value>Downloading skill_upgrade_speciality.br from GitHub</value>
   </data>
 </root>
