@@ -217,11 +217,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             });
             grids.AddRow([.. commands]);
             layout["训练信息"].Update(grids);
+            if (turn.IsRankGainIncreased)
+                critInfos.Add("❗当前有项目等级加成");
 
             if (turn.AvailableTalkCount > 0)
             {
-                if (turn.IsRankGainIncreased)
-                    critInfos.Add("❗当前有项目等级加成");
                 if (turn.Turn % 12 >= 9)
                     critInfos.Add("❗请及时使用相谈");
                 // 每种颜色按最大获得Rank排序
