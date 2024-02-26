@@ -39,6 +39,8 @@ namespace UmamusumeResponseAnalyzer.Handler {
             int is_blue_boom = 0; //红黄蓝爆了吗
             int total_training_effect = 0;//总训练加成
             string all_equipment_lvl = ""; //全体设施等级
+            string all_trains = "";//所有训练
+       
             int[] equip_color=new int[5];//每个训练颜色
             int[] equip_lvl=new int[5];//每个训练等级
             List<string> headers = new List<string>();//训练头部
@@ -203,12 +205,12 @@ namespace UmamusumeResponseAnalyzer.Handler {
                             if (shouldshining)
                             {
                                 localshining += 1;
-                                shining += $" {name}:1";
+                                //shining += $" {cards[a]}";
                             }
-                            else
-                            {
-                                shining += $"{name}:0";
-                            }
+                           
+                            
+                                shining += $" {cards[a]}";
+                            
                         }
                     }
                 }
@@ -226,19 +228,19 @@ namespace UmamusumeResponseAnalyzer.Handler {
                 switch(Convert.ToInt32(item.command_id)%10)
                 {
                     case 1:
-                        header += "速 ";
+                        header += "1: ";
                         break;
                     case 2:
-                        header += "耐 ";
+                        header += "2: ";
                         break;
                     case 3:
-                        header += "力 ";
+                        header += "3: ";
                         break;
                     case 4:
-                        header += "根 ";
+                        header += "4: ";
                         break;
                     case 5:
-                        header += "智 ";
+                        header += "5: ";
                         break;
                 }
                 //颜色
@@ -289,24 +291,39 @@ namespace UmamusumeResponseAnalyzer.Handler {
                 localuppervalue += "]";
                 upper_val.Add(localuppervalue);
             }
+            //数值极其上限
+            var value_now = @event.data.chara_info;
+            all_trains += $" {value_now.speed}";
+            all_trains += $" {value_now.stamina}";
+            all_trains += $" {value_now.power}";
+            all_trains += $" {value_now.guts}";
+            all_trains += $" {value_now.wiz}";
+            all_trains += $" {value_now.max_speed}";
+            all_trains += $" {value_now.max_stamina}";
+            all_trains += $" {value_now.max_power}";
+            all_trains += $" {value_now.max_guts}";
+            all_trains += $" {value_now.max_wiz}";
             //组装
             UAFLog += $"{lh_pos}{yms_pos}{qc_pos}";
             UAFLog += $" {is_blue_boom}{is_red_boom}{is_yellow_boom}";
             UAFLog += $" {total_training_effect}";
-            UAFLog += all_equipment_lvl + " ";
+            UAFLog += all_equipment_lvl;
+            UAFLog += all_trains + " ";
+            string lianghualog = $"{turn} ";
             for (int i = 0; i < 5; i++)
             {
                 UAFLog += headers[i] + " ";
                 UAFLog += upper_val[i] + " ";
                 UAFLog += lower_val[i] + " ";
                 UAFLog += $"{training_colorful_num[i]} ";
-                UAFLog += training_colorful_list[i] + " ";
+                lianghualog += training_colorful_list[i] + " ";
             }
             //System.Console.WriteLine(UAFLog);
             var is_regular = @event.data.chara_info.playing_state == 1;
             var is_race = @event.data.chara_info.playing_state == 2;
             var is_uaf = (!is_regular && !is_race);
             UAFLog += "\n";
+            lianghualog += "\n";
             if (is_regular)
             {
                 File.AppendAllText(regular_path, UAFLog);
@@ -331,7 +348,7 @@ namespace UmamusumeResponseAnalyzer.Handler {
                 var friendship = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == lh_id).evaluation;
                 if (friendship >= 60 && is_regular)
                 {
-                    File.AppendAllText(lhdir, UAFLog);
+                    File.AppendAllText(lhdir, lianghualog);
                 }
                 else if (friendship <60)
                 {
