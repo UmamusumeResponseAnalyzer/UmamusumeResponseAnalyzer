@@ -19,7 +19,20 @@ namespace UmamusumeResponseAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">唯一ID，CharaId及CardId均可。</param>
+        /// <returns>10x为各剧本的NPC<c>BaseName</c><br/>
+        /// CharaId为人物<c>BaseName</c><br/>
+        /// CardId则为S卡<c>SupportCardName</c>或角色<c>UmaName</c></returns>
         public string this[int id] => GetSimpleName(id);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">唯一ID，CharaId及CardId均可。</param>
+        /// <returns>10x为各剧本的NPC<c>BaseName</c><br/>
+        /// 其他则为人物<c>BaseName</c></returns>
         public BaseName GetCharacter(int id) => names.TryGetValue(id, out BaseName? value) ? value : nullBaseName;
         public SupportCardName GetSupportCard(int id)
         {

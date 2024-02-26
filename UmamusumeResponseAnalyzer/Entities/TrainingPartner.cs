@@ -23,6 +23,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         public string Name { get; }
         public int Friendship { get; }
         public bool IsArcPartner { get; }
+        public bool IsNpc => Position is not (>= 1 and <= 6);
         public string NameColor { get; } = "[#ffffff]";
         public string NameAppend { get; } = string.Empty;
         public bool Shining { get; } = false;
@@ -32,7 +33,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             Position = partner;
             Friendship = turn.Evaluations[Position].evaluation;
             //IsArcPartner = turn.IsScenario(ScenarioType.LArc, out TurnInfoArc arcTurn) && (partner is > 1000 || (partner is >= 1 and <= 7)) && arcTurn.EvaluationInfoArray.Any(x => x.target_id == partner);
-            if (Position is >= 1 and <= 7) // 自己带的S卡
+            if (!IsNpc) // 自己带的S卡
             {
                 CardId = turn.SupportCards[Position];
                 Name = Database.Names.GetSupportCard(CardId).Nickname.EscapeMarkup();

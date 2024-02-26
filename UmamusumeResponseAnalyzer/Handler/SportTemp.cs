@@ -19,8 +19,21 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseSportCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
-            var layout = new Layout().SplitColumns(new Layout("Main").SplitRows(new Layout("体力干劲条").SplitColumns(new Layout("日期").Ratio(4), new Layout("赛程倒计时").Ratio(3), new Layout("体力").Ratio(9), new Layout("干劲").Ratio(3)), new Layout("分割", new Rule()).Size(1), new Layout("训练信息").Ratio(9)).Ratio(4), new Layout("Ext").Ratio(1));
+            var layout = new Layout().SplitColumns(
+                new Layout("Main").SplitRows(
+                    new Layout("体力干劲条").SplitColumns(
+                        new Layout("日期").Ratio(4),
+                        new Layout("赛程倒计时").Ratio(3),
+                        new Layout("体力").Ratio(9),
+                        new Layout("干劲").Ratio(3)).Size(3),
+                    new Layout("重要信息").Size(5),
+                    new Layout("分割", new Rule()).Size(1),
+                    new Layout("训练信息")
+                    ).Ratio(4),
+                new Layout("Ext").Ratio(1)
+                );
             var extInfos = new List<string>();
+            var critInfos = new List<string>();
             var turn = new TurnInfoUAF(@event.data);
 
             if (GameStats.currentTurn != turn.Turn - 1 //正常情况
@@ -29,7 +42,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 )
             {
                 GameStats.isFullGame = false;
-                AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turn.Turn}[/]");
+                critInfos.Add($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turn.Turn}[/]");
                 EventLogger.Init();
             }
             else if (turn.Turn == 1)
@@ -41,7 +54,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             //买技能，大师杯剧本年末比赛，会重复显示
             if (@event.data.chara_info.playing_state != 1)
             {
-                AnsiConsole.MarkupLine($"[yellow]******此回合为重复显示******[/]");
+                critInfos.Add($"[yellow]******此回合为重复显示******[/]");
             }
             else
             {
@@ -106,7 +119,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             var grids = new Grid();
             grids.AddColumns(5);
-            var maxColor = turn.SportsByColor.MaxBy(x => x.Value.Count);
+            var maxColor = turn.CommandInfoArray.GroupBy(x => x.Color).MaxBy(x => x.Count())?.Key;
 
             var failureRateStr = new string[5];
             //失败率>=40%标红、>=20%(有可能大失败)标DarkOrange、>0%标黄
@@ -200,66 +213,68 @@ namespace UmamusumeResponseAnalyzer.Handler
                     table.AddRow(string.Empty);
                 }
 
-                return new Padder(table).Padding(0, command.Color != maxColor.Key ? 0 : 1, 0, 0);
+                return new Padder(table).Padding(0, command.Color == maxColor ? 0 : 1, 0, 0);
             });
             grids.AddRow([.. commands]);
             layout["训练信息"].Update(grids);
 
             if (turn.AvailableTalkCount > 0)
             {
+                if (turn.IsRankGainIncreased)
+                    critInfos.Add("❗当前有项目等级加成");
                 if (turn.Turn % 12 >= 9)
-                    extInfos.Add("❗请及时使用相谈");
+                    critInfos.Add("❗请及时使用相谈");
                 // 每种颜色按最大获得Rank排序
                 var groupByColorOrderByRank = turn.CommandInfoArray
                     .GroupBy(x => x.Color)
                     .OrderByDescending(x => x.Sum(y => y.GainRank));
-                // 排除本身的颜色后，First()即是升级最多的那个
-                var nonBlue = groupByColorOrderByRank.FirstOrDefault(x => x.Key != SportColor.Blue);
-                var nonRed = groupByColorOrderByRank.FirstOrDefault(x => x.Key != SportColor.Red);
-                var nonYellow = groupByColorOrderByRank.FirstOrDefault(x => x.Key != SportColor.Yellow);
-                if (!blueFever && nonBlue != default)
+                foreach (var i in groupByColorOrderByRank.Where(x => x.Key != SportColor.Blue)) // Color,ParsedCommandInfo
                 {
-                    // 加上本来就有的训练的等级
-                    var totalRank = turn.CommandInfoArray.Where(x => x.Color == SportColor.Blue).Sum(x => x.GainRank);
-                    foreach (var i in nonBlue)
+                    var totalRank = turn.CommandInfoArray.Where(x => x.Color == SportColor.Blue).FirstOrDefault()?.TotalGainRank ?? 0;
+                    foreach (var j in i)
                     {
-                        var changed = turn.TrainingArray.First(x => x.CommandId == int.Parse($"210{i.CommandId % 10}"));
-                        // 等级上限100，超过的要抹去
-                        if (changed.SportRank + i.GainRank > 100)
-                            totalRank += 100 - i.GainRank;
+                        var changed = turn.TrainingArray.First(x => x.CommandId == int.Parse($"210{j.CommandId % 10}"));
+                        if (changed.SportRank + j.ActualGainRank >= 100)
+                            totalRank += 100 - changed.SportRank;
                         else
-                            totalRank += i.GainRank;
+                            totalRank += j.ActualGainRank;
                     }
                     if ((turn.BlueLevel % 50) + totalRank >= 50)
-                        extInfos.Add($"✨{ColorToMarkup(nonBlue.Key)}变[blue]蓝[/]可爆");
-                }
-                if (!redFever && nonRed != default)
-                {
-                    var totalRank = turn.CommandInfoArray.Where(x => x.Color == SportColor.Red).Sum(x => x.GainRank);
-                    foreach (var i in nonRed)
                     {
-                        var changed = turn.TrainingArray.First(x => x.CommandId == int.Parse($"220{i.CommandId % 10}"));
-                        if (changed.SportRank + i.GainRank > 100)
-                            totalRank += 100 - i.GainRank;
+                        extInfos.Add($"✨{ColorToMarkup(i.Key)}变[blue]蓝[/]可爆");
+                    }
+                }
+                foreach (var i in groupByColorOrderByRank.Where(x => x.Key != SportColor.Red)) // Color,ParsedCommandInfo
+                {
+                    var totalRank = turn.CommandInfoArray.Where(x => x.Color == SportColor.Red).FirstOrDefault()?.TotalGainRank ?? 0;
+                    foreach (var j in i)
+                    {
+                        var changed = turn.TrainingArray.First(x => x.CommandId == int.Parse($"220{j.CommandId % 10}"));
+                        if (changed.SportRank + j.ActualGainRank >= 100)
+                            totalRank += 100 - changed.SportRank;
                         else
-                            totalRank += i.GainRank;
+                            totalRank += j.ActualGainRank;
                     }
                     if ((turn.RedLevel % 50) + totalRank >= 50)
-                        extInfos.Add($"✨{ColorToMarkup(nonRed.Key)}变[red]红[/]可爆");
-                }
-                if (!yellowFever && nonYellow != default)
-                {
-                    var totalRank = turn.CommandInfoArray.Where(x => x.Color == SportColor.Yellow).Sum(x => x.GainRank);
-                    foreach (var i in nonYellow)
                     {
-                        var changed = turn.TrainingArray.First(x => x.CommandId == int.Parse($"230{i.CommandId % 10}"));
-                        if (changed.SportRank + i.GainRank > 100)
-                            totalRank += 100 - i.GainRank;
+                        extInfos.Add($"✨{ColorToMarkup(i.Key)}变[red]红[/]可爆");
+                    }
+                }
+                foreach (var i in groupByColorOrderByRank.Where(x => x.Key != SportColor.Yellow)) // Color,ParsedCommandInfo
+                {
+                    var totalRank = turn.CommandInfoArray.Where(x => x.Color == SportColor.Yellow).FirstOrDefault()?.TotalGainRank ?? 0;
+                    foreach (var j in i)
+                    {
+                        var changed = turn.TrainingArray.First(x => x.CommandId == int.Parse($"230{j.CommandId % 10}"));
+                        if (changed.SportRank + j.ActualGainRank >= 100)
+                            totalRank += 100 - changed.SportRank;
                         else
-                            totalRank += i.GainRank;
+                            totalRank += j.ActualGainRank;
                     }
                     if ((turn.YellowLevel % 50) + totalRank >= 50)
-                        extInfos.Add($"✨{ColorToMarkup(nonYellow.Key)}变[yellow]黄[/]可爆");
+                    {
+                        extInfos.Add($"✨{ColorToMarkup(i.Key)}变[yellow]黄[/]可爆");
+                    }
                 }
             }
             var nextRank = turn.Turn switch
@@ -366,6 +381,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 2 => "[red]不调↘️[/]",
                 1 => "[red]绝不调↓[/]"
             }).Expand());
+            layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
             AnsiConsole.Write(layout);
 
