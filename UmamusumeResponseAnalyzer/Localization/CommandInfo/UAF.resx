@@ -118,43 +118,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="I18N_WrongTurnAlert" xml:space="preserve">
-    <value>[red]Warning: Incorrect number of rounds, the previous round was {0}, the current round is {1}[/]</value>
+    <value>[red]Warning: Incorrect turn, the previous turn was {0}, the current turn is {1}[/]</value>
   </data>
   <data name="I18N_RepeatTurn" xml:space="preserve">
-    <value>[yellow]This round is a duplicate display[/]</value>
+    <value>[yellow]This turn is a duplicate display[/]</value>
   </data>
   <data name="I18N_MinimumSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:The minimum sports grade for the current period is {0}</value>
+    <value>:red_exclamation_mark:The minimum sports rank for the current period is {0}</value>
   </data>
   <data name="I18N_BestEffectiveTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:Converting {0} to {1} for the maximum grade increase of {2}</value>
+    <value>:red_exclamation_mark:{0} to {1} for the maximum rank of {2}</value>
   </data>
   <data name="I18N_ActualBestEffectiveTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:Converting {0} to {1} for the maximum grade increase of {2}{3} actual effective increase is {4}</value>
+    <value>:red_exclamation_mark:{0} to {1} for the rank of {2}{3} actual effective is {4}</value>
   </data>
   <data name="I18N_BestEffectiveWithoutTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:Without discussions, {0} for the maximum grade increase of {1}</value>
+    <value>:red_exclamation_mark:Without talk, {0} for the maximum rank of {1}</value>
   </data>
   <data name="I18N_MoritaTrained" xml:space="preserve">
-    <value>Clicked [aqua]{0}[/] times on Suzuka</value>
+    <value>Clicked [aqua]{0}[/] times on Morita</value>
   </data>
   <data name="I18N_MoritaVitalGainTimes" xml:space="preserve">
-    <value>Added [aqua]{0}[/] stamina</value>
+    <value>Recover vital [aqua]{0}[/] times</value>
   </data>
   <data name="I18N_MoritaRanking" xml:space="preserve">
-    <value>, exceeded [aqua]{0}%[/] of Suzuka</value>
+    <value>, exceeded [aqua]{0}%[/] of Morita</value>
   </data>
   <data name="I18N_CurrentRemainStat" xml:space="preserve">
     <value>Current: Available</value>
   </data>
   <data name="I18N_RankGain" xml:space="preserve">
-    <value>Achieved Rank</value>
+    <value>Gain Rank</value>
   </data>
   <data name="I18N_RankGainIncreased" xml:space="preserve">
-    <value>:red_exclamation_mark:Current project has grade bonus</value>
+    <value>:red_exclamation_mark:Current has rank bonus</value>
   </data>
   <data name="I18N_RememberUseTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:Please use discussions in time</value>
+    <value>:red_exclamation_mark:Please use talk in time</value>
   </data>
   <data name="I18N_TalkToGetBlueBuff" xml:space="preserve">
     <value>:sparkles:{0} turns [blue]blue[/] can burst</value>
@@ -166,6 +166,6 @@
     <value>:sparkles:{0} turns [yellow]yellow[/] can burst</value>
   </data>
   <data name="I18N_LowSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:The {0} color of {1}'s grade is too low</value>
+    <value>:red_exclamation_mark:{0} of {1}'s rank low</value>
   </data>
 </root>

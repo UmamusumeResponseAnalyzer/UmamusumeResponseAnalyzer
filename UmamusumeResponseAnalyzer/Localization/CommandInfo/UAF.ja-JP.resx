@@ -118,54 +118,54 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="I18N_WrongTurnAlert" xml:space="preserve">
-    <value>[red]警告：ラウンド数が正しくありません。前のラウンドは{0}、現在のラウンドは{1}です[/]</value>
+    <value>[red]警告：ターン数が正しくありません。前のターンは{0}、現在のターンは{1}です[/]</value>
   </data>
   <data name="I18N_RepeatTurn" xml:space="preserve">
-    <value>[yellow]このラウンドは重複して表示されます[/]</value>
+    <value>[yellow]このターンは重複して表示されます[/]</value>
   </data>
   <data name="I18N_MinimumSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:現在の時期の運動レベルの最低は{0}です</value>
+    <value>:red_exclamation_mark:現在の時期の運動Lvの最低は{0}</value>
   </data>
   <data name="I18N_BestEffectiveTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:{0}から{1}への変換で最大レベルアップは{2}です</value>
+    <value>:red_exclamation_mark:{0}から{1}への変換で最大LvlUpは{2}</value>
   </data>
   <data name="I18N_ActualBestEffectiveTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:{0}から{1}への変換で最大レベルアップは{2}{3}、実際の有効なアップグレードは{4}です</value>
+    <value>:red_exclamation_mark:{0}から{1}への変換で最大LvlUpは{2}{3}、実際の有効は{4}</value>
   </data>
   <data name="I18N_BestEffectiveWithoutTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:話し合いがない場合、{0}への変換で最大レベルアップは{1}です</value>
+    <value>:red_exclamation_mark:相談がない場合、{0}は最大LvlUp{1}</value>
   </data>
   <data name="I18N_MoritaTrained" xml:space="preserve">
-    <value>凉花を[aqua]{0}[/]回タップしました</value>
+    <value>凉花を[aqua]{0}[/]回タップ</value>
   </data>
   <data name="I18N_MoritaVitalGainTimes" xml:space="preserve">
-    <value>体力を[aqua]{0}[/]回追加しました</value>
+    <value>体力を[aqua]{0}[/]回回復</value>
   </data>
   <data name="I18N_MoritaRanking" xml:space="preserve">
-    <value>凉花の[aqua]{0}%[/]を超えました</value>
+    <value>凉花の[aqua]{0}%[/]を超え</value>
   </data>
   <data name="I18N_CurrentRemainStat" xml:space="preserve">
     <value>現在：可能</value>
   </data>
   <data name="I18N_RankGain" xml:space="preserve">
-    <value>Rankを獲得</value>
+    <value>獲得Rank</value>
   </data>
   <data name="I18N_RankGainIncreased" xml:space="preserve">
-    <value>:red_exclamation_mark:現在、プロジェクトレベルのボーナスがあります</value>
+    <value>:red_exclamation_mark:現在、SportRankのボーナスがあります</value>
   </data>
   <data name="I18N_RememberUseTalk" xml:space="preserve">
-    <value>:red_exclamation_mark:話し合いをすぐに使用してください</value>
+    <value>:red_exclamation_mark:相談をすぐに使用してください</value>
   </data>
   <data name="I18N_TalkToGetBlueBuff" xml:space="preserve">
-    <value>:sparkles:{0}が[blue]青[/]に変わると爆発します</value>
+    <value>:sparkles:{0}が[blue]青[/]に変わると爆発</value>
   </data>
   <data name="I18N_TalkToGetRedBuff" xml:space="preserve">
-    <value>:sparkles:{0}が[red]赤[/]に変わると爆発します</value>
+    <value>:sparkles:{0}が[red]赤[/]に変わると爆発</value>
   </data>
   <data name="I18N_TalkToGetYellowBuff" xml:space="preserve">
-    <value>:sparkles:{0}が[yellow]黄[/]に変わると爆発します</value>
+    <value>:sparkles:{0}が[yellow]黄[/]に変わると爆発</value>
   </data>
   <data name="I18N_LowSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:{0}色の{1}レベルが低すぎます</value>
+    <value>:red_exclamation_mark:{0}色の{1}Lvが低</value>
   </data>
 </root>

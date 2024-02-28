@@ -181,12 +181,45 @@
     <value>绝不调</value>
   </data>
   <data name="I18N_Blue" xml:space="preserve">
-    <value>红</value>
+    <value>蓝</value>
   </data>
   <data name="I18N_Red" xml:space="preserve">
-    <value>蓝</value>
+    <value>红</value>
   </data>
   <data name="I18N_Yellow" xml:space="preserve">
     <value>黄</value>
+  </data>
+  <data name="I18N_Proper" xml:space="preserve">
+    <value>适性</value>
+  </data>
+  <data name="I18N_Dirt" xml:space="preserve">
+    <value>泥</value>
+  </data>
+  <data name="I18N_Grass" xml:space="preserve">
+    <value>芝</value>
+  </data>
+  <data name="I18N_Short" xml:space="preserve">
+    <value>短</value>
+  </data>
+  <data name="I18N_Mile" xml:space="preserve">
+    <value>英</value>
+  </data>
+  <data name="I18N_Middle" xml:space="preserve">
+    <value>中</value>
+  </data>
+  <data name="I18N_Long" xml:space="preserve">
+    <value>长</value>
+  </data>
+  <data name="I18N_Nige" xml:space="preserve">
+    <value>逃</value>
+  </data>
+  <data name="I18N_Senko" xml:space="preserve">
+    <value>先</value>
+  </data>
+  <data name="I18N_Sashi" xml:space="preserve">
+    <value>差</value>
+  </data>
+  <data name="I18N_Oikomi" xml:space="preserve">
+    <value>追</value>
   </data>
 </root>

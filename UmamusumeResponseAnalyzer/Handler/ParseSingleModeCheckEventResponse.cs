@@ -76,7 +76,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var originalChoice = new Choice();
                         if (story.Choices.Count < (j + 1))
                         {
-                            originalChoice.Option = I18N_UnknownOption;
+                            originalChoice.Option = string.Format(I18N_UnknownOption, i.event_contents_info.choice_array[j].select_index);
                             originalChoice.SuccessEffect = I18N_UnknownEffect;
                             originalChoice.FailedEffect = I18N_UnknownEffect;
                         }

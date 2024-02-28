@@ -1,4 +1,5 @@
 ﻿using System.Collections.Frozen;
+using static UmamusumeResponseAnalyzer.Localization.Game;
 
 namespace UmamusumeResponseAnalyzer.Game
 {
@@ -66,32 +67,32 @@ namespace UmamusumeResponseAnalyzer.Game
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> TrainNames = new Dictionary<int, string>
         {
-            { 101, "速" },
-            { 105, "耐" },
-            { 102, "力" },
-            { 103, "根" },
-            { 106, "智" }
+            { 101, I18N_SpeedSimple },
+            { 105, I18N_StaminaSimple },
+            { 102, I18N_PowerSimple },
+            { 103, I18N_NutsSimple },
+            { 106, I18N_WizSimple }
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> GrandMastersSpiritNamesColored = new Dictionary<int, string>
         {
-            { 1, "[red]速[/]" },
-            { 2, "[red]耐[/]" },
-            { 3, "[red]力[/]" },
-            { 4, "[red]根[/]" },
-            { 5, "[red]智[/]" },
-            { 6, "[red]星[/]" },
-            { 9, "[blue]速[/]" },
-            { 10, "[blue]耐[/]" },
-            { 11, "[blue]力[/]" },
-            { 12, "[blue]根[/]" },
-            { 13, "[blue]智[/]" },
-            { 14, "[blue]星[/]" },
-            { 17, "[yellow]速[/]" },
-            { 18, "[yellow]耐[/]" },
-            { 19, "[yellow]力[/]" },
-            { 20, "[yellow]根[/]" },
-            { 21, "[yellow]智[/]" },
-            { 22, "[yellow]星[/]" }
+            { 1, $"[red]{I18N_SpeedSimple}[/]" },
+            { 2, $"[red]{I18N_StaminaSimple}[/]" },
+            { 3, $"[red]{I18N_PowerSimple}[/]" },
+            { 4, $"[red]{I18N_NutsSimple}[/]" },
+            { 5, $"[red]{I18N_WizSimple}[/]" },
+            { 6, $"[red]星[/]" },
+            { 9, $"[blue]{I18N_SpeedSimple}[/]" },
+            { 10, $"[blue]{I18N_StaminaSimple}[/]" },
+            { 11, $"[blue]{I18N_PowerSimple}[/]" },
+            { 12, $"[blue]{I18N_NutsSimple}[/]" },
+            { 13, $"[blue]{I18N_WizSimple}[/]" },
+            { 14, $"[blue]星[/]" },
+            { 17, $"[yellow]{I18N_SpeedSimple}[/]" },
+            { 18, $"[yellow]{I18N_StaminaSimple}[/]" },
+            { 19, $"[yellow]{I18N_PowerSimple}[/]" },
+            { 20, $"[yellow]{I18N_NutsSimple}[/]" },
+            { 21, $"[yellow]{I18N_WizSimple}[/]" },
+            { 22, $"[yellow]星[/]" }
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> LArcSSEffectNameFullColored = new Dictionary<int, string>
         {

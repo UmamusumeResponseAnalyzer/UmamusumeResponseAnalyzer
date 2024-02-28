@@ -189,4 +189,37 @@
   <data name="I18N_Yellow" xml:space="preserve">
     <value>Yellow</value>
   </data>
+  <data name="I18N_Proper" xml:space="preserve">
+    <value>Proper</value>
+  </data>
+  <data name="I18N_Dirt" xml:space="preserve">
+    <value>Drt</value>
+  </data>
+  <data name="I18N_Grass" xml:space="preserve">
+    <value>Grs</value>
+  </data>
+  <data name="I18N_Short" xml:space="preserve">
+    <value>Srt</value>
+  </data>
+  <data name="I18N_Mile" xml:space="preserve">
+    <value>Mil</value>
+  </data>
+  <data name="I18N_Middle" xml:space="preserve">
+    <value>Mdl</value>
+  </data>
+  <data name="I18N_Long" xml:space="preserve">
+    <value>Lng</value>
+  </data>
+  <data name="I18N_Nige" xml:space="preserve">
+    <value>逃</value>
+  </data>
+  <data name="I18N_Senko" xml:space="preserve">
+    <value>先</value>
+  </data>
+  <data name="I18N_Sashi" xml:space="preserve">
+    <value>差</value>
+  </data>
+  <data name="I18N_Oikomi" xml:space="preserve">
+    <value>追</value>
+  </data>
 </root>

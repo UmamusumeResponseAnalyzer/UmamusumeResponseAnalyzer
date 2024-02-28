@@ -90,10 +90,10 @@ namespace UmamusumeResponseAnalyzer
                 .Columns(
                 [
                             new TaskDescriptionColumn(),
-                            new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn(),
-                            new SpinnerColumn()
+                    new ProgressBarColumn(),
+                    new PercentageColumn(),
+                    new RemainingTimeColumn(),
+                    new SpinnerColumn()
                 ])
                 .StartAsync(async ctx =>
                 {
@@ -131,10 +131,10 @@ namespace UmamusumeResponseAnalyzer
                 .Columns(
                 [
                             new TaskDescriptionColumn(),
-                            new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn(),
-                            new SpinnerColumn()
+                    new ProgressBarColumn(),
+                    new PercentageColumn(),
+                    new RemainingTimeColumn(),
+                    new SpinnerColumn()
                 ])
                 .StartAsync(async ctx =>
                 {
@@ -166,10 +166,10 @@ namespace UmamusumeResponseAnalyzer
                     .Columns(
                     [
                             new TaskDescriptionColumn(),
-                            new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn(),
-                            new SpinnerColumn()
+                        new ProgressBarColumn(),
+                        new PercentageColumn(),
+                        new RemainingTimeColumn(),
+                        new SpinnerColumn()
                     ])
                     .StartAsync(async ctx =>
                     {
@@ -194,10 +194,10 @@ namespace UmamusumeResponseAnalyzer
                 .Columns(
                 [
                             new TaskDescriptionColumn(),
-                            new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn(),
-                            new SpinnerColumn()
+                    new ProgressBarColumn(),
+                    new PercentageColumn(),
+                    new RemainingTimeColumn(),
+                    new SpinnerColumn()
                 ])
                 .StartAsync(async ctx =>
                 {
@@ -235,10 +235,15 @@ namespace UmamusumeResponseAnalyzer
                     return OSSHost + "/cmder.zip";
             }
             var host = !Config.Get(Localization.Config.I18N_ForceUseGithubToUpdate) && isCN ? CNHost : GithubHost;
+            var i18n = Thread.CurrentThread.CurrentUICulture.Name switch
+            {
+                "zh-CN" => "zh-CN/",
+                _ => string.Empty
+            };
             return ext switch
             {
-                ".json" => $"{host}/{filename}",
-                ".br" => $"{host}/{filename}",
+                ".json" => $"{host}/GameData/{i18n}{filename}",
+                ".br" => $"{host}/GameData/{i18n}{filename}",
                 ".exe" => !Config.Get(Localization.Config.I18N_ForceUseGithubToUpdate) && isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }

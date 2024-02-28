@@ -139,11 +139,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var table = new Table()
                 .AddColumn(command.TrainIndex switch
                 {
-                    1 => $"{I18N_SpeedSimple}{failureRateStr[0]}",
-                    2 => $"{I18N_StaminaSimple}{failureRateStr[1]}",
-                    3 => $"{I18N_PowerSimple}{failureRateStr[2]}",
-                    4 => $"{I18N_NutsSimple}{failureRateStr[3]}",
-                    5 => $"{I18N_WizSimple}{failureRateStr[4]}"
+                    1 => $"{I18N_Speed}{failureRateStr[0]}",
+                    2 => $"{I18N_Stamina}{failureRateStr[1]}",
+                    3 => $"{I18N_Power}{failureRateStr[2]}",
+                    4 => $"{I18N_Nuts}{failureRateStr[3]}",
+                    5 => $"{I18N_Wiz}{failureRateStr[4]}"
                 })
                 .BorderColor(command.Color switch
                 {

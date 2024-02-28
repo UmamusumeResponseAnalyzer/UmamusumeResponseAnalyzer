@@ -25,7 +25,6 @@ namespace UmamusumeResponseAnalyzer
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
             //加载设置
             Config.Initialize();
-            ApplyCultureInfo(Config.ConfigSet[Localization.Config.I18N_Language].First(x => Config.Get(x.Key)).Key);
             await ParseArguments(args);
 
             if (!AnsiConsole.Profile.Capabilities.Ansi && !runInCmder)
@@ -183,12 +182,8 @@ namespace UmamusumeResponseAnalyzer
 
                 // 进入设置前先保存之前的语言设置
                 var previousLanguage = string.Empty;
-                var availableLanguages = Config.ConfigSet.First(x => x.Key == "Language" || x.Key == "言語" || x.Key == "语言").Value.Select(x => x.Key);
+                var availableLanguages = Config.ConfigSet.First(x => Config.LanguageSectionKeys.Contains(x.Key)).Value.Select(x => x.Key);
                 var languages = availableLanguages.Select(x => Config.Configuration[x]);
-                foreach (var i in languages)
-                {
-                    Console.WriteLine($"{i.Key} {i.Value}");
-                }
                 var languagesEnabled = languages.Where(x => Config.Get(x.Key));
                 previousLanguage = languagesEnabled.First().Key;
 
@@ -205,6 +200,7 @@ namespace UmamusumeResponseAnalyzer
                 var selectedLanguage = languagesEnabled.First();
                 if (selectedLanguage == default)
                 {
+                    Trace.WriteLine(1);
                     Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
                     Config.SaveConfigForLanguageChange();
                     ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
@@ -212,6 +208,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (languagesEnabled.Count() > 1)
                 {
+                    Trace.WriteLine(2);
                     foreach (var i in languages)
                     {
                         Config.Set(i.Key, false);
@@ -225,6 +222,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (selectedLanguage.Key != previousLanguage)
                 {
+                    Trace.WriteLine(3);
                     Config.SaveConfigForLanguageChange();
                     ApplyCultureInfo(languages.First(x => Config.Get(x.Key)).Key);
                     Config.LoadConfigForLanguageChange();
@@ -556,9 +554,8 @@ namespace UmamusumeResponseAnalyzer
                     }
             }
         }
-        static void ApplyCultureInfo(string culture)
+        internal static void ApplyCultureInfo(string culture)
         {
-            Trace.WriteLine($"Apply {culture}");
             if (culture == Localization.Config.I18N_Language_AutoDetect)
             {
                 Thread.CurrentThread.CurrentCulture = defaultUICulture;

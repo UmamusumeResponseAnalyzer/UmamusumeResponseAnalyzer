@@ -1,6 +1,7 @@
 ﻿using IniParser;
 using IniParser.Model;
 using Spectre.Console;
+using System.Diagnostics;
 using System.Text;
 using static UmamusumeResponseAnalyzer.Localization.Config;
 
@@ -9,13 +10,29 @@ namespace UmamusumeResponseAnalyzer
     internal static class Config
     {
         private readonly static List<object> _savedConfigForLanguageChange = [];
-        internal static readonly IReadOnlyCollection<string> DisableByDefault = Array.AsReadOnly([I18N_ForceUseGithubToUpdate, I18N_EnableNetFilter, I18N_DMMLaunch, I18N_SaveResponseForDebug, I18N_WriteAIInfo, I18N_Language_English, I18N_Language_Japanese, I18N_Language_SimplifiedChinese]);
+        internal static readonly IReadOnlyCollection<string> LanguageSectionKeys = ["Language", "言語", "语言"];
+        internal static readonly IReadOnlyCollection<string> DisableByDefault = [I18N_ForceUseGithubToUpdate, I18N_EnableNetFilter, I18N_DMMLaunch, I18N_SaveResponseForDebug, I18N_WriteAIInfo, I18N_Language_English, I18N_Language_Japanese, I18N_Language_SimplifiedChinese];
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
         internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = [];
         internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = [];
         internal static void Initialize()
         {
+            Trace.WriteLine($"INIT WITH {Thread.CurrentThread.CurrentUICulture.Name}");
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
+            // 在初始化之前覆盖默认语言
+            if (File.Exists(CONFIG_FILEPATH))
+            {
+                try
+                {
+                    var configuration = new FileIniDataParser().ReadFile(CONFIG_FILEPATH, Encoding.UTF8);
+                    var language = configuration.Sections.First(x => LanguageSectionKeys.Contains(x.SectionName));
+                    var lastLanguage = language.Keys.First(x => bool.Parse(x.Value));
+                    UmamusumeResponseAnalyzer.ApplyCultureInfo(lastLanguage.KeyName);
+                }
+                catch (Exception)
+                {
+                }
+            }
             ConfigSet.Add(I18N_Events, ConfigItem.From
             (
                 I18N_ParseSingleModeCheckEventResponse,
@@ -89,9 +106,12 @@ namespace UmamusumeResponseAnalyzer
         }
         internal static void SaveConfigForLanguageChange()
         {
+            Trace.WriteLine(Configuration.Count);
+            _savedConfigForLanguageChange.Clear();
             var cfg = Configuration.Values.ToArray();
             for (var i = 0; i < cfg.Length; i++)
             {
+                Trace.WriteLine($"{cfg[i].Key} {cfg[i].Value}");
                 _savedConfigForLanguageChange.Add(cfg[i].Value);
             }
         }
@@ -102,11 +122,10 @@ namespace UmamusumeResponseAnalyzer
             File.Delete(CONFIG_FILEPATH);
             Initialize();
             var cfg = Configuration.Keys.ToArray();
-            for(var i = 0; i < _savedConfigForLanguageChange.Count; i++)
+            for (var i = 0; i < _savedConfigForLanguageChange.Count; i++)
             {
                 Configuration[cfg[i]].Value = _savedConfigForLanguageChange[i];
             }
-            _savedConfigForLanguageChange.Clear();
         }
         public static void Save()
         {

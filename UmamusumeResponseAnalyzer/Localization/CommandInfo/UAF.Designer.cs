@@ -61,7 +61,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:Converting {0} to {1} for the maximum grade increase of {2}{3} actual effective increase is {4} 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:{0} to {1} for the rank of {2}{3} actual effective is {4} 的本地化字符串。
         /// </summary>
         internal static string I18N_ActualBestEffectiveTalk {
             get {
@@ -70,7 +70,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:Converting {0} to {1} for the maximum grade increase of {2} 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:{0} to {1} for the maximum rank of {2} 的本地化字符串。
         /// </summary>
         internal static string I18N_BestEffectiveTalk {
             get {
@@ -79,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:Without discussions, {0} for the maximum grade increase of {1} 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:Without talk, {0} for the maximum rank of {1} 的本地化字符串。
         /// </summary>
         internal static string I18N_BestEffectiveWithoutTalk {
             get {
@@ -97,7 +97,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:The {0} color of {1}&apos;s grade is too low 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:{0} of {1}&apos;s rank low 的本地化字符串。
         /// </summary>
         internal static string I18N_LowSportRank {
             get {
@@ -106,7 +106,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:The minimum sports grade for the current period is {0} 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:The minimum sports rank for the current period is {0} 的本地化字符串。
         /// </summary>
         internal static string I18N_MinimumSportRank {
             get {
@@ -115,7 +115,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 , exceeded [aqua]{0}%[/] of Suzuka 的本地化字符串。
+        ///   查找类似 , exceeded [aqua]{0}%[/] of Morita 的本地化字符串。
         /// </summary>
         internal static string I18N_MoritaRanking {
             get {
@@ -124,7 +124,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 Clicked [aqua]{0}[/] times on Suzuka 的本地化字符串。
+        ///   查找类似 Clicked [aqua]{0}[/] times on Morita 的本地化字符串。
         /// </summary>
         internal static string I18N_MoritaTrained {
             get {
@@ -133,7 +133,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 Added [aqua]{0}[/] stamina 的本地化字符串。
+        ///   查找类似 Recover vital [aqua]{0}[/] times 的本地化字符串。
         /// </summary>
         internal static string I18N_MoritaVitalGainTimes {
             get {
@@ -142,7 +142,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 Achieved Rank 的本地化字符串。
+        ///   查找类似 Gain Rank 的本地化字符串。
         /// </summary>
         internal static string I18N_RankGain {
             get {
@@ -151,7 +151,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:Current project has grade bonus 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:Current has rank bonus 的本地化字符串。
         /// </summary>
         internal static string I18N_RankGainIncreased {
             get {
@@ -160,7 +160,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:Please use discussions in time 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:Please use talk in time 的本地化字符串。
         /// </summary>
         internal static string I18N_RememberUseTalk {
             get {
@@ -169,7 +169,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 [yellow]This round is a duplicate display[/] 的本地化字符串。
+        ///   查找类似 [yellow]This turn is a duplicate display[/] 的本地化字符串。
         /// </summary>
         internal static string I18N_RepeatTurn {
             get {
@@ -205,7 +205,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 [red]Warning: Incorrect number of rounds, the previous round was {0}, the current round is {1}[/] 的本地化字符串。
+        ///   查找类似 [red]Warning: Incorrect turn, the previous turn was {0}, the current turn is {1}[/] 的本地化字符串。
         /// </summary>
         internal static string I18N_WrongTurnAlert {
             get {

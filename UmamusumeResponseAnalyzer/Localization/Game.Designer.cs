@@ -70,6 +70,51 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 Drt 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Dirt {
+            get {
+                return ResourceManager.GetString("I18N_Dirt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Grs 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Grass {
+            get {
+                return ResourceManager.GetString("I18N_Grass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Lng 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Long {
+            get {
+                return ResourceManager.GetString("I18N_Long", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Mdl 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Middle {
+            get {
+                return ResourceManager.GetString("I18N_Middle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Mil 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Mile {
+            get {
+                return ResourceManager.GetString("I18N_Mile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Month 的本地化字符串。
         /// </summary>
         internal static string I18N_Month {
@@ -124,6 +169,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 逃 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Nige {
+            get {
+                return ResourceManager.GetString("I18N_Nige", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Nuts 的本地化字符串。
         /// </summary>
         internal static string I18N_Nuts {
@@ -138,6 +192,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string I18N_NutsSimple {
             get {
                 return ResourceManager.GetString("I18N_NutsSimple", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 追 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Oikomi {
+            get {
+                return ResourceManager.GetString("I18N_Oikomi", resourceCulture);
             }
         }
         
@@ -160,11 +223,47 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 Proper 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Proper {
+            get {
+                return ResourceManager.GetString("I18N_Proper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Red 的本地化字符串。
         /// </summary>
         internal static string I18N_Red {
             get {
                 return ResourceManager.GetString("I18N_Red", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 差 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Sashi {
+            get {
+                return ResourceManager.GetString("I18N_Sashi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 先 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Senko {
+            get {
+                return ResourceManager.GetString("I18N_Senko", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Srt 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Short {
+            get {
+                return ResourceManager.GetString("I18N_Short", resourceCulture);
             }
         }
         
