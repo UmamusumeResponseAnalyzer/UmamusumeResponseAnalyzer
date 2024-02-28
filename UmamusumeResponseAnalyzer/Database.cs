@@ -5,7 +5,7 @@ using System.Collections.Frozen;
 using System.Text;
 using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Entities;
-using UmamusumeResponseAnalyzer.Localization;
+using static UmamusumeResponseAnalyzer.Localization.Database;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -19,7 +19,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string TALENT_SKILLS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "talent_skill_sets.br");
         internal static string FACTOR_IDS_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "factor_ids.br");
         internal static string SKILL_UPGRADE_SPECIALITY_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "skill_upgrade_speciality.br");
-        internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>("本地化文件路径") ?? string.Empty;
+        internal static string LOCALIZED_DATA_FILEPATH = Config.Get<string>(Localization.Config.I18N_LocalizedDataPath) ?? string.Empty;
         #endregion
         #region Properties
         /// <summary>
@@ -92,12 +92,12 @@ namespace UmamusumeResponseAnalyzer
                 }
                 catch
                 {
-                    AnsiConsole.MarkupLine($"[red]加载{Path.GetFileName(NAMES_FILEPATH)}时出现错误，请尝试重新更新数据[/]");
+                    AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(NAMES_FILEPATH));
                 }
             }
             else
             {
-                AnsiConsole.MarkupLine($"[red]数据文件{Path.GetFileName(NAMES_FILEPATH)}不存在，请尝试重新更新数据[/]");
+                AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(NAMES_FILEPATH));
             }
             if (TryDeserialize(SKILLS_FILEPATH, out var skills, x => x.ToObject<List<SkillData>>()!))
             {
@@ -116,7 +116,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 FactorIds = factorIds;
             }
-            if (Config.Get(Resource.ConfigSet_LoadLocalizedData) && !string.IsNullOrEmpty(LOCALIZED_DATA_FILEPATH) && File.Exists(LOCALIZED_DATA_FILEPATH))
+            if (Config.Get(Localization.Config.I18N_LoadLocalizedData) && !string.IsNullOrEmpty(LOCALIZED_DATA_FILEPATH) && File.Exists(LOCALIZED_DATA_FILEPATH))
             {
                 var textData = JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(LOCALIZED_DATA_FILEPATH));
                 var staticTranslation = JsonConvert.DeserializeObject<Dictionary<string, string>>("{\"ウマ娘の\":\"马娘的\",\"スピード\":\"速度\",\"スタミナ\":\"耐力\",\"パワー\":\"力量\",\"根性\":\"根性\",\"賢さ\":\"智力\",\"マイナススキル\":\"负面寄能\",\"スキル\":\"技能\",\"ヒント\":\"Hint \",\"やる気\":\"干劲\",\"の絆ゲージ\":\"的羁绊\",\"ステータス\":\"属性\",\"ランダムな\":\"随机\",\"つの\":\"项\",\"〜\":\"~\",\"練習上手\":\"擅长练习\",\"愛嬌\":\"惹人怜爱\",\"切れ者\":\"能人（概率获得）\",\"直前のトレーニング能力\":\"之前训练的属性\",\"直前のトレーニングに応じた\":\"之前训练的\",\"太り気味\":\"变胖\",\"練習ベタ\":\"不擅长练习\",\"夜ふかし気味\":\"熬夜\",\"バッドコンディションが治る\":\"治疗负面状态\",\"バッドコンディションが解消\":\"解除部分负面状态\",\"確率で\":\"概率\",\"なまけ癖\":\"摸鱼癖\",\"進行イベント打ち切り\":\"事件中断\",\"アタシに指図しないで！！！\":\"别对我指指点点！\",\"スターゲージ\":\"明星量表\",\"お出かけ不可になる\":\"不能外出\",\"とお出かけできる\":\"外出解锁\",\"ようになる\":\"\",\"ポジティブ思考\":\"正向思考\",\"ファン\":\"粉丝\",\"ランダム\":\"随机\",\"」の\":\"」的\"}")!;
@@ -238,12 +238,12 @@ namespace UmamusumeResponseAnalyzer
                     }
                     catch
                     {
-                        AnsiConsole.MarkupLine($"[red]加载{Path.GetFileName(filepath)}时出现错误，请尝试重新更新数据[/]");
+                        AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(NAMES_FILEPATH));
                     }
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[red]数据文件{Path.GetFileName(filepath)}不存在，请尝试重新更新数据[/]");
+                    AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(NAMES_FILEPATH));
                 }
                 result = default!;
                 return false;
@@ -257,7 +257,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (InvalidOperationException)
             {
-                AnsiConsole.MarkupLine($"[red]读取数据文件{Path.GetFileName(path)}时出现错误，请先更新程序，再更新数据[/]");
+                AnsiConsole.MarkupLine(I18N_DecompressError, Path.GetFileName(path));
                 return string.Empty;
             }
         }

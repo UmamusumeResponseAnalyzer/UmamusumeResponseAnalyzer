@@ -1,7 +1,7 @@
 ﻿using Spectre.Console;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
-using UmamusumeResponseAnalyzer.Localization;
+using static UmamusumeResponseAnalyzer.Localization.Handlers.ParseSkillTipsResponse;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -27,25 +27,25 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var newWillLearnPoint = newDpResult.Item1.Sum(x => x.Grade);
                 if (newWillLearnPoint > willLearnPoint)
                 {
-                    AnsiConsole.MarkupLine($"由于有技能不满足进化条件，本次结果以<有技能无法进化时的最大化推荐>为基准进行二次计算");
-                    AnsiConsole.MarkupLine($"且二次计算后的总分[green]高于[/]无法进化时的结果，请确保按推荐学完技能之后两个天赋技能均满足进化条件");
-                    AnsiConsole.MarkupLine($"如遇到此提示，请打开选项中的\"保存用于调试的通讯包\"后再次进入育成界面");
-                    AnsiConsole.MarkupLine($"并将%LOCALAPPDATA%/UmamusumeResponseAnalyzer/packets目录下的所有文件打包发送到频道/github issue中以便调试");
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_1);
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_2);
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_3);
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_4);
                     dpResult = newDpResult;
                     learn = newDpResult.Item1;
                     willLearnPoint = newWillLearnPoint;
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"由于有技能不满足进化条件，本次结果以<有技能无法进化时的最大化推荐>为基准进行二次计算");
-                    AnsiConsole.MarkupLine($"且二次计算后的总分[red]低于[/]无法进化时的结果，因此按(全部/部分)技能无法进化给出建议");
-                    AnsiConsole.MarkupLine($"如遇到此提示，请打开选项中的\"保存用于调试的通讯包\"后再次进入育成界面");
-                    AnsiConsole.MarkupLine($"并将%LOCALAPPDATA%/UmamusumeResponseAnalyzer/packets目录下的所有文件打包发送到频道/github issue中以便调试");
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_5);
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_6);
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_3);
+                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_4);
                 }
             }
             var table = new Table();
-            table.Title(string.Format(Resource.MaximiumGradeSkillRecommendation_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
-            table.AddColumns(Resource.MaximiumGradeSkillRecommendation_Columns_SkillName, Resource.MaximiumGradeSkillRecommendation_Columns_RequireSP, Resource.MaximiumGradeSkillRecommendation_Columns_Grade);
+            table.Title(string.Format(I18N_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
+            table.AddColumns(I18N_Columns_SkillName, I18N_Columns_RequireSP, I18N_Columns_Grade);
             table.Columns[0].Centered();
             foreach (var i in learn)
             {
@@ -87,9 +87,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             var totalPoint = willLearnPoint + previousLearnPoint + statusPoint;
             var thisLevelId = Database.GradeToRank.First(x => x.Min <= totalPoint && totalPoint <= x.Max).Id;
-            table.Caption(string.Format($"{Resource.MaximiumGradeSkillRecommendation_Caption}", previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
+            table.Caption(string.Format(I18N_Caption, previousLearnPoint, willLearnPoint, statusPoint, totalPoint, Database.GradeToRank.First(x => x.Id == thisLevelId).Rank));
             AnsiConsole.Write(table);
-            AnsiConsole.MarkupLine($"距离{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Rank}还有[yellow]{Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Min - totalPoint}[/]分");
+            AnsiConsole.MarkupLine(I18N_ScoreToNextGrade, Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Rank, Database.GradeToRank.First(x => x.Id == thisLevelId + 1).Min - totalPoint);
             AnsiConsole.MarkupLine(string.Empty);
 
             if (@event.IsScenario(ScenarioType.GrandMasters))
@@ -98,19 +98,18 @@ namespace UmamusumeResponseAnalyzer.Handler
                 AnsiConsole.MarkupLine(string.Empty);
             }
 
-            //双适性技能的评分计算有问题，需要重做数据库
-            AnsiConsole.MarkupLine("[yellow]已知问题 [/]");
-            AnsiConsole.MarkupLine("[yellow]1.对于学习技能后才能判定是否能进化的技能，暂时以无法进化考虑。若以上没有包括可进化技能，请自己决定是否购买 [/]");
-            AnsiConsole.MarkupLine("[yellow]2.没考虑紫色（负面）技能，请自己解除紫色技能 [/]");
-            AnsiConsole.MarkupLine("[red]以上几种情况可以自己决定是否购买相应技能，购买之后重启游戏，即可重新计算 [/]");
-            AnsiConsole.MarkupLine("[red]以下是一些参考指标 [/]");
+            AnsiConsole.MarkupLine(I18N_ScoreCalculateAttention_1);
+            AnsiConsole.MarkupLine(I18N_ScoreCalculateAttention_2);
+            AnsiConsole.MarkupLine(I18N_ScoreCalculateAttention_3);
+            AnsiConsole.MarkupLine(I18N_ScoreCalculateAttention_4);
+            AnsiConsole.MarkupLine(I18N_ScoreCalculateAttention_5);
 
             #region 计算边际性价比与减少50/100/150/.../500pt的平均性价比
             //计算平均性价比
             var dp = dpResult.Item2;
             var totalSP0 = @event.data.chara_info.skill_point;
             if (totalSP0 > 0)
-                AnsiConsole.MarkupLine($"[aqua]平均性价比：{(double)willLearnPoint / totalSP0:F3}[/]");
+                AnsiConsole.MarkupLine(I18N_AverageCostEffectiveness, ((double)willLearnPoint / totalSP0).ToString("F3"));
             //计算边际性价比，对totalSP正负50的范围做线性回归
             if (totalSP0 > 50)
             {
@@ -124,10 +123,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                     n += 1;
                 }
                 double b = sxy / sx2;
-                AnsiConsole.MarkupLine($"[aqua]边际性价比：{b:F3}[/]");
+                AnsiConsole.MarkupLine(I18N_MarginalCostEffectiveness, b.ToString("F3"));
             }
             //计算减少50/100/150/.../500pt的平均性价比
-            AnsiConsole.MarkupLine($"[aqua]不同价格的技能的期望性价比如下，若某技能的评分计算错误且偏低且没有出现在上表中（以上几种情况），请手动计算性价比与下表进行比较[/]");
+            AnsiConsole.MarkupLine(I18N_ExpectedCostEffectiveness);
             for (int t = 1; t <= 10; t++)
             {
                 int start = totalSP0 - t * 50 - 25;
@@ -137,7 +136,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //totalSP - t * 50 的前后25个取平均
                 var meanScoreReduced = dp.Skip(start).Take(51).Average();
                 var eff = (dp[totalSP0] - meanScoreReduced) / (t * 50);
-                AnsiConsole.MarkupLine($"[green]{t * 50}pt技能的期望性价比：{eff:F3}[/]");
+                AnsiConsole.MarkupLine(I18N_ExpectedCostEffectivenessByPrice, t * 50, eff.ToString("F3"));
             }
             #endregion
         }
@@ -159,7 +158,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, skills))
                     {
                         var upgradedSkill = skillmanager[upgradedSkillId].Clone();
-                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
+                        upgradedSkill.Name = $"{notUpgradedSkill.Name}({I18N_Evolved})";
                         upgradedSkill.Cost = notUpgradedSkill.Cost;
 
                         var inferior = notUpgradedSkill.Inferior;
@@ -198,7 +197,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
 
                         var upgradedSkill = skillmanager[upgradedSkillId].Clone();
-                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(进化)";
+                        upgradedSkill.Name = $"{notUpgradedSkill.Name}({I18N_Evolved})";
                         upgradedSkill.Cost = notUpgradedSkill.Cost;
 
                         var inferior = notUpgradedSkill.Inferior;

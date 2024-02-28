@@ -8,7 +8,7 @@
 		<AssemblyVersion></AssemblyVersion>
 		<FileVersion></FileVersion>
 		<Authors>$(AssemblyName)</Authors>
-		<Version>1.13.1.1</Version>
+		<Version>1.13.2.0</Version>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Platforms>AnyCPU;x64</Platforms>
@@ -65,17 +65,137 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Update="Localization\Resource.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>Resource.resx</DependentUpon>
+		<Compile Update="Localization\CommandInfo\UAF.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>UAF.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Config.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Config.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Database.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Database.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\DMM.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>DMM.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Game.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Game.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Handlers\ParseFriendSearchResponse.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ParseFriendSearchResponse.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Handlers\ParseSingleModeCheckEventResponse.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ParseSingleModeCheckEventResponse.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Handlers\ParseSkillTipsResponse.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ParseSkillTipsResponse.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Handlers\ParseTrainedCharaLoadResponse.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ParseTrainedCharaLoadResponse.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\LaunchMenu.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>LaunchMenu.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\NameManager.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>NameManager.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\NetFilter.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>NetFilter.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\ResourceUpdater.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ResourceUpdater.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localization\Server.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Server.resx</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Update="Localization\Resource.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>Resource.Designer.cs</LastGenOutput>
+		<EmbeddedResource Update="Localization\CommandInfo\UAF.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>UAF.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Config.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>Config.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Database.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>Database.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Database.zh-CN.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\DMM.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>DMM.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Game.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>Game.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Handlers\ParseFriendSearchResponse.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ParseFriendSearchResponse.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Handlers\ParseSingleModeCheckEventResponse.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ParseSingleModeCheckEventResponse.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Handlers\ParseSkillTipsResponse.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ParseSkillTipsResponse.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Handlers\ParseTrainedCharaLoadResponse.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ParseTrainedCharaLoadResponse.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\LaunchMenu.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>LaunchMenu.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\NameManager.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>NameManager.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\NetFilter.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>NetFilter.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\ResourceUpdater.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ResourceUpdater.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\Server.resx">
+		  <Generator>ResXFileCodeGenerator</Generator>
+		  <LastGenOutput>Server.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
 

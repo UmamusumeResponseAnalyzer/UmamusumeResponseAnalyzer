@@ -1,16 +1,11 @@
 ﻿using Gallop;
 using MathNet.Numerics.Distributions;
-using Newtonsoft.Json.Linq;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
+using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
+using static UmamusumeResponseAnalyzer.Localization.Game;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -42,7 +37,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 )
             {
                 GameStats.isFullGame = false;
-                critInfos.Add($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turn.Turn}[/]");
+                critInfos.Add(string.Format(I18N_WrongTurnAlert, GameStats.currentTurn, turn.Turn));
                 EventLogger.Init();
             }
             else if (turn.Turn == 1)
@@ -54,7 +49,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             //买技能，大师杯剧本年末比赛，会重复显示
             if (@event.data.chara_info.playing_state != 1)
             {
-                critInfos.Add($"[yellow]******此回合为重复显示******[/]");
+                critInfos.Add(I18N_RepeatTurn);
             }
             else
             {
@@ -144,11 +139,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var table = new Table()
                 .AddColumn(command.TrainIndex switch
                 {
-                    1 => $"速{failureRateStr[0]}",
-                    2 => $"耐{failureRateStr[1]}",
-                    3 => $"力{failureRateStr[2]}",
-                    4 => $"根{failureRateStr[3]}",
-                    5 => $"智{failureRateStr[4]}"
+                    1 => $"{I18N_SpeedSimple}{failureRateStr[0]}",
+                    2 => $"{I18N_StaminaSimple}{failureRateStr[1]}",
+                    3 => $"{I18N_PowerSimple}{failureRateStr[2]}",
+                    4 => $"{I18N_NutsSimple}{failureRateStr[3]}",
+                    5 => $"{I18N_WizSimple}{failureRateStr[4]}"
                 })
                 .BorderColor(command.Color switch
                 {
@@ -160,7 +155,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 var currentStat = turn.StatsRevised[command.TrainIndex - 1];
                 var statUpToMax = turn.MaxStatsRevised[command.TrainIndex - 1] - currentStat;
-                table.AddRow("当前:可获得");
+                table.AddRow(I18N_CurrentRemainStat);
                 table.AddRow($"{currentStat}:{statUpToMax switch
                 {
                     > 400 => $"{statUpToMax}",
@@ -172,20 +167,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var afterVital = trainStats[command.TrainIndex - 1].VitalGain + turn.Vital;
                 table.AddRow(afterVital switch
                 {
-                    < 30 => $"体力:[red]{afterVital}[/]/{turn.MaxVital}",
-                    < 50 => $"体力:[darkorange]{afterVital}[/]/{turn.MaxVital}",
-                    < 70 => $"体力:[yellow]{afterVital}[/]/{turn.MaxVital}",
-                    _ => $"体力:[green]{afterVital}[/]/{turn.MaxVital}"
+                    < 30 => $"{I18N_Vital}:[red]{afterVital}[/]/{turn.MaxVital}",
+                    < 50 => $"{I18N_Vital}:[darkorange]{afterVital}[/]/{turn.MaxVital}",
+                    < 70 => $"{I18N_Vital}:[yellow]{afterVital}[/]/{turn.MaxVital}",
+                    _ => $"{I18N_Vital}:[green]{afterVital}[/]/{turn.MaxVital}"
                 });
-                table.AddRow($"Lv{command.TrainLevel} | Sp{command.SportRank}");
+                table.AddRow($"Lv{command.TrainLevel} | SR{command.SportRank}");
                 table.AddRow(new Rule());
 
                 var stats = trainStats[command.TrainIndex - 1];
                 var score = stats.FiveValueGain.Sum();
                 if (score == trainStats.Max(x => x.FiveValueGain.Sum()))
-                    table.AddRow($"属:[aqua]{score}[/]|Pt:{stats.PtGain}");
+                    table.AddRow($"{I18N_StaminaSimple}:[aqua]{score}[/]|Pt:{stats.PtGain}");
                 else
-                    table.AddRow($"属:{score}|Pt:{stats.PtGain}");
+                    table.AddRow($"{I18N_StaminaSimple}:{score}|Pt:{stats.PtGain}");
 
                 blueFever = (turn.BlueLevel % 50 + command.TotalGainRank) >= 50;
                 redFever = (turn.RedLevel % 50 + command.TotalGainRank) >= 50;
@@ -193,13 +188,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                 switch (command.Color)
                 {
                     case SportColor.Blue:
-                        table.AddRow(blueFever ? $"[blue]获得Rank:{command.TotalGainRank}[/]" : $"获得Rank:{command.TotalGainRank}");
+                        table.AddRow(blueFever ? $"[blue]{I18N_RankGain}:{command.TotalGainRank}[/]" : $"{I18N_RankGain}:{command.TotalGainRank}");
                         break;
                     case SportColor.Red:
-                        table.AddRow(redFever ? $"[red]获得Rank:{command.TotalGainRank}[/]" : $"获得Rank:{command.TotalGainRank}");
+                        table.AddRow(redFever ? $"[red]{I18N_RankGain}:{command.TotalGainRank}[/]" : $"{I18N_RankGain}:{command.TotalGainRank}");
                         break;
                     case SportColor.Yellow:
-                        table.AddRow(yellowFever ? $"[yellow]获得Rank:{command.TotalGainRank}[/]" : $"获得Rank:{command.TotalGainRank}");
+                        table.AddRow(yellowFever ? $"[yellow]{I18N_RankGain}:{command.TotalGainRank}[/]" : $"{I18N_RankGain}:{command.TotalGainRank}");
                         break;
                 }
                 table.AddRow(new Rule());
@@ -218,12 +213,12 @@ namespace UmamusumeResponseAnalyzer.Handler
             grids.AddRow([.. commands]);
             layout["训练信息"].Update(grids);
             if (turn.IsRankGainIncreased)
-                critInfos.Add("❗当前有项目等级加成");
+                critInfos.Add(I18N_RankGainIncreased);
 
             if (turn.AvailableTalkCount > 0)
             {
                 if (turn.Turn % 12 >= 9)
-                    critInfos.Add("❗请及时使用相谈");
+                    critInfos.Add(I18N_RememberUseTalk);
                 // 每种颜色按最大获得Rank排序
                 var groupByColorOrderByRank = turn.CommandInfoArray
                     .GroupBy(x => x.Color)
@@ -241,7 +236,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     if ((turn.BlueLevel % 50) + totalRank >= 50)
                     {
-                        extInfos.Add($"✨{ColorToMarkup(i.Key)}变[blue]蓝[/]可爆");
+                        extInfos.Add(string.Format(I18N_TalkToGetBlueBuff, ColorToMarkup(i.Key)));
                     }
                 }
                 foreach (var i in groupByColorOrderByRank.Where(x => x.Key != SportColor.Red)) // Color,ParsedCommandInfo
@@ -257,7 +252,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     if ((turn.RedLevel % 50) + totalRank >= 50)
                     {
-                        extInfos.Add($"✨{ColorToMarkup(i.Key)}变[red]红[/]可爆");
+                        extInfos.Add(string.Format(I18N_TalkToGetRedBuff, ColorToMarkup(i.Key)));
                     }
                 }
                 foreach (var i in groupByColorOrderByRank.Where(x => x.Key != SportColor.Yellow)) // Color,ParsedCommandInfo
@@ -273,7 +268,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                     if ((turn.YellowLevel % 50) + totalRank >= 50)
                     {
-                        extInfos.Add($"✨{ColorToMarkup(i.Key)}变[yellow]黄[/]可爆");
+                        extInfos.Add(string.Format(I18N_TalkToGetYellowBuff, ColorToMarkup(i.Key)));
                     }
                 }
             }
@@ -291,9 +286,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 foreach (var i in lowRankSports)
                 {
-                    extInfos.Add($"❗{ColorToMarkup(i.Color)}色的{GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]]}等级过低");
+                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color), GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]]));
                 }
-                extInfos.Add($"❗当前时期的运动等级最低为{nextRank}");
+                extInfos.Add(string.Format(I18N_MinimumSportRank, nextRank));
                 extInfos.Add(string.Empty);
 
                 if (turn.AvailableTalkCount > 0)
@@ -323,9 +318,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                                     // 去掉被浪费的，实际因相谈而提升了等级的总数
                                     var actualEffectiveRank = wastedRank == default ? maxEffectiveRankUp : maxEffective.Where(x => !wastedRank.Any(y => y.TrainIndex == x.TrainIndex)).Sum(x => x.GainRank);
                                     if (maxEffectiveRankUp == actualEffectiveRank)
-                                        extInfos.Add($"❗{ColorToMarkup(maxEffective.Key)}转换为{ColorToMarkup(requireRankColor)}为最大等级提升{maxEffective.Sum(y => y.GainRank)}");
+                                        extInfos.Add(string.Format(I18N_BestEffectiveTalk, ColorToMarkup(maxEffective.Key), ColorToMarkup(requireRankColor), maxEffective.Sum(y => y.GainRank)));
                                     else
-                                        extInfos.Add($"❗{ColorToMarkup(maxEffective.Key)}转换为{ColorToMarkup(requireRankColor)}为最大等级提升{maxEffective.Sum(y => y.GainRank)}{Environment.NewLine}实际有效提升为{actualEffectiveRank}");
+                                        extInfos.Add(string.Format(I18N_ActualBestEffectiveTalk, ColorToMarkup(maxEffective.Key), ColorToMarkup(requireRankColor), maxEffective.Sum(y => y.GainRank), Environment.NewLine, actualEffectiveRank));
                                 }
                             }
                         }
@@ -334,7 +329,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     var availableSportTrains = turn.CommandInfoArray.Where(x => currentCommandIds.Contains(x.CommandId));
                     var maxEffectiveWithoutTalk = availableSportTrains.GroupBy(x => x.Color).OrderByDescending(x => x.Sum(y => y.GainRank)).FirstOrDefault();
                     if (maxEffectiveWithoutTalk != default)
-                        extInfos.Add($"❗不相谈的情况下{ColorToMarkup(maxEffectiveWithoutTalk.Key)}为最大等级提升{maxEffectiveWithoutTalk.Sum(x => x.GainRank)}");
+                        extInfos.Add(string.Format(I18N_BestEffectiveWithoutTalk, ColorToMarkup(maxEffectiveWithoutTalk.Key), maxEffectiveWithoutTalk.Sum(x => x.GainRank)));
                     extInfos.Add(string.Empty);
                 }
             }
@@ -357,8 +352,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (GameStats.stats[t].uaf_friendEvent == 1 || GameStats.stats[t].uaf_friendEvent == 2)
                     friendChargedTimes += 1;
             }
-            extInfos.Add($"共点了[aqua]{friendClickedTimes}[/]次凉花");
-            extInfos.Add($"加了[aqua]{friendChargedTimes}[/]次体力");
+            extInfos.Add(string.Format(I18N_MoritaTrained, friendClickedTimes));
+            extInfos.Add(string.Format(I18N_MoritaVitalGainTimes, friendChargedTimes));
             // 计算佐岳表现（分位数）
             var friendPerformance = string.Empty;
             if (friendClickedTimes > 1)
@@ -366,20 +361,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                 // (p(n<=k-1) + p(n<=k)) / 2
                 double bn = Binomial.CDF(0.4, friendClickedTimes, friendChargedTimes);
                 double bn_1 = Binomial.CDF(0.4, friendClickedTimes, friendChargedTimes - 1);
-                friendPerformance = $"，超过了[aqua]{(bn + bn_1) / 2 * 100:0}%[/]的凉花";
+                friendPerformance = string.Format(I18N_MoritaRanking, ((bn + bn_1) / 2 * 100).ToString("0"));
             }
             extInfos.Add(friendPerformance);
 
-            layout["日期"].Update(new Panel($"{turn.Year}年 {turn.Month}月{turn.HalfMonth}").Expand());
-            layout["赛程倒计时"].Update(new Panel("占位-占位").Expand());
-            layout["体力"].Update(new Panel($"体力: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
+            layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
+            layout["赛程倒计时"].Update(new Panel("---------").Expand());
+            layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
             layout["干劲"].Update(new Panel(@event.data.chara_info.motivation switch
             {
-                5 => "[green]绝好调↑[/]",
-                4 => "[yellow]好调↗[/]",
-                3 => "[red]普通→[/]",
-                2 => "[red]不调↘️[/]",
-                1 => "[red]绝不调↓[/]"
+                5 => $"[green]{I18N_MotivationBest}↑[/]",
+                4 => $"[yellow]{I18N_MotivationGood}↗[/]",
+                3 => $"[red]{I18N_MotivationNormal}→[/]",
+                2 => $"[red]{I18N_MotivationBad}↘️[/]",
+                1 => $"[red]{I18N_MotivationWorst}↓[/]"
             }).Expand());
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
@@ -388,9 +383,9 @@ namespace UmamusumeResponseAnalyzer.Handler
             static string ColorToMarkup(SportColor c) =>
                 c switch
                 {
-                    SportColor.Blue => $"[blue]蓝[/]",
-                    SportColor.Red => $"[red]红[/]",
-                    SportColor.Yellow => $"[yellow]黄[/]",
+                    SportColor.Blue => $"[blue]{I18N_Blue}[/]",
+                    SportColor.Red => $"[red]{I18N_Red}[/]",
+                    SportColor.Yellow => $"[yellow]{I18N_Yellow}[/]",
                     _ => throw new NotImplementedException(),
                 };
         }

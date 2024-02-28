@@ -2,52 +2,60 @@
 using IniParser.Model;
 using Spectre.Console;
 using System.Text;
-using UmamusumeResponseAnalyzer.Localization;
+using static UmamusumeResponseAnalyzer.Localization.Config;
 
 namespace UmamusumeResponseAnalyzer
 {
     internal static class Config
     {
+        private readonly static List<object> _savedConfigForLanguageChange = [];
+        internal static readonly IReadOnlyCollection<string> DisableByDefault = Array.AsReadOnly([I18N_ForceUseGithubToUpdate, I18N_EnableNetFilter, I18N_DMMLaunch, I18N_SaveResponseForDebug, I18N_WriteAIInfo, I18N_Language_English, I18N_Language_Japanese, I18N_Language_SimplifiedChinese]);
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".config");
         internal static Dictionary<string, IEnumerable<ConfigItem>> ConfigSet { get; set; } = [];
         internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = [];
         internal static void Initialize()
         {
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
-            ConfigSet.Add(Resource.ConfigSet_Events, ConfigItem.From
+            ConfigSet.Add(I18N_Events, ConfigItem.From
             (
-                Resource.ConfigSet_ParseSingleModeCheckEventResponse,
-                Resource.ConfigSet_ParseTrainedCharaLoadResponse,
-                Resource.ConfigSet_ParseFriendSearchResponse,
-                Resource.ConfigSet_ParseTeamStadiumOpponentListResponse,
-                Resource.ConfigSet_ParsePracticeRaceRaceStartResponse,
-                Resource.ConfigSet_ParseRoomMatchRaceStartResponse,
-                Resource.ConfigSet_ParseChampionsRaceStartResponse,
-                Resource.ConfigSet_MaximiumGradeSkillRecommendation,
-                Resource.ConfigSet_ShowCommandInfo
+                I18N_ParseSingleModeCheckEventResponse,
+                I18N_ParseTrainedCharaLoadResponse,
+                I18N_ParseFriendSearchResponse,
+                I18N_ParseTeamStadiumOpponentListResponse,
+                I18N_ParsePracticeRaceRaceStartResponse,
+                I18N_ParseRoomMatchRaceStartResponse,
+                I18N_ParseChampionsRaceStartResponse,
+                I18N_MaximiumGradeSkillRecommendation,
+                I18N_ShowCommandInfo
             ));
-            ConfigSet.Add("更新", ConfigItem.From(
-                Resource.ConfigSet_ForceUseGithubToUpdate
+            ConfigSet.Add(I18N_Update, ConfigItem.From(
+                I18N_ForceUseGithubToUpdate
             ));
-            ConfigSet.Add("加速", new ConfigItem[]
+            ConfigSet.Add(I18N_NetworkProxy, new ConfigItem[]
             {
-                new(Resource.ConfigSet_EnableNetFilter,false),
-                new("加速服务器地址",string.Empty,false),
-                new("加速服务器端口",string.Empty,false),
-                new("加速服务器用户名",string.Empty, false),
-                new("加速服务器密码",string.Empty, false),
-                new("加速服务器类型",string.Empty, false)
+                new(I18N_EnableNetFilter,false),
+                new(I18N_ProxyHost,string.Empty,false),
+                new(I18N_ProxyPort,string.Empty,false),
+                new(I18N_ProxyUsername,string.Empty, false),
+                new(I18N_ProxyPassword,string.Empty, false),
+                new(I18N_ProxyServerType,string.Empty, false)
             });
-            ConfigSet.Add("本地化", new ConfigItem[]
+            ConfigSet.Add(I18N_Language, ConfigItem.From(
+                I18N_Language_AutoDetect,
+                I18N_Language_English,
+                I18N_Language_Japanese,
+                I18N_Language_SimplifiedChinese
+                ));
+            ConfigSet.Add(I18N_Localization, new ConfigItem[]
             {
-                new(Resource.ConfigSet_LoadLocalizedData,true),
-                new("本地化文件路径",string.Empty,false),
+                new(I18N_LoadLocalizedData,true),
+                new(I18N_LocalizedDataPath,string.Empty,false),
             });
-            ConfigSet.Add("调试", ConfigItem.From(Resource.ConfigSet_SaveResponseForDebug));
-            ConfigSet.Add("其他", ConfigItem.From(
-                Resource.ConfigSet_DMMLaunch,
-                Resource.ConfigSet_DisableSelectIndex,
-                Resource.ConfigSet_WriteAIInfo
+            ConfigSet.Add(I18N_Debug, ConfigItem.From(I18N_SaveResponseForDebug));
+            ConfigSet.Add(I18N_Other, ConfigItem.From(
+                I18N_DMMLaunch,
+                I18N_DisableSelectIndex,
+                I18N_WriteAIInfo
                 ));
             if (File.Exists(CONFIG_FILEPATH))
             {
@@ -71,13 +79,34 @@ namespace UmamusumeResponseAnalyzer
                 {
                     File.Delete(CONFIG_FILEPATH);
                     AddMissing();
-                    AnsiConsole.MarkupLine($"[red]读取配置文件时发生错误,已重新生成,请再次更改设置[/]");
+                    AnsiConsole.MarkupLine(I18N_ConfigLoadError);
                 }
             }
             else
             {
                 AddMissing();
             }
+        }
+        internal static void SaveConfigForLanguageChange()
+        {
+            var cfg = Configuration.Values.ToArray();
+            for (var i = 0; i < cfg.Length; i++)
+            {
+                _savedConfigForLanguageChange.Add(cfg[i].Value);
+            }
+        }
+        internal static void LoadConfigForLanguageChange()
+        {
+            ConfigSet.Clear();
+            Configuration.Clear();
+            File.Delete(CONFIG_FILEPATH);
+            Initialize();
+            var cfg = Configuration.Keys.ToArray();
+            for(var i = 0; i < _savedConfigForLanguageChange.Count; i++)
+            {
+                Configuration[cfg[i]].Value = _savedConfigForLanguageChange[i];
+            }
+            _savedConfigForLanguageChange.Clear();
         }
         public static void Save()
         {
@@ -100,11 +129,7 @@ namespace UmamusumeResponseAnalyzer
             foreach (var i in ConfigSet.SelectMany(x => x.Value))
             {
                 if (Configuration.ContainsKey(i.Key)) continue;
-                if (i.Key == Resource.ConfigSet_ForceUseGithubToUpdate ||
-                    i.Key == Resource.ConfigSet_EnableNetFilter ||
-                    i.Key == Resource.ConfigSet_DMMLaunch ||
-                    i.Key == Resource.ConfigSet_SaveResponseForDebug ||
-                    i.Key == Resource.ConfigSet_WriteAIInfo) //不默认开
+                if (DisableByDefault.Contains(i.Key)) //不默认开
                 {
                     Configuration.Add(i.Key, new(i.Key, false));
                 }
@@ -151,7 +176,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[red]读取配置<{key}>时出现类型错误: 请求的类型为{typeof(T)}，而实际的类型为{value.GetType()}[/]");
+                    AnsiConsole.MarkupLine(I18N_ConfigTypeCastError, key, typeof(T), value.GetType());
                 }
             }
             return default;

@@ -3,16 +3,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Net;
-using System.Runtime.InteropServices;
-using UmamusumeResponseAnalyzer.Localization;
-using UmamusumeResponseAnalyzer.Handler;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using UmamusumeResponseAnalyzer.Game;
 using System.Net.WebSockets;
 using System.Text;
 using UmamusumeResponseAnalyzer.Communications;
-using UmamusumeResponseAnalyzer.AI;
+using UmamusumeResponseAnalyzer.Game;
+using UmamusumeResponseAnalyzer.Handler;
+using static UmamusumeResponseAnalyzer.Localization.Server;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -32,7 +30,7 @@ namespace UmamusumeResponseAnalyzer
                 httpListener = new();
                 httpListener.Prefixes.Add("http://*:4693/");
                 httpListener.Start();
-                AnsiConsole.MarkupLine("服务器已于http://*:4693启动");
+                AnsiConsole.MarkupLine(I18N_WildcardServerStarted);
                 var interfaces = NetworkInterface.GetAllNetworkInterfaces()
                    .Where(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet && x.OperationalStatus == OperationalStatus.Up)
                    .SelectMany(x => x.GetIPProperties().UnicastAddresses)
@@ -41,7 +39,7 @@ namespace UmamusumeResponseAnalyzer
                    .ToList();
                 foreach (var i in interfaces)
                 {
-                    AnsiConsole.WriteLine($"可尝试通过http://{i}:4693连接");
+                    AnsiConsole.WriteLine(I18N_AvailableEndpointTip, i);
                 }
             }
             catch
@@ -51,11 +49,11 @@ namespace UmamusumeResponseAnalyzer
                     httpListener = new();
                     httpListener.Prefixes.Add("http://127.0.0.1:4693/");
                     httpListener.Start();
-                    AnsiConsole.MarkupLine("服务器已于http://127.0.0.1:4693启动，如需模拟器/手机连入请以管理员权限运行");
+                    AnsiConsole.MarkupLine(I18N_NormalServerStarted);
                 }
                 catch (HttpListenerException)
                 {
-                    AnsiConsole.WriteLine("服务器启动失败，请检查是否已有URA实例正在运行");
+                    AnsiConsole.WriteLine(I18N_ServerStartFail);
                 }
             }
             finally
@@ -167,7 +165,7 @@ namespace UmamusumeResponseAnalyzer
                     #endregion
                     if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
                     {
-                        if (Config.Get(Resource.ConfigSet_ShowCommandInfo))
+                        if (Config.Get(Localization.Config.I18N_ShowCommandInfo))
                         {
                             if (data.chara_info.scenario_id == 7)
                                 Handlers.ParseSportCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
@@ -179,7 +177,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         if (dyn.data.command_result.result_state == 1) // 训练失败
                         {
-                            AnsiConsole.MarkupLine($"[red]训练失败！[/]");
+                            AnsiConsole.MarkupLine(I18N_TrainingFailed);
                             if (GameStats.stats[GameStats.currentTurn] != null)
                                 GameStats.stats[GameStats.currentTurn].isTrainingFailed = true;
                         }
@@ -187,20 +185,20 @@ namespace UmamusumeResponseAnalyzer
                     }
                     if (data.chara_info != null && data.unchecked_event_array?.Count > 0)
                     {
-                        if (Config.Get(Resource.ConfigSet_ParseSingleModeCheckEventResponse))
+                        if (Config.Get(Localization.Config.I18N_ParseSingleModeCheckEventResponse))
                             Handlers.ParseSingleModeCheckEventResponse(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                     }
                     if (data.chara_info != null && (data.chara_info.state == 2 || data.chara_info.state == 3) && data.unchecked_event_array?.Count == 0)
                     {
-                        if (Config.Get(Resource.ConfigSet_MaximiumGradeSkillRecommendation) && data.chara_info.skill_tips_array != null)
+                        if (Config.Get(Localization.Config.I18N_MaximiumGradeSkillRecommendation) && data.chara_info.skill_tips_array != null)
                             Handlers.ParseSkillTipsResponse(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                     }
                     if (data.trained_chara_array != null && data.trained_chara_favorite_array != null && data.room_match_entry_chara_id_array != null)
                     {
-                        if (Config.Get(Resource.ConfigSet_ParseTrainedCharaLoadResponse))
+                        if (Config.Get(Localization.Config.I18N_ParseTrainedCharaLoadResponse))
                             Handlers.ParseTrainedCharaLoadResponse(dyn.ToObject<Gallop.TrainedCharaLoadResponse>());
                     }
-                    if (data.user_info_summary != null && Config.Get(Resource.ConfigSet_ParseFriendSearchResponse))
+                    if (data.user_info_summary != null && Config.Get(Localization.Config.I18N_ParseFriendSearchResponse))
                     {
                         if (data.practice_partner_info != null && data.support_card_data != null && data.follower_num != null && data.own_follow_num != null)
                             Handlers.ParseFriendSearchResponse(dyn.ToObject<Gallop.FriendSearchResponse>());
@@ -209,33 +207,33 @@ namespace UmamusumeResponseAnalyzer
                     }
                     if (data.opponent_info_array?.Count == 3)
                     {
-                        if (Config.Get(Resource.ConfigSet_ParseTeamStadiumOpponentListResponse))
+                        if (Config.Get(Localization.Config.I18N_ParseTeamStadiumOpponentListResponse))
                             Handlers.ParseTeamStadiumOpponentListResponse(dyn.ToObject<Gallop.TeamStadiumOpponentListResponse>()); //https://github.com/CNA-Bld/EXNOA-CarrotJuicer/issues/2
                     }
                     if (data.trained_chara_array != null && data.race_result_info != null && data.entry_info_array != null && data.practice_race_id != null && data.state != null && data.practice_partner_owner_info_array != null)
                     {
-                        if (Config.Get(Resource.ConfigSet_ParsePracticeRaceRaceStartResponse))
+                        if (Config.Get(Localization.Config.I18N_ParsePracticeRaceRaceStartResponse))
                             Handlers.ParsePracticeRaceRaceStartResponse(dyn.ToObject<Gallop.PracticeRaceRaceStartResponse>());
                     }
                     if (data.race_scenario != null && data.random_seed != null && data.race_horse_data_array != null && data.trained_chara_array != null && data.season != null && data.weather != null && data.ground_condition != null)
                     {
-                        if (Config.Get(Resource.ConfigSet_ParseRoomMatchRaceStartResponse))
+                        if (Config.Get(Localization.Config.I18N_ParseRoomMatchRaceStartResponse))
                             Handlers.ParseRoomMatchRaceStartResponse(dyn.ToObject<Gallop.RoomMatchRaceStartResponse>());
                     }
                     if (data.room_info != null && data.room_user_array != null && data.race_horse_data_array != null && data.trained_chara_array != null)
                     {
-                        if (Config.Get(Resource.ConfigSet_ParseChampionsRaceStartResponse))
+                        if (Config.Get(Localization.Config.I18N_ParseChampionsRaceStartResponse))
                             Handlers.ParseChampionsRaceStartResponse(dyn.ToObject<Gallop.ChampionsFinalRaceStartResponse>());
                     }
                     if (dyn.data_headers.server_list != null && dyn.data_headers.server_list.resource_server_login != null)
                     {
-                        AnsiConsole.MarkupLine($"[green]检测到ViewerID为{dyn.data_headers.viewer_id}的帐号登录请求[/]");
+                        AnsiConsole.MarkupLine(I18N_LoginRequestDetected, dyn.data_headers.viewer_id);
                     }
                 }
                 catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
                 catch (Exception e)
                 {
-                    AnsiConsole.MarkupLine("[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]");
+                    AnsiConsole.MarkupLine(I18N_ResponseAnalyzeFail);
                     AnsiConsole.WriteException(e);
 #if DEBUG
                     throw;
@@ -267,8 +265,8 @@ namespace UmamusumeResponseAnalyzer
                             }
                             else if (msg.MessageType == WebSocketMessageType.Text)
                             {
-                                var req = JsonConvert.DeserializeObject<WSRequest>(Encoding.UTF8.GetString(contentbuffer.ToArray())) ?? throw new Exception("反序列化WSRequest失败");
-                                if (req.CommandType == CommandType.None) throw new Exception($"[WS]{wsctx.SecWebSocketKey}: CommandType不得为None");
+                                var req = JsonConvert.DeserializeObject<WSRequest>(Encoding.UTF8.GetString(contentbuffer.ToArray())) ?? throw new Exception(I18N_WebSocket_DeserializeRequestFail);
+                                if (req.CommandType == CommandType.None) throw new Exception(string.Format(I18N_WebSocket_CommandTypeNone, wsctx.SecWebSocketKey));
                                 var commandName = req.CommandType switch
                                 {
                                     CommandType.Action => $"UmamusumeResponseAnalyzer.Communications.Actions.{req.Command}",
@@ -279,8 +277,8 @@ namespace UmamusumeResponseAnalyzer
                                     CommandType.Action => req.Parameters,
                                     CommandType.Subscribe or CommandType.Unsubscribe => req.Parameters.Prepend(wsctx.SecWebSocketKey).ToArray()
                                 };
-                                var commandType = Type.GetType(commandName) ?? throw new Exception($"未找到Command: {commandName}");
-                                var commandConstructor = commandType.GetConstructor(Enumerable.Repeat(typeof(string), commandParameters.Length).ToArray()) ?? throw new Exception("未找到对应构造函数");
+                                var commandType = Type.GetType(commandName) ?? throw new Exception(string.Format(I18N_WebSocket_CommandNotFound, commandName));
+                                var commandConstructor = commandType.GetConstructor(Enumerable.Repeat(typeof(string), commandParameters.Length).ToArray()) ?? throw new Exception(I18N_WebSocket_ConstructorNotFound);
                                 var command = (ICommand)commandConstructor.Invoke(commandParameters);
                                 var response = req.CommandType switch
                                 {
@@ -323,7 +321,7 @@ namespace UmamusumeResponseAnalyzer
                 File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
                 File.WriteAllText($@"./packets/Turn{GameStats.currentTurn}_{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
-                if (Config.Get(Resource.ConfigSet_SaveResponseForDebug))
+                if (Config.Get(Localization.Config.I18N_SaveResponseForDebug))
                 {
                     var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "packets");
                     if (Directory.Exists(directory))
@@ -353,7 +351,7 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (ctx.Request.RawUrl == "/notify/ping")
             {
-                AnsiConsole.MarkupLine("[green]检测到从游戏发来的请求，配置正确[/]");
+                AnsiConsole.MarkupLine(I18N_PingReceived);
                 await ctx.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("pong"));
                 ctx.Response.Close();
                 OnPing.Signal();

@@ -121,7 +121,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     }
                 }
-                table.AddRow(properTypeLine.Append("平 均").ToArray());
+                table.AddRow(properTypeLine.Append("A v g").ToArray());
                 table.AddRow(properValueLine.Append("/ / /").ToArray());
 
                 table.AddRow(speedLine.Append(speedLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
@@ -151,7 +151,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 6 => "B",
                 7 => "A",
                 8 => "S",
-                _ => "错误"
+                _ => throw new NotImplementedException()
             };
         }
     }

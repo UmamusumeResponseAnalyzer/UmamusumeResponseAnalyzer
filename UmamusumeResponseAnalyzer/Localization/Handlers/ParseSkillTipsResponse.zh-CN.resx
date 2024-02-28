@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="I18N_Caption" xml:space="preserve">
+    <value>预测总分: {0}(已学习技能) + {1}(即将学习技能) + {2}(属性) = {3}({4})</value>
+  </data>
+  <data name="I18N_Columns_Grade" xml:space="preserve">
+    <value>评价点</value>
+  </data>
+  <data name="I18N_Columns_RequireSP" xml:space="preserve">
+    <value>需要技能点数</value>
+  </data>
+  <data name="I18N_Columns_SkillName" xml:space="preserve">
+    <value>技能名</value>
+  </data>
+  <data name="I18N_Title" xml:space="preserve">
+    <value>总计技能点: {0}, 使用技能点: {1}, 剩余技能点: {2}</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_1" xml:space="preserve">
+    <value>由于有技能不满足进化条件，本次结果以&lt;有技能无法进化时的最大化推荐&gt;为基准进行二次计算</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_2" xml:space="preserve">
+    <value>且二次计算后的总分[green]高于[/]无法进化时的结果，请确保按推荐学完技能之后两个天赋技能均满足进化条件</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_3" xml:space="preserve">
+    <value>如遇到此提示，请打开选项中的"保存用于调试的通讯包"后再次进入育成界面</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_4" xml:space="preserve">
+    <value>并将%LOCALAPPDATA%/UmamusumeResponseAnalyzer/packets目录下的所有文件打包发送到频道/github issue中以便调试</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_5" xml:space="preserve">
+    <value>由于有技能不满足进化条件，本次结果以&lt;有技能无法进化时的最大化推荐&gt;为基准进行二次计算</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_6" xml:space="preserve">
+    <value>且二次计算后的总分[red]低于[/]无法进化时的结果，因此按(全部/部分)技能无法进化给出建议</value>
+  </data>
+  <data name="I18N_Evolved" xml:space="preserve">
+    <value>进化</value>
+  </data>
+  <data name="I18N_AverageCostEffectiveness" xml:space="preserve">
+    <value>[aqua]平均性价比：{0}[/]</value>
+  </data>
+  <data name="I18N_ExpectedCostEffectiveness" xml:space="preserve">
+    <value>[aqua]不同价格的技能的期望性价比如下，若某技能的评分计算错误且偏低且没有出现在上表中（以上几种情况），请手动计算性价比与下表进行比较[/]</value>
+  </data>
+  <data name="I18N_ExpectedCostEffectivenessByPrice" xml:space="preserve">
+    <value>[green]{0}pt技能的期望性价比：{1}[/]</value>
+  </data>
+  <data name="I18N_MarginalCostEffectiveness" xml:space="preserve">
+    <value>[aqua]边际性价比：{0}[/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_1" xml:space="preserve">
+    <value>[yellow]已知问题 [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_2" xml:space="preserve">
+    <value>[yellow]1.对于学习技能后才能判定是否能进化的技能，可能无法正确判断。若以上存在没有进化的可进化技能，请自行判断 [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_3" xml:space="preserve">
+    <value>[yellow]2.没考虑紫色（负面）技能，请自己解除紫色技能 [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_4" xml:space="preserve">
+    <value>[red]以上几种情况可以自己决定是否购买相应技能，购买之后重启游戏，即可重新计算 [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_5" xml:space="preserve">
+    <value>[red]以下是一些参考指标 [/]</value>
+  </data>
+  <data name="I18N_ScoreToNextGrade" xml:space="preserve">
+    <value>距离{0}还有[yellow]{1}[/]分</value>
+  </data>
+  <data name="I18N_UnknownSkillAlert" xml:space="preserve">
+    <value>警告：未知技能，group_id={0}, rarity={1}</value>
+  </data>
+  <data name="I18N_UnknownSkillSuperiorSuppose" xml:space="preserve">
+    <value>，可能是 {0} 的上位技能</value>
+  </data>
+  <data name="I18N_UnknownBoughtSkillAlert" xml:space="preserve">
+    <value>[red]警告：未知已购买技能，id={0}[/]</value>
+  </data>
+  <data name="I18N_UnknownUma" xml:space="preserve">
+    <value>[red]未知马娘：{0}，无法获取觉醒技能，请自己决定是否购买。[/]</value>
+  </data>
+  <data name="I18N_UnknownSkillExistAlert" xml:space="preserve">
+    <value>[red]警告：存在未知技能[/]</value>
+  </data>
+</root>

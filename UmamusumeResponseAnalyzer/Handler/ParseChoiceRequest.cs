@@ -10,7 +10,6 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseChoiceRequest(Gallop.SingleModeChoiceRequest @event)
         {
-            AnsiConsole.MarkupLine($"玩家选择了选项 [aqua]{@event.choice_number}[/]");
             EventLogger.UpdatePlayerChoice(@event);
         }
     }
