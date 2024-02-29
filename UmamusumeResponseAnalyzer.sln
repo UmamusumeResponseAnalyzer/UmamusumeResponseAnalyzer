@@ -36,6 +36,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		RESX_Rules = {"EnabledRules":["WhiteSpaceLead","WhiteSpaceTail","PunctuationTail"]}
 		SolutionGuid = {60F98C58-0C19-4F88-A3C0-42E7762E8082}
+		RESX_SaveFilesImmediatelyUponChange = False
+		RESX_SortFileContentOnSave = False
 	EndGlobalSection
 EndGlobal

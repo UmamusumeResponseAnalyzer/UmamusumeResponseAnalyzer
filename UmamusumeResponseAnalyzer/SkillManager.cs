@@ -172,6 +172,7 @@ namespace UmamusumeResponseAnalyzer
             get => idMap.TryGetValue(Id, out SkillData? value) ? value : null!;
             set => idMap[Id] = value;
         }
+        public bool TryGetValue(int id, out SkillData? value) => idMap.TryGetValue(id, out value);
         public (int GroupId, int Rarity, int Rate) Deconstruction(int Id) => this[Id].Deconstruction();
         /// <summary>
         /// 获得某个技能的所有子技能(金、双圈、单圈、×)

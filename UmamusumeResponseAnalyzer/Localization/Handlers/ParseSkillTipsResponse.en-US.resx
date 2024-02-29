@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="I18N_Caption" xml:space="preserve">
+    <value>Predicted total score: {0} (learned skills) + {1} (upcoming skills) + {2} (attributes) = {3} ({4})</value>
+  </data>
+  <data name="I18N_Columns_Grade" xml:space="preserve">
+    <value>Evaluation points</value>
+  </data>
+  <data name="I18N_Columns_RequireSP" xml:space="preserve">
+    <value>Required skill points</value>
+  </data>
+  <data name="I18N_Columns_SkillName" xml:space="preserve">
+    <value>Skill name</value>
+  </data>
+  <data name="I18N_Title" xml:space="preserve">
+    <value>Total skill points: {0}, used skill points: {1}, remaining skill points: {2}</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_1" xml:space="preserve">
+    <value>Due to some skills not meeting the evolution conditions, this result is based on &lt;maximized recommendation when some skills cannot evolve&gt; for recalculation</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_3" xml:space="preserve">
+    <value>[yellow]2. Purple (negative) skills not considered, please remove purple skills yourself [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_4" xml:space="preserve">
+    <value>[red]You can decide whether to buy the corresponding skills for the above situations. After buying, restart the game for recalculation [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_5" xml:space="preserve">
+    <value>[red]Below are some reference indicators [/]</value>
+  </data>
+  <data name="I18N_AverageCostEffectiveness" xml:space="preserve">
+    <value>[aqua]Average cost-effectiveness: {0}[/]</value>
+  </data>
+  <data name="I18N_MarginalCostEffectiveness" xml:space="preserve">
+    <value>[aqua]Marginal cost-effectiveness: {0}[/]</value>
+  </data>
+  <data name="I18N_ExpectedCostEffectiveness" xml:space="preserve">
+    <value>[aqua]The expected cost-effectiveness of skills at different prices is as follows. If the score of a skill is calculated incorrectly and is low and not listed above (in the above situations), please manually calculate the cost-effectiveness and compare with the table below[/]</value>
+  </data>
+  <data name="I18N_ExpectedCostEffectivenessByPrice" xml:space="preserve">
+    <value>[green]Expected cost-effectiveness of {0}pt skill: {1}[/]</value>
+  </data>
+  <data name="I18N_Evolved" xml:space="preserve">
+    <value>Evolution</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_2" xml:space="preserve">
+    <value>And after recalculation, the total score [green]exceeds[/] the result when unable to evolve, please ensure to learn skills as recommended after both talent skills meet the evolution conditions</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_3" xml:space="preserve">
+    <value>If you see this prompt, open the option of "save communication packets for debugging" then re-enter the upbringing interface</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_4" xml:space="preserve">
+    <value>And package all files in the %LOCALAPPDATA%/UmamusumeResponseAnalyzer/packets directory and send them to the channel/github issue for debugging</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_5" xml:space="preserve">
+    <value>Due to some skills not meeting the evolution conditions, this result is based on &lt;maximized recommendation when some skills cannot evolve&gt; for recalculation</value>
+  </data>
+  <data name="I18N_EvolveSkillAlert_6" xml:space="preserve">
+    <value>And after recalculation, the total score [red]is below[/] the result when unable to evolve, therefore, recommendations are given as (all/part) skills cannot evolve</value>
+  </data>
+  <data name="I18N_ScoreToNextGrade" xml:space="preserve">
+    <value>{0} is [yellow]{1}[/] points away</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_1" xml:space="preserve">
+    <value>[yellow]Known issues [/]</value>
+  </data>
+  <data name="I18N_ScoreCalculateAttention_2" xml:space="preserve">
+    <value>[yellow]1. For skills that can only be judged whether they can evolve after learning, it may not be correctly judged. If there are evolvable skills that have not evolved above, please judge for yourself [/]</value>
+  </data>
+  <data name="I18N_UnknownSkillAlert" xml:space="preserve">
+    <value>Warning: Unknown skill, group_id={0}, rarity={1}</value>
+  </data>
+  <data name="I18N_UnknownSkillSuperiorSuppose" xml:space="preserve">
+    <value>, might be the superior skill of {0}</value>
+  </data>
+  <data name="I18N_UnknownBoughtSkillAlert" xml:space="preserve">
+    <value>[red]Warning: Unknown purchased skill, id={0}[/]</value>
+  </data>
+  <data name="I18N_UnknownUma" xml:space="preserve">
+    <value>[red]Unknown Uma Musume: {0}, unable to obtain awakening skills, please decide whether to buy yourself.[/]</value>
+  </data>
+  <data name="I18N_UnknownSkillExistAlert" xml:space="preserve">
+    <value>[red]Warning: There are unknown skills[/]</value>
+  </data>
+</root>

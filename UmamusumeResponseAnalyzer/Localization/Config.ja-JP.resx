@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="I18N_DisableSelectIndex" xml:space="preserve">
+    <value>SelectIndexを非表示</value>
+  </data>
+  <data name="I18N_DMMLaunch" xml:space="preserve">
+    <value>DMM起動ゲームをスキップ</value>
+  </data>
+  <data name="I18N_EnableNetFilter" xml:space="preserve">
+    <value>ゲーム加速機能を有効にする</value>
+  </data>
+  <data name="I18N_Events" xml:space="preserve">
+    <value>イベント</value>
+  </data>
+  <data name="I18N_ForceUseGithubToUpdate" xml:space="preserve">
+    <value>GitHubを使用した強制アップデート</value>
+  </data>
+  <data name="I18N_LoadLocalizedData" xml:space="preserve">
+    <value>ローカライズプラグインのデータをロード</value>
+  </data>
+  <data name="I18N_MaximiumGradeSkillRecommendation" xml:space="preserve">
+    <value>評価点を最大化するスキル学習の提案をする</value>
+  </data>
+  <data name="I18N_ParseChampionsRaceStartResponse" xml:space="preserve">
+    <value>月間大会のレースを解析</value>
+  </data>
+  <data name="I18N_ParseFriendSearchResponse" xml:space="preserve">
+    <value>友達の種馬の勝ち鞍を解析</value>
+  </data>
+  <data name="I18N_ParsePracticeRaceRaceStartResponse" xml:space="preserve">
+    <value>練習レースを解析</value>
+  </data>
+  <data name="I18N_ParseRoomMatchRaceStartResponse" xml:space="preserve">
+    <value>ルームマッチを解析</value>
+  </data>
+  <data name="I18N_ParseSingleModeCheckEventResponse" xml:space="preserve">
+    <value>育成イベントを解析</value>
+  </data>
+  <data name="I18N_ParseTeamStadiumOpponentListResponse" xml:space="preserve">
+    <value>アリーナの対戦相手の属性を解析</value>
+  </data>
+  <data name="I18N_ParseTrainedCharaLoadResponse" xml:space="preserve">
+    <value>ルビーホースの勝ち鞍を解析</value>
+  </data>
+  <data name="I18N_SaveResponseForDebug" xml:space="preserve">
+    <value>デバッグ用の通信パケットを保存</value>
+  </data>
+  <data name="I18N_ShowCommandInfo" xml:space="preserve">
+    <value>トレーナーのヘッド情報を表示</value>
+  </data>
+  <data name="I18N_WriteAIInfo" xml:space="preserve">
+    <value>AIが読み取りやすいように、ラウンド情報をファイルに書き込む</value>
+  </data>
+  <data name="I18N_Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="I18N_Language_Japanese" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="I18N_Language_SimplifiedChinese" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="I18N_Language" xml:space="preserve">
+    <value>言語</value>
+  </data>
+  <data name="I18N_ConfigLoadError" xml:space="preserve">
+    <value>[red]設定ファイルの読み込み時にエラーが発生し、再生成されました。再度設定を変更してください[/]</value>
+  </data>
+  <data name="I18N_ConfigTypeCastError" xml:space="preserve">
+    <value>[red]設定&lt;{0}&gt;を読み込む際に型エラーが発生しました：要求された型は{1}ですが、実際の型は{2}でした[/]</value>
+  </data>
+  <data name="I18N_Debug" xml:space="preserve">
+    <value>デバッグ</value>
+  </data>
+  <data name="I18N_Localization" xml:space="preserve">
+    <value>ローカライズ</value>
+  </data>
+  <data name="I18N_LocalizedDataPath" xml:space="preserve">
+    <value>ローカライズファイルパス</value>
+  </data>
+  <data name="I18N_NetworkProxy" xml:space="preserve">
+    <value>アクセラレーション</value>
+  </data>
+  <data name="I18N_Other" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="I18N_ProxyHost" xml:space="preserve">
+    <value>アクセラレーションサーバーアドレス</value>
+  </data>
+  <data name="I18N_ProxyPassword" xml:space="preserve">
+    <value>アクセラレーションサーバーパスワード</value>
+  </data>
+  <data name="I18N_ProxyPort" xml:space="preserve">
+    <value>アクセラレーションサーバーポート</value>
+  </data>
+  <data name="I18N_ProxyServerType" xml:space="preserve">
+    <value>アクセラレーションサーバータイプ</value>
+  </data>
+  <data name="I18N_ProxyUsername" xml:space="preserve">
+    <value>アクセラレーションサーバーユーザー名</value>
+  </data>
+  <data name="I18N_Update" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="I18N_Language_AutoDetect" xml:space="preserve">
+    <value>自動検出</value>
+  </data>
+</root>

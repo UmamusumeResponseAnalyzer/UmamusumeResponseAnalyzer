@@ -1,10 +1,6 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Entities;
+using static UmamusumeResponseAnalyzer.Localization.Handlers.ParseFriendSearchResponse;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -43,20 +39,20 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
 
             AnsiConsole.Write(new Rule());
-            AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\tID：{data.user_info_summary.viewer_id}\t\tFollower数：{data.follower_num}");
-            AnsiConsole.WriteLine($"种马：{Database.Names.GetUmamusume(chara.card_id).FullName}\t胜鞍：{win_saddle}\t\t评分：{chara.rank_score}");
-            AnsiConsole.WriteLine($"胜鞍列表：{string.Join(',', charaWinSaddle)}");
+            AnsiConsole.WriteLine(I18N_Friend, data.user_info_summary.name, data.user_info_summary.viewer_id, data.follower_num);
+            AnsiConsole.WriteLine(I18N_Uma, Database.Names.GetUmamusume(chara.card_id).FullName, win_saddle, chara.rank_score);
+            AnsiConsole.WriteLine(I18N_WinSaddle, string.Join(',', charaWinSaddle));
             if (Database.SaddleNames.Count != 0)
-                AnsiConsole.WriteLine($"胜鞍详细：{string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x]))}{Environment.NewLine}");
-            var tree = new Tree("因子");
+                AnsiConsole.WriteLine(I18N_WinSaddleDetail, string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x])));
+            var tree = new Tree(I18N_Factor);
 
             var max = chara.factor_info_array.Select(x => x.factor_id).Concat(chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id))
                 .Concat(chara.succession_chara_array[1].factor_info_array.Select(x => x.factor_id))
                 .Where((x, index) => index % 2 == 0)
                 .Max(x => GetRenderWidth(Database.FactorIds[x]));
-            var representative = AddFactors("代表", chara.factor_info_array.Select(x => x.factor_id).ToArray(), max);
-            var inheritanceA = AddFactors($"祖辈@{chara.succession_chara_array[0].owner_viewer_id}", chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
-            var inheritanceB = AddFactors($"祖辈@{chara.succession_chara_array[1].owner_viewer_id}", chara.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var representative = AddFactors(I18N_UmaFactor, chara.factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceA = AddFactors(string.Format(I18N_ParentFactor, chara.succession_chara_array[0].owner_viewer_id), chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var inheritanceB = AddFactors(string.Format(I18N_ParentFactor, chara.succession_chara_array[1].owner_viewer_id), chara.succession_chara_array[1].factor_info_array.Select(x => x.factor_id).ToArray(), max);
 
             tree.AddNodes(representative, inheritanceA, inheritanceB);
             AnsiConsole.Write(tree);
@@ -66,15 +62,15 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             var data = @event.data;
             AnsiConsole.Write(new Rule());
-            AnsiConsole.WriteLine($"好友：{data.user_info_summary.name}\t\tID：{data.user_info_summary.viewer_id}");
-            AnsiConsole.WriteLine($"种马：{Database.Names.GetUmamusume(data.user_info_summary.user_trained_chara.card_id).FullName}");
-            var tree = new Tree("因子");
+            AnsiConsole.WriteLine(I18N_FriendSimple, data.user_info_summary.name, data.user_info_summary.viewer_id);
+            AnsiConsole.WriteLine(I18N_UmaSimple, Database.Names.GetUmamusume(data.user_info_summary.user_trained_chara.card_id).FullName);
+            var tree = new Tree(I18N_Factor);
 
             var i = data.user_info_summary.user_trained_chara;
             var max = i.factor_info_array.Select(x => x.factor_id)
                 .Where((x, index) => index % 2 == 0)
                 .Max(x => GetRenderWidth(Database.FactorIds[x]));
-            var representative = AddFactors("代表", i.factor_info_array.Select(x => x.factor_id).ToArray(), max);
+            var representative = AddFactors(I18N_UmaFactor, i.factor_info_array.Select(x => x.factor_id).ToArray(), max);
 
             tree.AddNodes(representative);
             AnsiConsole.Write(tree);

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static UmamusumeResponseAnalyzer.Localization.Game;
+using static UmamusumeResponseAnalyzer.LocalizedLayouts.Handlers.ParseTeamStadiumOpponentListResponse;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -15,32 +17,19 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseTeamStadiumOpponentListResponse(Gallop.TeamStadiumOpponentListResponse @event)
         {
             var data = @event.data;
-            var container = new Table
-            {
-                Border = TableBorder.Double
-            };
-            container.AddColumn(new TableColumn(string.Empty).NoWrap());
-            container.HideHeaders();
             foreach (var i in data.opponent_info_array.OrderByDescending(x => -x.strength))
             {
-                var Type = i.strength switch
-                {
-                    1 => "上",
-                    2 => "中",
-                    3 => "下"
-                };
                 var teamData = i.team_data_array.Where(x => x.trained_chara_id != 0).GroupBy(x => x.distance_type).ToDictionary(x => x.Key, x => x.ToList());
                 var table = new Table();
-                table.Title(Type);
-                table.AddColumns(Enumerable.Repeat(new TableColumn("　　　").NoWrap(), 2 + teamData.Values.Sum(x=>x.Count)).ToArray());
+                table.AddColumns(Enumerable.Repeat(new TableColumn(ColumnWidth).NoWrap(), 2 + teamData.Values.Sum(x => x.Count)).ToArray());
                 table.HideHeaders();
                 var properTypeLine = new List<string> { string.Empty };
-                var properValueLine = new List<string> { "适性" };
-                var speedLine = new List<string> { "速度" };
-                var staminaLine = new List<string> { "耐力" };
-                var powerLine = new List<string> { "力量" };
-                var gutsLine = new List<string> { "根性" };
-                var wizLine = new List<string> { "智力" };
+                var properValueLine = new List<string> { I18N_Proper };
+                var speedLine = new List<string> { I18N_Speed };
+                var staminaLine = new List<string> { I18N_Stamina };
+                var powerLine = new List<string> { I18N_Power };
+                var gutsLine = new List<string> { I18N_Nuts };
+                var wizLine = new List<string> { I18N_Wiz };
                 int totalPower = 0;
                 int totalWiz = 0;
                 int charaNum = 0;
@@ -53,8 +42,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                         var properValue = string.Empty;
                         properType += (k.distance_type switch
                         {
-                            5 => "泥",
-                            _ => "芝"
+                            5 => I18N_Dirt,
+                            _ => I18N_Grass
                         });
                         properValue += (k.distance_type switch
                         {
@@ -64,11 +53,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                         properValue += ' ';
                         properType += (k.distance_type switch
                         {
-                            1 => "短",
-                            2 => "英",
-                            3 => "中",
-                            4 => "长",
-                            5 => "英"
+                            1 => I18N_Short,
+                            2 => I18N_Mile,
+                            3 => I18N_Middle,
+                            4 => I18N_Long,
+                            5 => I18N_Mile
                         });
                         properValue += (k.distance_type switch
                         {
@@ -81,10 +70,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                         properValue += ' ';
                         properType += (k.running_style switch
                         {
-                            1 => "逃",
-                            2 => "先",
-                            3 => "差",
-                            4 => "追"
+                            1 => I18N_Nige,
+                            2 => I18N_Senko,
+                            3 => I18N_Sashi,
+                            4 => I18N_Oikomi
                         });
                         properValue += (k.running_style switch
                         {
@@ -121,25 +110,24 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     }
                 }
-                table.AddRow(properTypeLine.Append("平 均").ToArray());
+                table.AddRow(properTypeLine.Append("A v g").ToArray());
                 table.AddRow(properValueLine.Append("/ / /").ToArray());
 
                 table.AddRow(speedLine.Append(speedLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
                 table.AddRow(staminaLine.Append(staminaLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
-                table.AddRow(powerLine.Append((totalPower/charaNum).ToString("F0")).ToArray());
+                table.AddRow(powerLine.Append((totalPower / charaNum).ToString("F0")).ToArray());
                 table.AddRow(gutsLine.Append(gutsLine.Skip(1).Average(x => int.Parse(x)).ToString("F0")).ToArray());
                 table.AddRow(wizLine.Append((totalWiz / charaNum).ToString("F0")).ToArray());
 
-                container.AddRow(table);
+                AnsiConsole.Write(table);
             }
 
-            //设置宽度，Windows的CMD在大小<160时无法正常显示竞技场对手属性，会死循环
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (Console.BufferWidth < 160 || Console.WindowWidth < 160))
+            //设置宽度，Windows的CMD在过小时无法正常显示竞技场对手属性，会死循环
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (Console.BufferWidth < MinimumConsoleWidth || Console.WindowWidth < MinimumConsoleWidth))
             {
-                Console.BufferWidth = 160;
+                Console.BufferWidth = MinimumConsoleWidth;
                 Console.SetWindowSize(Console.BufferWidth, Console.WindowHeight);
             }
-            AnsiConsole.Write(container);
 
             static string GetProper(int proper) => proper switch
             {
@@ -151,7 +139,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 6 => "B",
                 7 => "A",
                 8 => "S",
-                _ => "错误"
+                _ => throw new NotImplementedException()
             };
         }
     }

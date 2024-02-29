@@ -6,15 +6,19 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using UmamusumeResponseAnalyzer.Entities;
-using UmamusumeResponseAnalyzer.Localization;
+using static UmamusumeResponseAnalyzer.Localization.DMM;
+using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
+using static UmamusumeResponseAnalyzer.Localization.NetFilter;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
         static bool runInCmder = false;
+        static System.Globalization.CultureInfo defaultUICulture = null!;
         public static async Task Main(string[] args)
         {
+            defaultUICulture = System.Globalization.CultureInfo.CurrentUICulture;
             ConsoleHelper.DisableQuickEditMode();
             Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
@@ -42,20 +46,20 @@ namespace UmamusumeResponseAnalyzer
                 Environment.Exit(0);
             }
 
-            string prompt;
+            var prompt = string.Empty;
             do
             {
                 prompt = await ShowMenu();
             }
-            while (prompt != Resource.LaunchMenu_Start); //如果不是启动则重新显示主菜单
+            while (prompt != I18N_Start); //如果不是启动则重新显示主菜单
 
             Database.Initialize(); //初始化马娘相关数据
             Server.Start(); //启动HTTP服务器
 
-            if (Config.Get(Resource.ConfigSet_EnableNetFilter))
+            if (Config.Get(Localization.Config.I18N_EnableNetFilter))
                 await NetFilter.Enable();
             //如果存在DMM的token文件则启用直接登录功能
-            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Resource.ConfigSet_DMMLaunch) && DMM.Accounts.Count != 0)
+            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Localization.Config.I18N_DMMLaunch) && DMM.Accounts.Count != 0)
             {
                 if (DMM.Accounts.Count == 1)
                 {
@@ -64,16 +68,16 @@ namespace UmamusumeResponseAnalyzer
                 else
                 {
                     prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                        .Title("发现多个帐号，请选择要启动的那个")
+                        .Title(I18N_MultipleAccountsFound)
                         .AddChoices(DMM.Accounts.Select(x => x.Name))
-                        .AddChoices(["启动全部", "取消"]));
-                    if (prompt == "启动全部")
+                        .AddChoices([I18N_LaunchAll, I18N_Cancel]));
+                    if (prompt == I18N_LaunchAll)
                     {
                         DMM.IgnoreExistProcess = true;
                         foreach (var account in DMM.Accounts)
                             account.RunUmamusume();
                     }
-                    else if (prompt == "取消")
+                    else if (prompt == I18N_Cancel)
                     {
                     }
                     else
@@ -85,12 +89,12 @@ namespace UmamusumeResponseAnalyzer
 
             if (!Server.IsRunning)
             {
-                AnsiConsole.WriteLine("URA启动失败，按回车键退出程序");
+                AnsiConsole.WriteLine(I18N_LaunchFail);
                 Console.ReadLine();
             }
             else
             {
-                AnsiConsole.MarkupLine(Resource.LaunchMenu_Start_Started);
+                AnsiConsole.MarkupLine(I18N_Start_Started);
                 var _closingEvent = new AutoResetEvent(false);
                 Console.CancelKeyPress += ((s, a) =>
                 {
@@ -102,55 +106,55 @@ namespace UmamusumeResponseAnalyzer
         static async Task<string> ShowMenu()
         {
             var selections = new SelectionPrompt<string>()
-                .Title(Resource.LaunchMenu)
+                .Title(I18N_Instruction)
                 .AddChoices(
                 [
-                    Resource.LaunchMenu_Start,
-                    Resource.LaunchMenu_Options,
-                    Resource.LaunchMenu_UpdateAssets,
-                    Resource.LaunchMenu_UpdateProgram
+                    I18N_Start,
+                    I18N_Options,
+                    I18N_UpdateAssets,
+                    I18N_UpdateProgram
                 ]
                 );
             #region 条件显示功能
             // Windows限定功能，其他平台不显示
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (Config.Get(Resource.ConfigSet_EnableNetFilter))
+                if (Config.Get(Localization.Config.I18N_EnableNetFilter))
                 {
                     if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                     {
-                        selections.AddChoice(Resource.LaunchMenu_SetNetfilterTarget);
-                        selections.AddChoice(Resource.LaunchMenu_UninstallNetFilterDriver);
+                        selections.AddChoice(I18N_ConfigProxyServer);
+                        selections.AddChoice(I18N_NFDriver_Uninstall);
                     }
                     else
                     {
-                        selections.AddChoice(Resource.LaunchMenu_InstallNetFilterDriver);
+                        selections.AddChoice(I18N_NFDriver_Install);
                     }
                 }
                 if (UraCoreHelper.GamePaths.Count != 0)
                 {
-                    selections.AddChoice(Resource.LaunchMenu_InstallUraCore);
+                    selections.AddChoice(I18N_InstallUraCore);
                 }
             }
             // 仅在启用本地化设置时显示相关设置
-            if (Config.Get(Resource.ConfigSet_LoadLocalizedData) && (string.IsNullOrEmpty(Config.Get<string>("本地化文件路径")) || (!string.IsNullOrEmpty(Config.Get<string>("本地化文件路径")) && !File.Exists(Config.Get<string>("本地化文件路径")))))
+            if (Config.Get(Localization.Config.I18N_LoadLocalizedData) && (string.IsNullOrEmpty(Config.Get<string>(Localization.Config.I18N_LocalizedDataPath)) || (!string.IsNullOrEmpty(Config.Get<string>(Localization.Config.I18N_LocalizedDataPath)) && !File.Exists(Config.Get<string>(Localization.Config.I18N_LocalizedDataPath)))))
             {
-                selections.AddChoice(Resource.LaunchMenu_SetLocalizedDataFilePath);
+                selections.AddChoice(I18N_SetLocalizedDataFilePath);
             }
             // 仅在启用跳过DMM启动时显示相关设置
-            if (Config.Get(Resource.ConfigSet_DMMLaunch))
+            if (Config.Get(Localization.Config.I18N_DMMLaunch))
             {
-                selections.AddChoice(Resource.LaunchMenu_ManageDMMService);
+                selections.AddChoice(I18N_ManageDMMService);
             }
             #endregion
             var prompt = AnsiConsole.Prompt(selections);
-            if (prompt == Resource.LaunchMenu_Options)
+            if (prompt == I18N_Options)
             {
                 var multiSelection = new MultiSelectionPrompt<string>()
-                    .Title(Resource.LaunchMenu_Options)
+                    .Title(I18N_Options)
                     .Mode(SelectionMode.Leaf)
                     .PageSize(25)
-                    .InstructionsText(Resource.LaunchMenu_Options_Instruction);
+                    .InstructionsText(I18N_Options_Instruction);
 
                 // 根据预设值添加选项
                 foreach (var i in Config.ConfigSet)
@@ -176,6 +180,13 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
 
+                // 进入设置前先保存之前的语言设置
+                var previousLanguage = string.Empty;
+                var availableLanguages = Config.ConfigSet.First(x => Config.LanguageSectionKeys.Contains(x.Key)).Value.Select(x => x.Key);
+                var languages = availableLanguages.Select(x => Config.Configuration[x]);
+                var languagesEnabled = languages.Where(x => Config.Get(x.Key));
+                previousLanguage = languagesEnabled.First().Key;
+
                 var options = AnsiConsole.Prompt(multiSelection);
                 foreach (var i in Config.Configuration.Keys)
                 {
@@ -183,17 +194,56 @@ namespace UmamusumeResponseAnalyzer
                         continue;
                     Config.Set(i, options.Contains(i));
                 }
+
+                languages = availableLanguages.Select(x => Config.Configuration[x]);
+                languagesEnabled = languages.Where(x => Config.Get(x.Key));
+                var selectedLanguage = languagesEnabled.First();
+                if (selectedLanguage == default)
+                {
+                    Trace.WriteLine(1);
+                    Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
+                    Config.SaveConfigForLanguageChange();
+                    ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
+                    Config.LoadConfigForLanguageChange();
+                }
+                else if (languagesEnabled.Count() > 1)
+                {
+                    Trace.WriteLine(2);
+                    foreach (var i in languages)
+                    {
+                        Config.Set(i.Key, false);
+                    }
+                    Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
+                    Config.SaveConfigForLanguageChange();
+                    ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
+                    Config.LoadConfigForLanguageChange();
+                    AnsiConsole.WriteLine(I18N_Options_MultipleLanguagesSelected);
+                    Thread.Sleep(3000);
+                }
+                else if (selectedLanguage.Key != previousLanguage)
+                {
+                    Trace.WriteLine(3);
+                    Config.SaveConfigForLanguageChange();
+                    ApplyCultureInfo(languages.First(x => Config.Get(x.Key)).Key);
+                    Config.LoadConfigForLanguageChange();
+                    //if (selectedLanguage.Key != Localization.Config.I18N_Language_AutoDetect)
+                    //{
+                    //    // 默认是true，所以不是自动检测的话就要再关掉
+                    //    Config.Set(Localization.Config.I18N_Language_AutoDetect, false);
+                    //}
+                }
+
                 Config.Save();
             }
-            else if (prompt == Resource.LaunchMenu_UpdateAssets)
+            else if (prompt == I18N_UpdateAssets)
             {
                 await ResourceUpdater.UpdateAssets();
             }
-            else if (prompt == Resource.LaunchMenu_UpdateProgram)
+            else if (prompt == I18N_UpdateProgram)
             {
                 await ResourceUpdater.UpdateProgram();
             }
-            else if (prompt == Resource.LaunchMenu_InstallNetFilterDriver)
+            else if (prompt == I18N_NFDriver_Install)
             {
                 var applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
                 var nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
@@ -213,9 +263,9 @@ namespace UmamusumeResponseAnalyzer
                 Proc.Start();
                 Proc.WaitForExit();
                 if (File.Exists(nfapiPath) && File.Exists(nfdriverPath) && File.Exists(redirectorPath) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
-                    Config.Set(Resource.ConfigSet_EnableNetFilter, true);
+                    Config.Set(Localization.Config.I18N_EnableNetFilter, true);
             }
-            else if (prompt == Resource.LaunchMenu_UninstallNetFilterDriver)
+            else if (prompt == I18N_NFDriver_Uninstall)
             {
                 using var Proc = new Process();
                 var StartInfo = new ProcessStartInfo
@@ -229,9 +279,9 @@ namespace UmamusumeResponseAnalyzer
                 Proc.StartInfo = StartInfo;
                 Proc.Start();
                 Proc.WaitForExit();
-                Config.Set(Resource.ConfigSet_EnableNetFilter, false);
+                Config.Set(Localization.Config.I18N_EnableNetFilter, false);
             }
-            else if (prompt == Resource.LaunchMenu_SetNetfilterTarget)
+            else if (prompt == I18N_ConfigProxyServer)
             {
                 string host;
                 string port;
@@ -239,98 +289,98 @@ namespace UmamusumeResponseAnalyzer
                 string password;
                 do
                 {
-                    host = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskHost).AllowEmpty());
+                    host = AnsiConsole.Prompt(new TextPrompt<string>(I18N_ConfigProxyServer_AskHost).AllowEmpty());
                     if (Uri.CheckHostName(host) == UriHostNameType.Dns)
                         host = Dns.GetHostAddresses(host)[0].ToString();
                     if (string.IsNullOrEmpty(host)) host = "127.0.0.1";
                 } while (!IPAddress.TryParse(host, out var _));
                 do
                 {
-                    port = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskPort).AllowEmpty());
+                    port = AnsiConsole.Prompt(new TextPrompt<string>(I18N_ConfigProxyServer_AskPort).AllowEmpty());
                     if (string.IsNullOrEmpty(port)) port = "1080";
                 } while (!int.TryParse(port, out var _));
-                Config.Set("加速服务器地址", host);
-                Config.Set("加速服务器端口", port);
+                Config.Set(Localization.Config.I18N_ProxyHost, host);
+                Config.Set(Localization.Config.I18N_ProxyPort, port);
 
                 var proxyType = string.Empty;
                 do
                 {
-                    proxyType = AnsiConsole.Ask<string>("代理服务器类型是s(ocks)/h(ttp)").ToLower();
+                    proxyType = AnsiConsole.Ask<string>(I18N_ConfigProxyServer_AskType).ToLower();
                 } while (proxyType[0] != 's' && proxyType[0] != 'h');
-                Config.Set("加速服务器类型", proxyType[0] == 'h' ? "http" : "socks");
+                Config.Set(Localization.Config.I18N_ProxyServerType, proxyType[0] == 'h' ? "http" : "socks");
 
-                if (proxyType[0] == 's' && AnsiConsole.Confirm(Resource.LaunchMenu_SetNetfilterTarget_AskAuth, false))
+                if (proxyType[0] == 's' && AnsiConsole.Confirm(I18N_ConfigProxyServer_AskAuth, false))
                 {
                     do
                     {
-                        username = AnsiConsole.Ask<string>(Resource.LaunchMenu_SetNetfilterTarget_AskAuthUsername);
+                        username = AnsiConsole.Ask<string>(I18N_ConfigProxyServer_AskAuthUsername);
                     } while (string.IsNullOrEmpty(username));
                     do
                     {
-                        password = AnsiConsole.Prompt(new TextPrompt<string>(Resource.LaunchMenu_SetNetfilterTarget_AskAuthPassword).Secret());
+                        password = AnsiConsole.Prompt(new TextPrompt<string>(I18N_ConfigProxyServer_AskAuthPassword).Secret());
                     } while (string.IsNullOrEmpty(password));
-                    Config.Set("加速服务器用户名", username);
-                    Config.Set("加速服务器密码", password);
+                    Config.Set(Localization.Config.I18N_ProxyUsername, username);
+                    Config.Set(Localization.Config.I18N_ProxyPassword, password);
                 }
                 else
                 {
-                    Config.Set("加速服务器用户名", string.Empty);
-                    Config.Set("加速服务器密码", string.Empty);
+                    Config.Set(Localization.Config.I18N_ProxyUsername, string.Empty);
+                    Config.Set(Localization.Config.I18N_ProxyPassword, string.Empty);
                 }
                 Config.Save();
             }
-            else if (prompt == Resource.LaunchMenu_InstallUraCore)
+            else if (prompt == I18N_InstallUraCore)
             {
                 AnsiConsole.Clear();
                 using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UmamusumeResponseAnalyzer.ura-core.dll");
                 if (stream == null)
                 {
-                    AnsiConsole.WriteLine("提取内置资源失败，请尝试手动安装");
+                    AnsiConsole.WriteLine(I18N_UraCoreHelper_ExtractUraCoreFail);
                     Console.ReadKey();
                     AnsiConsole.Clear();
                     return prompt;
                 }
-                AnsiConsole.WriteLine($"找到了{UraCoreHelper.GamePaths.Count}个可能的目录");
+                AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundPaths, UraCoreHelper.GamePaths.Count);
 
                 foreach (var i in UraCoreHelper.GamePaths)
                 {
                     var modulePath = Path.Combine(i, "version.dll");
                     var compatiableModulePath = Path.Combine(i, "winhttp.dll");
-                    AnsiConsole.WriteLine($"发现有效的游戏目录: {i}");
+                    AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundAvailablePath, i);
                     if (!File.Exists(modulePath) && !File.Exists(compatiableModulePath))
                     {
-                        AnsiConsole.WriteLine("未找到任何模块");
-                        if (AnsiConsole.Confirm("是否要在此处安装?"))
+                        AnsiConsole.WriteLine(I18N_UraCoreHelper_NoInstalledModuleFound);
+                        if (AnsiConsole.Confirm(I18N_UraCoreHelper_InstallPrompt))
                         {
                             InstallModule(modulePath);
                         }
                     }
                     else if (File.Exists(compatiableModulePath))
                     {
-                        AnsiConsole.WriteLine("发现其他以兼容模式安装的模块");
-                        if (AnsiConsole.Confirm("是否要覆盖该模块?"))
+                        AnsiConsole.WriteLine(I18N_UraCoreHelper_OtherCompatitableModuleFound);
+                        if (AnsiConsole.Confirm(I18N_UraCoreHelper_OverrideInstallPrompt))
                         {
                             InstallModule(compatiableModulePath);
                         }
                         else
                         {
-                            AnsiConsole.WriteLine("安装失败，请手动处理与其他模块的冲突");
+                            AnsiConsole.WriteLine(I18N_UraCoreHelper_OverrideInstallCancelled);
                         }
                     }
                     else if (File.Exists(modulePath))
                     {
                         var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(modulePath)));
-                        if (UraCoreHelper.uraCoreHashs.Contains(hash) && AnsiConsole.Confirm("发现旧版本ura-core，是否更新？"))
+                        if (UraCoreHelper.uraCoreHashs.Contains(hash) && AnsiConsole.Confirm(I18N_UraCoreHelper_FoundOldUraCore))
                         {
                             InstallModule(modulePath);
                         }
-                        else if (AnsiConsole.Confirm("发现其他模块，是否要以兼容模式安装？"))
+                        else if (AnsiConsole.Confirm(I18N_UraCoreHelper_CompatitableInstallPrompt))
                         {
                             InstallModule(compatiableModulePath);
                         }
                         else
                         {
-                            AnsiConsole.WriteLine("安装失败，请手动处理与其他模块的冲突，或尝试兼容模式");
+                            AnsiConsole.WriteLine(I18N_UraCoreHelper_CompatitableInstallCancelled);
                         }
                     }
                     void InstallModule(string path)
@@ -339,20 +389,20 @@ namespace UmamusumeResponseAnalyzer
                         stream.CopyTo(fs);
                         fs.Flush();
                         fs.Close();
-                        AnsiConsole.WriteLine($"安装到{path}成功,按任意键返回主菜单");
+                        AnsiConsole.WriteLine(I18N_UraCoreHelper_InstallSuccess, path);
                     }
                 }
                 Console.ReadKey();
             }
-            else if (prompt == Resource.LaunchMenu_SetLocalizedDataFilePath)
+            else if (prompt == I18N_SetLocalizedDataFilePath)
             {
                 AnsiConsole.Clear();
-                AnsiConsole.MarkupLine($"本地化仅支持格式为Dictionary<textdata.category, Dictionary<textdata.index, string>>的JSON");
+                AnsiConsole.MarkupLine(I18N_LocalizationData_FormatRequirement);
                 string path;
                 var valid = false;
                 do
                 {
-                    path = AnsiConsole.Prompt(new TextPrompt<string>(@"请输入完整的文件路径(如G:\Umamusume\localized_data\text_data.json"));
+                    path = AnsiConsole.Prompt(new TextPrompt<string>(I18N_LocalizationData_InputPathPrompt));
                     try
                     {
                         JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(path));
@@ -360,18 +410,18 @@ namespace UmamusumeResponseAnalyzer
                     }
                     catch (Exception)
                     {
-                        AnsiConsole.WriteLine("未找到目标文件或目标文件不符合格式");
+                        AnsiConsole.WriteLine(I18N_LocalizationData_FileCorrupt);
                         valid = false;
                         continue;
                     }
                 } while (!valid);
-                Config.Set("本地化文件路径", path);
+                Config.Set(Localization.Config.I18N_LocalizedDataPath, path);
                 Config.Save();
             }
-            else if (prompt == Resource.LaunchMenu_ManageDMMService)
+            else if (prompt == I18N_ManageDMMService)
             {
                 string dmmSelected;
-                var dmmSelections = new List<string>(["添加账号", "设置设备信息", "返回"]);
+                var dmmSelections = new List<string>([I18N_AddAccount, I18N_SetDeviceInfo, I18N_Cancel]);
                 foreach (var i in DMM.Accounts)
                 {
                     dmmSelections = dmmSelections.Prepend(i.Name).ToList();
@@ -379,16 +429,16 @@ namespace UmamusumeResponseAnalyzer
                 do
                 {
                     dmmSelected = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                        .Title("选中对应的账号回车是删除")
+                        .Title(I18N_DeleteAccountInstruction)
                         .AddChoices(dmmSelections));
 
-                    if (dmmSelected == "添加账号")
+                    if (dmmSelected == I18N_AddAccount)
                     {
-                        var secureId = AnsiConsole.Prompt(new TextPrompt<string>("请输入login_[red]secure[/]_id: "));
-                        var sessionId = AnsiConsole.Prompt(new TextPrompt<string>("请输入login_[green]session[/]_id: "));
-                        var savedataPath = AnsiConsole.Prompt(new TextPrompt<string>("请输入savedata_file_path(不知道是什么请留空): ").AllowEmpty());
-                        var executablePath = AnsiConsole.Prompt(new TextPrompt<string>("请输入split_umamusume_file_path(不知道是什么请留空): ").AllowEmpty());
-                        var name = AnsiConsole.Prompt(new TextPrompt<string>("请输入该账号的备注: "));
+                        var secureId = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputLoginSecureIdPrompt));
+                        var sessionId = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputLoginSessionIdPrompt));
+                        var savedataPath = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputSaveDataFilePathPrompt).AllowEmpty());
+                        var executablePath = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputSplitUmamusumeFilePathPrompt).AllowEmpty());
+                        var name = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputAccountCommentPrompt));
 
                         var account = new DMM.DMMAccount
                         {
@@ -404,13 +454,13 @@ namespace UmamusumeResponseAnalyzer
                         DMM.Accounts.Add(account);
                         DMM.Save();
                     }
-                    else if (dmmSelected == "设置设备信息")
+                    else if (dmmSelected == I18N_SetDeviceInfo)
                     {
-                        var macAddress = AnsiConsole.Prompt(new TextPrompt<string>($"请输入mac_address(当前值:{(string.IsNullOrEmpty(DMM.mac_address) ? "无" : DMM.mac_address)},留空不修改): ").AllowEmpty());
-                        var hddSerial = AnsiConsole.Prompt(new TextPrompt<string>($"请输入hdd_serial(当前值:{(string.IsNullOrEmpty(DMM.hdd_serial) ? "无" : DMM.hdd_serial)},留空不修改): ").AllowEmpty());
-                        var motherboard = AnsiConsole.Prompt(new TextPrompt<string>($"请输入motherboard(当前值:{(string.IsNullOrEmpty(DMM.motherboard) ? "无" : DMM.motherboard)},留空不修改): ").AllowEmpty());
-                        var userOS = AnsiConsole.Prompt(new TextPrompt<string>($"请输入user_os(当前值:{(string.IsNullOrEmpty(DMM.user_os) ? "无" : DMM.user_os)},留空不修改): ").AllowEmpty());
-                        var umamusumePath = AnsiConsole.Prompt(new TextPrompt<string>($"请输入umamusume_file_path(当前值:{(string.IsNullOrEmpty(DMM.umamusume_file_path) ? "无" : DMM.umamusume_file_path)},留空不修改): ").AllowEmpty());
+                        var macAddress = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputMacAddressPrompt, string.IsNullOrEmpty(DMM.mac_address) ? "无" : DMM.mac_address)).AllowEmpty());
+                        var hddSerial = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputHddSerialPrompt, string.IsNullOrEmpty(DMM.hdd_serial) ? "无" : DMM.hdd_serial)).AllowEmpty());
+                        var motherboard = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputMotherboardPrompt, string.IsNullOrEmpty(DMM.motherboard) ? "无" : DMM.motherboard)).AllowEmpty());
+                        var userOS = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputUserOsPrompt, string.IsNullOrEmpty(DMM.user_os) ? "无" : DMM.user_os)).AllowEmpty());
+                        var umamusumePath = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputUmamusumeFilePathPrompt, string.IsNullOrEmpty(DMM.umamusume_file_path) ? "无" : DMM.umamusume_file_path)).AllowEmpty());
 
                         if (!string.IsNullOrEmpty(macAddress)) DMM.mac_address = macAddress;
                         if (!string.IsNullOrEmpty(hddSerial)) DMM.hdd_serial = hddSerial;
@@ -421,13 +471,13 @@ namespace UmamusumeResponseAnalyzer
                         AnsiConsole.Clear();
                         DMM.Save();
                     }
-                    else if (dmmSelected != "返回")
+                    else if (dmmSelected != I18N_Cancel)
                     {
                         DMM.Accounts.RemoveAt(DMM.Accounts.FindIndex(x => x.Name == dmmSelected));
                         dmmSelections.Remove(dmmSelected);
                         DMM.Save();
                     }
-                } while (dmmSelected != "返回");
+                } while (dmmSelected != I18N_Cancel);
             }
             AnsiConsole.Clear();
 
@@ -453,7 +503,7 @@ namespace UmamusumeResponseAnalyzer
                                 }
                             case "--install-netfilter-driver":
                                 {
-                                    AnsiConsole.Status().Start("正在安装加速驱动，请勿关闭该窗口。", (ctx) =>
+                                    AnsiConsole.Status().Start(I18N_NFDriver_InstallingAlert, (ctx) =>
                                     {
                                         ctx.Spinner(Spinner.Known.BouncingBar);
                                         NetFilter.InstallDriver();
@@ -463,7 +513,7 @@ namespace UmamusumeResponseAnalyzer
                                 }
                             case "--uninstall-netfilter-driver":
                                 {
-                                    AnsiConsole.Status().Start("正在卸载加速驱动，请勿关闭该窗口。", (ctx) =>
+                                    AnsiConsole.Status().Start(I18N_NFDriver_UninstallingAlert, (ctx) =>
                                     {
                                         ctx.Spinner(Spinner.Known.BouncingBar);
                                         NetFilter.UninstallDriver();
@@ -502,6 +552,35 @@ namespace UmamusumeResponseAnalyzer
                         }
                         return;
                     }
+            }
+        }
+        internal static void ApplyCultureInfo(string culture)
+        {
+            if (culture == Localization.Config.I18N_Language_AutoDetect)
+            {
+                Thread.CurrentThread.CurrentCulture = defaultUICulture;
+                Thread.CurrentThread.CurrentUICulture = defaultUICulture;
+            }
+            else if (culture == Localization.Config.I18N_Language_English)
+            {
+                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+            }
+            else if (culture == Localization.Config.I18N_Language_Japanese)
+            {
+                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("ja-JP");
+                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("ja-JP");
+            }
+            else if (culture == Localization.Config.I18N_Language_SimplifiedChinese)
+            {
+                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
+                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
+            }
+            foreach (var i in Assembly.GetExecutingAssembly().GetTypes().Where(x => x.IsClass && x.Namespace?.StartsWith("UmamusumeResponseAnalyzer.Localization") == true))
+            {
+                var rc = i?.GetField("resourceCulture", BindingFlags.NonPublic | BindingFlags.Static);
+                if (rc == null) continue;
+                rc.SetValue(rc, Thread.CurrentThread.CurrentUICulture);
             }
         }
     }

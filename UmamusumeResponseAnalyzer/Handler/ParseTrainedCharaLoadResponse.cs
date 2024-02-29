@@ -1,10 +1,5 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Entities;
+using static UmamusumeResponseAnalyzer.Localization.Handlers.ParseTrainedCharaLoadResponse;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -30,7 +25,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 Border = TableBorder.Ascii
             };
-            table.AddColumns("种马名", "胜鞍加成", "胜鞍", "分数");
+            table.AddColumns(I18N_UmaName, I18N_WinSaddleBonus, I18N_WinSaddle, I18N_Score);
             foreach (var (Name, WinSaddleBonus, WinSaddleArray, Score) in win_saddle_result)
                 table.AddRow(Name.EscapeMarkup(), WinSaddleBonus.ToString(), WinSaddleArray, Score.ToString());
             AnsiConsole.Write(table);

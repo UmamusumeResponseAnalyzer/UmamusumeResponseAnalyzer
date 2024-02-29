@@ -1001,7 +1001,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     var gameStatusToSend = new GameStatusSend_LArc(@event);
                     SubscribeAiInfo.Signal(gameStatusToSend);
 
-                    if (Config.Get(Localization.Resource.ConfigSet_WriteAIInfo))
+                    if (Config.Get(Localization.Config.I18N_WriteAIInfo))
                     {
                         var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
                         Directory.CreateDirectory(currentGSdirectory);

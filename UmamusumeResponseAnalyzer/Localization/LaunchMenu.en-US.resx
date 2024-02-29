@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="I18N_InstallUraCore" xml:space="preserve">
+    <value>Auto-install ura-core</value>
+  </data>
+  <data name="I18N_Instruction" xml:space="preserve">
+    <value>Boot menu (use ↑ and ↓ to switch options, press Enter to confirm)</value>
+  </data>
+  <data name="I18N_ManageDMMService" xml:space="preserve">
+    <value>Manage DMM service information</value>
+  </data>
+  <data name="I18N_Options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="I18N_Options_BackToMenuInstruction" xml:space="preserve">
+    <value>Press any key to return to the main menu</value>
+  </data>
+  <data name="I18N_Options_Instruction" xml:space="preserve">
+    <value>[grey](Toggle options with [blue]&lt;space&gt;[/], press [green]&lt;Enter&gt;[/] to save and return, [[X]] indicates selected status)[/]</value>
+  </data>
+  <data name="I18N_SetLocalizedDataFilePath" xml:space="preserve">
+    <value>Set localization file path</value>
+  </data>
+  <data name="I18N_Start" xml:space="preserve">
+    <value>Start!</value>
+  </data>
+  <data name="I18N_Start_Checking" xml:space="preserve">
+    <value>[yellow]Detecting if umamusume.exe is running[/]</value>
+  </data>
+  <data name="I18N_Start_Checking_AlreadyRunning" xml:space="preserve">
+    <value>Detected umamusume.exe is running, directly starting the server</value>
+  </data>
+  <data name="I18N_Start_Checking_Found" xml:space="preserve">
+    <value>Detected {0} instances of umamusume.exe running</value>
+  </data>
+  <data name="I18N_Start_Checking_Log" xml:space="preserve">
+    <value>[grey]Log: [/] {0}</value>
+  </data>
+  <data name="I18N_Start_GetToken" xml:space="preserve">
+    <value>[bold blue]Acquiring DMM One-time Token[/]</value>
+  </data>
+  <data name="I18N_Start_Launching" xml:space="preserve">
+    <value>Starting umamusume.exe</value>
+  </data>
+  <data name="I18N_Start_Started" xml:space="preserve">
+    <value>[bold green]Launched[/]</value>
+  </data>
+  <data name="I18N_Start_TokenFailed" xml:space="preserve">
+    <value>Failed to acquire DMM One-time Token</value>
+  </data>
+  <data name="I18N_Start_TokenGot" xml:space="preserve">
+    <value>DMM One-time Token acquired</value>
+  </data>
+  <data name="I18N_UpdateAssets" xml:space="preserve">
+    <value>Update data files</value>
+  </data>
+  <data name="I18N_UpdateProgram" xml:space="preserve">
+    <value>Update program</value>
+  </data>
+  <data name="I18N_LaunchFail" xml:space="preserve">
+    <value>URA launch failed, press Enter to exit the program</value>
+  </data>
+  <data name="I18N_UraCoreHelper_ExtractUraCoreFail" xml:space="preserve">
+    <value>Extraction of built-in resources failed, please try manual installation</value>
+  </data>
+  <data name="I18N_UraCoreHelper_FoundPaths" xml:space="preserve">
+    <value>Found {0} possible directories</value>
+  </data>
+  <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
+    <value>Found valid game directory: {0}</value>
+  </data>
+  <data name="I18N_UraCoreHelper_NoInstalledModuleFound" xml:space="preserve">
+    <value>No modules found</value>
+  </data>
+  <data name="I18N_UraCoreHelper_InstallPrompt" xml:space="preserve">
+    <value>Would you like to install here?</value>
+  </data>
+  <data name="I18N_UraCoreHelper_OtherCompatitableModuleFound" xml:space="preserve">
+    <value>Found other modules installed in compatibility mode</value>
+  </data>
+  <data name="I18N_UraCoreHelper_OverrideInstallPrompt" xml:space="preserve">
+    <value>Do you want to overwrite the module?</value>
+  </data>
+  <data name="I18N_UraCoreHelper_OverrideInstallCancelled" xml:space="preserve">
+    <value>Installation failed, please manually resolve conflicts with other modules</value>
+  </data>
+  <data name="I18N_UraCoreHelper_FoundOldUraCore" xml:space="preserve">
+    <value>Found an old version of ura-core, update?</value>
+  </data>
+  <data name="I18N_UraCoreHelper_CompatitableInstallPrompt" xml:space="preserve">
+    <value>Found other modules, install in compatibility mode?</value>
+  </data>
+  <data name="I18N_UraCoreHelper_CompatitableInstallCancelled" xml:space="preserve">
+    <value>Installation failed, please manually resolve conflicts with other modules or try compatibility mode</value>
+  </data>
+  <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
+    <value>Successfully installed to {0}, press any key to return to the main menu</value>
+  </data>
+  <data name="I18N_LocalizationData_FormatRequirement" xml:space="preserve">
+    <value>Localization only supports JSON format Dictionary&lt;textdata.category, Dictionary&lt;textdata.index, string&gt;&gt;</value>
+  </data>
+  <data name="I18N_LocalizationData_InputPathPrompt" xml:space="preserve">
+    <value>Please enter the full file path (e.g., G:\Umamusume\localized_data\text_data.json)</value>
+  </data>
+  <data name="I18N_LocalizationData_FileCorrupt" xml:space="preserve">
+    <value>Target file not found or does not meet the format</value>
+  </data>
+  <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
+    <value>Multiple languages selected at the same time, reset to default, please reset</value>
+  </data>
+</root>

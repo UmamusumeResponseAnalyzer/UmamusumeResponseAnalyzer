@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NetFilterAPI;
+﻿using NetFilterAPI;
 using Spectre.Console;
+using static UmamusumeResponseAnalyzer.Localization.Config;
+using static UmamusumeResponseAnalyzer.Localization.NetFilter;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -20,8 +17,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 if (!File.Exists(nfdriverPath) || !File.Exists(redirectorPath) || !File.Exists(nfapiPath))
                 {
-                    AnsiConsole.WriteLine("加速功能未启动：未找到加速驱动");
-                    AnsiConsole.WriteLine("正在尝试重新下载加速驱动");
+                    AnsiConsole.WriteLine(I18N_NFDriver_NotFoundRedownload);
                     ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath).Wait();
                 }
                 NFAPI.SetDriverPath(nfdriverPath);
@@ -30,7 +26,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception ex)
             {
-                AnsiConsole.WriteLine($"加速功能初始化失败: {ex.Message}");
+                AnsiConsole.WriteLine(string.Format(I18N_NFDriver_StartFail, ex.Message));
             }
         }
         public static async Task Enable()
@@ -39,25 +35,25 @@ namespace UmamusumeResponseAnalyzer
             {
                 if (!File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                 {
-                    AnsiConsole.MarkupLine("加速功能未启动：NetFilter驱动未安装");
+                    AnsiConsole.MarkupLine(I18N_NFDriver_NotInstall);
                     return;
                 }
-                if (!Config.ContainsKey("加速服务器地址") || !Config.ContainsKey("加速服务器端口") || !Config.ContainsKey("加速服务器类型"))
+                if (!Config.ContainsKey(I18N_ProxyHost) || !Config.ContainsKey(I18N_ProxyPort) || !Config.ContainsKey(I18N_ProxyServerType))
                 {
-                    AnsiConsole.WriteLine("加速功能未启动：未配置加速服务器");
+                    AnsiConsole.WriteLine(I18N_ProxyServerNotConfigure);
                     return;
                 }
-                NFAPI.Host = Config.Get<string>("加速服务器地址") ?? string.Empty;
-                NFAPI.Port = int.Parse(Config.Get<string>("加速服务器端口") ?? string.Empty);
+                NFAPI.Host = Config.Get<string>(I18N_ProxyHost) ?? string.Empty;
+                NFAPI.Port = int.Parse(Config.Get<string>(I18N_ProxyPort) ?? string.Empty);
                 NFAPI.HandleList = ["umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe"];
 
-                if (Config.Get<string>("加速服务器类型") == "http")
+                if (Config.Get<string>(I18N_ProxyServerType) == "http")
                 {
                     await NFAPI.StartAsync(true);
                 }
                 else
                 {
-                    if (Config.TryGetValue("加速服务器用户名", out var username) && Config.TryGetValue("加速服务器密码", out var password) && username is not null && password is not null)
+                    if (Config.TryGetValue(I18N_ProxyUsername, out var username) && Config.TryGetValue(I18N_ProxyPassword, out var password) && username is not null && password is not null)
                     {
                         await NFAPI.StartAsync(false, (string)username.Value, (string)password.Value);
                     }
@@ -69,7 +65,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch
             {
-                AnsiConsole.MarkupLine("[red]NetFilter服务启动时出现错误，请检查相关设置[/]");
+                AnsiConsole.MarkupLine(I18N_ProxyServerConfigureError);
             }
         }
         public static async Task Disable() => await NFAPI.StopAsync();

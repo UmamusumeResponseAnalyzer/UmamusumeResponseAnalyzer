@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Entities;
-using UmamusumeResponseAnalyzer.Localization;
+using static UmamusumeResponseAnalyzer.Localization.Handlers.ParseSkillTipsResponse;
 using UmamusumeResponseAnalyzer.Game;
 
 namespace UmamusumeResponseAnalyzer.Handler
@@ -16,7 +16,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         //按技能性价比排序
         public static List<SkillData> CalculateSkillScoreCost(Gallop.SingleModeCheckEventResponse @event, SkillManager skills, bool removeInferiors)
         {
-            bool hasUnknownSkills = false;
+            var hasUnknownSkills = false;
             var totalSP = @event.data.chara_info.skill_point;
             var tipsRaw = @event.data.chara_info.skill_tips_array;
             var tipsExistInDatabase = tipsRaw.Where(x => skills[(x.group_id, x.rarity)] != null);//去掉数据库中没有的技能，避免报错
@@ -24,15 +24,15 @@ namespace UmamusumeResponseAnalyzer.Handler
             foreach (var i in tipsNotExistInDatabase)
             {
                 hasUnknownSkills = true;
-                string lineToPrint = $"警告：未知技能，group_id={i.group_id}, rarity={i.rarity}";
-                for (int rarity = 0; rarity < 10; rarity++)
+                var lineToPrint = string.Format(I18N_UnknownSkillAlert, i.group_id, i.rarity);
+                for (var rarity = 0; rarity < 10; rarity++)
                 {
                     var maybeInferiorSkills = skills[(i.group_id, rarity)];
                     if (maybeInferiorSkills != null)
                     {
                         foreach (var inferiorSkill in maybeInferiorSkills)
                         {
-                            lineToPrint += $"，可能是 {inferiorSkill.Name} 的上位技能";
+                            lineToPrint += string.Format(I18N_UnknownSkillSuperiorSuppose, inferiorSkill.Name);
                         }
                     }
                 }
@@ -96,7 +96,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (skill == null)
                 {
                     hasUnknownSkills = true;
-                    AnsiConsole.MarkupLine($"[red]警告：未知已购买技能，id={i.skill_id}[/]");
+                    AnsiConsole.MarkupLine(I18N_UnknownBoughtSkillAlert, i.skill_id);
                     continue;
                 }
                 skill.Cost = int.MaxValue;
@@ -112,11 +112,11 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (unknownUma)
             {
-                AnsiConsole.MarkupLine($"[red]未知马娘：{@event.data.chara_info.card_id}，无法获取觉醒技能，请自己决定是否购买。[/]");
+                AnsiConsole.MarkupLine(I18N_UnknownUma, @event.data.chara_info.card_id);
             }
             if (hasUnknownSkills)
             {
-                AnsiConsole.MarkupLine($"[red]警告：存在未知技能[/]");
+                AnsiConsole.MarkupLine(I18N_UnknownSkillExistAlert);
             }
             return tips;
         }

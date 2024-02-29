@@ -1,17 +1,13 @@
 ﻿using IniParser;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Localization;
+using static UmamusumeResponseAnalyzer.Localization.DMM;
+using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -63,7 +59,7 @@ namespace UmamusumeResponseAnalyzer
                             umamusume_file_path = i.Value;
                             break;
                         default:
-                            throw new Exception($"Unknown .token key {i.KeyName}");
+                            throw new Exception(string.Format(I18N_UnknownTokenKey, i.KeyName));
                     }
                 }
             }
@@ -137,14 +133,14 @@ namespace UmamusumeResponseAnalyzer
 
             public void RunUmamusume()
             {
-                AnsiConsole.Status().Start(Resource.LaunchMenu_Start_Checking, ctx =>
+                AnsiConsole.Status().Start(I18N_Start_Checking, ctx =>
                 {
                     var processes = Process.GetProcessesByName("umamusume");
-                    AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, string.Format(Resource.LaunchMenu_Start_Checking_Found, processes.Length)));
+                    AnsiConsole.MarkupLine(string.Format(I18N_Start_Checking_Log, string.Format(I18N_Start_Checking_Found, processes.Length)));
                     if (!processes.Any() || IgnoreExistProcess)
                     {
                         ctx.Spinner(Spinner.Known.BouncingBar);
-                        ctx.Status(Resource.LaunchMenu_Start_GetToken);
+                        ctx.Status(I18N_Start_GetToken);
 
                         using var proc = new Process(); //检查下载的文件是否正常
                         var dmmToken = string.Empty;
@@ -166,21 +162,21 @@ namespace UmamusumeResponseAnalyzer
                         {
                             case "DMM session has expired":
                                 {
-                                    AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, "DMM session已过期"));
+                                    AnsiConsole.MarkupLine(string.Format(I18N_Start_Checking_Log, I18N_DMMTokenExpired));
                                     return;
                                 }
                             case "":
                                 {
 
-                                    AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, Resource.LaunchMenu_Start_TokenFailed));
+                                    AnsiConsole.MarkupLine(string.Format(I18N_Start_Checking_Log, I18N_Start_TokenFailed));
                                     return;
                                 }
                             default:
 
-                                AnsiConsole.MarkupLine(string.Format(Resource.LaunchMenu_Start_Checking_Log, Resource.LaunchMenu_Start_TokenGot));
+                                AnsiConsole.MarkupLine(string.Format(I18N_Start_Checking_Log, I18N_Start_TokenGot));
                                 break;
                         }
-                        ctx.Status(Resource.LaunchMenu_Start_Launching);
+                        ctx.Status(I18N_Start_Launching);
                         if (!string.IsNullOrEmpty(dmmToken))
                         {
                             var configFilepath = Path.Combine(Path.GetDirectoryName(umamusume_file_path)!, "config.json");
@@ -216,7 +212,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else
                     {
-                        ctx.Status(Resource.LaunchMenu_Start_Checking_AlreadyRunning);
+                        ctx.Status(I18N_Start_Checking_AlreadyRunning);
                         foreach (var process in processes) process.Dispose();
                     }
                 });
@@ -282,7 +278,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 catch (Win32Exception)
                 {
-                    AnsiConsole.WriteLine("客户端启动已取消");
+                    AnsiConsole.WriteLine(I18N_AppLaunchCanceled);
                 }
             }
             Version GetGameVersion()
@@ -297,7 +293,7 @@ namespace UmamusumeResponseAnalyzer
             async Task UpdateGame(string file_list_url, JObject cookie)
             {
                 var applicationRootPath = Path.GetDirectoryName(umamusume_file_path);
-                if (applicationRootPath == default) throw new Exception("游戏路径有误？");
+                if (applicationRootPath == default) throw new Exception(I18N_AppRootPathNull);
                 var cookies = new CookieContainer();
                 using var client = new HttpClient(new HttpClientHandler
                 {
