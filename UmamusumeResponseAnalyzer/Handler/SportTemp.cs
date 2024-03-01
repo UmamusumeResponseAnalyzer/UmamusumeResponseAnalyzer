@@ -1,11 +1,13 @@
 ﻿using Gallop;
 using MathNet.Numerics.Distributions;
+using Newtonsoft.Json;
 using Spectre.Console;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
+using System.Text;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -13,6 +15,8 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseSportCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
+           // Debug.Dump(@event.data.sport_data_set, "cmd");
+
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             var layout = new Layout().SplitColumns(
                 new Layout("Main").SplitRows(

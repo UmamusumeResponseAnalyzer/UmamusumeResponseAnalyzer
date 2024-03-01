@@ -8,6 +8,7 @@ using System.Data.SqlTypes;
 using System.Numerics;
 using UmamusumeResponseAnalyzer;
 using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.Handler;
 
 namespace UmamusumeResponseAnalyzer.Game
 {
@@ -70,6 +71,17 @@ namespace UmamusumeResponseAnalyzer.Game
             };
         }
     }
+
+    public class CardEventLogEntry
+    {
+        public int turn = -1;       // 回合数
+        //public int eventType = 0;   // 事件类型 4-系统，5-马娘，8-支援卡
+        public int cardId = -1;     // 支援卡ID eventType=8时生效
+        public int rarity = -1;     // 稀有度
+        public int step = 0;        // 连续事件步数
+        public bool isFinished = false;
+    }
+
     public static class EventLogger
     {
         public const int MinEventStrength = 3;
@@ -175,7 +187,7 @@ namespace UmamusumeResponseAnalyzer.Game
 
                 // 分析事件
                 // 过滤掉特判的、不加属性的。
-#warning pt<0的是因为点了技能，会干扰统计，也排除掉
+                // pt<0的是因为点了技能，会干扰统计，也排除掉
                 var eventType = LastEvent.StoryId / 100000000;
                 if (!LastEvent.Value.IsEmpty && !ExcludedEvents.Contains(LastEvent.StoryId) && LastEvent.Pt >= 0)
                 {
@@ -199,6 +211,15 @@ namespace UmamusumeResponseAnalyzer.Game
                             {
                                 AnsiConsole.MarkupLine($"[yellow]连续事件 {which} / {rarity}[/]");
                             }
+
+                            // 记录Log
+                            Handler.Debug.AppendLog(new CardEventLogEntry {
+                                turn = @event.data.chara_info.turn,
+                                cardId = cardId,
+                                rarity = rarity,
+                                step = which,
+                                isFinished = (which == rarity)
+                            }, "CardEvent");
                         }
                         CardEvents.Add(new LogEvent(LastEvent));
                         AllEvents.Add(new LogEvent(LastEvent));
