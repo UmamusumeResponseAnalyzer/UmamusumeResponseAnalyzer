@@ -124,7 +124,7 @@
     <value>[yellow]******此回合为重复显示******[/]</value>
   </data>
   <data name="I18N_MinimumSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:当前时期的运动等级最低为{0}</value>
+    <value>:red_exclamation_mark:本阶段等级要求：{0}</value>
   </data>
   <data name="I18N_BestEffectiveTalk" xml:space="preserve">
     <value>:red_exclamation_mark:{0}转换为{1}为最大等级提升{2}</value>
@@ -151,7 +151,7 @@
     <value>获得Rank</value>
   </data>
   <data name="I18N_RankGainIncreased" xml:space="preserve">
-    <value>:red_exclamation_mark:当前有项目等级加成</value>
+    <value>[yellow]:red_exclamation_mark:当前有项目等级加成[/]</value>
   </data>
   <data name="I18N_RememberUseTalk" xml:space="preserve">
     <value>:red_exclamation_mark:请及时使用相谈</value>
@@ -166,6 +166,12 @@
     <value>:sparkles:{0}变[yellow]黄[/]可爆</value>
   </data>
   <data name="I18N_LowSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:{0}色的{1}等级过低</value>
+    <value>:red_exclamation_mark:{0} {1}：差 {2}</value>
+  </data>
+  <data name="I18N_AllRankOK" xml:space="preserve">
+    <value>[green]全部训练已达标！[/]</value>
+  </data>
+  <data name="I18N_LowestSportRank" xml:space="preserve">
+    <value>当前最低等级:</value>
   </data>
 </root>

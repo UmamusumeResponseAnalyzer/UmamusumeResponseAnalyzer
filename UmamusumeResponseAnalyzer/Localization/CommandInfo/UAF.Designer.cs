@@ -70,6 +70,15 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
+        ///   查找类似 [green]All ranks are met![/] 的本地化字符串。
+        /// </summary>
+        internal static string I18N_AllRankOK {
+            get {
+                return ResourceManager.GetString("I18N_AllRankOK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 :red_exclamation_mark:{0} to {1} for the maximum rank of {2} 的本地化字符串。
         /// </summary>
         internal static string I18N_BestEffectiveTalk {
@@ -97,7 +106,16 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:{0} of {1}&apos;s rank low 的本地化字符串。
+        ///   查找类似 Lowest sport rank: 的本地化字符串。
+        /// </summary>
+        internal static string I18N_LowestSportRank {
+            get {
+                return ResourceManager.GetString("I18N_LowestSportRank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 :red_exclamation_mark:{0} {1}&apos;s rank low 的本地化字符串。
         /// </summary>
         internal static string I18N_LowSportRank {
             get {

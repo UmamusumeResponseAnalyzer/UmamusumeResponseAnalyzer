@@ -42,10 +42,10 @@ namespace UmamusumeResponseAnalyzer.Handler
             AnsiConsole.WriteLine(I18N_Friend, data.user_info_summary.name, data.user_info_summary.viewer_id, data.follower_num);
             AnsiConsole.WriteLine(I18N_Uma, Database.Names.GetUmamusume(chara.card_id).FullName, win_saddle, chara.rank_score);
             AnsiConsole.WriteLine(I18N_WinSaddle, string.Join(',', charaWinSaddle));
-            if (Database.SaddleNames.Count != 0)
-                AnsiConsole.WriteLine(I18N_WinSaddleDetail, string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x])));
+            if (Database.SaddleNames.Count != 0)    // 这里WinSaddleDetail有编码问题？
+                AnsiConsole.WriteLine(I18N_WinSaddleDetail.Trim(), string.Join(',', charaWinSaddle.Select(x => Database.SaddleNames[x])));
             var tree = new Tree(I18N_Factor);
-
+            
             var max = chara.factor_info_array.Select(x => x.factor_id).Concat(chara.succession_chara_array[0].factor_info_array.Select(x => x.factor_id))
                 .Concat(chara.succession_chara_array[1].factor_info_array.Select(x => x.factor_id))
                 .Where((x, index) => index % 2 == 0)

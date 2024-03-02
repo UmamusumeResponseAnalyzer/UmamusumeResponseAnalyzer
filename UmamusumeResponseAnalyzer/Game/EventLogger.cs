@@ -153,6 +153,12 @@ namespace UmamusumeResponseAnalyzer.Game
             return $"连续事件出率估计: [yellow]{avg * 100:0.0}±{stddev * rate * 100:0.0}%[/]";
         }
 
+        public static void Print(string s)
+        {
+            // 以后可能用别的打印方式
+            AnsiConsole.MarkupLine(s);
+        }
+
         //--------------------------
         public static void Init()
         {
@@ -205,14 +211,15 @@ namespace UmamusumeResponseAnalyzer.Game
                                 ++CardEventFinishCount;    // 走完了N个事件（N是稀有度）则认为连续事件走完了，不考虑断事件
                                 if (CardEventFinishCount == 5)
                                     CardEventFinishTurn = @event.data.chara_info.turn;
-                                AnsiConsole.MarkupLine($"[yellow]连续事件完成[/]");
+                                Print($"[yellow]连续事件完成[/]");
                             }
                             else
                             {
-                                AnsiConsole.MarkupLine($"[yellow]连续事件 {which} / {rarity}[/]");
+                                Print($"[yellow]连续事件 {which} / {rarity}[/]");
                             }
 
-                            // 记录Log
+                            // 使用DebugHelper记录Log
+                            /*
                             Handler.Debug.AppendLog(new CardEventLogEntry {
                                 turn = @event.data.chara_info.turn,
                                 cardId = cardId,
@@ -220,10 +227,11 @@ namespace UmamusumeResponseAnalyzer.Game
                                 step = which,
                                 isFinished = (which == rarity)
                             }, "CardEvent");
+                            */
                         }
                         CardEvents.Add(new LogEvent(LastEvent));
                         AllEvents.Add(new LogEvent(LastEvent));
-                        AnsiConsole.WriteLine($">> {LastEvent.Value.Explain()}");
+                        Print($">> {LastEvent.Value.Explain()}");
                     }
                     else
                     {
@@ -232,7 +240,7 @@ namespace UmamusumeResponseAnalyzer.Game
                         if (st < 0 || st >= MinEventStrength) // 过滤掉蚊子腿事件（<0是坏事件，需要留着）
                         {
                             AllEvents.Add(new LogEvent(LastEvent));
-                            AnsiConsole.WriteLine($">> #{LastEvent.StoryId}: {LastEvent.Value.Explain()}");
+                            Print($">> #{LastEvent.StoryId}: {LastEvent.Value.Explain()}");
                         }
                     }
 
@@ -242,7 +250,7 @@ namespace UmamusumeResponseAnalyzer.Game
                     // 分析特殊事件
                     if (LastEvent.StoryId == 400000040)    // 继承
                     {
-                        AnsiConsole.MarkupLine($"[yellow]本次继承属性：{LastEvent.Stats}[/]");
+                        Print($"[yellow]本次继承属性：{LastEvent.Stats}[/]");
                         InheritStats.Add(LastEvent.Stats);
                     }
                 }
@@ -278,7 +286,7 @@ namespace UmamusumeResponseAnalyzer.Game
                             new());
                         if (choice.State > 0 && choice.State != State.None)
                             ++SuccessEventSuccessCount; // 暂时不区分大成功
-                        AnsiConsole.MarkupLine($">> {choice.State}");
+                     //   Print($">> {choice.State}");  // 透不鸟了，寄
                     }
                     
                 }
