@@ -217,17 +217,6 @@ namespace UmamusumeResponseAnalyzer.Game
                             {
                                 Print($"[yellow]连续事件 {which} / {rarity}[/]");
                             }
-
-                            // 使用DebugHelper记录Log
-                            /*
-                            Handler.Debug.AppendLog(new CardEventLogEntry {
-                                turn = @event.data.chara_info.turn,
-                                cardId = cardId,
-                                rarity = rarity,
-                                step = which,
-                                isFinished = (which == rarity)
-                            }, "CardEvent");
-                            */
                         }
                         CardEvents.Add(new LogEvent(LastEvent));
                         AllEvents.Add(new LogEvent(LastEvent));
