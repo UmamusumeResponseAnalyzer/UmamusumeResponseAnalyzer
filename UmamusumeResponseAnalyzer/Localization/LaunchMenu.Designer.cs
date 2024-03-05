@@ -61,6 +61,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 [yellow] Console size is too small: recommended sizes are width {0}, height {1} [/] 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ConsoleSizeSmall {
+            get {
+                return ResourceManager.GetString("I18N_ConsoleSizeSmall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Auto-install ura-core 的本地化字符串。
         /// </summary>
         internal static string I18N_InstallUraCore {

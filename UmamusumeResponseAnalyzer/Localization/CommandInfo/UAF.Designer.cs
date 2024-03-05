@@ -115,7 +115,7 @@ namespace UmamusumeResponseAnalyzer.Localization.CommandInfo {
         }
         
         /// <summary>
-        ///   查找类似 :red_exclamation_mark:{0} {1}&apos;s rank low 的本地化字符串。
+        ///   查找类似 :red_exclamation_mark:{0}：need {1} 的本地化字符串。
         /// </summary>
         internal static string I18N_LowSportRank {
             get {

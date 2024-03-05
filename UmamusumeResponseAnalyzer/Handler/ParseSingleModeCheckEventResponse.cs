@@ -26,7 +26,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                         GameStats.stats[GameStats.currentTurn].venus_venusEvent = true;
                     }
 
-
                     if (i.story_id == 400006112)//ss训练
                     {
                         GameStats.stats[GameStats.currentTurn].larc_playerChoiceSS = true;
@@ -39,8 +38,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     if (i.story_id == 809043003)//佐岳充电
                     {
-                        int suc = i.event_contents_info.choice_array[0].select_index;
-                        int eventType = 0;
+                        var suc = i.event_contents_info.choice_array[0].select_index;
+                        var eventType = 0;
                         if (suc == 1)//加心情
                         {
                             eventType = 2;
@@ -71,7 +70,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     var mainTree = new Tree(story.TriggerName.EscapeMarkup()); //触发者名称
                     var eventTree = new Tree($"{story.Name.EscapeMarkup()}({i.story_id})"); //事件名称
-                    bool eventHasManualChoice = (i.event_contents_info.choice_array.Length >= 2);   // 是否有手动选项。有选项的不能获取结果了
+                    var eventHasManualChoice = (i.event_contents_info.choice_array.Length >= 2);   // 是否有手动选项。有选项的不能获取结果了
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
                         var originalChoice = new Choice();
@@ -87,8 +86,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
                         //显示选项
                         var tree = new Tree($"{(string.IsNullOrEmpty(originalChoice.Option) ? I18N_NoOption : originalChoice.Option)}{(Config.Get(Localization.Config.I18N_DisableSelectIndex) ? string.Empty : $" @ {i.event_contents_info.choice_array[j].select_index}")}".EscapeMarkup());
-                        //if (!Config.Get(Localization.Config.I18N_DisableSelectIndex) && Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中
-                        if (Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中
+                        if (!Config.Get(Localization.Config.I18N_DisableSelectIndex) && Database.SuccessEvent.TryGetValue(i.story_id, out var successEvent) && successEvent.Choices.Length > j) //是可以成功的事件且已在数据库中
                             AddLoggedEvent(successEvent.Choices[j]);
                         else
                             AddNormalEvent();
@@ -148,7 +146,6 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 }
             }
-
         }
     }
 }

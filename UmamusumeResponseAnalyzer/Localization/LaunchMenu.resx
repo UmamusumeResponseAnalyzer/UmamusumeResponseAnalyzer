@@ -225,4 +225,7 @@
   <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
     <value>Multiple languages selected at the same time, reset to default, please reset</value>
   </data>
+  <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
+    <value>[yellow] Console size is too small: recommended sizes are width {0}, height {1} [/]</value>
+  </data>
 </root>

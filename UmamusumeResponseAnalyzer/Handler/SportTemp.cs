@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Spectre.Console;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
+using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
 using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
@@ -19,7 +20,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             var layout = new Layout().SplitColumns(
-                new Layout("Main").SplitRows(
+                new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
                         new Layout("总属性").Ratio(3),
@@ -314,7 +315,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 extInfos.Add(string.Format(I18N_MinimumSportRank, nextRank));
                 foreach (var i in lowRankSports)
                 {
-                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color), GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]], nextRank - i.SportRank));
+                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color, GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]]), nextRank - i.SportRank));
                 }
                 
                 extInfos.Add(string.Empty);
@@ -426,16 +427,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
             AnsiConsole.Write(layout);
             // 光标倒转一点
-            int rollbackLines = System.Console.WindowHeight - 30;
-            if (rollbackLines > 0)
-                AnsiConsole.Write($"\x1b[{rollbackLines}A\x1b[0G");
+            AnsiConsole.Cursor.MoveUp(AnsiConsole.Console.Profile.Height - 30);
 
-            static string ColorToMarkup(SportColor c) =>
+            static string ColorToMarkup(SportColor c, string? text = null!) =>
                 c switch
                 {
-                    SportColor.Blue => $"[blue]{I18N_Blue}[/]",
-                    SportColor.Red => $"[red]{I18N_Red}[/]",
-                    SportColor.Yellow => $"[yellow]{I18N_Yellow}[/]",
+                    SportColor.Blue => $"[blue]{text ?? I18N_Blue}[/]",
+                    SportColor.Red => $"[red]{text ?? I18N_Red}[/]",
+                    SportColor.Yellow => $"[yellow]{text ?? I18N_Yellow}[/]",
                     _ => throw new NotImplementedException(),
                 };
         }

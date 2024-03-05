@@ -225,4 +225,7 @@
   <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
     <value>複数の言語が同時に選択されました。デフォルトに戻して、再設定してください</value>
   </data>
+  <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
+    <value>[yellow]コンソールサイズが小さすぎる：推奨サイズは幅{0}、高さ{1}[/]</value>
+  </data>
 </root>

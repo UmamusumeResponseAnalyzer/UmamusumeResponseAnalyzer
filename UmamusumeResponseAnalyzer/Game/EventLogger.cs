@@ -1,11 +1,5 @@
 ﻿using Gallop;
-using MathNet.Numerics.RootFinding;
 using Spectre.Console;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Numerics;
 using UmamusumeResponseAnalyzer;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Handler;
@@ -286,7 +280,7 @@ namespace UmamusumeResponseAnalyzer.Game
                             new());
                         if (choice.State > 0 && choice.State != State.None)
                             ++SuccessEventSuccessCount; // 暂时不区分大成功
-                     //   Print($">> {choice.State}");  // 透不鸟了，寄
+                        AnsiConsole.MarkupLine($">> {choice.State}");
                     }
                     
                 }

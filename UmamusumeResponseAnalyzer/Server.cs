@@ -116,10 +116,6 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Handlers.ParseChoiceRequest(dyn.ToObject<Gallop.SingleModeChoiceRequest>());
                     }
-                    //else
-                    //{
-                    //    Handler.Debug.Dump(dyn, "request");
-                    //}
                 }
             }
             catch (Exception e)
