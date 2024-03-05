@@ -166,6 +166,6 @@
     <value>:sparkles:{0}变[yellow]黄[/]可爆</value>
   </data>
   <data name="I18N_LowSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:{0}色的{1}等级过低</value>
+    <value>:red_exclamation_mark:{0}的{1}等级过低</value>
   </data>
 </root>

@@ -3,6 +3,7 @@ using MathNet.Numerics.Distributions;
 using Spectre.Console;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
+using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
 using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
@@ -15,7 +16,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             var layout = new Layout().SplitColumns(
-                new Layout("Main").SplitRows(
+                new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
                         new Layout("赛程倒计时").Ratio(3),
@@ -178,9 +179,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var stats = trainStats[command.TrainIndex - 1];
                 var score = stats.FiveValueGain.Sum();
                 if (score == trainStats.Max(x => x.FiveValueGain.Sum()))
-                    table.AddRow($"{I18N_StaminaSimple}:[aqua]{score}[/]|Pt:{stats.PtGain}");
+                    table.AddRow($"{I18N_StatSimple}:[aqua]{score}[/]|Pt:{stats.PtGain}");
                 else
-                    table.AddRow($"{I18N_StaminaSimple}:{score}|Pt:{stats.PtGain}");
+                    table.AddRow($"{I18N_StatSimple}:{score}|Pt:{stats.PtGain}");
 
                 blueFever = (turn.BlueLevel % 50 + command.TotalGainRank) >= 50;
                 redFever = (turn.RedLevel % 50 + command.TotalGainRank) >= 50;
