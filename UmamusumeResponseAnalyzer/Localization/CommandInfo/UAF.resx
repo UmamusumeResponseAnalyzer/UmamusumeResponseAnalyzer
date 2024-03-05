@@ -166,6 +166,12 @@
     <value>:sparkles:{0} turns [yellow]yellow[/] can burst</value>
   </data>
   <data name="I18N_LowSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:{0} of {1}'s rank low</value>
+    <value>:red_exclamation_mark:{0} {1}'s rank low</value>
+  </data>
+  <data name="I18N_AllRankOK" xml:space="preserve">
+    <value>[green]All ranks are met![/]</value>
+  </data>
+  <data name="I18N_LowestSportRank" xml:space="preserve">
+    <value>Lowest sport rank:</value>
   </data>
 </root>

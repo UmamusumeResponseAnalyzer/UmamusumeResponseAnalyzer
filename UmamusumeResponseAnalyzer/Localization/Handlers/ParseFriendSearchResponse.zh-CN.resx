@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="I18N_Friend" xml:space="preserve">
-    <value>好友：{0}\tID：{1}\t\tFollower数：{2}</value>
+    <value>好友：{0} ID：{1}  Follower数：{2}</value>
   </data>
   <data name="I18N_Uma" xml:space="preserve">
-    <value>种马：{0}\t胜鞍：{1}\t\t评分：{2}</value>
+    <value>种马：{0} 胜鞍：{1}  评分：{2}</value>
   </data>
   <data name="I18N_WinSaddle" xml:space="preserve">
     <value>胜鞍列表：{0}</value>
   </data>
   <data name="I18N_WinSaddleDetail" xml:space="preserve">
-    <value>胜鞍详细：{0}{Environment.NewLine}</value>
+    <value>胜鞍详细：{0}</value>
   </data>
   <data name="I18N_Factor" xml:space="preserve">
     <value>因子</value>
@@ -139,7 +139,7 @@
     <value>祖辈@{0}</value>
   </data>
   <data name="I18N_FriendSimple" xml:space="preserve">
-    <value>好友：{0}\t\tID：{1}</value>
+    <value>好友：{0}  ID：{1}</value>
   </data>
   <data name="I18N_UmaSimple" xml:space="preserve">
     <value>种马：{0}</value>

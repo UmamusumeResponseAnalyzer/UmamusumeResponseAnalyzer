@@ -24,7 +24,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         new Layout("干劲").Ratio(3)).Size(3),
                     new Layout("重要信息").Size(5),
                     new Layout("分割", new Rule()).Size(1),
-                    new Layout("训练信息")
+                    new Layout("训练信息")  // size 20, 共约30行
                     ).Ratio(4),
                 new Layout("Ext").Ratio(1)
                 );
@@ -285,11 +285,12 @@ namespace UmamusumeResponseAnalyzer.Handler
             var lowRankSports = turn.TrainingArray.Where(x => x.SportRank < nextRank);
             if (lowRankSports.Any())
             {
+                extInfos.Add(string.Format(I18N_MinimumSportRank, nextRank));
                 foreach (var i in lowRankSports)
                 {
-                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color), GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]]));
+                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color), GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]], nextRank - i.SportRank));
                 }
-                extInfos.Add(string.Format(I18N_MinimumSportRank, nextRank));
+                
                 extInfos.Add(string.Empty);
 
                 if (turn.AvailableTalkCount > 0)
@@ -305,6 +306,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                         if (requireRankGroup.Count() >= 2)
                         {
                             var otherColorCommands = turn.CommandInfoArray.Where(x => x.Color != requireRankColor && requireSportCmd.Contains(x.TrainIndex));
+                            /*
+                            // 这个计算看来意义不大？先注释掉
                             if (otherColorCommands.Any())
                             {
                                 var maxEffective = otherColorCommands
@@ -324,15 +327,30 @@ namespace UmamusumeResponseAnalyzer.Handler
                                         extInfos.Add(string.Format(I18N_ActualBestEffectiveTalk, ColorToMarkup(maxEffective.Key), ColorToMarkup(requireRankColor), maxEffective.Sum(y => y.GainRank), Environment.NewLine, actualEffectiveRank));
                                 }
                             }
+                            */
                         }
                     }
                     var currentCommandIds = turn.CommandInfoArray.Select(x => x.CommandId).Where(x => lowRankSports.Contains(y => y.CommandId == x));
                     var availableSportTrains = turn.CommandInfoArray.Where(x => currentCommandIds.Contains(x.CommandId));
+                    /*
+                    // 这个计算看来意义不大？先注释掉
                     var maxEffectiveWithoutTalk = availableSportTrains.GroupBy(x => x.Color).OrderByDescending(x => x.Sum(y => y.GainRank)).FirstOrDefault();
                     if (maxEffectiveWithoutTalk != default)
                         extInfos.Add(string.Format(I18N_BestEffectiveWithoutTalk, ColorToMarkup(maxEffectiveWithoutTalk.Key), maxEffectiveWithoutTalk.Sum(x => x.GainRank)));
+                    */
                     extInfos.Add(string.Empty);
                 }
+            }
+            else if (nextRank > 0)
+            {
+                extInfos.Add(string.Format(I18N_AllRankOK));
+                extInfos.Add(string.Format(I18N_LowestSportRank));
+                var minRank = turn.TrainingArray.Min(x => x.SportRank);
+                var lowestSports = turn.TrainingArray.Where(x => x.SportRank == minRank).Select(
+                    x => $"{ColorToMarkup(x.Color)} {GameGlobal.TrainNames[GameGlobal.ToTrainId[x.CommandId]]}: Lv{x.SportRank}");
+                foreach (var line in lowestSports)
+                    extInfos.Add(line);
+                extInfos.Add(string.Empty);
             }
 
             //友人点了几次，来了几次
@@ -355,13 +373,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             extInfos.Add(string.Format(I18N_MoritaTrained, friendClickedTimes));
             extInfos.Add(string.Format(I18N_MoritaVitalGainTimes, friendChargedTimes));
-            // 计算佐岳表现（分位数）
+            // 计算友人表现（分位数）
             var friendPerformance = string.Empty;
             if (friendClickedTimes > 1)
             {
-                // (p(n<=k-1) + p(n<=k)) / 2
-                double bn = Binomial.CDF(0.4, friendClickedTimes, friendChargedTimes);
-                double bn_1 = Binomial.CDF(0.4, friendClickedTimes, friendChargedTimes - 1);
+                var p = 0.4;
+                //(p(n<=k-1) + p(n<=k)) / 2
+                var bn = Binomial.CDF(p, friendClickedTimes, friendChargedTimes);
+                var bn_1 = Binomial.CDF(p, friendClickedTimes, friendChargedTimes - 1);
                 friendPerformance = string.Format(I18N_MoritaRanking, ((bn + bn_1) / 2 * 100).ToString("0"));
             }
             extInfos.Add(friendPerformance);
@@ -380,6 +399,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
             AnsiConsole.Write(layout);
+            // 光标倒转一点
+            AnsiConsole.Cursor.MoveUp(30);
 
             static string ColorToMarkup(SportColor c) =>
                 c switch

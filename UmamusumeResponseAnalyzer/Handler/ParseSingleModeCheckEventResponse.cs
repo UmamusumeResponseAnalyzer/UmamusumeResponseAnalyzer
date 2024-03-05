@@ -71,6 +71,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     var mainTree = new Tree(story.TriggerName.EscapeMarkup()); //触发者名称
                     var eventTree = new Tree($"{story.Name.EscapeMarkup()}({i.story_id})"); //事件名称
+                    var eventHasManualChoice = (i.event_contents_info.choice_array.Length >= 2);   // 是否有手动选项。有选项的不能获取结果了
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)
                     {
                         var originalChoice = new Choice();
@@ -98,7 +99,10 @@ namespace UmamusumeResponseAnalyzer.Handler
                                 .WithScenarioId(@event.data.chara_info.scenario_id)
                                 .TryGet(out var choice);
                             if (find)
-                                tree.AddNode(MarkupText(choice.Effect, choice.State));
+                                if (!eventHasManualChoice)  // 没有手动选项，还能看
+                                    tree.AddNode(MarkupText(choice.Effect, choice.State));
+                                else
+                                    AddNormalEvent();
                             else
                                 tree.AddNode((string.IsNullOrEmpty(originalChoice.FailedEffect) ? originalChoice.SuccessEffect : MarkupText(originalChoice.FailedEffect, 0)));
                         }

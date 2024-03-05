@@ -151,6 +151,6 @@
     <value>[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]</value>
   </data>
   <data name="I18N_LoginRequestDetected" xml:space="preserve">
-    <value>[green]检测到ViewerID为{0}的帐号登录请求[/]</value>
+    <value>[green]检测到帐号登录请求[/]</value>
   </data>
 </root>
