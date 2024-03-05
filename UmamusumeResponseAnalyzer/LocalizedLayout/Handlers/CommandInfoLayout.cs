@@ -23,7 +23,7 @@ namespace UmamusumeResponseAnalyzer.LocalizedLayout.Handlers
                 return (CommandInfoLayout)layout!.GetValue(null)!;
             }
         }
-        public static CommandInfoLayout SimplifiedChinese = new(15);
+        public static CommandInfoLayout SimplifiedChinese = new(16);
         public static CommandInfoLayout Japanese = new(17);
         public static CommandInfoLayout English = new(15);
         public int TrainingCardWidth { get; init; }

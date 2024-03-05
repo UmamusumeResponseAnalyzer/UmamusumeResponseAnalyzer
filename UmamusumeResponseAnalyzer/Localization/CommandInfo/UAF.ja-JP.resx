@@ -166,6 +166,12 @@
     <value>:sparkles:{0}が[yellow]黄[/]に変わると爆発</value>
   </data>
   <data name="I18N_LowSportRank" xml:space="preserve">
-    <value>:red_exclamation_mark:{0}の{1}Lvが低</value>
+    <value>:red_exclamation_mark:{0}：差 {1}</value>
+  </data>
+  <data name="I18N_LowestSportRank" xml:space="preserve">
+    <value>現在の最低レベル：</value>
+  </data>
+  <data name="I18N_AllRankOK" xml:space="preserve">
+    <value>[green]すべてのトレーニングが達成されました！[/]</value>
   </data>
 </root>

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.LocalizedLayout;
 using static UmamusumeResponseAnalyzer.Localization.DMM;
 using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 using static UmamusumeResponseAnalyzer.Localization.NetFilter;
@@ -46,6 +47,11 @@ namespace UmamusumeResponseAnalyzer
                 Environment.Exit(0);
             }
 
+            if (AnsiConsole.Console.Profile.Width < RecommendTerminalSize.Current.Width ||
+                AnsiConsole.Console.Profile.Height < RecommendTerminalSize.Current.Height)
+            {
+                AnsiConsole.WriteLine(I18N_ConsoleSizeSmall, RecommendTerminalSize.Current.Width, RecommendTerminalSize.Current.Height);
+            }
             var prompt = string.Empty;
             do
             {

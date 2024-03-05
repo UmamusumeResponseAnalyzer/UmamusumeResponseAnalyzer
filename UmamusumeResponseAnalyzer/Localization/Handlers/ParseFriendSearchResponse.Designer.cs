@@ -70,7 +70,7 @@ namespace UmamusumeResponseAnalyzer.Localization.Handlers {
         }
         
         /// <summary>
-        ///   查找类似 Friend: {0}\tID: {1}\t\tFollowers: {2} 的本地化字符串。
+        ///   查找类似 Friend: {0}	ID: {1}		Followers: {2} 的本地化字符串。
         /// </summary>
         internal static string I18N_Friend {
             get {
@@ -79,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Localization.Handlers {
         }
         
         /// <summary>
-        ///   查找类似 Friend: {0}\t\tID: {1} 的本地化字符串。
+        ///   查找类似 Friend: {0}		ID: {1} 的本地化字符串。
         /// </summary>
         internal static string I18N_FriendSimple {
             get {
@@ -97,7 +97,7 @@ namespace UmamusumeResponseAnalyzer.Localization.Handlers {
         }
         
         /// <summary>
-        ///   查找类似 Stallion: {0}\tVictories: {1}\t\tRating: {2} 的本地化字符串。
+        ///   查找类似 Stallion: {0}	Victories: {1}		Rating: {2} 的本地化字符串。
         /// </summary>
         internal static string I18N_Uma {
             get {

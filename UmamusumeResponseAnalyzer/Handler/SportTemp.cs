@@ -288,9 +288,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                 extInfos.Add(string.Format(I18N_MinimumSportRank, nextRank));
                 foreach (var i in lowRankSports)
                 {
-                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color), GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]], nextRank - i.SportRank));
+                    extInfos.Add(string.Format(I18N_LowSportRank, ColorToMarkup(i.Color, GameGlobal.TrainNames[GameGlobal.ToTrainId[i.CommandId]]), nextRank - i.SportRank));
                 }
-                
+
                 extInfos.Add(string.Empty);
 
                 if (turn.AvailableTalkCount > 0)
@@ -400,14 +400,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
             AnsiConsole.Write(layout);
             // 光标倒转一点
-            AnsiConsole.Cursor.MoveUp(30);
+            AnsiConsole.Cursor.MoveUp(AnsiConsole.Console.Profile.Height - 30);
 
-            static string ColorToMarkup(SportColor c) =>
+            static string ColorToMarkup(SportColor c, string? text = null!) =>
                 c switch
                 {
-                    SportColor.Blue => $"[blue]{I18N_Blue}[/]",
-                    SportColor.Red => $"[red]{I18N_Red}[/]",
-                    SportColor.Yellow => $"[yellow]{I18N_Yellow}[/]",
+                    SportColor.Blue => $"[blue]{text ?? I18N_Blue}[/]",
+                    SportColor.Red => $"[red]{text ?? I18N_Red}[/]",
+                    SportColor.Yellow => $"[yellow]{text ?? I18N_Yellow}[/]",
                     _ => throw new NotImplementedException(),
                 };
         }
