@@ -225,4 +225,7 @@
   <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
     <value>多种语言同时选择，已恢复至默认，请重新设置</value>
   </data>
+  <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
+    <value>[yellow]控制台尺寸过小:推荐尺寸为宽{0}、高{1}[/]</value>
+  </data>
 </root>

@@ -199,4 +199,12 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <EditorConfigFiles Remove="K:\repos\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\.editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="K:\repos\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\.editorconfig" />
+	</ItemGroup>
+
 </Project>
