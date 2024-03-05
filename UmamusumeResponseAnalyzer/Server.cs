@@ -168,10 +168,7 @@ namespace UmamusumeResponseAnalyzer
                         if (Config.Get(Localization.Config.I18N_ShowCommandInfo))
                         {
                             if (data.chara_info.scenario_id == 7)
-                            {
-                                Handlers.GameLogger(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                                 Handlers.ParseSportCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
-                            }
                             else
                                 Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                         }
