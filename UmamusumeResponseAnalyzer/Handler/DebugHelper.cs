@@ -15,7 +15,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void Dump(object o, string tag="")
         {
             int turn = GameStats.currentTurn;
-            string pathname = $"packets/Turn{GameStats.currentTurn}";
+            string pathname = $"Logs/Turn{GameStats.currentTurn}";
             if (tag.Length > 0)
                 pathname += $"_{tag}";
             string suffix = "";
@@ -28,7 +28,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
         public static void AppendLog(object o, string tag)
         {
-            string pathname = $"{tag}.json";
+            string pathname = $"Logs/{tag}.json";
             List<object>? log = new List<object>();
             if (File.Exists(pathname))
                 log = JsonConvert.DeserializeObject<List<object>>(File.ReadAllText(pathname, Encoding.UTF8));

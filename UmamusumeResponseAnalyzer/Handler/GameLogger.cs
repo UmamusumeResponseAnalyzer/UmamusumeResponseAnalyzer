@@ -18,9 +18,9 @@ namespace UmamusumeResponseAnalyzer.Handler {
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             int turn = @event.data.chara_info.turn;
-            string regular_path = "Regular.log";
-            string uaf_path = "uaf.log";
-            string race_path = "race.log";
+            string regular_path = "Logs/Regular.log";
+            string uaf_path = "Logs/uaf.log";
+            string race_path = "Logs/race.log";
             string UAFLog = $"{turn} ";
             //声明所有变量
             int lh_id1 = 30188;//SSR凉花

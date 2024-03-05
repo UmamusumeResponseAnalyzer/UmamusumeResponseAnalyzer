@@ -219,7 +219,7 @@ namespace UmamusumeResponseAnalyzer.Game
                             }
 
                             // 使用DebugHelper记录Log
-                            /*
+                            
                             Handler.Debug.AppendLog(new CardEventLogEntry {
                                 turn = @event.data.chara_info.turn,
                                 cardId = cardId,
@@ -227,7 +227,7 @@ namespace UmamusumeResponseAnalyzer.Game
                                 step = which,
                                 isFinished = (which == rarity)
                             }, "CardEvent");
-                            */
+                            
                         }
                         CardEvents.Add(new LogEvent(LastEvent));
                         AllEvents.Add(new LogEvent(LastEvent));

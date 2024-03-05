@@ -22,7 +22,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 new Layout("Main").SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
-                        new Layout("赛程倒计时").Ratio(3),
+                        new Layout("总属性").Ratio(3),
                         new Layout("体力").Ratio(9),
                         new Layout("干劲").Ratio(3)).Size(3),
                     new Layout("重要信息").Size(5),
@@ -77,6 +77,29 @@ namespace UmamusumeResponseAnalyzer.Handler
             };
             var trainStats = new TrainStats[5];
             var failureRate = new Dictionary<int, int>();
+
+            // 总属性计算
+            var currentFiveValue = new int[]
+            {
+                @event.data.chara_info.speed,
+                @event.data.chara_info.stamina,
+                @event.data.chara_info.power ,
+                @event.data.chara_info.guts ,
+                @event.data.chara_info.wiz ,
+            };
+            var fiveValueMaxRevised = new int[]
+            {
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_speed),
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_stamina),
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_power) ,
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_guts) ,
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_wiz) ,
+            };
+            var currentFiveValueRevised = currentFiveValue.Select(x => ScoreUtils.ReviseOver1200(x)).ToArray();
+            var totalValue = currentFiveValueRevised.Sum();
+            var totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
+           // var totalValueWithHalfPt = totalValue + 0.5 * @event.data.chara_info.skill_point;
+
             for (var i = 0; i < 5; i++)
             {
                 var trainId = GameGlobal.TrainIds[i];
@@ -389,7 +412,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             extInfos.Add(friendPerformance);
 
             layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
-            layout["赛程倒计时"].Update(new Panel("---------").Expand());
+            layout["总属性"].Update(new Panel($"总属性: {totalValue}").Expand());
             layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
             layout["干劲"].Update(new Panel(@event.data.chara_info.motivation switch
             {
