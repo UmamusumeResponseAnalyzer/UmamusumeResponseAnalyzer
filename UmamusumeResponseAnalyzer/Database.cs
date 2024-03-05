@@ -210,7 +210,7 @@ namespace UmamusumeResponseAnalyzer
                             {
                                 var skillName = match.Groups[1].Value;
                                 if (localizedSkillNames.TryGetValue(skillName, out var value))
-                                    s = s.Replace(skillName, $"[cyan]{skillName}/{value}[/]");
+                                    s = s.Replace(skillName, $"[aqua]{skillName}/{value}[/]");
                             }
                         }
                         s = DictionaryReplace(s, staticTranslation);    // 替换固定文本

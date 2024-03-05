@@ -23,8 +23,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
-                        new Layout("总属性").Ratio(3),
-                        new Layout("体力").Ratio(9),
+                        new Layout("总属性").Ratio(4),
+                        new Layout("体力").Ratio(8),
                         new Layout("干劲").Ratio(3)).Size(3),
                     new Layout("重要信息").Size(5),
                     new Layout("分割", new Rule()).Size(1),
