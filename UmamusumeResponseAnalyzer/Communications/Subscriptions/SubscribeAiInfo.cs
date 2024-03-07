@@ -8,7 +8,7 @@ using UmamusumeResponseAnalyzer.AI;
 
 namespace UmamusumeResponseAnalyzer.Communications.Subscriptions
 {
-    public class SubscribeAiInfo : BaseSubscription<GameStatusSend_LArc>
+    public class SubscribeAiInfo : BaseSubscription<GameStatusSend_UAF>
     {
         public SubscribeAiInfo(string wsKey) : base(wsKey) { }
     }

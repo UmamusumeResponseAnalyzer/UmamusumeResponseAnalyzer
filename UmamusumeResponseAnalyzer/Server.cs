@@ -171,6 +171,7 @@ namespace UmamusumeResponseAnalyzer
                         {
                             if (data.chara_info.scenario_id == 7)
                             {
+                                File.WriteAllText("package.json", jsonstr);
                                 Handlers.GameLogger(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                                 Handlers.ParseSportCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                             }
