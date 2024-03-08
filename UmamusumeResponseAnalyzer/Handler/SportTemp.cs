@@ -416,6 +416,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 try
                 {
                     var gameStatusToSend = new GameStatusSend_UAF(@event);
+                    //Console.Write(gameStatusToSend);
                     SubscribeAiInfo.Signal(gameStatusToSend);
 
                     if (Config.Get(Localization.Resource.ConfigSet_WriteAIInfo))

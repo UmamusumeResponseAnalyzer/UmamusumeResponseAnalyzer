@@ -14,7 +14,7 @@ namespace UmamusumeResponseAnalyzer.AI
     public class GameStatusSend_UAF
     {
         public int umaId;//马娘编号，见KnownUmas.cpp
-
+        public int umaStar;//几星
 
 
         public int turn;//回合数，从0开始，到77结束
@@ -298,21 +298,23 @@ namespace UmamusumeResponseAnalyzer.AI
 
             foreach (var train in @event.data.home_info.command_info_array)
             {
+                //Console.WriteLine(train.command_id);
                 if (!GameGlobal.ToTrainIndex.ContainsKey(train.command_id))//不是正常训练
                     continue;
+                //Console.WriteLine("!");
                 int trainId = GameGlobal.ToTrainIndex[train.command_id];
 
                 int j = 0;
                 foreach (var p in train.training_partner_array)
                 {
-                    int pid = 0;
-                    personDistribution[trainId, j] = pid;
+                    
+                    personDistribution[trainId, j] = p;
                     j += 1;
                 }
                 foreach (var p in train.tips_event_partner_array)
                 {
-                    int pid = 0;
-                    persons[pid].isHint = true;
+
+                    persons[p].isHint = true;
                 }
             }
 
