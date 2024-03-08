@@ -8,6 +8,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Game;
+using UmamusumeResponseAnalyzer.Game.TurnInfo;
+using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 
 namespace UmamusumeResponseAnalyzer.AI
 {
@@ -31,6 +33,7 @@ namespace UmamusumeResponseAnalyzer.AI
         public int failureRateBias;//失败率改变量。练习上手=2，练习下手=-2
 
         public bool isAiJiao;//爱娇
+        public bool isQieZhe;//切者
         public bool isPositiveThinking;//ポジティブ思考，友人第三段出行选上的buff，可以防一次掉心情
 
         public int[] zhongMaBlueCount;//种马的蓝因子个数，假设只有3星
@@ -48,6 +51,7 @@ namespace UmamusumeResponseAnalyzer.AI
         public int[] uaf_trainingLevel;//三种颜色五种训练的等级
         public bool[] uaf_winHistory;//运动会历史战绩
 
+        public bool uaf_rankGainIncreased;//训练等级提升量是否+3
         public int uaf_xiangtanRemain;//还剩几次相谈
 
         public int[] uaf_buffActivated;//蓝红黄的buff已经触发过几次了？记录这个主要是用来识别什么时候应该增加两回合buff，比如假如训练后等级变成370，这时如果buffActivated=6则增加2回合buff并改成7（说明刚激活350级的buff），如果buffActivated=7则不增加buff（说明350级的buff已经激活过）
@@ -57,7 +61,9 @@ namespace UmamusumeResponseAnalyzer.AI
         public int lianghua_type;//0没带凉花卡，1 ssr卡，2 r卡
         public int lianghua_personId;//凉花卡在persons里的编号
                                      //int16_t lianghua_stage;//0是未点击，1是已点击但未解锁出行，2是已解锁出行    这次，凉花卡和其他友人的这个全放在Person类里了
+        public int lianghua_outgoingStage;//0未点击，1点击还未解锁出行，2已解锁出行
         public int lianghua_outgoingUsed;//凉花的出行已经走了几段了   暂时不考虑其他友人团队卡的出行
+
 
 
 
@@ -67,7 +73,8 @@ namespace UmamusumeResponseAnalyzer.AI
 
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
             Console.WriteLine("1");
-            umaId = @event.data.chara_info.card_id + 1000000 * @event.data.chara_info.rarity;
+            umaId = @event.data.chara_info.card_id;
+            umaStar = @event.data.chara_info.rarity;
             //turn
             int turnNum = @event.data.chara_info.turn;//游戏里回合数从1开始
             turn = turnNum - 1;//ai里回合数从0开始
@@ -107,13 +114,13 @@ namespace UmamusumeResponseAnalyzer.AI
             }
 
             isAiJiao = @event.data.chara_info.chara_effect_id_array.Contains(8);
-            bool isQieZhe = @event.data.chara_info.chara_effect_id_array.Contains(7);
+            isQieZhe = @event.data.chara_info.chara_effect_id_array.Contains(7);
             isPositiveThinking = @event.data.chara_info.chara_effect_id_array.Contains(25);
-            ptScoreRate = 1.9;
+            ptScoreRate = 2.1;
             skillPt = 0;
             try
             {
-                ptScoreRate = isQieZhe ? 2.1 : 1.9;
+                ptScoreRate = isQieZhe ? 2.3 : 2.1;
                 double ptScore = AiUtils.calculateSkillScore(@event, ptScoreRate);
                 skillPt = (int)(ptScore / ptScoreRate);
             }
@@ -307,14 +314,13 @@ namespace UmamusumeResponseAnalyzer.AI
                 int j = 0;
                 foreach (var p in train.training_partner_array)
                 {
-                    
-                    personDistribution[trainId, j] = p;
+                    personDistribution[trainId, j] = p == 102 ? 6 : p == 103 ? 7 : p == 111 ? 8 : p - 1;
                     j += 1;
                 }
                 foreach (var p in train.tips_event_partner_array)
                 {
 
-                    persons[p].isHint = true;
+                    persons[p - 1].isHint = true;
                 }
             }
 
@@ -370,19 +376,23 @@ namespace UmamusumeResponseAnalyzer.AI
             {
                 uaf_winHistory[i] = false;
             }
-            int uafcount = 0;
+            //int uafcount = 0;
             foreach (var result in sportdat.competition_result_array)
             {
-                uafcount++;
+                int uafcount = result.compe_type;
+                //uafcount++;
                 foreach (var item in result.win_command_id_array)
                 {
                     int color = (Convert.ToInt32(item) % 1000) / 100;
-                    int type = (Convert.ToInt32(item) / 10);
+                    int type = (Convert.ToInt32(item) % 10);
                     uaf_winHistory[(uafcount - 1) * 15 + (color - 1) * 5 + type - 1] = true;
                 }
             }
 
             uaf_xiangtanRemain = sportdat.item_id_array.Count(x => x == 6);
+            var turnInfoUAF = new TurnInfoUAF(@event.data);
+            uaf_rankGainIncreased = turnInfoUAF.IsRankGainIncreased;
+
             uaf_buffActivated = new int[3];
             for(int i = 0; i < 3; i++)
             {
@@ -400,11 +410,39 @@ namespace UmamusumeResponseAnalyzer.AI
                 uaf_buffNum[Convert.ToInt32(p.stance_id) / 100 - 1] = p.remain_count;
             }
 
-            //凉花出行用几次
 
+
+            lianghua_outgoingStage = 0;
+            //凉花出行用几次
             if (lianghua_personId != 8)
             {
+
                 lianghua_outgoingUsed = @event.data.chara_info.evaluation_info_array[lianghua_personId].story_step;
+                if (@event.data.chara_info.evaluation_info_array[lianghua_personId].is_outing == 1)
+                    lianghua_outgoingStage = 2;
+                else {
+                    bool lianghuaClicked = false;//友人卡是否点过第一次
+                    for (int t = GameStats.currentTurn; t >= 1; t--)
+                    {
+                        if (GameStats.stats[t] == null)
+                        {
+                            break;
+                        }
+
+                        if (!GameGlobal.TrainIds.Any(x => x == GameStats.stats[t].playerChoice)) //没训练
+                            continue;
+                        if (GameStats.stats[t].isTrainingFailed)//训练失败
+                            continue;
+                        if (!GameStats.stats[t].uaf_friendAtTrain[GameGlobal.ToTrainIndex[GameStats.stats[t].playerChoice]])
+                            continue;//没点友人
+
+                        lianghuaClicked = true;
+                        break;
+                    }
+                    if (lianghuaClicked) lianghua_outgoingStage = 1;
+                    else lianghua_outgoingStage = 0;
+                }
+
             }
             else
             {

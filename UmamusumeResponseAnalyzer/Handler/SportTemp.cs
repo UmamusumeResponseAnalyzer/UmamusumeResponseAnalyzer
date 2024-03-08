@@ -413,7 +413,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (@event.IsScenario(ScenarioType.UAF))
             {
-                try
+                //try
                 {
                     var gameStatusToSend = new GameStatusSend_UAF(@event);
                     //Console.Write(gameStatusToSend);
@@ -449,9 +449,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                         }
                     }
                 }
-                catch (Exception e)
+                //catch (Exception e)
                 {
-                    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：{Environment.NewLine}{e.Message}[/]");
+                //    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：{Environment.NewLine}{e.Message}[/]");
                 }
             } // if
         }
