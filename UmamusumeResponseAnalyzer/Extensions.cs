@@ -103,7 +103,7 @@ namespace UmamusumeResponseAnalyzer
                 ScenarioType.MakeANewTrack => data.chara_info.scenario_id == 4 && data.free_data_set.pick_up_item_info_array != null,
                 ScenarioType.GrandMasters => data.chara_info.scenario_id == 5 && data.venus_data_set != null,
                 ScenarioType.LArc => data.chara_info.scenario_id == 6 && data.arc_data_set != null,
-                ScenarioType.Unknown => true,
+                ScenarioType.UAF => data.chara_info.scenario_id == 7,
                 _ => false
             };
         }
