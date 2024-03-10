@@ -146,9 +146,9 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                             }
                         }
 
-                        if (sheshiid == 7)
+                        if (sheshiid == 7 && turn>=14)
                         {
-                            outstring += "比赛亏损：" + $"{$"[yellow]{traincol}[/]",-4}" + " ";
+                            outstring += "比赛亏损：" + $"{$"[yellow]{traincol-trainbias}[/]",-4}" + " ";
 
                         }
 
