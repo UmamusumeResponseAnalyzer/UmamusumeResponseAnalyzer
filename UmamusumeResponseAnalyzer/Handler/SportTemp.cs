@@ -17,20 +17,6 @@ using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
 using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
-using System.Text;
-
-using System.Text.RegularExpressions;
-
-using MessagePack;
-
-using System;
-using System.ComponentModel.Design;
-using System.IO.Pipes;
-using System.Linq;
-using System.Xml.Linq;
-
-using System.Security.Cryptography;
-
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -480,7 +466,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     //Console.Write(gameStatusToSend);
                     SubscribeAiInfo.Signal(gameStatusToSend);
 
-                    if (Config.Get(Localization.Resource.ConfigSet_WriteAIInfo))
+                    if (Config.Get(Localization.Config.I18N_WriteAIInfo))
                     {
                         var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
                         Directory.CreateDirectory(currentGSdirectory);

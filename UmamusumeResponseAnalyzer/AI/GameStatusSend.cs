@@ -64,10 +64,6 @@ namespace UmamusumeResponseAnalyzer.AI
         public int lianghua_outgoingStage;//0未点击，1点击还未解锁出行，2已解锁出行
         public int lianghua_outgoingUsed;//凉花的出行已经走了几段了   暂时不考虑其他友人团队卡的出行
 
-
-
-
-
         public GameStatusSend_UAF(Gallop.SingleModeCheckEventResponse @event)
         {
 
@@ -143,10 +139,7 @@ namespace UmamusumeResponseAnalyzer.AI
 
             skillScore = 0;
 
-
-
             cardId = new int[6];
-
 
             isPositiveThinking = @event.data.chara_info.chara_effect_id_array.Contains(25);
 
@@ -169,12 +162,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     zhongMaBlueCount[i] = threeStarCount * 3;
                 }
             }
-
-
-
-
             //从游戏json的id到ai的人头编号的换算
-
 
             foreach (var s in @event.data.chara_info.support_card_array)
             {
@@ -187,8 +175,6 @@ namespace UmamusumeResponseAnalyzer.AI
             persons = new UAFPerson[9];
             for (int i = 0; i < 9; i++)
                 persons[i] = new UAFPerson();
-
-
 
             //var friendCards = new List<int>  //各种友人团队卡
             //{
@@ -253,7 +239,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 }
 
             }
-
             //理事长 记者 没带卡的凉花
 
             if(lianghua_personId==8)
@@ -304,12 +289,7 @@ namespace UmamusumeResponseAnalyzer.AI
             persons[6].personType = 4;
             persons[7].personType = 5;
 
-
             //到目前为止，headIdConvert写完了
-
-
-
-
             personDistribution = new int[5, 5];
             for (int i = 0; i < 5; i++)
                 for (int j = 0; j < 5; j++)
@@ -337,7 +317,6 @@ namespace UmamusumeResponseAnalyzer.AI
             }
 
             //计算Lockedtrainid
-
             bool istrainlocked = false;
             int enableidx = -1;
             var command = @event.data.home_info.command_info_array;
@@ -353,8 +332,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 {
                     enableidx = Convert.ToInt32(train.command_id) % 10;
                 }
-
-
             }
 
             if (istrainlocked)
@@ -422,8 +399,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 uaf_buffNum[Convert.ToInt32(p.stance_id) / 100 - 1] = p.remain_count;
             }
 
-
-
             lianghua_outgoingStage = 0;
             //凉花出行用几次
             if (lianghua_personId != 8)
@@ -460,12 +435,6 @@ namespace UmamusumeResponseAnalyzer.AI
             {
                 lianghua_outgoingUsed = 0;
             }
-
-
         }
-
-
-
-
     }
 }
