@@ -358,7 +358,7 @@ namespace UmamusumeResponseAnalyzer.Handler {
 
             if (turn >= 2)
             {
-                var t = turn - 1;
+                var t = turn;
                 if (GameStats.stats[t] == null) { }
                     
                 else if (!GameGlobal.TrainIds.Any(x => x == GameStats.stats[t].playerChoice)) { }//没训练

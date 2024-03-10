@@ -1,7 +1,16 @@
 ﻿using Gallop;
 using MathNet.Numerics.Distributions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UmamusumeResponseAnalyzer.AI;
+using UmamusumeResponseAnalyzer.Communications.Subscriptions;
+using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
@@ -9,6 +18,19 @@ using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
 using System.Text;
+
+using System.Text.RegularExpressions;
+
+using MessagePack;
+
+using System;
+using System.ComponentModel.Design;
+using System.IO.Pipes;
+using System.Linq;
+using System.Xml.Linq;
+
+using System.Security.Cryptography;
+
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -437,6 +459,53 @@ namespace UmamusumeResponseAnalyzer.Handler
                     SportColor.Yellow => $"[yellow]{text ?? I18N_Yellow}[/]",
                     _ => throw new NotImplementedException(),
                 };
+
+
+            if (@event.IsScenario(ScenarioType.UAF))
+            {
+                //try
+                {
+                    var gameStatusToSend = new GameStatusSend_UAF(@event);
+                    if (gameStatusToSend.islegal==false) { return; }
+                    //Console.Write(gameStatusToSend);
+                    SubscribeAiInfo.Signal(gameStatusToSend);
+
+                    if (Config.Get(Localization.Resource.ConfigSet_WriteAIInfo))
+                    {
+                        var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
+                        Directory.CreateDirectory(currentGSdirectory);
+
+                        var success = false;
+                        var tried = 0;
+                        do
+                        {
+                            try
+                            {
+                                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }; // 去掉空值避免C++端抽风
+                                File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                                File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                                success = true; // 写入成功，跳出循环
+                                break;
+                            }
+                            catch
+                            {
+                                tried++;
+                                AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                                //await Task.Delay(500); // 等待0.5秒
+                            }
+                        } while (!success && tried < 10);
+                        if (!success)
+                        {
+                            AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                        }
+                    }
+                }
+                //catch (Exception e)
+                {
+                //    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：{Environment.NewLine}{e.Message}[/]");
+                }
+            } // if
         }
+
     }
 }

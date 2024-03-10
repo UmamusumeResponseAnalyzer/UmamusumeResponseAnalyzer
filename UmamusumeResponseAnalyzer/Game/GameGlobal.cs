@@ -63,7 +63,22 @@ namespace UmamusumeResponseAnalyzer.Game
             { 105, 1 },
             { 102, 2 },
             { 103, 3 },
-            { 106, 4 }
+            { 106, 4 },
+            {2101,0 },
+            {2201,0 },
+            {2301,0 },
+            {2102,1},
+            {2202,1 },
+            {2302,1 },
+            {2103,2 },
+            {2203,2 },
+            {2303,2 },
+            {2104,3 },
+            {2204,3 },
+            {2304,3 },
+            {2105,4 },
+             {2205,4 },
+              {2305,4 },
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> TrainNames = new Dictionary<int, string>
         {

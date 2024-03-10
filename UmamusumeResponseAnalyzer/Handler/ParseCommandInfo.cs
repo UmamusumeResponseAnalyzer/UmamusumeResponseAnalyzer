@@ -994,11 +994,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 }
             }
             //发送AI所需信息
-            if (@event.IsScenario(ScenarioType.LArc))
+            if (@event.IsScenario(ScenarioType.UAF))
             {
                 try
                 {
-                    var gameStatusToSend = new GameStatusSend_LArc(@event);
+                    var gameStatusToSend = new GameStatusSend_UAF(@event);
                     SubscribeAiInfo.Signal(gameStatusToSend);
 
                     if (Config.Get(Localization.Config.I18N_WriteAIInfo))

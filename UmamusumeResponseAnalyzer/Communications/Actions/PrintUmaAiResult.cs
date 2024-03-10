@@ -88,7 +88,90 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                     AnsiConsole.MarkupLine(toPrint.ToString());
                 }
             }
+            else if (scenarioName == "UAF")
+            {
+                //Console.WriteLine(Text);
+                var turn = int.Parse(parts[1]); // 回合数
+                if (turn != GameStats.currentTurn - 1)
+                    return null;//不是当前回合的计算结果，可能是上个回合还没算完就来到了下一个回合
+                var scoreMean = float.Parse(parts[2]);
+                var scoreFirstTurn = float.Parse(parts[3]);
+                var scoreLastTurn = float.Parse(parts[4]);
+                var optimisticScore = float.Parse(parts[5]);
+                if (turn == 0 || scoreFirstTurn == 0)
+                    AnsiConsole.MarkupLine($"评分预测:[green]{(int)Math.Round(scoreMean)}[/](乐观:+[cyan]{(int)Math.Round(optimisticScore - scoreMean)}[/])");
+                else
+                    AnsiConsole.MarkupLine($"运气指标 | 本局:[cyan]{(int)Math.Round(scoreMean - scoreFirstTurn)}[/] | 本回合:[cyan]{(int)Math.Round(scoreMean - scoreLastTurn)}[/] | 评分预测:[cyan]{(int)Math.Round(scoreMean)}[/](乐观:+[cyan]{(int)Math.Round(optimisticScore - scoreMean)}[/])");
+                var regularprefix = new string[] { "速：", "力：", "耐：", "根：", "智：", "| 休息：", "外出：", "比赛：" };
+                var xiangtanprefix = new string[] { "    无", "蓝->红", "蓝->黄", "红->蓝", "红->黄", "黄->蓝", "黄->红", "  全蓝", "  全红", "  全黄" };
 
+
+                int totxtcount = int.Parse(parts[6]);
+                int totpointer = 6;
+                for (int i = 0; i < totxtcount; i++)
+                {
+
+                    string outstring = "相谈：   ";
+                    totpointer++;
+
+                    outstring += xiangtanprefix[int.Parse(parts[totpointer])] + "  ";
+                    totpointer++;
+                    int sheshicount = int.Parse(parts[totpointer]);
+                    for (int j = 0; j < sheshicount; j++)
+                    {
+                        totpointer++;
+                        int sheshiid = int.Parse(parts[totpointer]);
+                        outstring += regularprefix[sheshiid];
+                        totpointer++;
+                        float trainbias = (int)Math.Round(float.Parse(parts[totpointer]));
+                        totpointer++;
+                        float traincol = (int)Math.Round(float.Parse(parts[totpointer]));
+                        if (trainbias < -5000)
+                        {
+                            outstring += "---- ";
+                        }
+                        else
+                        {
+                            if (traincol - trainbias < 30)
+                            {
+                                outstring += $"{$"[red]{trainbias}[/]",-4}" + " ";
+                            }
+                            else if (trainbias - traincol < 150)
+                            {
+                                outstring += $"{$"[green]{trainbias}[/]",-4}" + " ";
+                            }
+                            else
+                            {
+                                outstring += $"{$"{trainbias}[/]",-4}" + " ";
+                            }
+                        }
+
+                        if (sheshiid == 7 && turn>=14)
+                        {
+                            outstring += "比赛亏损：" + $"{$"[yellow]{traincol-trainbias}[/]",-4}" + " ";
+
+                        }
+
+
+                        
+                    }
+
+
+                    AnsiConsole.MarkupLine(outstring);
+
+
+
+
+
+
+
+
+
+
+                }
+
+
+            }
             return null;
         }
     }
