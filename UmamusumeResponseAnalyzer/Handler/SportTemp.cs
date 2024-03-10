@@ -47,7 +47,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                         new Layout("日期").Ratio(4),
                         new Layout("总属性").Ratio(4),
                         new Layout("体力").Ratio(8),
-                        new Layout("干劲").Ratio(3)).Size(3),
+                        new Layout("干劲").Ratio(2)).Size(3),
                     new Layout("重要信息").Size(5),
                     new Layout("分割", new Rule()).Size(1),
                     new Layout("训练信息")  // size 20, 共约30行
@@ -65,12 +65,14 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 GameStats.isFullGame = false;
                 critInfos.Add(string.Format(I18N_WrongTurnAlert, GameStats.currentTurn, turn.Turn));
-                EventLogger.Init();
+                GameStats.currentTurn = turn.Turn;
+                EventLogger.Init(@event.data.chara_info.support_card_array);                
             }
             else if (turn.Turn == 1)
             {
                 GameStats.isFullGame = true;
-                EventLogger.Init();
+                GameStats.currentTurn = turn.Turn;
+                EventLogger.Init(@event.data.chara_info.support_card_array);
             }
 
             //买技能，大师杯剧本年末比赛，会重复显示
@@ -138,11 +140,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                     {10,0},
                 };
                 foreach (var item in turn.GetCommonResponse().home_info.command_info_array)
-                    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out int value) && value == trainId)
+                    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out var value) && value == trainId)
                         foreach (var trainParam in item.params_inc_dec_info_array)
                             trainParams[trainParam.target_type] += trainParam.value;
                 foreach (var item in turn.GetCommonResponse().sport_data_set.command_info_array)
-                    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out int value) && value == trainId)
+                    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out var value) && value == trainId)
                         foreach (var trainParam in item.params_inc_dec_info_array)
                             trainParams[trainParam.target_type] += trainParam.value;
 
@@ -168,9 +170,9 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             var failureRateStr = new string[5];
             //失败率>=40%标红、>=20%(有可能大失败)标DarkOrange、>0%标黄
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
-                int thisFailureRate = failureRate[GameGlobal.TrainIds[i]];
+                var thisFailureRate = failureRate[GameGlobal.TrainIds[i]];
                 failureRateStr[i] = thisFailureRate switch
                 {
                     >= 40 => $"[red]({thisFailureRate}%)[/]",
@@ -394,10 +396,10 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 extInfos.Add(string.Format(I18N_AllRankOK));
                 extInfos.Add(string.Format(I18N_LowestSportRank));
-                int minRank = turn.TrainingArray.Min(x => x.SportRank);
+                var minRank = turn.TrainingArray.Min(x => x.SportRank);
                 var lowestSports = turn.TrainingArray.Where(x => x.SportRank == minRank).Select(
                     x => $"{ColorToMarkup(x.Color)} {GameGlobal.TrainNames[GameGlobal.ToTrainId[x.CommandId]]}: Lv{x.SportRank}");
-                foreach (string line in lowestSports)
+                foreach (var line in lowestSports)
                     extInfos.Add(string.Format(line));
                 extInfos.Add(string.Empty);
             }
@@ -420,8 +422,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (GameStats.stats[t].uaf_friendEvent == 1 || GameStats.stats[t].uaf_friendEvent == 2)
                     friendChargedTimes += 1;
             }
-            extInfos.Add(string.Format(I18N_MoritaTrained, friendClickedTimes));
-            extInfos.Add(string.Format(I18N_MoritaVitalGainTimes, friendChargedTimes));
+
             // 计算友人表现（分位数）
             var friendPerformance = String.Empty;
             if (friendClickedTimes > 1)
@@ -431,19 +432,28 @@ namespace UmamusumeResponseAnalyzer.Handler
                 double bn = Binomial.CDF(p, friendClickedTimes, friendChargedTimes);
                 double bn_1 = Binomial.CDF(p, friendClickedTimes, friendChargedTimes - 1);
                 friendPerformance = string.Format(I18N_MoritaRanking, ((bn + bn_1) / 2 * 100).ToString("0"));
+                extInfos.Add(string.Format(I18N_MoritaTrained.Trim(), friendClickedTimes));
+                extInfos.Add(string.Format(I18N_MoritaVitalGainTimes.Trim(), friendChargedTimes));
+                extInfos.Add(friendPerformance);
             }
-            extInfos.Add(friendPerformance);
+
+            // 计算连续事件表现
+            var eventPerf = EventLogger.PrintCardEventPerf();
+            if (eventPerf.Count > 0)
+            {
+                extInfos.AddRange(eventPerf);
+            }
 
             layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
             layout["总属性"].Update(new Panel($"总属性: {totalValue}").Expand());
             layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
             layout["干劲"].Update(new Panel(@event.data.chara_info.motivation switch
             {
-                5 => $"[green]{I18N_MotivationBest}↑[/]",
-                4 => $"[yellow]{I18N_MotivationGood}↗[/]",
-                3 => $"[red]{I18N_MotivationNormal}→[/]",
-                2 => $"[red]{I18N_MotivationBad}↘️[/]",
-                1 => $"[red]{I18N_MotivationWorst}↓[/]"
+                5 => $"[green]{I18N_MotivationBest}[/]",
+                4 => $"[yellow]{I18N_MotivationGood}[/]",
+                3 => $"[red]{I18N_MotivationNormal}[/]",
+                2 => $"[red]{I18N_MotivationBad}[/]",
+                1 => $"[red]{I18N_MotivationWorst}[/]"
             }).Expand());
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
