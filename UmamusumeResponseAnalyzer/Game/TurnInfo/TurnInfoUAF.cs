@@ -42,7 +42,7 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
             BlueLevel = SportsByColor[SportColor.Blue].Sum(x => x.SportRank);
             RedLevel = SportsByColor[SportColor.Red].Sum(x => x.SportRank);
             YellowLevel = SportsByColor[SportColor.Yellow].Sum(x => x.SportRank);
-            IsRankGainIncreased = CommandInfoArray.Any(x => x.IsCurrentRankGainIncreased);
+            IsRankGainIncreased = CommandInfoArray.Sum(x => x.IsCurrentRankGainIncreased ? 1 : 0) >= 2;
         }
 
         public class ParsedSingleModeSportCommandInfo

@@ -18,10 +18,11 @@ namespace UmamusumeResponseAnalyzer.AI
             var tips = Handler.Handlers.CalculateSkillScoreCost(@event, skills, true);
 
             int turn = @event.data.chara_info.turn;
+            int totalTurn = @event.IsScenario(ScenarioType.LArc) ? 67 : 78;
             //向未来借一些pt
-            var borrowPtFromFuture = turn >= 60 ? 300 + 80 * (67 - turn) :
-                turn >= 40 ? 300 + 80 * (67 - 60) + 40 * (60 - turn) :
-                300 + 80 * (67 - 60) + 40 * (60 - 40);
+            var borrowPtFromFuture = turn >= 60 ? 300 + 80 * (totalTurn - turn) :
+                turn >= 40 ? 300 + 80 * (totalTurn - 60) + 40 * (60 - turn) :
+                300 + 80 * (totalTurn - 60) + 40 * (60 - 40);
 
             var originSP = @event.data.chara_info.skill_point;
             var totalSP = @event.data.chara_info.skill_point + borrowPtFromFuture;
