@@ -416,6 +416,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //try
                 {
                     var gameStatusToSend = new GameStatusSend_UAF(@event);
+                    if (gameStatusToSend.islegal==false) { return; }
                     //Console.Write(gameStatusToSend);
                     SubscribeAiInfo.Signal(gameStatusToSend);
 

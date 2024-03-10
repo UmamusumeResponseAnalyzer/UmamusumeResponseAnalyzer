@@ -17,7 +17,7 @@ namespace UmamusumeResponseAnalyzer.AI
     {
         public int umaId;//马娘编号，见KnownUmas.cpp
         public int umaStar;//几星
-
+        public bool islegal;
 
         public int turn;//回合数，从0开始，到77结束
         public int vital;//体力，叫做“vital”是因为游戏里就这样叫的
@@ -72,7 +72,19 @@ namespace UmamusumeResponseAnalyzer.AI
         {
 
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
-            Console.WriteLine("1");
+            bool uaf_liferace = true;
+            for (int i = 0; i < 5; i++)
+            {
+                uaf_liferace &= (@event.data.home_info.command_info_array[i].is_enable==0);
+            }
+
+            if (uaf_liferace | (@event.data.chara_info.playing_state != 1))
+            {
+                islegal = false; //生涯比赛和UAF直接return，就不发了
+                return;
+            }
+            islegal = true;
+            //Console.WriteLine("测试用，看到这个说明发送成功\n");
             umaId = @event.data.chara_info.card_id;
             umaStar = @event.data.chara_info.rarity;
             //turn
