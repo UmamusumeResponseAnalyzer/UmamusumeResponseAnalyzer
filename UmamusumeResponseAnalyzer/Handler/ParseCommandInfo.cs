@@ -1000,7 +1000,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     var gameStatusToSend = new GameStatusSend_UAF(@event);
                     SubscribeAiInfo.Signal(gameStatusToSend);
-
+                    AnsiConsole.MarkupLine("[aqua]AI计算中...[/]");
                     if (Config.Get(Localization.Config.I18N_WriteAIInfo))
                     {
                         var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");

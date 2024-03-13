@@ -274,7 +274,8 @@ namespace UmamusumeResponseAnalyzer.Game
                     {
                         Print(@"[red]事件中断[/]");
                         ++CardEventFinishCount;
-                        CardEventRemaining -= (rarity - which); // 计算打断了几段事件，从总数里减去
+                        if (CardIDs.Contains(cardId))             // 排除打断乱入连续事件的情况
+                            CardEventRemaining -= (rarity - which); // 计算打断了几段事件，从总数里减去
                         if (CardEventFinishCount == 5)
                             CardEventFinishTurn = LastEvent.Turn;
                     }

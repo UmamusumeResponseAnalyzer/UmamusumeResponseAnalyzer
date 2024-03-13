@@ -102,7 +102,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                     AnsiConsole.MarkupLine($"评分预测:[green]{(int)Math.Round(scoreMean)}[/](乐观:+[cyan]{(int)Math.Round(optimisticScore - scoreMean)}[/])");
                 else
                     AnsiConsole.MarkupLine($"运气指标 | 本局:[cyan]{(int)Math.Round(scoreMean - scoreFirstTurn)}[/] | 本回合:[cyan]{(int)Math.Round(scoreMean - scoreLastTurn)}[/] | 评分预测:[cyan]{(int)Math.Round(scoreMean)}[/](乐观:+[cyan]{(int)Math.Round(optimisticScore - scoreMean)}[/])");
-                var regularprefix = new string[] { "速：", "力：", "耐：", "根：", "智：", "| 休息：", "外出：", "比赛：" };
+                var regularprefix = new string[] { "速：", "耐：", "力：", "根：", "智：", "| 休息：", "外出：", "比赛：" };
                 var xiangtanprefix = new string[] { "    无", "蓝->红", "蓝->黄", "红->蓝", "红->黄", "黄->蓝", "黄->红", "  全蓝", "  全红", "  全黄" };
 
 
@@ -134,44 +134,27 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                         {
                             if (traincol - trainbias < 30)
                             {
-                                outstring += $"{$"[red]{trainbias}[/]",-4}" + " ";
+                                outstring += $"[yellow on red]{$"*{trainbias}",-5}[/]";
                             }
                             else if (trainbias - traincol < 150)
                             {
-                                outstring += $"{$"[green]{trainbias}[/]",-4}" + " ";
+                                outstring += $"[green]{$"{trainbias}",-5}[/]";
                             }
                             else
                             {
-                                outstring += $"{$"{trainbias}[/]",-4}" + " ";
+                                outstring += $"[gray]{$"{trainbias}",-5}[/]";
                             }
                         }
 
                         if (sheshiid == 7 && turn>=14)
                         {
-                            outstring += "比赛亏损：" + $"{$"[yellow]{traincol-trainbias}[/]",-4}" + " ";
-
+                            outstring = $"[yellow]自选比赛亏损：{traincol-trainbias}[/]" + Environment.NewLine + outstring;
                         }
-
-
-                        
+                                               
                     }
-
-
                     AnsiConsole.MarkupLine(outstring);
-
-
-
-
-
-
-
-
-
-
                 }
-
-
-            }
+                            }
             return null;
         }
     }

@@ -62,9 +62,15 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
 
             //买技能，大师杯剧本年末比赛，会重复显示
-            if (@event.data.chara_info.playing_state != 1)
+            if (@event.data.chara_info.playing_state != 1 || GameStats.currentTurn == turn.Turn)
             {
                 critInfos.Add(I18N_RepeatTurn);
+                if (GameStats.stats[turn.Turn] == null)
+                {
+                    // FIXME: 中途开始回合时可能会到这个分支。问题还需要排查
+                    critInfos.Add("[red]中途开始回合[/]");
+                    GameStats.stats[turn.Turn] = new TurnStats();
+                }
             }
             else
             {
@@ -456,7 +462,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     _ => throw new NotImplementedException(),
                 };
 
-
             if (@event.IsScenario(ScenarioType.UAF))
             {
                 //try
@@ -465,7 +470,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                     if (gameStatusToSend.islegal==false) { return; }
                     //Console.Write(gameStatusToSend);
                     SubscribeAiInfo.Signal(gameStatusToSend);
-
+                    if (!critInfos.Contains(I18N_RepeatTurn))    // hack判断一下是否重复显示
+                        AnsiConsole.MarkupLine("\n[aqua]AI计算中...[/]");
                     if (Config.Get(Localization.Config.I18N_WriteAIInfo))
                     {
                         var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
