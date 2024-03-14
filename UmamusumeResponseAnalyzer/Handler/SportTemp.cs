@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.AI;
 using UmamusumeResponseAnalyzer.Communications.Subscriptions;
+using UmamusumeResponseAnalyzer.Communications.Actions;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
@@ -464,47 +465,45 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (@event.IsScenario(ScenarioType.UAF))
             {
-                //try
-                {
-                    var gameStatusToSend = new GameStatusSend_UAF(@event);
-                    if (gameStatusToSend.islegal==false) { return; }
-                    //Console.Write(gameStatusToSend);
-                    SubscribeAiInfo.Signal(gameStatusToSend);
-                    if (!critInfos.Contains(I18N_RepeatTurn))    // hack判断一下是否重复显示
-                        AnsiConsole.MarkupLine("\n[aqua]AI计算中...[/]");
-                    if (Config.Get(Localization.Config.I18N_WriteAIInfo))
-                    {
-                        var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
-                        Directory.CreateDirectory(currentGSdirectory);
-
-                        var success = false;
-                        var tried = 0;
-                        do
-                        {
-                            try
-                            {
-                                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }; // 去掉空值避免C++端抽风
-                                File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
-                                File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
-                                success = true; // 写入成功，跳出循环
-                                break;
-                            }
-                            catch
-                            {
-                                tried++;
-                                AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
-                                //await Task.Delay(500); // 等待0.5秒
-                            }
-                        } while (!success && tried < 10);
-                        if (!success)
-                        {
-                            AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
-                        }
-                    }
+                var gameStatusToSend = new GameStatusSend_UAF(@event);
+                if (gameStatusToSend.islegal==false) {
+                    if (@event.data.chara_info.playing_state == 1)      // 说明uaf_liferace == True。这部分代码需要整理
+                        AnsiConsole.MarkupLine("[aqua]生涯比赛回合[/]");
+                    return;
                 }
-                //catch (Exception e)
+                
+                //Console.Write(gameStatusToSend);
+                var wsCount = SubscribeAiInfo.Signal(gameStatusToSend);
+                if (wsCount > 0 && !critInfos.Contains(I18N_RepeatTurn))    // hack判断一下是否重复显示，是否已经连接AI
+                    AnsiConsole.MarkupLine("\n[aqua]AI计算中...[/]");
+                if (Config.Get(Localization.Config.I18N_WriteAIInfo))
                 {
-                //    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：{Environment.NewLine}{e.Message}[/]");
+                    var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
+                    Directory.CreateDirectory(currentGSdirectory);
+
+                    var success = false;
+                    var tried = 0;
+                    do
+                    {
+                        try
+                        {
+                            var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }; // 去掉空值避免C++端抽风
+                            File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                            File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                            success = true; // 写入成功，跳出循环
+                            break;
+                        }
+                        catch
+                        {
+                            tried++;
+                            AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                            //await Task.Delay(500); // 等待0.5秒
+                        }
+                    } while (!success && tried < 10);
+                    if (!success)
+                    {
+                        AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                    }
                 }
             } // if
         }

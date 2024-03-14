@@ -136,7 +136,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                             {
                                 outstring += $"[yellow on red]{$"*{trainbias}",-5}[/]";
                             }
-                            else if (trainbias - traincol < 150)
+                            else if (traincol - trainbias < 150)
                             {
                                 outstring += $"[green]{$"{trainbias}",-5}[/]";
                             }
@@ -146,7 +146,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                             }
                         }
 
-                        if (sheshiid == 7 && turn>=14)
+                        if (sheshiid == 7 && turn>=14 && turn<=72)
                         {
                             outstring = $"[yellow]自选比赛亏损：{traincol-trainbias}[/]" + Environment.NewLine + outstring;
                         }
@@ -154,7 +154,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                     }
                     AnsiConsole.MarkupLine(outstring);
                 }
-                            }
+            }
             return null;
         }
     }

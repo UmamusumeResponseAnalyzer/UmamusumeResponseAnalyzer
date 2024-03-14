@@ -27,10 +27,7 @@ namespace UmamusumeResponseAnalyzer.AI
             var originSP = @event.data.chara_info.skill_point;
             var totalSP = @event.data.chara_info.skill_point + borrowPtFromFuture;
 
-
             var dpResult = Handler.Handlers.DP(tips, ref totalSP, @event.data.chara_info);
-
-
             var dpScore = dpResult.Item2;//多少pt能买多少分的技能
 
             double maxValue = Double.MinValue;
@@ -48,8 +45,6 @@ namespace UmamusumeResponseAnalyzer.AI
 
             var willLearnPoint = dpScore[maxIndex];
             var remainPt = originSP - maxIndex;
-
-
             var previousLearnPoint = 0; //之前学的技能的累计评价点
             foreach (var i in @event.data.chara_info.skill_array)
             {
@@ -70,7 +65,6 @@ namespace UmamusumeResponseAnalyzer.AI
                     
                 }
             }
-
 
             //计算边际性价比与减少50/100/150/.../500pt的平均性价比
             //AnsiConsole.MarkupLine($"{previousLearnPoint} {willLearnPoint} {remainPt}");

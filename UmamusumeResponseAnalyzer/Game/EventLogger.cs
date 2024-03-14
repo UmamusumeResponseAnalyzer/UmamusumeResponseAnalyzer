@@ -17,8 +17,8 @@ namespace UmamusumeResponseAnalyzer.Game
         private string fmt(int x) => x.ToString("+#;-#;0");
         public string Explain()
         {
-            // return $">> 属性: {fmt(stats)}, Pt: {fmt(pt)}, 体力: {fmt(vital)}；事件强度: {eventStrength}";
-            return $"属性: {fmt(Stats)}, Pt: {fmt(Pt)}, 体力: {fmt(Vital)}";
+            return $">> 属性: {fmt(Stats)}, Pt: {fmt(Pt)}, 体力: {fmt(Vital)}；评分: +{EventStrength}";
+            // return $"属性: {fmt(Stats)}, Pt: {fmt(Pt)}, 体力: {fmt(Vital)}";
         }
         public static LogValue operator -(LogValue a, LogValue b)
         {
@@ -38,7 +38,7 @@ namespace UmamusumeResponseAnalyzer.Game
         {
             get
             {
-                return (Stats + Pt) / 2 + Vital;
+                return Stats*4 + Pt*2 + Vital*6;
             }
         }
     }
@@ -80,7 +80,7 @@ namespace UmamusumeResponseAnalyzer.Game
 
     public static class EventLogger
     {
-        public const int MinEventStrength = 3;
+        public const int MinEventStrength = 25;
         // 排除佐岳充电,SS,继承,第三年凯旋门（输/赢）,以及无事发生直接到下一回合的情况
         public static readonly int[] ExcludedEvents = [809043003, 400006112, 400000040, 400006474, 400006439, -1];
         // 友人和团队卡不计入连续事件，这里仅排除这几个
@@ -289,7 +289,7 @@ namespace UmamusumeResponseAnalyzer.Game
             if (CardEventCount > 0)
             {
                 double p = 0.25;
-                int n = GameStats.currentTurn - ExcludedTurns.Count(x => x >= InitTurn && x <= GameStats.currentTurn);
+                int n = (GameStats.currentTurn - InitTurn + 1) - ExcludedTurns.Count(x => x >= InitTurn && x <= GameStats.currentTurn);
                 //(p(x<=k-1) + p(x<=k)) / 2
                 double bn = Binomial.CDF(p, n, CardEventCount);
                 double bn_1 = Binomial.CDF(p, n, CardEventCount - 1);
@@ -300,7 +300,7 @@ namespace UmamusumeResponseAnalyzer.Game
                     // 调试中，暂不加入I18N
                     ret.Add(string.Format("连续事件出现[yellow]{0}[/]次", CardEventCount));
                     ret.Add(string.Format("走完[yellow]{0}[/]张卡", CardEventFinishCount));
-                    if (InitTurn != 1)
+                    if (InitTurn != 1 && n > 0)
                         ret.Add(string.Format("连续事件运气: [yellow]{0}%[/]", ((bn + bn_1) / 2 * 200 - 100).ToString("+#;-#;0")));
                     else
                     {

@@ -41,7 +41,7 @@ namespace UmamusumeResponseAnalyzer.Communications
 
         public static readonly Dictionary<string, BaseSubscription<T>> SubscribedClients = [];
         public static event EventHandler<T> BaseSubscriptionHandler;
-        public static void Signal(T ev)
+        public static int Signal(T ev)
         {
             if (BaseSubscriptionHandler != null)
             {
@@ -49,7 +49,10 @@ namespace UmamusumeResponseAnalyzer.Communications
                 {
                     del.Invoke(null, ev);
                 }
+                return BaseSubscriptionHandler.GetInvocationList().Length;
             }
+            else
+                return 0;
         }
     }
 }
