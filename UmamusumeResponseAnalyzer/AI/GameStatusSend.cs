@@ -409,7 +409,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     lianghua_outgoingStage = 2;
                 else {
                     bool lianghuaClicked = false;//友人卡是否点过第一次
-                    for (int t = GameStats.currentTurn; t >= 1; t--)
+                    for (int t = @event.data.chara_info.turn - 1; t >= 1; t--)
                     {
                         if (GameStats.stats[t] == null)
                         {

@@ -58,7 +58,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             else if (turn.Turn == 1)
             {
                 GameStats.isFullGame = true;
-                GameStats.currentTurn = turn.Turn;
                 EventLogger.Init(@event.data.chara_info.support_card_array);
             }
 
@@ -77,10 +76,10 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 //初始化TurnStats
                 GameStats.whichScenario = @event.data.chara_info.scenario_id;
-                GameStats.currentTurn = turn.Turn;
                 GameStats.stats[turn.Turn] = new TurnStats();
                 EventLogger.Update(@event);
             }
+            GameStats.currentTurn = turn.Turn;
             var blueFever = false;
             var redFever = false;
             var yellowFever = false;
