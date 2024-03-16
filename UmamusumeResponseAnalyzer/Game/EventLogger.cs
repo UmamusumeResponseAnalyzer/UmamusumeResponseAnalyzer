@@ -140,7 +140,7 @@ namespace UmamusumeResponseAnalyzer.Game
 
         //--------------------------
         // 这个方法在重复发送第一回合时会被反复调用，需要可重入
-        public static void Init(SingleModeSupportCard[] cards)
+        public static void Init(SingleModeCheckEventResponse @event)
         {
             CardEvents = [];
             AllEvents = [];
@@ -153,9 +153,9 @@ namespace UmamusumeResponseAnalyzer.Game
             SuccessEventSelectCount = 0;
             CurrentScenario = 0;
             IsStart = false;
-            InitTurn = GameStats.currentTurn;
+            InitTurn = @event.data.chara_info.turn;
             // 需要传入SupportCard数组以确认带了哪些卡
-            CardIDs = cards.Select(x => x.support_card_id).ToList();
+            CardIDs = @event.data.chara_info.support_card_array.Select(x => x.support_card_id).ToList();
             CardEventRemaining = 0;
             foreach (var c in CardIDs)
             {

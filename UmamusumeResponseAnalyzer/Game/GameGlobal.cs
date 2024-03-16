@@ -162,6 +162,12 @@ namespace UmamusumeResponseAnalyzer.Game
         public static readonly int[] LArcScenarioLinkCharas = [1007, 1014, 1025, 1049, 1067, 1070, 1107];
         public static readonly int[] LArcLessonMapping = [2, 0, 5, 3, 1, 4, 6, 7, 8, 9];
         public static readonly int[] LArcLessonMappingInv = [2, 5, 1, 4, 6, 3, 7, 8, 9, 10];
+
+        public static readonly Dictionary<int, int[]> FiveStatusLimit = new Dictionary<int, int[]>
+        {
+            { 6, [ 2000, 2000, 1800, 1800, 1400] }, 
+            { 7, [ 2200, 1800, 1800, 1800, 1400] }
+        }; 
     }
 
     public static class ScoreUtils

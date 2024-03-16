@@ -1,4 +1,5 @@
 ﻿using Gallop;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,11 +44,18 @@ namespace UmamusumeResponseAnalyzer.Communications
         public static event EventHandler<T> BaseSubscriptionHandler;
         public static int Signal(T ev)
         {
-            if (BaseSubscriptionHandler != null)
+            if (BaseSubscriptionHandler != null && BaseSubscriptionHandler.GetInvocationList() != null)
             {
                 foreach (var del in BaseSubscriptionHandler.GetInvocationList().Cast<EventHandler<T>>())
                 {
-                    del.Invoke(null, ev);
+                    try
+                    {
+                        del.Invoke(null, ev);
+                    }
+                    catch (Exception e)
+                    {
+                        AnsiConsole.MarkupLine("[red]与AI通信出错[/]");
+                    }
                 }
                 return BaseSubscriptionHandler.GetInvocationList().Length;
             }

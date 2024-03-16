@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static UmamusumeResponseAnalyzer.Game.TurnInfo.TurnInfoUAF;
 
 namespace UmamusumeResponseAnalyzer.AI
@@ -110,7 +111,6 @@ namespace UmamusumeResponseAnalyzer.AI
 
             skillPt = @event.data.chara_info.skill_point;
 
-
             failureRateBias = 0;
             if (@event.data.chara_info.chara_effect_id_array.Contains(6))
             {
@@ -148,7 +148,7 @@ namespace UmamusumeResponseAnalyzer.AI
             zhongMaBlueCount = new int[5];
             //用属性上限猜蓝因子个数
             {
-                int[] defaultLimit = new int[5] { 2000, 2000, 1800, 1800, 1400 };
+                int[] defaultLimit = GameGlobal.FiveStatusLimit[@event.data.chara_info.scenario_id];    // 到这里肯定是UAF剧本
                 double factor = 16;//每个三星因子可以提多少上限
                 if (turn >= 54)//第二次继承结束
                     factor = 22;
@@ -217,7 +217,6 @@ namespace UmamusumeResponseAnalyzer.AI
                     //qingre 102
                     persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
 
-
                 }
                 else if (cardId[i] / 10 == 30067)//卤豆腐
                 {
@@ -237,10 +236,9 @@ namespace UmamusumeResponseAnalyzer.AI
                     persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
 
                 }
-
             }
-            //理事长 记者 没带卡的凉花
 
+            //理事长 记者 没带卡的凉花
             if(lianghua_personId==8)
             {
                 persons[8].cardID = 0;
@@ -429,7 +427,6 @@ namespace UmamusumeResponseAnalyzer.AI
                     if (lianghuaClicked) lianghua_outgoingStage = 1;
                     else lianghua_outgoingStage = 0;
                 }
-
             }
             else
             {

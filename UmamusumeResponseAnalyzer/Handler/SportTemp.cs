@@ -53,12 +53,12 @@ namespace UmamusumeResponseAnalyzer.Handler
                 GameStats.isFullGame = false;
                 critInfos.Add(string.Format(I18N_WrongTurnAlert, GameStats.currentTurn, turn.Turn));
                 GameStats.currentTurn = turn.Turn;
-                EventLogger.Init(@event.data.chara_info.support_card_array);                
+                EventLogger.Init(@event);                
             }
             else if (turn.Turn == 1)
             {
                 GameStats.isFullGame = true;
-                EventLogger.Init(@event.data.chara_info.support_card_array);
+                EventLogger.Init(@event);
             }
 
             //买技能，大师杯剧本年末比赛，会重复显示
