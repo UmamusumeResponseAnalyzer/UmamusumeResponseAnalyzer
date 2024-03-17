@@ -11,7 +11,6 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
     {
         public CommandType CommandType => CommandType.Action;
         string Text { get; init; }
-
         public PrintText(string text) => Text = text;
         public WSResponse? Execute()
         {

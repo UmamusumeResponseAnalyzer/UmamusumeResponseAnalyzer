@@ -63,7 +63,22 @@ namespace UmamusumeResponseAnalyzer.Game
             { 105, 1 },
             { 102, 2 },
             { 103, 3 },
-            { 106, 4 }
+            { 106, 4 },
+            {2101,0 },
+            {2201,0 },
+            {2301,0 },
+            {2102,1},
+            {2202,1 },
+            {2302,1 },
+            {2103,2 },
+            {2203,2 },
+            {2303,2 },
+            {2104,3 },
+            {2204,3 },
+            {2304,3 },
+            {2105,4 },
+             {2205,4 },
+              {2305,4 },
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> TrainNames = new Dictionary<int, string>
         {
@@ -147,6 +162,12 @@ namespace UmamusumeResponseAnalyzer.Game
         public static readonly int[] LArcScenarioLinkCharas = [1007, 1014, 1025, 1049, 1067, 1070, 1107];
         public static readonly int[] LArcLessonMapping = [2, 0, 5, 3, 1, 4, 6, 7, 8, 9];
         public static readonly int[] LArcLessonMappingInv = [2, 5, 1, 4, 6, 3, 7, 8, 9, 10];
+
+        public static readonly Dictionary<int, int[]> FiveStatusLimit = new Dictionary<int, int[]>
+        {
+            { 6, [ 2000, 2000, 1800, 1800, 1400] }, 
+            { 7, [ 2200, 1800, 1800, 1800, 1400] }
+        }; 
     }
 
     public static class ScoreUtils

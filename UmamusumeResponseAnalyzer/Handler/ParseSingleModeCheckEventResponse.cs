@@ -26,7 +26,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                         GameStats.stats[GameStats.currentTurn].venus_venusEvent = true;
                     }
 
-
                     if (i.story_id == 400006112)//ss训练
                     {
                         GameStats.stats[GameStats.currentTurn].larc_playerChoiceSS = true;
@@ -39,8 +38,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     if (i.story_id == 809043003)//佐岳充电
                     {
-                        int suc = i.event_contents_info.choice_array[0].select_index;
-                        int eventType = 0;
+                        var suc = i.event_contents_info.choice_array[0].select_index;
+                        var eventType = 0;
                         if (suc == 1)//加心情
                         {
                             eventType = 2;
@@ -147,7 +146,6 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                 }
             }
-
         }
     }
 }

@@ -23,11 +23,21 @@ namespace UmamusumeResponseAnalyzer.Entities
         public List<List<Choice>> Choices { get; set; } = new();
 
     }
+
+    public class StoryEffectValue
+    {
+        public List<int> Values;    // 事件属性，分别为：速耐力根智，pt，hint等级，体力，羁绊，干劲
+        public List<string> SkillNames; // 获得的技能名称
+        public List<string> Extras; // 其他词条（如断事件）
+        public string? BuffName;    // 获得的Buff名称
+    }
     public class Choice
     {
         public string Option { get; set; } = string.Empty;
         public string SuccessEffect { get; set; } = string.Empty;
         public string FailedEffect { get; set; } = string.Empty;
+        public StoryEffectValue? SuccessEffectValue;
+        public StoryEffectValue? FailedEffectValue;
     }
     public class SuccessStory
     {
