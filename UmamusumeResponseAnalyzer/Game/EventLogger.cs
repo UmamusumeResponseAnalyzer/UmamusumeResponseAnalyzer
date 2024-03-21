@@ -273,11 +273,13 @@ namespace UmamusumeResponseAnalyzer.Game
                     if (choice.SuccessEffectValue != null && choice.SuccessEffectValue.Extras.Any(x => x.Contains("打ち切り")))
                     {
                         Print(@"[red]事件中断[/]");
-                        ++CardEventFinishCount;
                         if (CardIDs.Contains(cardId))             // 排除打断乱入连续事件的情况
+                        {
+                            ++CardEventFinishCount;
                             CardEventRemaining -= (rarity - which); // 计算打断了几段事件，从总数里减去
-                        if (CardEventFinishCount == 5)
-                            CardEventFinishTurn = LastEvent.Turn;
+                            if (CardEventFinishCount == 5)
+                                CardEventFinishTurn = LastEvent.Turn;
+                        }
                     }
                 }                
             }

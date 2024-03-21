@@ -410,9 +410,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     for (int t = @event.data.chara_info.turn - 1; t >= 1; t--)
                     {
                         if (GameStats.stats[t] == null)
-                        {
                             break;
-                        }
 
                         if (!GameGlobal.TrainIds.Any(x => x == GameStats.stats[t].playerChoice)) //没训练
                             continue;

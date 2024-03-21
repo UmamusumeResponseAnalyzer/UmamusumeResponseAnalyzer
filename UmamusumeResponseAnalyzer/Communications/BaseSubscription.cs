@@ -44,23 +44,19 @@ namespace UmamusumeResponseAnalyzer.Communications
         public static event EventHandler<T> BaseSubscriptionHandler;
         public static int Signal(T ev)
         {
-            if (BaseSubscriptionHandler != null && BaseSubscriptionHandler.GetInvocationList() != null)
+            if (BaseSubscriptionHandler != null)
             {
-                foreach (var del in BaseSubscriptionHandler.GetInvocationList().Cast<EventHandler<T>>())
+                var Handlers = BaseSubscriptionHandler.GetInvocationList().Cast<EventHandler<T>>();
+                if (Handlers != null)
                 {
-                    try
-                    {
+                    foreach (var del in Handlers)
                         del.Invoke(null, ev);
-                    }
-                    catch (Exception e)
-                    {
-                        AnsiConsole.MarkupLine("[red]与AI通信出错[/]");
-                    }
+                    return Handlers.ToList().Count;
                 }
-                return BaseSubscriptionHandler.GetInvocationList().Length;
             }
-            else
-                return 0;
+
+            // or else goes here.
+            return 0;
         }
     }
 }

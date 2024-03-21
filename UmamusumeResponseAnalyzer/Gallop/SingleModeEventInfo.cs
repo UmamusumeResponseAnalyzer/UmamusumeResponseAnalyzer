@@ -24,5 +24,7 @@ namespace Gallop
 		public SingleModeSuccessionEventInfo succession_event_info; // 0x28
 		[Key("minigame_result")]
 		public MinigameResult minigame_result; // 0x30
+        [Key("tips_training_partner_id")]
+        public int tips_training_partner_id;    // 红点对应的partner序号
 	}
 }
