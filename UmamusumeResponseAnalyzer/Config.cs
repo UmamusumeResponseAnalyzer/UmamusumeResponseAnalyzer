@@ -169,7 +169,7 @@ namespace UmamusumeResponseAnalyzer
         }
         public static bool ContainsKey(string key)
         {
-            if (Configuration.TryGetValue(key, out ConfigItem? value))
+            if (Configuration.TryGetValue(key, out var value))
             {
                 return !string.IsNullOrEmpty(value.Value.ToString());
             }
@@ -187,7 +187,7 @@ namespace UmamusumeResponseAnalyzer
         /// <returns></returns>
         public static T? Get<T>(string key)
         {
-            if (Configuration.TryGetValue(key, out ConfigItem? value))
+            if (Configuration.TryGetValue(key, out var value))
             {
                 if (value.Value is T t)
                 {

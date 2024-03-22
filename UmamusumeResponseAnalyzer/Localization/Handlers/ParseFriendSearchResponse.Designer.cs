@@ -133,7 +133,7 @@ namespace UmamusumeResponseAnalyzer.Localization.Handlers {
         }
         
         /// <summary>
-        ///   查找类似 Victory details: {0}{Environment.NewLine} 的本地化字符串。
+        ///   查找类似 Victory details: {0} 的本地化字符串。
         /// </summary>
         internal static string I18N_WinSaddleDetail {
             get {

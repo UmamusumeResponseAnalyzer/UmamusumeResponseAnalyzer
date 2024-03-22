@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="I18N_Friend" xml:space="preserve">
-    <value>Friend: {0}&#x9;ID: {1}&#x9;&#x9;Followers: {2}</value>
+    <value>Friend: {0}	ID: {1}		Followers: {2}</value>
   </data>
   <data name="I18N_Uma" xml:space="preserve">
-    <value>Stallion: {0}&#x9;Victories: {1}&#x9;&#x9;Rating: {2}</value>
+    <value>Stallion: {0}	Victories: {1}		Rating: {2}</value>
   </data>
   <data name="I18N_WinSaddle" xml:space="preserve">
     <value>Victory list: {0}</value>
   </data>
   <data name="I18N_WinSaddleDetail" xml:space="preserve">
-    <value>Victory details: {0}{Environment.NewLine}</value>
+    <value>Victory details: {0}</value>
   </data>
   <data name="I18N_Factor" xml:space="preserve">
     <value>Factor</value>
@@ -139,7 +139,7 @@
     <value>Ancestor @{0}</value>
   </data>
   <data name="I18N_FriendSimple" xml:space="preserve">
-    <value>Friend: {0}&#x9;&#x9;ID: {1}</value>
+    <value>Friend: {0}		ID: {1}</value>
   </data>
   <data name="I18N_UmaSimple" xml:space="preserve">
     <value>Stallion: {0}</value>

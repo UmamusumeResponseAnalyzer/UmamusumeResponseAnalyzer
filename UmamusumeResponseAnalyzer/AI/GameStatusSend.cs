@@ -38,7 +38,6 @@ namespace UmamusumeResponseAnalyzer.AI
 
         public int motivationDropCount;//掉过几次心情了，不包括剧本事件（已知同一个掉心情不会出现多次，一共3个掉心情事件，所以之前掉过越多，之后掉的概率越低）
 
-
         public bool larc_isAbroad;//这个回合是否在海外
         public int larc_supportPtAll;//所有人（自己+其他人）的支援pt之和，每1700支援pt对应1%期待度
         public int larc_shixingPt;//适性pt
@@ -88,7 +87,7 @@ namespace UmamusumeResponseAnalyzer.AI
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
 
             umaId = @event.data.chara_info.card_id + 1000000 * @event.data.chara_info.rarity;
-            int turnNum = @event.data.chara_info.turn;//游戏里回合数从1开始
+            var turnNum = @event.data.chara_info.turn;//游戏里回合数从1开始
             turn = turnNum - 1;//ai里回合数从0开始
             vital = @event.data.chara_info.vital;
             maxVital = @event.data.chara_info.max_vital;
@@ -126,8 +125,8 @@ namespace UmamusumeResponseAnalyzer.AI
 
             try
             {
-                double ptRate = isQieZhe ? 2.1 : 1.9;
-                double ptScore = AiUtils.calculateSkillScore(@event, ptRate);
+                var ptRate = isQieZhe ? 2.1 : 1.9;
+                var ptScore = AiUtils.calculateSkillScore(@event, ptRate);
                 skillPt=(int)(ptScore/ptRate);
             }
             catch(Exception ex)
@@ -141,13 +140,12 @@ namespace UmamusumeResponseAnalyzer.AI
             //fans = @event.data.chara_info.fans;
             cardId = new int[6];
 
-
             isPositiveThinking = @event.data.chara_info.chara_effect_id_array.Contains(25);
 
-            bool LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
+            var LArcIsAbroad = (turnNum >= 37 && turnNum <= 43) || (turnNum >= 61 && turnNum <= 67);
 
             trainLevelCount = new int[5];
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
                 trainLevelCount[i] = (GameStats.stats[turnNum].trainLevel[i] - 1) * 4 + GameStats.stats[turnNum].trainLevelCount[i];
             }
@@ -155,15 +153,15 @@ namespace UmamusumeResponseAnalyzer.AI
             zhongMaBlueCount = new int[5];
             //用属性上限猜蓝因子个数
             {
-                int[] defaultLimit = new int[5] { 2000, 2000, 1800, 1800, 1400 };
+                var defaultLimit = new int[5] { 2000, 2000, 1800, 1800, 1400 };
                 double factor = 16;//每个三星因子可以提多少上限
                 if (turn >= 54)//第二次继承结束
                     factor = 22;
                 else if (turn >= 30)//第二次继承结束
                     factor = 19;
-                for (int i = 0; i < 5; i++)
+                for (var i = 0; i < 5; i++)
                 {
-                    int threeStarCount = (int)Math.Round((fiveStatusLimit[i] - defaultLimit[i]) / 2 / factor);
+                    var threeStarCount = (int)Math.Round((fiveStatusLimit[i] - defaultLimit[i]) / 2 / factor);
                     if (threeStarCount > 6) threeStarCount = 6;
                     if (threeStarCount < 0) threeStarCount = 0;
                     zhongMaBlueCount[i] = threeStarCount * 3;
@@ -183,7 +181,7 @@ namespace UmamusumeResponseAnalyzer.AI
                 larc_ssWinSinceLastSSS = GameStats.m_contNonSSS;
 
                 larc_levels = new int[10];
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                     larc_levels[i] = @event.data.arc_data_set.arc_info.potential_array.First(x => x.potential_id == GameGlobal.LArcLessonMappingInv[i]).level;
             }
             else
@@ -196,22 +194,22 @@ namespace UmamusumeResponseAnalyzer.AI
                 larc_ssWinSinceLastSSS = 0;
 
                 larc_levels = new int[10];
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                     larc_levels[i] = 0;
             }
 
             //从游戏json的id到ai的人头编号的换算
-            Dictionary<int, int> headIdConvert = new Dictionary<int, int>();
+            var headIdConvert = new Dictionary<int, int>();
             foreach (var s in @event.data.chara_info.support_card_array)
             {
-                int p = s.position - 1;
+                var p = s.position - 1;
                 //突破数+10*卡原来的id，例如神团是30137，满破神团就是301374
                 cardId[p] = s.limit_break_count + s.support_card_id * 10;
             }
 
-            int larc_zuoyueType = 0;
+            var larc_zuoyueType = 0;
             persons = new LArcPerson[18];
-            for (int i = 0; i < 18; i++)
+            for (var i = 0; i < 18; i++)
                 persons[i] = new LArcPerson();
             normalCardCount = 0;
 
@@ -221,7 +219,7 @@ namespace UmamusumeResponseAnalyzer.AI
                 //    30160,
                 //    10094
                 //};
-                for (int i = 0; i < 6; i++)
+                for (var i = 0; i < 6; i++)
                 {
                     if (cardId[i] / 10 == 30160)//ssr佐岳
                     {
@@ -252,9 +250,8 @@ namespace UmamusumeResponseAnalyzer.AI
                 larc_zuoyueOutgoingRefused=false;//无法从已知的信息中得出是否拒绝了外出。考虑到一般不会拒绝外出，所以默认没拒绝
                 larc_zuoyueOutgoingUsed = d.story_step;//佐岳外出走了几段了
 
-
                 larc_zuoyueFirstClick = false;//佐岳是否点过第一次
-                for (int t = GameStats.currentTurn; t >= 1; t--)
+                for (var t = GameStats.currentTurn; t >= 1; t--)
                 {
                     if (GameStats.stats[t] == null)
                     {
@@ -271,12 +268,11 @@ namespace UmamusumeResponseAnalyzer.AI
                     larc_zuoyueFirstClick = true;
                     break;
                 }
-
             }
 
-            for (int i = 0; i < normalCardCount; i++)
+            for (var i = 0; i < normalCardCount; i++)
                 persons[i].personType = 2;
-            for (int i = normalCardCount; i < 15; i++)
+            for (var i = normalCardCount; i < 15; i++)
                 persons[i].personType = 3;
             persons[15].personType = 4;
             persons[16].personType = 5;
@@ -297,7 +293,7 @@ namespace UmamusumeResponseAnalyzer.AI
 
             if (turnNum >= 3)
             {
-                int i = normalCardCount;
+                var i = normalCardCount;
                 foreach (var s in @event.data.arc_data_set.evaluation_info_array)
                 {
                     //npc当且仅当s.chara_id==s.target_id
@@ -320,14 +316,14 @@ namespace UmamusumeResponseAnalyzer.AI
             {
                 if (!headIdConvert.ContainsKey(s.target_id))
                     continue;
-                int p = headIdConvert[s.target_id];
+                var p = headIdConvert[s.target_id];
                 persons[p].friendship = s.evaluation;
             }
 
             //larc信息
             if (turnNum >= 3)
             {
-                for (int i = 0; i < 15; i++)
+                for (var i = 0; i < 15; i++)
                 {
                     var chara_id = @event.data.arc_data_set.evaluation_info_array.First(x => x.target_id == headIdConvert.First(x => x.Value == i).Key).chara_id;
                     var p = @event.data.arc_data_set.arc_rival_array.First(x => x.chara_id == chara_id);
@@ -340,7 +336,7 @@ namespace UmamusumeResponseAnalyzer.AI
                     persons[i].larc_level = p.star_lv + 1;
                     persons[i].larc_buffLevel = p.selection_peff_array.Min(x => x.effect_num);
                     persons[i].larc_nextThreeBuffs = new int[3];
-                    for (int j = 0; j < 3; j++)
+                    for (var j = 0; j < 3; j++)
                     {
                         persons[i].larc_nextThreeBuffs[j] = p.selection_peff_array.First(x => x.effect_num == persons[i].larc_buffLevel + j).effect_group_id;
                     }
@@ -348,26 +344,26 @@ namespace UmamusumeResponseAnalyzer.AI
             }
 
             personDistribution = new int[5, 5];
-            for (int i = 0; i < 5; i++)
-                for (int j = 0; j < 5; j++)
+            for (var i = 0; i < 5; i++)
+                for (var j = 0; j < 5; j++)
                     personDistribution[i, j] = -1;
 
             foreach (var train in @event.data.home_info.command_info_array)
             {
                 if (!GameGlobal.ToTrainIndex.ContainsKey(train.command_id))//不是正常训练
                     continue;
-                int trainId = GameGlobal.ToTrainIndex[train.command_id];
+                var trainId = GameGlobal.ToTrainIndex[train.command_id];
 
-                int j = 0;
+                var j = 0;
                 foreach(var p in train.training_partner_array)
                 {
-                    int pid = headIdConvert[p];
+                    var pid = headIdConvert[p];
                     personDistribution[trainId, j] = pid;
                     j += 1;
                 }
                 foreach (var p in train.tips_event_partner_array)
                 {
-                    int pid = headIdConvert[p];
+                    var pid = headIdConvert[p];
                     persons[pid].isHint = true;
                 }
             }
@@ -416,9 +412,9 @@ namespace UmamusumeResponseAnalyzer.AI
 
                 var trainStats = new TrainStats[5];
                 var failureRate = new Dictionary<int, int>();
-                for (int t = 0; t < 5; t++)
+                for (var t = 0; t < 5; t++)
                 {
-                    int tid = GameGlobal.TrainIds[t];
+                    var tid = GameGlobal.TrainIds[t];
                     failureRate[tid] = trainItems[tid].failure_rate;
                     var trainParams = new Dictionary<int, int>()
                     {
@@ -464,10 +460,10 @@ namespace UmamusumeResponseAnalyzer.AI
                     if (stats.VitalGain < -currentVital)
                         stats.VitalGain = -currentVital;
                     stats.FiveValueGain = new int[] { trainParams[1], trainParams[2], trainParams[3], trainParams[4], trainParams[5] };
-                    for (int i = 0; i < 5; i++)
+                    for (var i = 0; i < 5; i++)
                         stats.FiveValueGain[i] = ScoreUtils.ReviseOver1200(currentFiveValue[i] + stats.FiveValueGain[i]) - ScoreUtils.ReviseOver1200(currentFiveValue[i]);
                     stats.PtGain = trainParams[30];
-                    for (int i = 0; i < 5; i++)
+                    for (var i = 0; i < 5; i++)
                         trainValue[t, i] = stats.FiveValueGain[i];
                     trainValue[t, 5] = stats.PtGain;
                     trainValue[t, 6] = stats.VitalGain;
