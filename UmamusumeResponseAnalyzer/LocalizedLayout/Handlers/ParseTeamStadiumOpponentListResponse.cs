@@ -12,13 +12,15 @@ namespace UmamusumeResponseAnalyzer.LocalizedLayouts.Handlers
         {
             "zh-CN" => 160,
             "ja-JP" => 220,
-            "en-US" => 200
+            "en-US" => 200,
+            _ => 200
         };
         public static string ColumnWidth = Thread.CurrentThread.CurrentUICulture.Name switch
         {
             "zh-CN" => "　　　",
             "ja-JP" => "　　　　　",
-            "en-US" => "　　　　"
+            "en-US" => "　　　　",
+            _ => "　　　　"
         };
     }
 }

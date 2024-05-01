@@ -12,7 +12,8 @@ namespace UmamusumeResponseAnalyzer.LocalizedLayout
                 {
                     "zh-CN" => "SimplifiedChinese",
                     "en-US" => "English",
-                    "ja-JP" => "Japanese"
+                    "ja-JP" => "Japanese",
+                    _ => "English"
                 };
                 var layout = typeof(RecommendTerminalSize).GetField(culture, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
                 return (TerminalSize)layout!.GetValue(null)!;

@@ -17,7 +17,6 @@ namespace UmamusumeResponseAnalyzer
         internal static Dictionary<string, ConfigItem> Configuration { get; private set; } = [];
         internal static void Initialize()
         {
-            Trace.WriteLine($"INIT WITH {Thread.CurrentThread.CurrentUICulture.Name}");
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             // 在初始化之前覆盖默认语言
             if (File.Exists(CONFIG_FILEPATH))
