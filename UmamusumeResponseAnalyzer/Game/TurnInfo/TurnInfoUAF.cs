@@ -35,7 +35,7 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         {
             var uaf = resp.sport_data_set;
             TrainingArray = uaf.training_array.Select(x => new TrainingSport(x));
-            CommandInfoArray = uaf.command_info_array.Where(x => x.command_id > 1000).Select(x => new ParsedSingleModeSportCommandInfo(resp, this, x));
+            CommandInfoArray = uaf.command_info_array.Where(x => x.command_id > 1000).Select(x => new ParsedSingleModeSportCommandInfo(resp, this, x.command_id));
             AvailableTalkCount = uaf.item_id_array.Count(x => x == 6);
 
             SportsByColor = TrainingArray.GroupBy(x => x.Color).ToDictionary(x => x.Key, x => x.ToList());
@@ -45,16 +45,10 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
             IsRankGainIncreased = CommandInfoArray.Any(x => x.IsCurrentRankGainIncreased);
         }
 
-        public class ParsedSingleModeSportCommandInfo
+        public class ParsedSingleModeSportCommandInfo : CommandInfo
         {
             private int ActualGainRankWithoutBuff { get; }
-            public int CommandId { get; }
-            /// <summary>
-            /// 项目会出现的训练位置(1~5，对应速耐力根智)
-            /// </summary>
-            public int TrainIndex { get; }
             public SportColor Color { get; }
-            public int TrainLevel { get; }
             /// <summary>
             /// 该训练对应的项目等级
             /// </summary>
@@ -87,20 +81,15 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
             /// </returns>
             public bool IsCurrentRankGainIncreased { get; }
             public bool IsRankGainIncreased { get; }
-            public IEnumerable<TrainingPartner> TrainingPartners { get; }
 
-            public ParsedSingleModeSportCommandInfo(SingleModeCheckEventResponse.CommonResponse resp, TurnInfoUAF turn, SingleModeSportCommandInfo ci)
+            public ParsedSingleModeSportCommandInfo(SingleModeCheckEventResponse.CommonResponse resp, TurnInfoUAF turn, int commandId) : base(resp, turn, commandId)
             {
-                CommandId = ci.command_id;
                 TrainIndex = int.Parse(CommandId.ToString()[3].ToString());
                 Color = (SportColor)int.Parse(CommandId.ToString()[1].ToString());
-                TrainLevel = resp.chara_info.training_level_info_array.First(x => x.command_id == CommandId).level;
                 SportRank = resp.sport_data_set.training_array.First(x => x.command_id == CommandId).sport_rank;
                 var test = resp.sport_data_set.command_info_array[TrainIndex - 1].gain_sport_rank_array;
                 GainRank = test.First(x => x.command_id == CommandId).gain_rank;
                 TotalGainRank = resp.sport_data_set.command_info_array[TrainIndex - 1].gain_sport_rank_array.Sum(x => x.gain_rank);
-                var normalCommand = resp.home_info.command_info_array.First(x => x.command_id == CommandId);
-                TrainingPartners = normalCommand.training_partner_array.Select(x => new TrainingPartner(turn, x, normalCommand)).OrderBy(x => x.Priority);
                 IsRankGainIncreased = turn.IsRankGainIncreased;
 
                 var supports = TrainingPartners.Where(x => !x.IsNpc);

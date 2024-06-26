@@ -24,6 +24,7 @@ namespace UmamusumeResponseAnalyzer
         GrandMasters = 5,
         LArc = 6,
         UAF = 7,
+        Cook = 8,
         Unknown = int.MaxValue
     }
     public static class Extensions
