@@ -151,10 +151,14 @@ namespace UmamusumeResponseAnalyzer
                         {
                             data1.sport_data_set = data.sport_data_set;
                         }
+                        if (data.cook_data_set != null)
+                        {
+                            data1.cook_data_set = data.cook_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }
-                    // 修复崩溃问题
+                    #region 修复崩溃问题
                     if (data.chara_info?.scenario_id == 5 || data.venus_data_set != null)
                     {
                         if (dyn.data.venus_data_set.race_start_info is JArray)
@@ -162,15 +166,33 @@ namespace UmamusumeResponseAnalyzer
                         if (dyn.data.venus_data_set.venus_race_condition is JArray)
                             dyn.data.venus_data_set.venus_race_condition = null;
                     }
+                    if (data.chara_info?.scenario_id == 8 || data.cook_data_set != null)
+                    {
+                        if (dyn.data.cook_data_set.dish_skill_info is JArray)
+                            dyn.data.cook_data_set.dish_skill_info = null;
+                        if (dyn.data.cook_data_set.gain_material_info is JArray)
+                            dyn.data.cook_data_set.gain_material_info = null;
+                        if (dyn.data.cook_data_set.last_command_info is JArray)
+                            dyn.data.cook_data_set.last_command_info = null;
+                    }
+                    #endregion
                     #endregion
                     if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
                     {
                         if (Config.Get(Localization.Config.I18N_ShowCommandInfo))
                         {
-                            if (data.chara_info.scenario_id == 7)
-                                Handlers.ParseSportCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
-                            else
-                                Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                            switch ((int)data.chara_info.scenario_id)
+                            {
+                                case 7:
+                                    Handlers.ParseSportCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                                    break;
+                                case 8:
+                                    Handlers.ParseCookCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                                    break;
+                                default:
+                                    Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                                    break;
+                            }
                         }
                     }
                     if (dyn.data.command_result != null) // 训练结果
