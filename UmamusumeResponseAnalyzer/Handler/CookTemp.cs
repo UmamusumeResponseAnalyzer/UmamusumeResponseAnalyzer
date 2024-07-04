@@ -19,18 +19,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                 new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
-                        new Layout("菜园子").Ratio(3),
+                        new Layout("料理pt").Ratio(3),
                         new Layout("体力").Ratio(9),
                         new Layout("干劲").Ratio(3)).Size(3),
                     new Layout("重要信息").Size(5),
                     new Layout("分割", new Rule()).Size(1),
-                    new Layout("训练信息")  // size 20, 共约30行
+                    new Layout("训练信息"),  // size 20, 共约30行
+                    new Layout("蔬菜信息")
                     ).Ratio(4),
                 new Layout("Ext").Ratio(1)
                 );
             var extInfos = new List<string>();
             var critInfos = new List<string>();
             var turn = new TurnInfoCook(@event.data);
+            var eventCookDataset = @event.data.cook_data_set;
 
             if (GameStats.currentTurn != turn.Turn - 1 //正常情况
                 && GameStats.currentTurn != turn.Turn //重复显示
@@ -103,9 +105,26 @@ namespace UmamusumeResponseAnalyzer.Handler
                 if (stats.VitalGain < -turn.Vital)
                     stats.VitalGain = -turn.Vital;
                 stats.FiveValueGain = [trainParams[1], trainParams[2], trainParams[3], trainParams[4], trainParams[5]];
+                stats.PtGain = trainParams[30];
+
+                // 取上半数值
+                // cook_data_set.command_info_array和CommandInfo，SingleCommandInfo都不一样，只能直接取
+                // 目前放在1200减半之前，不知道对不对
+                var cookValueGainUpper = eventCookDataset.command_info_array.FirstOrDefault(x => x.command_id == trainId)?.params_inc_dec_info_array;
+                if (cookValueGainUpper != null)
+                {
+                    foreach (var item in cookValueGainUpper)
+                        if (item.target_type == 30)
+                            stats.PtGain += item.value;
+                        else if (item.target_type <= 5)
+                            stats.FiveValueGain[item.target_type - 1] += item.value;
+                        else
+                            AnsiConsole.MarkupLine("[red]here[/]");
+                }
+
                 for (var j = 0; j < 5; j++)
                     stats.FiveValueGain[j] = ScoreUtils.ReviseOver1200(turn.Stats[j] + stats.FiveValueGain[j]) - ScoreUtils.ReviseOver1200(turn.Stats[j]);
-                stats.PtGain = trainParams[30];
+                
                 trainStats[i] = stats;
             }
 
@@ -157,10 +176,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                     _ => $"{I18N_Vital}:[green]{afterVital}[/]/{turn.MaxVital}"
                 });
 
-                var commandMaterial = turn.CommandMaterials.First(x => x.command_id == command.CommandId);
-                var totalMaterials = commandMaterial.material_harvest_info_array.Sum(x => x.harvest_num);
+                var commandMaterial = turn.CommandMaterials.FirstOrDefault(x => x.command_id == command.CommandId);
+                var totalMaterialsBeforeClick = turn.Harvests.Sum(x => x.harvest_num);
+                var totalMaterials = commandMaterial?.material_harvest_info_array.Sum(x => x.harvest_num) - totalMaterialsBeforeClick ?? 0;
 
-                table.AddRow($"Lv{command.TrainLevel} | 材{totalMaterials}");
+                table.AddRow($"Lv{command.TrainLevel} | 材+{totalMaterials}");
                 table.AddRow(new Rule());
 
                 var stats = trainStats[command.TrainIndex - 1];
@@ -185,6 +205,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             layout["训练信息"].Update(grids);
 
             layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
+            /*
             var harvestSb = new StringBuilder();
             for (var i = 0; i < turn.Cares.Length; i++)
             {
@@ -201,16 +222,20 @@ namespace UmamusumeResponseAnalyzer.Handler
                     harvestSb.Append('/');
             }
             layout["菜园子"].Update(new Panel(harvestSb.ToString()).Expand());
+            */
+            layout["料理pt"].Update(new Panel($"菜Pt: {eventCookDataset.cook_info.cooking_friends_power}").Expand());
             layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
             layout["干劲"].Update(new Panel(@event.data.chara_info.motivation switch
             {
-                5 => $"[green]{I18N_MotivationBest}↑[/]",
-                4 => $"[yellow]{I18N_MotivationGood}↗[/]",
-                3 => $"[red]{I18N_MotivationNormal}→[/]",
-                2 => $"[red]{I18N_MotivationBad}↘️[/]",
-                1 => $"[red]{I18N_MotivationWorst}↓[/]"
+                // 换行分裂和箭头符号有关，去掉
+                5 => $"[green]{I18N_MotivationBest}[/]",
+                4 => $"[yellow]{I18N_MotivationGood}[/]",
+                3 => $"[red]{I18N_MotivationNormal}[/]",
+                2 => $"[red]{I18N_MotivationBad}[/]",
+                1 => $"[red]{I18N_MotivationWorst}[/]"
             }).Expand());
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
+            layout["蔬菜信息"].Update(new Panel("").Expand());
             layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
             AnsiConsole.Write(layout);
             // 光标倒转一点
