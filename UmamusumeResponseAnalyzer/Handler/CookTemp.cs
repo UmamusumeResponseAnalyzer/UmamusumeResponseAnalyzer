@@ -1,9 +1,12 @@
 ﻿using Gallop;
 using Spectre.Console;
+using System.Diagnostics.Eventing.Reader;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
+using static UmamusumeResponseAnalyzer.Localization.CommandInfo.Cook;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
 
@@ -19,13 +22,12 @@ namespace UmamusumeResponseAnalyzer.Handler
                 new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
-                        new Layout("料理pt").Ratio(3),
-                        new Layout("体力").Ratio(9),
+                        new Layout("料理pt").Ratio(6),
+                        new Layout("体力").Ratio(6),
                         new Layout("干劲").Ratio(3)).Size(3),
                     new Layout("重要信息").Size(5),
-                    new Layout("分割", new Rule()).Size(1),
-                    new Layout("训练信息"),  // size 20, 共约30行
-                    new Layout("蔬菜信息")
+                    //new Layout("分割", new Rule()).Size(1),
+                    new Layout("训练信息")  // size 20, 共约30行
                     ).Ratio(4),
                 new Layout("Ext").Ratio(1)
                 );
@@ -110,7 +112,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 // 取上半数值
                 // cook_data_set.command_info_array和CommandInfo，SingleCommandInfo都不一样，只能直接取
                 // 目前放在1200减半之前，不知道对不对
-                var cookValueGainUpper = eventCookDataset.command_info_array.FirstOrDefault(x => x.command_id == trainId)?.params_inc_dec_info_array;
+                var cookValueGainUpper = eventCookDataset.command_info_array.FirstOrDefault(x => x.command_id == trainId || x.command_id == trainId + 500)?.params_inc_dec_info_array;
                 if (cookValueGainUpper != null)
                 {
                     foreach (var item in cookValueGainUpper)
@@ -193,37 +195,159 @@ namespace UmamusumeResponseAnalyzer.Handler
                 foreach (var trainingPartner in command.TrainingPartners)
                 {
                     table.AddRow(trainingPartner.Name);
+                    if (trainingPartner.Shining)
+                        table.BorderColor(Color.LightGreen);
                 }
                 for (var i = 5 - command.TrainingPartners.Count(); i > 0; i--)
                 {
                     table.AddRow(string.Empty);
                 }
+                table.AddRow(new Rule());
+                var matText = GameGlobal.CookMaterialName[command.TrainIndex-1];
+                var matCurrent = turn.Materials[command.TrainIndex - 1].num;
+                var matMax = turn.Facilities[command.TrainIndex - 1].facility_level * 200;
+                var matHarvestBeforeClick = turn.Harvests[command.TrainIndex - 1].harvest_num;
+                var matHarvest = commandMaterial?.material_harvest_info_array[command.TrainIndex - 1].harvest_num ?? matHarvestBeforeClick;
+                Style matColor;
+                if (matCurrent + matHarvest >= matMax)
+                    matColor = new Style(Color.Red);
+                else if (matCurrent + matHarvest > matMax * 0.85)
+                    matColor = new Style(Color.Yellow);
+                else
+                    matColor = new Style();
+
+                table.AddRow(new Markup($"{matText}: {matCurrent}/{matMax}", matColor));
+                table.AddRow(new Markup($"{I18N_Harvest}: +{matHarvestBeforeClick}/+{matHarvest - matHarvestBeforeClick}", matColor));
 
                 return new Padder(table).Padding(0, 0, 0, 0);
-            });
+            }); // foreach command
             grids.AddRow([.. commands]);
             layout["训练信息"].Update(grids);
 
-            layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
-            /*
-            var harvestSb = new StringBuilder();
-            for (var i = 0; i < turn.Cares.Length; i++)
+            // 额外信息
+            var exTable = new Table().AddColumn("Extras");
+            exTable.HideHeaders();
+
+            // 田地相关
+            if (turn.Facilities.Any(x => x.facility_id != 200 && GameGlobal.CookGardenLevelUpCost[x.facility_level] <= eventCookDataset.cook_info.care_point))
             {
-                var care = turn.Cares[i];
-                harvestSb.Append(care.material_id switch
-                {
-                    100 => "速",
-                    200 => "耐",
-                    300 => "力",
-                    400 => "根",
-                    500 => "智",
-                });
-                if (i < turn.Cares.Length - 1)
-                    harvestSb.Append('/');
+                critInfos.Add("[yellow]** 田地可升级 **[/]");
             }
-            layout["菜园子"].Update(new Panel(harvestSb.ToString()).Expand());
-            */
-            layout["料理pt"].Update(new Panel($"菜Pt: {eventCookDataset.cook_info.cooking_friends_power}").Expand());
+            if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 32))
+            {
+                critInfos.Add("[lightgreen]【リフレッシュの心得】生效中[/]");
+            }
+            exTable.AddRow($"获得田pt: +{eventCookDataset.care_point_gain_num}");
+            exTable.AddRow("");
+            foreach (var item in turn.CommandMaterials)
+            {
+                // 考虑放进资源文件
+                var actionName = item.command_type switch
+                {
+                    3 => "出行",
+                    4 => "比赛",
+                    7 => "休息",
+                    8 => "治疗",
+                    _ => null
+                };
+                if (actionName == null) continue;
+
+                var sty = ((item.boost_type == 2 || item.boost_type == 4) ? new Style(Color.Green) : new Style());
+                var matHarvest = item.material_harvest_info_array[item.material_id / 100 - 1].harvest_num;
+                var matHarvestBeforeClick = turn.Harvests[item.material_id / 100 - 1].harvest_num;
+                var matText = GameGlobal.CookMaterialName[item.material_id / 100 - 1];
+                exTable.AddRow(new Markup($"{actionName}: {matText} +{matHarvest - matHarvestBeforeClick}", sty));
+            }
+            exTable.AddRow(new Rule());
+            if (eventCookDataset.dish_info == null)
+            {
+                // 没吃饭时显示
+                if (eventCookDataset.cook_info.cooking_success_point >= eventCookDataset.cook_info.cooking_success_base_point ||
+                eventCookDataset.cooking_success_rate == 100)
+                {
+                    exTable.AddRow("[yellow]必定大成功[/]");
+                }
+                else
+                {
+                    exTable.AddRow($"料理成功率: {eventCookDataset.cooking_success_rate}%");
+                    exTable.AddRow($"进度 {eventCookDataset.cook_info.cooking_success_point}/{eventCookDataset.cook_info.cooking_success_base_point}");
+                }
+            }
+            else
+            {
+                // 吃饭时显示
+                var dish = eventCookDataset.dish_info;
+                var sty = new Style();
+                var dishName = GameGlobal.CookDishName[dish.dish_id];
+                if (dish.cooking_result_state == 2)
+                {
+                    sty = new Style(Color.Yellow);
+                    dishName += " HQ";
+                }
+
+                exTable.AddRow(new Markup($"当前料理: {dishName}", sty));
+                exTable.AddRow("效果:");
+                // 基础效果
+                foreach (var item in dish.dish_effect_info_array)
+                {
+                    exTable.AddRow($"{GameGlobal.CookEffectName[item.effect_type]}+{item.effect_value_1}");
+                }
+                // 基础料理补一个词条
+                if (dish.dish_id <= 2)
+                    exTable.AddRow("羁绊+2");
+
+                // 额外词条。不包含农田效果，和点哪个训练相关不计算了
+                if (eventCookDataset.success_effect_id_array != null)
+                {
+                    foreach (var x in eventCookDataset.success_effect_id_array)
+                    {
+                        if (x <= 15)  // 普通额外词条
+                            exTable.AddRow($"{GameGlobal.CookSuccessEffect[(x - 1) % 5]}");
+                        else
+                        {
+                            // G1Plate 固定额外词条
+                            exTable.AddRow("心情+1, 分身+2");
+                            break;
+                        }
+                    }
+                }
+            }
+            // 计算G1Plate余量
+            if (turn.Turn >= 69)
+            {
+                exTable.AddRow(new Rule());
+                
+                var isCooked = (eventCookDataset.dish_info != null); // 本回合吃了吗
+                var turnRemainUra = Math.Min(6, 78 - turn.Turn);  // 还剩几个有菜的URA回合
+                var g1PlateNeeded = Math.Min(6, turnRemainUra + (isCooked ? 0 : 1));  // 还需要做几个G1Plate
+                var turnRemainNormal = 72 - turn.Turn + 1;                
+                // 排除72回合行动后的情况
+                if (turn.Turn == 72 && eventCookDataset.care_history_info_array.Length == 0)
+                    --turnRemainNormal;
+                
+                exTable.AddRow($"剩 [lightgreen]{g1PlateNeeded}[/] 个GI料理");
+                exTable.AddRow("食材溢出量：");
+
+                var matRemain = new int[5];    // 最终溢出菜量
+                var normalRate = (turnRemainNormal > 0 ? 160.0 / eventCookDataset.care_point_gain_num: 0.0); 
+                for (var i = 0; i < 5; ++i)
+                {
+                    var baseHarvest = GameGlobal.CookGardenBaseHarvest[turn.Facilities[i].facility_level-1];  // 基础收获量
+                    var normalHarvest = (int)Math.Floor(turn.Harvests[i].harvest_num * normalRate);  // 连续绿圈，72回合预计能收多少，>72时为0
+                    var uraBaseHarvest = (int)Math.Floor(baseHarvest * 0.75);  // URA绿圈，以当前设施等级，菜的基础增加量
+                    matRemain[i] = turn.Materials[i].num + normalHarvest + uraBaseHarvest * turnRemainUra - g1PlateNeeded * 80;
+
+                    var sty = new Style(Color.Green);
+                    if (matRemain[i] < -80)
+                        sty = new Style(Color.Red);
+                    else if (matRemain[i] < 0)
+                        sty = new Style(Color.Yellow);
+                    exTable.AddRow(new Markup($"{GameGlobal.CookMaterialName[i]}: {matRemain[i].ToString("+#;-#;0")}", sty));
+                }
+
+            }
+            layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
+            layout["料理pt"].Update(new Panel($"菜Pt:{eventCookDataset.cook_info.cooking_friends_power} / 田Pt:{eventCookDataset.cook_info.care_point}").Expand());
             layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
             layout["干劲"].Update(new Panel(@event.data.chara_info.motivation switch
             {
@@ -235,11 +359,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 1 => $"[red]{I18N_MotivationWorst}[/]"
             }).Expand());
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
-            layout["蔬菜信息"].Update(new Panel("").Expand());
-            layout["Ext"].Update(new Panel(string.Join(Environment.NewLine, extInfos)));
+           
+            layout["Ext"].Update(exTable);
             AnsiConsole.Write(layout);
             // 光标倒转一点
-            AnsiConsole.Cursor.MoveUp(AnsiConsole.Console.Profile.Height - 30);
+            AnsiConsole.Cursor.SetPosition(0, 31);
         }
     }
 }

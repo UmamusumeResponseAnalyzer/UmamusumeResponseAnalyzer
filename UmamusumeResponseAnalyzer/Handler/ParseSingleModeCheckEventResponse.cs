@@ -69,7 +69,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 //收录在数据库中
                 if (Database.Events.TryGetValue(i.story_id, out var story))
                 {
-                    var mainTree = new Tree(" " +story.TriggerName.EscapeMarkup()); //触发者名称
+                    var mainTree = new Tree(story.TriggerName.EscapeMarkup()); //触发者名称
                     var eventTree = new Tree($"{story.Name.EscapeMarkup()}({i.story_id})"); //事件名称
                     var eventHasManualChoice = (i.event_contents_info.choice_array.Length >= 2);   // 是否有手动选项。有选项的不能获取结果了
                     for (var j = 0; j < i.event_contents_info.choice_array.Length; ++j)

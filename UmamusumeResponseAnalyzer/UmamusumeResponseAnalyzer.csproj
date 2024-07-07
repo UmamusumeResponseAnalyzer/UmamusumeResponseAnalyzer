@@ -65,6 +65,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="Localization\CommandInfo\Cook.zh-CN.Designer.cs">
+		  <DependentUpon>Cook.zh-CN.resx</DependentUpon>
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Localization\CommandInfo\Cook.Designer.cs">
+		  <DependentUpon>Cook.resx</DependentUpon>
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		</Compile>
 		<Compile Update="Localization\CommandInfo\UAF.Designer.cs">
 		  <DesignTime>True</DesignTime>
 		  <AutoGen>True</AutoGen>
@@ -138,6 +148,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Update="Localization\CommandInfo\Cook.zh-CN.resx">
+		  <LastGenOutput>Cook.zh-CN.Designer.cs</LastGenOutput>
+		  <Generator>ResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\CommandInfo\Cook.resx">
+		  <LastGenOutput>Cook.Designer.cs</LastGenOutput>
+		  <Generator>ResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
 		<EmbeddedResource Update="Localization\CommandInfo\UAF.resx">
 		  <Generator>ResXFileCodeGenerator</Generator>
 		  <LastGenOutput>UAF.Designer.cs</LastGenOutput>

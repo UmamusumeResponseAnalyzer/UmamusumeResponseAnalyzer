@@ -19,6 +19,10 @@ namespace UmamusumeResponseAnalyzer.Handler
             var data = @event.data;
             foreach (var i in data.opponent_info_array.OrderByDescending(x => -x.strength))
             {
+                if (i == null)
+                {
+                    continue;
+                }
                 var teamData = i.team_data_array.Where(x => x.trained_chara_id != 0).GroupBy(x => x.distance_type).ToDictionary(x => x.Key, x => x.ToList());
                 var table = new Table();
                 table.AddColumns(Enumerable.Repeat(new TableColumn(ColumnWidth).NoWrap(), 2 + teamData.Values.Sum(x => x.Count)).ToArray());
@@ -37,7 +41,11 @@ namespace UmamusumeResponseAnalyzer.Handler
                 {
                     foreach (var k in j.Value)
                     {
-                        var trainedChara = i.trained_chara_array.First(x => x.trained_chara_id == k.trained_chara_id);
+                        var trainedChara = i.trained_chara_array.FirstOrDefault(x => x.trained_chara_id == k.trained_chara_id);
+                        if (trainedChara == null)
+                        {
+                            continue;
+                        }
                         var properType = string.Empty;
                         var properValue = string.Empty;
                         properType += (k.distance_type switch
