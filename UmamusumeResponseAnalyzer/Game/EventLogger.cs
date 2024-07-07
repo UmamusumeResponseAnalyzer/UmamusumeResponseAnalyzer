@@ -149,7 +149,7 @@ namespace UmamusumeResponseAnalyzer.Game
         public static void Print(string s)
         {
             // 以后可能用别的打印方式
-            AnsiConsole.MarkupLine(" " + s);
+            AnsiConsole.MarkupLine(s);
         }
 
         //--------------------------
