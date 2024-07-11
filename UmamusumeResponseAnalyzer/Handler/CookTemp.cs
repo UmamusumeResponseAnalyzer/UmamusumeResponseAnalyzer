@@ -22,7 +22,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
                         new Layout("日期").Ratio(4),
-                        new Layout("料理pt").Ratio(6),
+                        new Layout("总属性").Ratio(6),
                         new Layout("体力").Ratio(6),
                         new Layout("干劲").Ratio(3)).Size(3),
                     new Layout("重要信息").Size(5),
@@ -74,6 +74,28 @@ namespace UmamusumeResponseAnalyzer.Handler
             };
             var trainStats = new TrainStats[5];
             var failureRate = new Dictionary<int, int>();
+
+            // 总属性计算
+            var currentFiveValue = new int[]
+            {
+                @event.data.chara_info.speed,
+                @event.data.chara_info.stamina,
+                @event.data.chara_info.power ,
+                @event.data.chara_info.guts ,
+                @event.data.chara_info.wiz ,
+            };
+            var fiveValueMaxRevised = new int[]
+            {
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_speed),
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_stamina),
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_power) ,
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_guts) ,
+                ScoreUtils.ReviseOver1200(@event.data.chara_info.max_wiz) ,
+            };
+            var currentFiveValueRevised = currentFiveValue.Select(x => ScoreUtils.ReviseOver1200(x)).ToArray();
+            var totalValue = currentFiveValueRevised.Sum();
+            var totalValueWithPt = totalValue + @event.data.chara_info.skill_point;
+
             for (var i = 0; i < 5; i++)
             {
                 var trainId = GameGlobal.TrainIds[i];
@@ -112,7 +134,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 // 取上半数值
                 // cook_data_set.command_info_array和CommandInfo，SingleCommandInfo都不一样，只能直接取
                 // 目前放在1200减半之前，不知道对不对
-                var cookValueGainUpper = eventCookDataset.command_info_array.FirstOrDefault(x => x.command_id == trainId || x.command_id == trainId + 500)?.params_inc_dec_info_array;
+                var cookValueGainUpper = eventCookDataset.command_info_array.FirstOrDefault(x => x.command_id == trainId || x.command_id == GameGlobal.XiahesuIds[trainId])?.params_inc_dec_info_array;
                 if (cookValueGainUpper != null)
                 {
                     foreach (var item in cookValueGainUpper)
@@ -237,7 +259,8 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 critInfos.Add("[lightgreen]【リフレッシュの心得】生效中[/]");
             }
-            exTable.AddRow($"获得田pt: +{eventCookDataset.care_point_gain_num}");
+            exTable.AddRow($"农田Pt: {eventCookDataset.cook_info.care_point} (+{eventCookDataset.care_point_gain_num})");
+            exTable.AddRow($"料理Pt: {eventCookDataset.cook_info.cooking_friends_power}");
             exTable.AddRow("");
             foreach (var item in turn.CommandMaterials)
             {
@@ -347,7 +370,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             }
             layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
-            layout["料理pt"].Update(new Panel($"菜Pt:{eventCookDataset.cook_info.cooking_friends_power} / 田Pt:{eventCookDataset.cook_info.care_point}").Expand());
+            layout["总属性"].Update(new Panel($"[cyan]总属性: {totalValue}[/]").Expand());
             layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
             layout["干劲"].Update(new Panel(@event.data.chara_info.motivation switch
             {
