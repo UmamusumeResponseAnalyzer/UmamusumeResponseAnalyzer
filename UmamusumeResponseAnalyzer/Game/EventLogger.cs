@@ -232,7 +232,7 @@ namespace UmamusumeResponseAnalyzer.Game
                     // 分析特殊事件
                     if (LastEvent.StoryId == 400000040)    // 继承
                     {
-                        Print($"[yellow]本次继承属性：{LastEvent.Stats}[/]");
+                        Print($"[yellow]本次继承属性：{LastEvent.Stats}, Pt: {LastEvent.Pt}[/]");
                         InheritStats.Add(LastEvent.Stats);
                     }
                 }
