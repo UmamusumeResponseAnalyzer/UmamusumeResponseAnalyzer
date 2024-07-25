@@ -79,7 +79,7 @@ dotnet_style_allow_statement_immediately_after_block_experimental = true
 # var 首选项
 csharp_style_var_elsewhere = true
 csharp_style_var_for_built_in_types = true
-csharp_style_var_when_type_is_apparent = true
+csharp_style_var_when_type_is_apparent = false
 
 # Expression-bodied 成员
 csharp_style_expression_bodied_accessors = true
