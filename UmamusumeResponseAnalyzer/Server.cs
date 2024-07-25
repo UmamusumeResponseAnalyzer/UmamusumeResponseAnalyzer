@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
+using UmamusumeResponseAnalyzer.AI;
 using UmamusumeResponseAnalyzer.Communications;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Handler;
@@ -89,7 +90,7 @@ namespace UmamusumeResponseAnalyzer
         {
             if (connectedWebsockets.TryGetValue(wsKey, out var ws))
             {
-                var payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response, jsonSerializerSettings));
+                var payload = Encoding.UTF8.GetBytes((string)response);
                 await ws.SendAsync(payload, WebSocketMessageType.Text, true, CancellationToken.None);
                 return true;
             }
@@ -312,6 +313,10 @@ namespace UmamusumeResponseAnalyzer
                                     await ws.SendAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response)), WebSocketMessageType.Text, msg.EndOfMessage, CancellationToken.None);
                                 }
                                 contentbuffer.Clear();
+
+                                // test
+                                //BaseSubscription<string>.Signal(new GameStatusSend_UAF());
+                                //BaseSubscription<string>.Signal(new GameStatusSend_LArc());
                             }
                         }
                     }

@@ -44,6 +44,8 @@ namespace Gallop
             public SingleModeSportDataSet sport_data_set;
             [Key("cook_data_set")]
             public SingleModeCookDataSet cook_data_set;
+            [Key("select_index")]
+            public int? select_index;
         }
     }
     [MessagePackObject]

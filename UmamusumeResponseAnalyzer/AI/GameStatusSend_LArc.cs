@@ -80,7 +80,7 @@ namespace UmamusumeResponseAnalyzer.AI
         //这两个可能有误差，但为了保证一致性，最好还是直接采用ai自己算的数值
         //public int[] larc_ssValue;//ss的速耐力根智（不包括上层的属性）
         //public int larc_ssFailRate;//ss的失败率
-
+        //public GameStatusSend_LArc() { }
         public GameStatusSend_LArc(Gallop.SingleModeCheckEventResponse @event)
         {
 

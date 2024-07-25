@@ -1,4 +1,6 @@
 ﻿using Gallop;
+using Newtonsoft.Json;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +28,7 @@ namespace UmamusumeResponseAnalyzer.Communications
         public WSResponse? Cancel()
         {
             var response = new WSResponse() { Result = WSResponse.WSResponseResultCode.Success };
-            if (SubscribedClients.TryGetValue(WebSocketKey, out BaseSubscription<T>? value))
+            if (SubscribedClients.TryGetValue(WebSocketKey, out var value))
             {
                 BaseSubscriptionHandler -= value.Handler;
                 SubscribedClients.Remove(WebSocketKey);
@@ -41,15 +43,23 @@ namespace UmamusumeResponseAnalyzer.Communications
 
         public static readonly Dictionary<string, BaseSubscription<T>> SubscribedClients = [];
         public static event EventHandler<T> BaseSubscriptionHandler;
-        public static void Signal(T ev)
+        //public static int Signal(T ev)
+        public static int Signal(object ev)
         {
             if (BaseSubscriptionHandler != null)
             {
-                foreach (var del in BaseSubscriptionHandler.GetInvocationList().Cast<EventHandler<T>>())
+                // hack: 无视ev的具体类型，在这里cast成string
+                var serialized = JsonConvert.SerializeObject(ev, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                var Handlers = BaseSubscriptionHandler.GetInvocationList().Cast<EventHandler<string>>();
+                if (Handlers != null)
                 {
-                    del.Invoke(null, ev);
+                    foreach (var del in Handlers)
+                        del.Invoke(null, serialized);
+                    return Handlers.ToList().Count;
                 }
             }
+            // or else goes here.
+            return 0;
         }
     }
 }
