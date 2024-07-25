@@ -105,6 +105,7 @@ namespace UmamusumeResponseAnalyzer
                 ScenarioType.GrandMasters => data.chara_info.scenario_id == 5 && data.venus_data_set != null,
                 ScenarioType.LArc => data.chara_info.scenario_id == 6 && data.arc_data_set != null,
                 ScenarioType.UAF => data.chara_info.scenario_id == 7 && data.sport_data_set != null,
+                ScenarioType.Cook => data.chara_info.scenario_id == 8 && data.cook_data_set != null,
                 ScenarioType.Unknown => true,
                 _ => false
             };

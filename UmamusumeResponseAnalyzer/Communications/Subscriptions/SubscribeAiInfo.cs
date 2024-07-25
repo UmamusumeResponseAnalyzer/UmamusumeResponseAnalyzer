@@ -8,7 +8,8 @@ using UmamusumeResponseAnalyzer.AI;
 
 namespace UmamusumeResponseAnalyzer.Communications.Subscriptions
 {
-    public class SubscribeAiInfo : BaseSubscription<GameStatusSend_LArc>
+    // 临时解决方案，传入连接全改成string handler
+    public class SubscribeAiInfo : BaseSubscription<string>
     {
         public SubscribeAiInfo(string wsKey) : base(wsKey) { }
     }

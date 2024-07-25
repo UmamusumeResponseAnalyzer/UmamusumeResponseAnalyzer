@@ -204,6 +204,13 @@ namespace UmamusumeResponseAnalyzer.Game
         public static readonly string[] CookSuccessEffect = ["体力+10", "心情+1", "羁绊+3", "分身+1", "体力上限+4"];
         public static readonly int[] CookGardenLevelUpCost = [0, 100, 180, 220, 250, 9999];
         public static readonly int[] CookGardenBaseHarvest = [20, 20, 30, 40, 40];
+
+        public static readonly Dictionary<int, int[]> FiveStatusLimit = new Dictionary<int, int[]>
+        {
+            { 6, [ 2000, 2000, 1800, 1800, 1400] },
+            { 7, [ 2200, 1800, 1800, 1800, 1400] },
+            { 8, [ 2300, 1000, 2200, 2200, 1500] }
+        };
     }
 
     public static class ScoreUtils
