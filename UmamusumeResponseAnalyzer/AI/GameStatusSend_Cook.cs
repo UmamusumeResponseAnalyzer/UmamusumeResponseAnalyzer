@@ -167,7 +167,8 @@ namespace UmamusumeResponseAnalyzer.AI
                     factor = 19;
                 for (var i = 0; i < 5; i++)
                 {
-                    var threeStarCount = (int)Math.Round((fiveStatusLimit[i] - defaultLimit[i]) / 2 / factor);
+                    var div = (defaultLimit[i] >= 1200 ? 2 : 1);
+                    var threeStarCount = (int)Math.Round((fiveStatusLimit[i] - defaultLimit[i]) / div / factor);
                     if (threeStarCount > 6) threeStarCount = 6;
                     if (threeStarCount < 0) threeStarCount = 0;
                     zhongMaBlueCount[i] = threeStarCount * 3;
@@ -182,99 +183,64 @@ namespace UmamusumeResponseAnalyzer.AI
             }
 
             friend_type = 0;
-            persons = new CookPerson[15];
-            for (int i = 0; i < 15; i++)
-                persons[i] = new CookPerson();
+            friend_personId = 8;
+            var psns = new List<CookPerson>();
+            var count = 0;
+            // cook的人头信息
+            foreach (var item in @event.data.cook_data_set.evaluation_info_array)
+            {
+                var p = new CookPerson()
+                {
+                    charaId = item.chara_id
+                };
+
+                if (item.target_id < 10)
+                {
+                    // 支援卡
+                    var card_id = cardId[item.target_id - 1];
+                    // 得到基础人头信息
+                    var baseEvaluationInfo = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == item.target_id);
+                    p.friendship = baseEvaluationInfo.evaluation;
+                    switch (card_id / 10)
+                    {
+                        // r/ssr 理事长
+                        case 10109 or 30207:
+                            p.personType = 4;
+                            friend_personId = count;
+                            break;
+                        // 其他友人
+                        case 30188 or 10104 or 10094 or 30160 or 30137 or 30067:
+                            p.personType = 1; break;
+                        default:
+                            p.personType = 2; break;
+                    }
+                } 
+                else if (item.target_id < 1000)
+                {
+                    // 职员
+                    var baseEvaluationInfo = @event.data.chara_info.evaluation_info_array.First(x => x.target_id == item.target_id);
+                    p.friendship = baseEvaluationInfo.evaluation;
+                    switch (item.target_id)
+                    {
+                        case 103:
+                            p.personType = 5; break;
+                        case 111:
+                            p.personType = 6; break;
+                    }
+                }
+                else
+                {
+                    // NPC
+                    p.personType = 3;
+                }
+                psns.Add(p);
+                count += 1;
+            }
+            persons = psns.ToArray();
+
             // TODO: 后面还没改
             /*
-            friend_personId = 8;
-            // 10109 30207
-            for (int i = 0; i < 6; i++)
-            {
-                // TODO: 修改这里
-                persons[i].cardID = cardId[i];
-                persons[i].isCard = true;
-                persons[i].cardRecord = 0;
-                switch (cardId[i] / 10)
-                {
-                    // 佐岳，凉花
-                    case 30188 or 10104 or 10094 or 30160:
-                        persons[i].personType = 1;
-                        persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
-                        break;
-                    // r/ssr 理事长
-                    case 30137 or 30067:
-                        persons[i].personType = 8;
-                        persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
-                        break;
-                    case 10109:
-                        friend_type = 2;
-                        friend_personId = i;
-                        persons[i].personType = 1;
-                        persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
-                        break;
-                    case 30207:
-                        friend_type = 1;
-                        friend_personId = i;
-                        persons[i].personType = 1;
-                        persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
-                        break;
-                    default:
-                        persons[i].personType = 2;
-                        persons[i].friendship = @event.data.chara_info.evaluation_info_array[i].evaluation;
-                        break;
-                }
-
-            }
-            //TODO: 似乎没用了
-            //理事长 记者 没带卡的凉花
-            if (friend_personId == 8)
-            {
-                persons[8].cardID = 0;
-                persons[8].isCard = false;
-                persons[8].personType = 6;
-
-                foreach (var p in @event.data.chara_info.evaluation_info_array)
-                {
-                    if (p.target_id == 102)
-                    {
-                        //qiuchuan
-                        persons[6].friendship = p.evaluation;
-                    }
-                    if (p.target_id == 103)
-                    {
-                        //yms
-                        persons[7].friendship = p.evaluation;
-                    }
-                    if (p.target_id == 111)
-                    {
-                        //yms
-                        persons[8].friendship = p.evaluation;
-                    }
-                }
-            }
-            else
-            {
-                persons[8].cardID = 0;
-                persons[8].isCard = false;
-                persons[8].personType = 0;
-                foreach (var p in @event.data.chara_info.evaluation_info_array)
-                {
-                    if (p.target_id == 102)
-                    {
-                        //qiuchuan
-                        persons[6].friendship = p.evaluation;
-                    }
-                    if (p.target_id == 103)
-                    {
-                        //yms
-                        persons[7].friendship = p.evaluation;
-                    }
-                }
-            }
-
-            persons[6].personType = 4;
-            persons[7].personType = 5;
+           
 
             // TODO: 后面还没改
             //到目前为止，headIdConvert写完了

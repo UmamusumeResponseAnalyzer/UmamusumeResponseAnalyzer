@@ -64,7 +64,22 @@ namespace UmamusumeResponseAnalyzer.Game
             { 105, 1 },
             { 102, 2 },
             { 103, 3 },
-            { 106, 4 }
+            { 106, 4 },
+            { 2101, 0 },
+            { 2201, 0 },
+            { 2301, 0 },
+            { 2102, 1 },
+            { 2202, 1 },
+            { 2302, 1 },
+            { 2103, 2 },
+            { 2203, 2 },
+            { 2303, 2 },
+            { 2104, 3 },
+            { 2204, 3 },
+            { 2304, 3 },
+            { 2105, 4 },
+            { 2205, 4 },
+            { 2305, 4 },
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> TrainNames = new Dictionary<int, string>
         {
@@ -178,9 +193,9 @@ namespace UmamusumeResponseAnalyzer.Game
             { 30, "力量III+2" },
             { 31, "根性III+2" },
             { 32, "智力III+2" },
-            { 33, "GI Plate" },
-            { 34, "GI Plate+1" },
-            { 35, "超满足GI Plate+1" }
+            { 33, "GI拼盘" },
+            { 34, "GI拼盘+1" },
+            { 35, "超满足GI拼盘+1" }
         }.ToFrozenDictionary();
         public static FrozenDictionary<int, string> CookEffectName = new Dictionary<int, string>
         {
