@@ -415,7 +415,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 var wsCount = SubscribeAiInfo.Signal(gameStatusToSend);
                 if (wsCount > 0 && !critInfos.Contains(I18N_RepeatTurn))    // hack判断一下是否重复显示，是否已经连接AI
                     AnsiConsole.MarkupLine("\n[aqua]AI计算中...[/]");
-                if (Config.Get(Localization.Config.I18N_WriteAIInfo))
+                //if (Config.Get(Localization.Config.I18N_WriteAIInfo))
+                if(true)
                 {
                     var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
                     Directory.CreateDirectory(currentGSdirectory);
