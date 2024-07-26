@@ -72,6 +72,11 @@ namespace UmamusumeResponseAnalyzer.Game
         public bool[] uaf_friendAtTrain; // 友人（凉花）是否在这个训练
         public int uaf_friendEvent;
 
+        // 种田杯
+        // 理事长
+        public bool[] cook_friendAtTrain; // 友人（凉花）是否在这个训练
+        //public int cook_friendEvent;
+
         public TurnStats()
         {
             isTraining = false;
@@ -103,6 +108,9 @@ namespace UmamusumeResponseAnalyzer.Game
             uaf_friendAtTrain = new bool[5];
             for (int j = 0; j < 5; j++) uaf_friendAtTrain[j] = false;
             uaf_friendEvent = 0;
+
+            cook_friendAtTrain = new bool[5];
+            for (int j = 0; j < 5; j++) cook_friendAtTrain[j] = false;
         }
     }
     public static class GameStats

@@ -197,6 +197,45 @@ namespace UmamusumeResponseAnalyzer.Game
             { 34, "GI拼盘+1" },
             { 35, "超满足GI拼盘+1" }
         }.ToFrozenDictionary();
+
+        public static readonly FrozenDictionary<int, int> CookDishIdUmaAI = new Dictionary<int, int>
+        {
+            { 1, 1 },
+            { 2, 2 },
+            { 3, 3 },
+            { 4, 4 },
+            { 5, 5 },
+            { 6, 6 },
+            { 7, 7 },
+            { 8, 3 },
+            { 9, 4 },
+            { 10, 5 },
+            { 11, 6 },
+            { 12, 7 },
+            { 13, 3 },
+            { 14, 4 },
+            { 15, 5 },
+            { 16, 6 },
+            { 17, 7 },
+            { 18, 8 },
+            { 19, 9 },
+            { 20, 10 },
+            { 21, 11 },
+            { 22, 12 },
+            { 23, 8 },
+            { 24, 9 },
+            { 25, 10 },
+            { 26, 11 },
+            { 27, 12 },
+            { 28, 8 },
+            { 29, 9 },
+            { 30, 10 },
+            { 31, 11 },
+            { 32, 12 },
+            { 33, 13 },
+            { 34, 13 },
+            { 35, 13 }
+        }.ToFrozenDictionary();
         public static FrozenDictionary<int, string> CookEffectName = new Dictionary<int, string>
         {
             { 2, "训练" },
