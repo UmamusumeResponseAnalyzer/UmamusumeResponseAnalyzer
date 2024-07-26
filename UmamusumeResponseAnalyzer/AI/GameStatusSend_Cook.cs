@@ -105,11 +105,6 @@ namespace UmamusumeResponseAnalyzer.AI
                 isRacing &= (@event.data.home_info.command_info_array[i].is_enable == 0);
             }
             
-            //if (isRacing || (@event.data.chara_info.playing_state != 1))
-            //{
-            //   islegal = false; //生涯比赛直接return，就不发了
-            //    return;
-            //}
             islegal = true;
             //Console.WriteLine("测试用，看到这个说明发送成功\n");
             umaId = @event.data.chara_info.card_id;
@@ -189,7 +184,8 @@ namespace UmamusumeResponseAnalyzer.AI
                     factor = 19;
                 for (var i = 0; i < 5; i++)
                 {
-                    var threeStarCount = (int)Math.Round((fiveStatusLimit[i] - defaultLimit[i]) / 2 / factor);
+                    var div = (defaultLimit[i] >= 1200 ? 2 : 1);
+                    var threeStarCount = (int)Math.Round((fiveStatusLimit[i] - defaultLimit[i]) / div / factor);
                     if (threeStarCount > 6) threeStarCount = 6;
                     if (threeStarCount < 0) threeStarCount = 0;
                     zhongMaBlueCount[i] = threeStarCount * 3;

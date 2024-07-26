@@ -38,6 +38,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="AI\LArcPerson.cs" />
+	  <Compile Remove="AI\UAFPerson.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="ura-core.dll" />
 	</ItemGroup>
 
