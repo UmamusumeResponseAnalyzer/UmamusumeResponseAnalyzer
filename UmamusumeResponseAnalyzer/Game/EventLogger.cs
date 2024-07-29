@@ -207,7 +207,7 @@ namespace UmamusumeResponseAnalyzer.Game
             if (IsStart && @event.data.select_index != null && @event.data.select_index != 1)
             {
                 // 不太对
-                Print($"[yellow]上次事件结果: {(State)@event.data.select_index}[/]");
+                //Print($"[yellow]上次事件结果: {(State)@event.data.select_index}[/]");
                 LastEvent.SelectIndex = (int)@event.data.select_index;
             }
 
