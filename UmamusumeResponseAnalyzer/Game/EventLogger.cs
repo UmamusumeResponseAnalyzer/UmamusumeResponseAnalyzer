@@ -206,6 +206,7 @@ namespace UmamusumeResponseAnalyzer.Game
             // 获取上一个事件的结果
             if (IsStart && @event.data.select_index != null && @event.data.select_index != 1)
             {
+                // 不太对
                 Print($"[yellow]上次事件结果: {(State)@event.data.select_index}[/]");
                 LastEvent.SelectIndex = (int)@event.data.select_index;
             }
@@ -328,7 +329,9 @@ namespace UmamusumeResponseAnalyzer.Game
             var ret = new List<string>();
             if (CardEventCount > 0)
             {
-                var p = (scenario == 8 ? 0.3 : 0.25); // todo: 重新统计这个数值
+                // https://x.com/Alefrain_ht/status/1811300886737797511/photo/3
+                // 田园杯基础走完率从38%上升到67%
+                var p = (scenario == 8 ? 0.3 : 0.25);
                 var n = (GameStats.currentTurn - InitTurn + 1) - ExcludedTurns.Count(x => x >= InitTurn && x <= GameStats.currentTurn);
                 //(p(x<=k-1) + p(x<=k)) / 2
                 var bn = Binomial.CDF(p, n, CardEventCount);

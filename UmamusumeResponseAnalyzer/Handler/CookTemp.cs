@@ -35,7 +35,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     ).Ratio(4),
                 new Layout("Ext").Ratio(1)
                 );
-            var extInfos = new List<string>();
             var critInfos = new List<string>();
             var turn = new TurnInfoCook(@event.data);
             var eventCookDataset = @event.data.cook_data_set;
@@ -371,14 +370,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                         sty = new Style(Color.Yellow);
                     exTable.AddRow(new Markup($"{GameGlobal.CookMaterialName[i]}: {matRemain[i].ToString("+#;-#;0")}", sty));
                 }
-
             }
-
             // 计算连续事件表现
             var eventPerf = EventLogger.PrintCardEventPerf(@event.data.chara_info.scenario_id);
             if (eventPerf.Count > 0)
             {
-                extInfos.AddRange(eventPerf);
+                exTable.AddRow(new Rule());
+                foreach (var row in eventPerf)
+                    exTable.AddRow(new Markup(row));
             }
 
             layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
@@ -393,6 +392,13 @@ namespace UmamusumeResponseAnalyzer.Handler
                 2 => $"[red]{I18N_MotivationBad}[/]",
                 1 => $"[red]{I18N_MotivationWorst}[/]"
             }).Expand());
+
+            var availableTrainingCount = @event.data.home_info.command_info_array.Count(x => x.is_enable == 1);
+            //AnsiConsole.MarkupLine($"[aqua]{availableTrainingCount}[/]");
+            if (availableTrainingCount <= 1)
+            {
+                critInfos.Add("[aqua]非训练回合[/]");
+            }
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
            
             layout["Ext"].Update(exTable);
@@ -402,9 +408,6 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (@event.IsScenario(ScenarioType.Cook))
             {
-                if (@event.data.chara_info.playing_state == 1)
-                    AnsiConsole.MarkupLine("[aqua]生涯比赛回合[/]");
-
                 var gameStatusToSend = new GameStatusSend_Cook(@event);
                 if (gameStatusToSend.islegal == false)
                 {
