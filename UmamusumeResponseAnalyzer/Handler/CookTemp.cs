@@ -402,8 +402,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
             if (@event.IsScenario(ScenarioType.Cook))
             {
-                if (@event.data.chara_info.playing_state == 1)
-                    AnsiConsole.MarkupLine("[aqua]生涯比赛回合[/]");
+                //if (@event.data.chara_info.playing_state == 1)
+                //    AnsiConsole.MarkupLine("[aqua]生涯比赛回合[/]");
 
                 var gameStatusToSend = new GameStatusSend_Cook(@event);
                 if (gameStatusToSend.islegal == false)
