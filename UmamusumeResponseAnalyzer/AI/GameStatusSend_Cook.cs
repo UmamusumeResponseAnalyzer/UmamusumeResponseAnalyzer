@@ -207,6 +207,8 @@ namespace UmamusumeResponseAnalyzer.AI
                     continue;
                 if (GameStats.stats[t].isTrainingFailed)//训练失败
                     continue;
+                if ((t >= 37 && t <= 40) || (t >= 61 && t <= 64)) //合宿点的次数不算
+                    continue;
                 int trainIdx = GameGlobal.ToTrainIndex[GameStats.stats[t].playerChoice];
                 trainClickCount[trainIdx] += 1;
             }
@@ -350,7 +352,7 @@ namespace UmamusumeResponseAnalyzer.AI
             {
                 int tr = i.material_id / 100 - 1;
                 int idx = i.num - 1;
-                bool isGreen=i.boost_type == 1;
+                bool isGreen= i.boost_type == 6 || i.boost_type == 4 || i.boost_type == 2;
                 cook_harvest_history[idx] = tr;
                 cook_harvest_green_history[idx] = isGreen;
             }
