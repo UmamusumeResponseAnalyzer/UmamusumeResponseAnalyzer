@@ -228,7 +228,7 @@ namespace UmamusumeResponseAnalyzer
                         else if (data.user_info_summary.user_trained_chara != null)
                             Handlers.ParseFriendSearchResponseSimple(dyn.ToObject<Gallop.FriendSearchResponse>());
                     }
-                    if (data.opponent_info_array?.Count == 3)
+                    if (data.opponent_info_array?.Count == 3 || data.opponent_info_copy != null)
                     {
                         if (Config.Get(Localization.Config.I18N_ParseTeamStadiumOpponentListResponse))
                             Handlers.ParseTeamStadiumOpponentListResponse(dyn.ToObject<Gallop.TeamStadiumOpponentListResponse>()); //https://github.com/CNA-Bld/EXNOA-CarrotJuicer/issues/2

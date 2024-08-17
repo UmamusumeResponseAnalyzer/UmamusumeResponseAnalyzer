@@ -18,6 +18,8 @@ namespace Gallop
         {
 			[Key("opponent_info_array")]
 			public TeamStadiumOpponent[] opponent_info_array; // 0x10
+            [Key("opponent_info_copy")]
+            public TeamStadiumOpponent? opponent_info_copy; // 0x10
         }
 	}
 	[MessagePackObject]
