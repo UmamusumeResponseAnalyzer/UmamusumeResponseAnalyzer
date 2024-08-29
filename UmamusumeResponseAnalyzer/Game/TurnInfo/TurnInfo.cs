@@ -43,10 +43,15 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         public bool IsFreeContinueAvailable => resp.home_info.free_continue_time < DateTimeOffset.Now.ToUnixTimeSeconds();
         public bool IsGoldenSuccession => resp.unchecked_event_array.Any(x => x.succession_event_info.effect_type == 2);
 
-        public bool IsScenario<T>(ScenarioType type, out T turnInfo) where T : TurnInfo
+        public bool IsScenario<T>(ScenarioType type, out T? turnInfo) where T : TurnInfo
         {
-            turnInfo = (T)typeof(T).GetConstructor([resp.GetType()])?.Invoke([resp])!;
-            return type == Scenario;
+            var ret = (type == Scenario);
+            turnInfo = null;
+            if (ret)
+            {
+                turnInfo = (T)typeof(T).GetConstructor([resp.GetType()])?.Invoke([resp])!;
+            }
+            return ret;
         }
         public bool IsScenario(ScenarioType type) => IsScenario<TurnInfo>(type, out _);
         public SingleModeCheckEventResponse.CommonResponse GetCommonResponse() => resp;
