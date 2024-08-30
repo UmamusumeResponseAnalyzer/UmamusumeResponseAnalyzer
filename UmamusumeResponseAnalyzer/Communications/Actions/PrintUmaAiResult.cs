@@ -32,7 +32,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
             var text = x.ToString("+#;-#;0");
             var sigma = 1500; // 标准差?
             if (x < -10000 || x > 10000)
-                text = "[silver]----[/]";
+                text = "[grey]----[/]";
             else
             {
                 if (x > sigma)
@@ -255,7 +255,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                 var luck = scoreMean - scoreFirstTurn;
                 var luckRound = scoreMean - scoreLastTurn;
 
-                AnsiConsole.MarkupLine($"评分预测: [green]{Math.Round(scoreMean)}[/] (乐观[cyan]+{Math.Round(optimisticScore - scoreMean)}[/]) | 运气: 本局 {this.fmtLuck(luck)} | 本回合 {this.fmtLuck(luckRound)}");
+                AnsiConsole.MarkupLine($"运气: 本局 {this.fmtLuck(luck)} | 本回合 {this.fmtLuck(luckRound)} | 评分预测: [green]{Math.Round(scoreMean)}[/] (乐观[cyan]+{Math.Round(optimisticScore - scoreMean)}[/])");
                 //this.printLuckChart(luckRound, luck, scoreMean, optimisticScore - scoreMean);
                 AnsiConsole.WriteLine("----");
                 // 6-29: 训练
@@ -270,7 +270,7 @@ namespace UmamusumeResponseAnalyzer.Communications.Actions
                     AnsiConsole.Markup($"{this.fmtScore(regularprefix[atTrain], traincol, bestTrain)}  ");
                     if (i==7)
                     {
-                        AnsiConsole.Markup($" 自选比赛损失: [yellow]{Math.Round(bestTrain - traincol)}[/]");
+                        AnsiConsole.Markup($" {this.fmtScore("自选比赛损失：", Math.Round(traincol - bestTrain), -50)}");
                     }
                 }
                 AnsiConsole.MarkupLine("");

@@ -8,7 +8,7 @@
 		<AssemblyVersion></AssemblyVersion>
 		<FileVersion></FileVersion>
 		<Authors>$(AssemblyName)</Authors>
-		<Version>1.13.3.0</Version>
+		<Version>1.13.3.1</Version>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Platforms>AnyCPU;x64</Platforms>
