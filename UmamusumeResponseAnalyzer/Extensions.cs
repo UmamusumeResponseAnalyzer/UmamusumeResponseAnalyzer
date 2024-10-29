@@ -76,11 +76,6 @@ namespace UmamusumeResponseAnalyzer
                 ? SystemVersion.Windows7
                 : SystemVersion.Default;
         }
-        public static byte[] GetContentMD5(this HttpContentHeaders headers)
-        {
-            headers.TryGetValues("content-md5", out var values);
-            return Convert.FromBase64String(values!.First());
-        }
         public static bool Contains<T>(this IEnumerable<T> list, Predicate<T> predicate)
         {
             if (list == default || !list.Any()) return false;
