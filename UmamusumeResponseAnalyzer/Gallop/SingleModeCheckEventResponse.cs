@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Gallop.Mecha;
+using MessagePack;
 using System;
 
 namespace Gallop
@@ -44,6 +45,8 @@ namespace Gallop
             public SingleModeSportDataSet sport_data_set;
             [Key("cook_data_set")]
             public SingleModeCookDataSet cook_data_set;
+            [Key("mecha_data_set")]
+            public SingleModeMechaDataSet mecha_data_set;
         }
     }
     [MessagePackObject]

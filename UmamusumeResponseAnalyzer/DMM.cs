@@ -17,11 +17,11 @@ namespace UmamusumeResponseAnalyzer
     internal static class DMM
     {
         internal static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
-        private const string AcceptEncoding = "gzip, deflate, br";
+        private const string AcceptEncoding = "gzip, deflate, br, zstd";
         private const string AcceptLanguage = "zh-CN";
-        private const string UserAgent = "DMMGamePlayer5-Win/5.2.31 Electron/27.0.2";
+        private const string UserAgent = "DMMGamePlayer5-Win/5.3.11 Electron/32.1.0";
         private const string ClientApp = "DMMGamePlayer5";
-        private const string ClientVersion = "5.2.31";
+        private const string ClientVersion = "5.3.11";
         private const string SecFetchDest = "empty";
         private const string SecFetchMode = "no-cors";
         private const string SecFetchSite = "none";

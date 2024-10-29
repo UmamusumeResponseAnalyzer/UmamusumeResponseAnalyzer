@@ -155,6 +155,10 @@ namespace UmamusumeResponseAnalyzer
                         {
                             data1.cook_data_set = data.cook_data_set;
                         }
+                        if (data.mecha_data_set != null)
+                        {
+                            data1.mecha_data_set = data.mecha_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }
@@ -188,6 +192,9 @@ namespace UmamusumeResponseAnalyzer
                                     break;
                                 case 8:
                                     Handlers.ParseCookCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                                    break;
+                                case 9:
+                                    Handlers.ParseMechaCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                                     break;
                                 default:
                                     Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
