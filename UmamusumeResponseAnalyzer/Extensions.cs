@@ -42,8 +42,8 @@ namespace UmamusumeResponseAnalyzer
 
             for (i = 0; i <= input.Length - pattern.Length; i++)
             {
-                bool foundMatch = true;
-                for (int j = 0; j < pattern.Length; j++)
+                var foundMatch = true;
+                for (var j = 0; j < pattern.Length; j++)
                 {
                     if (input[i + j] != pattern[j])
                     {
@@ -68,13 +68,13 @@ namespace UmamusumeResponseAnalyzer
                 result.Add(input[i]);
             }
 
-            return result.ToArray();
+            return [.. result];
         }
         public static SystemVersion GetSystemVersion(this OperatingSystem _)
         {
-            if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 1)
-                return SystemVersion.Windows7;
-            return SystemVersion.Default;
+            return Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 1
+                ? SystemVersion.Windows7
+                : SystemVersion.Default;
         }
         public static byte[] GetContentMD5(this HttpContentHeaders headers)
         {
@@ -112,12 +112,12 @@ namespace UmamusumeResponseAnalyzer
     }
     public static class TableExtension
     {
-        static Dictionary<Table, Dictionary<(int, int), string>> saved = new();
+        static readonly Dictionary<Table, Dictionary<(int, int), string>> saved = [];
         private static void Prepare(this Table table)
         {
             if (!saved.ContainsKey(table))
             {
-                saved.Add(table, new Dictionary<(int, int), string>());
+                saved.Add(table, []);
             }
         }
         public static bool Edit(this Table? table, int column, int row, string content)
@@ -158,7 +158,7 @@ namespace UmamusumeResponseAnalyzer
         {
             if (_dictionaries.TryGetValue(mre, out var waitings))
             {
-                if (waitings.Any())
+                if (!waitings.IsEmpty)
                     mre.Set();
             }
         }

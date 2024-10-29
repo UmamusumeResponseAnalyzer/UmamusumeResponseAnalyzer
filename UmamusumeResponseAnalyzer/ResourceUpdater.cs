@@ -276,7 +276,7 @@ namespace UmamusumeResponseAnalyzer
             #endregion
 
             var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL), HttpCompletionOption.ResponseHeadersRead);
-            while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
+            while (response.StatusCode is System.Net.HttpStatusCode.MovedPermanently or System.Net.HttpStatusCode.Found)
             {
                 response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, response.Headers.Location), HttpCompletionOption.ResponseHeadersRead);
             }
@@ -295,7 +295,7 @@ namespace UmamusumeResponseAnalyzer
             }
 
             response = await client.GetAsync(downloadURL, HttpCompletionOption.ResponseHeadersRead);
-            while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
+            while (response.StatusCode is System.Net.HttpStatusCode.MovedPermanently or System.Net.HttpStatusCode.Found)
             {
                 response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
             }

@@ -69,15 +69,7 @@ namespace UmamusumeResponseAnalyzer
                         var ctx = await httpListener.GetContextAsync();
 
                         // 处理websocket请求
-                        if (ctx.Request.IsWebSocketRequest)
-                        {
-                            _ = HandleWebsocket(ctx);
-                        }
-                        // 处理http请求
-                        else
-                        {
-                            _ = HandleHttp(ctx);
-                        }
+                        _ = ctx.Request.IsWebSocketRequest ? HandleWebsocket(ctx) : HandleHttp(ctx);
                     }
                     catch
                     {
@@ -112,7 +104,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
-                    if (dyn.choice_number != null && dyn.choice_number > 0)  // 玩家点击了事件
+                    if (dyn.choice_number is not null and > (dynamic)0)  // 玩家点击了事件
                     {
                         Handlers.ParseChoiceRequest(dyn.ToObject<Gallop.SingleModeChoiceRequest>());
                     }

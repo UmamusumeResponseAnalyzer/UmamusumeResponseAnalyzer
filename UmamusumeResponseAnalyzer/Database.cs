@@ -209,7 +209,7 @@ namespace UmamusumeResponseAnalyzer
                             if (match.Success)
                             {
                                 var skillName = match.Groups[1].Value;
-                                if (localizedSkillNames.TryGetValue(skillName, out string? value))
+                                if (localizedSkillNames.TryGetValue(skillName, out var value))
                                     s = s.Replace(skillName, $"{skillName}/{value}");
                             }
                         }

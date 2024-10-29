@@ -207,7 +207,6 @@ namespace UmamusumeResponseAnalyzer
                 var selectedLanguage = languagesEnabled.First();
                 if (selectedLanguage == default)
                 {
-                    Trace.WriteLine(1);
                     Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
                     Config.SaveConfigForLanguageChange();
                     ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
@@ -215,7 +214,6 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (languagesEnabled.Count() > 1)
                 {
-                    Trace.WriteLine(2);
                     foreach (var i in languages)
                     {
                         Config.Set(i.Key, false);
@@ -229,7 +227,6 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (selectedLanguage.Key != previousLanguage)
                 {
-                    Trace.WriteLine(3);
                     Config.SaveConfigForLanguageChange();
                     ApplyCultureInfo(languages.First(x => Config.Get(x.Key)).Key);
                     Config.LoadConfigForLanguageChange();
@@ -313,7 +310,7 @@ namespace UmamusumeResponseAnalyzer
                 do
                 {
                     proxyType = AnsiConsole.Ask<string>(I18N_ConfigProxyServer_AskType).ToLower();
-                } while (proxyType[0] != 's' && proxyType[0] != 'h');
+                } while (proxyType[0] is not 's' and not 'h');
                 Config.Set(Localization.Config.I18N_ProxyServerType, proxyType[0] == 'h' ? "http" : "socks");
 
                 if (proxyType[0] == 's' && AnsiConsole.Confirm(I18N_ConfigProxyServer_AskAuth, false))
