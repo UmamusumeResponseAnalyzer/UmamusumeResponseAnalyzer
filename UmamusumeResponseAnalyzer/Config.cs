@@ -105,12 +105,10 @@ namespace UmamusumeResponseAnalyzer
         }
         internal static void SaveConfigForLanguageChange()
         {
-            Trace.WriteLine(Configuration.Count);
             _savedConfigForLanguageChange.Clear();
             var cfg = Configuration.Values.ToArray();
             for (var i = 0; i < cfg.Length; i++)
             {
-                Trace.WriteLine($"{cfg[i].Key} {cfg[i].Value}");
                 _savedConfigForLanguageChange.Add(cfg[i].Value);
             }
         }

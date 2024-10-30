@@ -187,28 +187,10 @@
     <value>有効なゲームディレクトリが見つかりました：{0}</value>
   </data>
   <data name="I18N_UraCoreHelper_NoInstalledModuleFound" xml:space="preserve">
-    <value>モジュールが見つかりませんでした</value>
+    <value>互換性のあるモジュールが見つからないか、すでにインストールされています。最初にインストールしてください (https://github.com/MinamiChiwa/Trainers-Legend-G または https://github.com/Kimjio/umamusume-localify)</value>
   </data>
   <data name="I18N_UraCoreHelper_InstallPrompt" xml:space="preserve">
     <value>ここにインストールしますか？</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OtherCompatitableModuleFound" xml:space="preserve">
-    <value>互換モードでインストールされた他のモジュールが見つかりました</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OverrideInstallPrompt" xml:space="preserve">
-    <value>このモジュールを上書きしますか？</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OverrideInstallCancelled" xml:space="preserve">
-    <value>インストールに失敗しました。他のモジュールとの競合を手動で解決してください</value>
-  </data>
-  <data name="I18N_UraCoreHelper_FoundOldUraCore" xml:space="preserve">
-    <value>旧バージョンのura-coreが見つかりました。更新しますか？</value>
-  </data>
-  <data name="I18N_UraCoreHelper_CompatitableInstallPrompt" xml:space="preserve">
-    <value>他のモジュールが見つかりました。互換モードでインストールしますか？</value>
-  </data>
-  <data name="I18N_UraCoreHelper_CompatitableInstallCancelled" xml:space="preserve">
-    <value>インストールに失敗しました。他のモジュールとの競合を手動で解決するか、互換モードを試してください</value>
   </data>
   <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
     <value>{0}に成功してインストールされました。任意のキーを押してメインメニューに戻ってください</value>

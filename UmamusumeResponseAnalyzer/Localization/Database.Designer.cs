@@ -70,7 +70,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 [red]Error loading {0}, please try updating the data again[/] 的本地化字符串。
+        ///   查找类似 [red] An error occurred while loading {0}. Please try updating the data again. If the update fails, try deleting %localappdata%/UmamusumeResponseAnalyzer/.update_record and retry. [/] 的本地化字符串。
         /// </summary>
         internal static string I18N_LoadFail {
             get {

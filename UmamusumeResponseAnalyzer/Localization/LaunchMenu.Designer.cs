@@ -286,24 +286,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Installation failed, please manually resolve conflicts with other modules or try compatibility mode 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_CompatitableInstallCancelled {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_CompatitableInstallCancelled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Found other modules, install in compatibility mode? 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_CompatitableInstallPrompt {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_CompatitableInstallPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Extraction of built-in resources failed, please try manual installation 的本地化字符串。
         /// </summary>
         internal static string I18N_UraCoreHelper_ExtractUraCoreFail {
@@ -318,15 +300,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string I18N_UraCoreHelper_FoundAvailablePath {
             get {
                 return ResourceManager.GetString("I18N_UraCoreHelper_FoundAvailablePath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Found an old version of ura-core, update? 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_FoundOldUraCore {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_FoundOldUraCore", resourceCulture);
             }
         }
         
@@ -358,38 +331,11 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 No modules found 的本地化字符串。
+        ///   查找类似 No compatible module found or already installed, please install first (https://github.com/MinamiChiwa/Trainers-Legend-G or https://github.com/Kimjio/umamusume-localify) 的本地化字符串。
         /// </summary>
         internal static string I18N_UraCoreHelper_NoInstalledModuleFound {
             get {
                 return ResourceManager.GetString("I18N_UraCoreHelper_NoInstalledModuleFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Found other modules installed in compatibility mode 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_OtherCompatitableModuleFound {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_OtherCompatitableModuleFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Installation failed, please manually resolve conflicts with other modules 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_OverrideInstallCancelled {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_OverrideInstallCancelled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Do you want to overwrite the module? 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_OverrideInstallPrompt {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_OverrideInstallPrompt", resourceCulture);
             }
         }
     }

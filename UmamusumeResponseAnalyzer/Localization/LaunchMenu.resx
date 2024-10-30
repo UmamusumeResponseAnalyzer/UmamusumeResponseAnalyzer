@@ -187,28 +187,10 @@
     <value>Found valid game directory: {0}</value>
   </data>
   <data name="I18N_UraCoreHelper_NoInstalledModuleFound" xml:space="preserve">
-    <value>No modules found</value>
+    <value>No compatible module found or already installed, please install first (https://github.com/MinamiChiwa/Trainers-Legend-G or https://github.com/Kimjio/umamusume-localify)</value>
   </data>
   <data name="I18N_UraCoreHelper_InstallPrompt" xml:space="preserve">
     <value>Would you like to install here?</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OtherCompatitableModuleFound" xml:space="preserve">
-    <value>Found other modules installed in compatibility mode</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OverrideInstallPrompt" xml:space="preserve">
-    <value>Do you want to overwrite the module?</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OverrideInstallCancelled" xml:space="preserve">
-    <value>Installation failed, please manually resolve conflicts with other modules</value>
-  </data>
-  <data name="I18N_UraCoreHelper_FoundOldUraCore" xml:space="preserve">
-    <value>Found an old version of ura-core, update?</value>
-  </data>
-  <data name="I18N_UraCoreHelper_CompatitableInstallPrompt" xml:space="preserve">
-    <value>Found other modules, install in compatibility mode?</value>
-  </data>
-  <data name="I18N_UraCoreHelper_CompatitableInstallCancelled" xml:space="preserve">
-    <value>Installation failed, please manually resolve conflicts with other modules or try compatibility mode</value>
   </data>
   <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
     <value>Successfully installed to {0}, press any key to return to the main menu</value>

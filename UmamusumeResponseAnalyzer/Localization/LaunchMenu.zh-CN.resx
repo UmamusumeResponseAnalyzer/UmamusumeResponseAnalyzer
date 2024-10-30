@@ -186,20 +186,11 @@
   <data name="I18N_UpdateProgram" xml:space="preserve">
     <value>更新程序</value>
   </data>
-  <data name="I18N_UraCoreHelper_CompatitableInstallCancelled" xml:space="preserve">
-    <value>安装失败，请手动处理与其他模块的冲突，或尝试兼容模式</value>
-  </data>
-  <data name="I18N_UraCoreHelper_CompatitableInstallPrompt" xml:space="preserve">
-    <value>发现其他模块，是否要以兼容模式安装？</value>
-  </data>
   <data name="I18N_UraCoreHelper_ExtractUraCoreFail" xml:space="preserve">
     <value>提取内置资源失败，请尝试手动安装</value>
   </data>
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>发现有效的游戏目录:{0}</value>
-  </data>
-  <data name="I18N_UraCoreHelper_FoundOldUraCore" xml:space="preserve">
-    <value>发现旧版本ura-core，是否更新？</value>
   </data>
   <data name="I18N_UraCoreHelper_FoundPaths" xml:space="preserve">
     <value>找到了{0}个可能的目录</value>
@@ -211,16 +202,7 @@
     <value>安装到{0}成功,按任意键返回主菜单</value>
   </data>
   <data name="I18N_UraCoreHelper_NoInstalledModuleFound" xml:space="preserve">
-    <value>未找到任何模块</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OtherCompatitableModuleFound" xml:space="preserve">
-    <value>发现其他以兼容模式安装的模块</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OverrideInstallCancelled" xml:space="preserve">
-    <value>安装失败，请手动处理与其他模块的冲突</value>
-  </data>
-  <data name="I18N_UraCoreHelper_OverrideInstallPrompt" xml:space="preserve">
-    <value>是否要覆盖该模块?</value>
+    <value>未找到兼容模块或已安装，请先安装(https://github.com/MinamiChiwa/Trainers-Legend-G or https://github.com/Kimjio/umamusume-localify)</value>
   </data>
   <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
     <value>多种语言同时选择，已恢复至默认，请重新设置</value>

@@ -47,6 +47,9 @@ namespace UmamusumeResponseAnalyzer.Game
             [2105] = 106,
             [2205] = 106,
             [2305] = 106,
+            [901] = 101,
+            [902] = 102,
+            [906] = 106
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, int> ToTrainIndex = new Dictionary<int, int>
         {

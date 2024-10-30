@@ -17,11 +17,11 @@ namespace UmamusumeResponseAnalyzer
     internal static class DMM
     {
         internal static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
-        private const string AcceptEncoding = "gzip, deflate, br";
+        private const string AcceptEncoding = "gzip, deflate, br, zstd";
         private const string AcceptLanguage = "zh-CN";
-        private const string UserAgent = "DMMGamePlayer5-Win/5.2.31 Electron/27.0.2";
+        private const string UserAgent = "DMMGamePlayer5-Win/5.3.11 Electron/32.1.0";
         private const string ClientApp = "DMMGamePlayer5";
-        private const string ClientVersion = "5.2.31";
+        private const string ClientVersion = "5.3.11";
         private const string SecFetchDest = "empty";
         private const string SecFetchMode = "no-cors";
         private const string SecFetchSite = "none";
@@ -31,7 +31,7 @@ namespace UmamusumeResponseAnalyzer
         static internal string user_os { get; set; } = string.Empty;
         static internal string umamusume_file_path { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Umamusume", "umamusume.exe");
         public static bool IgnoreExistProcess = false;
-        public static List<DMMAccount> Accounts { get; set; } = new();
+        public static List<DMMAccount> Accounts { get; set; } = [];
 
         static DMM()
         {
@@ -65,8 +65,10 @@ namespace UmamusumeResponseAnalyzer
             }
             foreach (var i in config.Sections.Where(x => x.SectionName != "information"))
             {
-                var dmm = new DMMAccount();
-                dmm.Name = i.SectionName;
+                var dmm = new DMMAccount
+                {
+                    Name = i.SectionName
+                };
                 dmm.login_secure_id = i.Keys[nameof(dmm.login_secure_id)];
                 dmm.login_session_id = i.Keys[nameof(dmm.login_session_id)];
                 dmm.savedata_file_path = i.Keys[nameof(dmm.savedata_file_path)];
@@ -137,7 +139,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     var processes = Process.GetProcessesByName("umamusume");
                     AnsiConsole.MarkupLine(string.Format(I18N_Start_Checking_Log, string.Format(I18N_Start_Checking_Found, processes.Length)));
-                    if (!processes.Any() || IgnoreExistProcess)
+                    if (processes.Length == 0 || IgnoreExistProcess)
                     {
                         ctx.Spinner(Spinner.Known.BouncingBar);
                         ctx.Status(I18N_Start_GetToken);
@@ -328,7 +330,7 @@ namespace UmamusumeResponseAnalyzer
                         if (local_hash == remote_hash) return;
                         using var stream = await client.GetStreamAsync(remote_path);
                         stream.CopyTo(fs);
-                    } while (BitConverter.ToString(MD5.Create().ComputeHash(fs)).Replace("-", string.Empty).ToLower() != remote_hash);
+                    } while (!BitConverter.ToString(MD5.Create().ComputeHash(fs)).Replace("-", string.Empty).Equals(remote_hash, StringComparison.CurrentCultureIgnoreCase));
                 });
             }
         }
