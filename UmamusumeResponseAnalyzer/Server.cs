@@ -70,15 +70,7 @@ namespace UmamusumeResponseAnalyzer
                         var ctx = await httpListener.GetContextAsync();
 
                         // 处理websocket请求
-                        if (ctx.Request.IsWebSocketRequest)
-                        {
-                            _ = HandleWebsocket(ctx);
-                        }
-                        // 处理http请求
-                        else
-                        {
-                            _ = HandleHttp(ctx);
-                        }
+                        _ = ctx.Request.IsWebSocketRequest ? HandleWebsocket(ctx) : HandleHttp(ctx);
                     }
                     catch
                     {
@@ -113,7 +105,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         Handlers.ParseTrainingRequest(dyn.ToObject<Gallop.SingleModeExecCommandRequest>());
                     }
-                    if (dyn.choice_number != null && dyn.choice_number > 0)  // 玩家点击了事件
+                    if (dyn.choice_number is not null and > (dynamic)0)  // 玩家点击了事件
                     {
                         Handlers.ParseChoiceRequest(dyn.ToObject<Gallop.SingleModeChoiceRequest>());
                     }
@@ -156,6 +148,10 @@ namespace UmamusumeResponseAnalyzer
                         {
                             data1.cook_data_set = data.cook_data_set;
                         }
+                        if (data.mecha_data_set != null)
+                        {
+                            data1.mecha_data_set = data.mecha_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }
@@ -189,6 +185,9 @@ namespace UmamusumeResponseAnalyzer
                                     break;
                                 case 8:
                                     Handlers.ParseCookCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                                    break;
+                                case 9:
+                                    Handlers.ParseMechaCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                                     break;
                                 default:
                                     Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
@@ -228,7 +227,7 @@ namespace UmamusumeResponseAnalyzer
                         else if (data.user_info_summary.user_trained_chara != null)
                             Handlers.ParseFriendSearchResponseSimple(dyn.ToObject<Gallop.FriendSearchResponse>());
                     }
-                    if (data.opponent_info_array?.Count == 3)
+                    if (data.opponent_info_array?.Count == 3 || data.opponent_info_copy != null)
                     {
                         if (Config.Get(Localization.Config.I18N_ParseTeamStadiumOpponentListResponse))
                             Handlers.ParseTeamStadiumOpponentListResponse(dyn.ToObject<Gallop.TeamStadiumOpponentListResponse>()); //https://github.com/CNA-Bld/EXNOA-CarrotJuicer/issues/2

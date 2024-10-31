@@ -10,9 +10,9 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseTrainingRequest(Gallop.SingleModeExecCommandRequest @event)
         {
-            int turn = @event.current_turn;
+            var turn = @event.current_turn;
             if(GameStats.currentTurn!=0 && turn != GameStats.currentTurn) return;
-            int trainingId = GameGlobal.ToTrainId[@event.command_id];
+            var trainingId = GameGlobal.ToTrainId[@event.command_id];
             if(GameStats.stats[turn]!=null)
                 GameStats.stats[turn].playerChoice=trainingId;
         }

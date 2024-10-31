@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Diagnostics;
 using System.Net;
@@ -206,7 +207,6 @@ namespace UmamusumeResponseAnalyzer
                 var selectedLanguage = languagesEnabled.First();
                 if (selectedLanguage == default)
                 {
-                    Trace.WriteLine(1);
                     Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
                     Config.SaveConfigForLanguageChange();
                     ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
@@ -214,7 +214,6 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (languagesEnabled.Count() > 1)
                 {
-                    Trace.WriteLine(2);
                     foreach (var i in languages)
                     {
                         Config.Set(i.Key, false);
@@ -228,7 +227,6 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (selectedLanguage.Key != previousLanguage)
                 {
-                    Trace.WriteLine(3);
                     Config.SaveConfigForLanguageChange();
                     ApplyCultureInfo(languages.First(x => Config.Get(x.Key)).Key);
                     Config.LoadConfigForLanguageChange();
@@ -312,7 +310,7 @@ namespace UmamusumeResponseAnalyzer
                 do
                 {
                     proxyType = AnsiConsole.Ask<string>(I18N_ConfigProxyServer_AskType).ToLower();
-                } while (proxyType[0] != 's' && proxyType[0] != 'h');
+                } while (proxyType[0] is not 's' and not 'h');
                 Config.Set(Localization.Config.I18N_ProxyServerType, proxyType[0] == 'h' ? "http" : "socks");
 
                 if (proxyType[0] == 's' && AnsiConsole.Confirm(I18N_ConfigProxyServer_AskAuth, false))
@@ -338,6 +336,7 @@ namespace UmamusumeResponseAnalyzer
             else if (prompt == I18N_InstallUraCore)
             {
                 AnsiConsole.Clear();
+                var uraCorePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "ura-core.dll");
                 using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UmamusumeResponseAnalyzer.ura-core.dll");
                 if (stream == null)
                 {
@@ -346,59 +345,42 @@ namespace UmamusumeResponseAnalyzer
                     AnsiConsole.Clear();
                     return prompt;
                 }
+                InstallModule(uraCorePath);
                 AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundPaths, UraCoreHelper.GamePaths.Count);
 
                 foreach (var i in UraCoreHelper.GamePaths)
                 {
-                    var modulePath = Path.Combine(i, "version.dll");
-                    var compatiableModulePath = Path.Combine(i, "winhttp.dll");
                     AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundAvailablePath, i);
-                    if (!File.Exists(modulePath) && !File.Exists(compatiableModulePath))
+                    var configPath = Path.Combine(i, "config.json");
+                    if (File.Exists(configPath))
                     {
-                        AnsiConsole.WriteLine(I18N_UraCoreHelper_NoInstalledModuleFound);
-                        if (AnsiConsole.Confirm(I18N_UraCoreHelper_InstallPrompt))
+                        var config = JObject.Parse(File.ReadAllText(configPath));
+                        if (File.Exists(Path.Combine(i, "tlg.dll")) && config.ContainsKey("loadDll") && config["loadDll"] is JArray loadDll && !loadDll.Any(x => x.ToString() == uraCorePath)) // TLG
                         {
-                            InstallModule(modulePath);
+                            loadDll.Add(uraCorePath);
+                            File.WriteAllText(configPath, config.ToString(Formatting.Indented));
+                            AnsiConsole.WriteLine(I18N_UraCoreHelper_InstallSuccess, "Trainer-Legend-G");
                         }
-                    }
-                    else if (File.Exists(compatiableModulePath))
-                    {
-                        AnsiConsole.WriteLine(I18N_UraCoreHelper_OtherCompatitableModuleFound);
-                        if (AnsiConsole.Confirm(I18N_UraCoreHelper_OverrideInstallPrompt))
+                        else if (File.Exists(Path.Combine(i, "version.dll")) && config.ContainsKey("externalDlls") && config["externalDlls"] is JArray externalDlls && !externalDlls.Any(x => x.ToString() == uraCorePath))
                         {
-                            InstallModule(compatiableModulePath);
+                            externalDlls.Add(uraCorePath);
+                            File.WriteAllText(configPath, config.ToString(Formatting.Indented));
+                            AnsiConsole.WriteLine(I18N_UraCoreHelper_InstallSuccess, "umamusume-localify");
                         }
                         else
                         {
-                            AnsiConsole.WriteLine(I18N_UraCoreHelper_OverrideInstallCancelled);
+                            AnsiConsole.WriteLine(I18N_UraCoreHelper_NoInstalledModuleFound);
                         }
-                    }
-                    else if (File.Exists(modulePath))
-                    {
-                        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(modulePath)));
-                        if (UraCoreHelper.uraCoreHashs.Contains(hash) && AnsiConsole.Confirm(I18N_UraCoreHelper_FoundOldUraCore))
-                        {
-                            InstallModule(modulePath);
-                        }
-                        else if (AnsiConsole.Confirm(I18N_UraCoreHelper_CompatitableInstallPrompt))
-                        {
-                            InstallModule(compatiableModulePath);
-                        }
-                        else
-                        {
-                            AnsiConsole.WriteLine(I18N_UraCoreHelper_CompatitableInstallCancelled);
-                        }
-                    }
-                    void InstallModule(string path)
-                    {
-                        using var fs = File.Create(path);
-                        stream.CopyTo(fs);
-                        fs.Flush();
-                        fs.Close();
-                        AnsiConsole.WriteLine(I18N_UraCoreHelper_InstallSuccess, path);
                     }
                 }
                 Console.ReadKey();
+                void InstallModule(string path)
+                {
+                    using var fs = File.Create(path);
+                    stream.CopyTo(fs);
+                    fs.Flush();
+                    fs.Close();
+                }
             }
             else if (prompt == I18N_SetLocalizedDataFilePath)
             {

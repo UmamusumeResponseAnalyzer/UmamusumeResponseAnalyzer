@@ -154,7 +154,7 @@ namespace UmamusumeResponseAnalyzer
 
         public SkillData this[(int GroupId, int Rarity, int Rate) tuple]
         {
-            get => rateMap.TryGetValue(tuple, out SkillData? value) ? value : null!;
+            get => rateMap.TryGetValue(tuple, out var value) ? value : null!;
             set => rateMap[tuple] = value;
         }
         /// <summary>
@@ -164,12 +164,12 @@ namespace UmamusumeResponseAnalyzer
         /// <returns>所有具有相同GroupId、Rarity的技能</returns>
         public SkillData[] this[(int GroupId, int Rarity) tuple]
         {
-            get => rarityMap.TryGetValue(tuple, out SkillData[]? value) ? value : null!;
+            get => rarityMap.TryGetValue(tuple, out var value) ? value : null!;
             set => rarityMap[tuple] = value;
         }
         public SkillData this[int Id]
         {
-            get => idMap.TryGetValue(Id, out SkillData? value) ? value : null!;
+            get => idMap.TryGetValue(Id, out var value) ? value : null!;
             set => idMap[Id] = value;
         }
         public bool TryGetValue(int id, out SkillData? value) => idMap.TryGetValue(id, out value);

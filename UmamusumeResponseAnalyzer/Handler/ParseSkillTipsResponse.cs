@@ -144,6 +144,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         {
             var allTalentSkillUpgradable = true;
             var skills = @event.data.chara_info.skill_array.Select(x => SkillManagerGenerator.Default[x.skill_id]);
+            var scenario = @event.data.chara_info.scenario_id;
             // 加入即将学习的技能(如果有)
             if (willLearnSkills != null) skills = [.. skills, .. willLearnSkills];
             if (upgradableTalentSkills != null)
@@ -183,10 +184,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             foreach (var i in Database.SkillUpgradeSpeciality.Keys)
             {
-                var baseSkillId = i;
-                var spec = Database.SkillUpgradeSpeciality[baseSkillId];
+                var baseSkillId = i.Item1;
+                var requireScenario = i.Item2;
+                var spec = Database.SkillUpgradeSpeciality[i];
                 // 如果不是对应剧本或没有可进化的基础技能的Hint
-                if (@event.data.chara_info.scenario_id != spec.ScenarioId || !skillmanager.TryGetValue(baseSkillId, out var _)) continue;
+                if (scenario != requireScenario || !skillmanager.TryGetValue(baseSkillId, out var _)) continue;
                 foreach (var j in spec.UpgradeSkills)
                 {
                     var upgradedSkillId = j.Key;

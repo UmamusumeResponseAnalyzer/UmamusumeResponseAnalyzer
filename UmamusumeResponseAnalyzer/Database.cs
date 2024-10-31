@@ -35,9 +35,9 @@ namespace UmamusumeResponseAnalyzer
         /// </summary>
         public static SkillManagerGenerator Skills { get; private set; } = new SkillManagerGenerator([]);
         /// <summary>
-        /// 剧本限定进化技能
+        /// 剧本限定进化技能&lt;(基础技能id,剧本id),升级后&gt;
         /// </summary>
-        public static FrozenDictionary<int, SkillUpgradeSpeciality> SkillUpgradeSpeciality { get; private set; }
+        public static FrozenDictionary<(int, int), SkillUpgradeSpeciality> SkillUpgradeSpeciality { get; private set; }
         /// <summary>
         /// 育成事件
         /// </summary>
@@ -106,7 +106,7 @@ namespace UmamusumeResponseAnalyzer
             }
             if (TryDeserialize(SKILL_UPGRADE_SPECIALITY_FILEPATH, out var skillUpgradeSpeciality, x => x.ToObject<List<SkillUpgradeSpeciality>>()!))
             {
-                SkillUpgradeSpeciality = skillUpgradeSpeciality.ToDictionary(x => x.BaseSkillId, x => x).ToFrozenDictionary();
+                SkillUpgradeSpeciality = skillUpgradeSpeciality.ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
             }
             if (TryDeserialize(TALENT_SKILLS_FILEPATH, out var talentSkill, x => x.ToObject<Dictionary<int, TalentSkillData[]>>()!))
             {
@@ -209,7 +209,7 @@ namespace UmamusumeResponseAnalyzer
                             if (match.Success)
                             {
                                 var skillName = match.Groups[1].Value;
-                                if (localizedSkillNames.TryGetValue(skillName, out string? value))
+                                if (localizedSkillNames.TryGetValue(skillName, out var value))
                                     s = s.Replace(skillName, $"{skillName}/{value}");
                             }
                         }
@@ -238,12 +238,12 @@ namespace UmamusumeResponseAnalyzer
                     }
                     catch
                     {
-                        AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(NAMES_FILEPATH));
+                        AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath));
                     }
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(NAMES_FILEPATH));
+                    AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(filepath));
                 }
                 result = default!;
                 return false;

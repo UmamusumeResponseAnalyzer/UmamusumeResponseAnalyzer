@@ -1,6 +1,9 @@
 ﻿using Spectre.Console;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using static UmamusumeResponseAnalyzer.Localization.ResourceUpdater;
 
@@ -8,6 +11,8 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class ResourceUpdater
     {
+        static readonly string UPDATE_RECORD_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".update_record");
+        static readonly ConcurrentBag<string> ETAG_RECORDS = new(File.ReadAllLines(UPDATE_RECORD_FILEPATH));
         public static async Task TryUpdateProgram(string savepath = null!)
         {
             var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
@@ -72,6 +77,7 @@ namespace UmamusumeResponseAnalyzer
                     return;
                 }
             }
+            File.WriteAllLines(UPDATE_RECORD_FILEPATH, ETAG_RECORDS); // 检测通过，更新etag记录
             using var Proc = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -122,15 +128,17 @@ namespace UmamusumeResponseAnalyzer
 
                     await Task.WhenAll(tasks);
                 });
+            File.WriteAllLines(UPDATE_RECORD_FILEPATH, ETAG_RECORDS);
             AnsiConsole.MarkupLine(I18N_DownloadedInstruction);
             Console.ReadKey();
         }
         public static async Task UpdateProgram()
         {
+            var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
             await AnsiConsole.Progress()
                 .Columns(
                 [
-                            new TaskDescriptionColumn(),
+                    new TaskDescriptionColumn(),
                     new ProgressBarColumn(),
                     new PercentageColumn(),
                     new RemainingTimeColumn(),
@@ -140,20 +148,25 @@ namespace UmamusumeResponseAnalyzer
                 {
                     var tasks = new List<Task>();
 
-                    var programTask = Download(ctx, I18N_DownloadProgramInstruction, Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
+                    var programTask = Download(ctx, I18N_DownloadProgramInstruction, path);
                     tasks.Add(programTask);
 
                     await Task.WhenAll(tasks);
                 });
-            if (File.Exists(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"))) //如果临时目录里有这个文件说明找到了新版本，从这里启动临时目录中的程序更新
+            if (File.Exists(path))
             {
-                Console.WriteLine(I18N_BeginUpdateProgramInstruction);
-                Console.ReadKey();
-                CloseToUpdate();
-            }
-            else
-            {
-                Console.WriteLine(I18N_AlreadyLatestInstruction);
+                var selfSHA256 = SHA256.HashData(File.ReadAllBytes(Environment.ProcessPath!));
+                var targetSHA256 = SHA256.HashData(File.ReadAllBytes(path));
+                if (selfSHA256.SequenceEqual(targetSHA256))
+                {
+                    Console.WriteLine(I18N_AlreadyLatestInstruction);
+                }
+                else
+                {
+                    Console.WriteLine(I18N_BeginUpdateProgramInstruction);
+                    Console.ReadKey();
+                    CloseToUpdate();
+                }
             }
             Console.WriteLine(Localization.LaunchMenu.I18N_Options_BackToMenuInstruction);
             Console.ReadKey();
@@ -244,17 +257,16 @@ namespace UmamusumeResponseAnalyzer
             {
                 ".json" => $"{host}/GameData/{i18n}{filename}",
                 ".br" => $"{host}/GameData/{i18n}{filename}",
-                ".exe" => !Config.Get(Localization.Config.I18N_ForceUseGithubToUpdate) && isCN ? $"{host}/{filename}" : $"https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
+                ".exe" => !Config.Get(Localization.Config.I18N_ForceUseGithubToUpdate) && isCN ? $"{host}/{filename}" : $"https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
             };
         }
         public static async Task Download(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
             var downloadURL = GetDownloadUrl(path);
-            var client = new HttpClient(new HttpClientHandler
+            var client = new HttpClient()
             {
-                AllowAutoRedirect = false
-            })
-            { DefaultRequestVersion = new Version(2, 0) };
+                DefaultRequestVersion = HttpVersion.Version20
+            };
 
             #region 检测更新服务器是否可用
             try
@@ -276,29 +288,24 @@ namespace UmamusumeResponseAnalyzer
             #endregion
 
             var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL), HttpCompletionOption.ResponseHeadersRead);
-            while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
-            {
-                response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, response.Headers.Location), HttpCompletionOption.ResponseHeadersRead);
-            }
             var task = ctx?.AddTask(instruction, false);
             task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task?.StartTask();
-            if (task != null)
+            if (task != null && response.Content.Headers.TryGetValues("ETag", out var etags))
             {
-                var programUpToDate = Path.GetExtension(path) == ".exe" && Environment.ProcessPath != default && response.Content.Headers.GetContentMD5().SequenceEqual(MD5.HashData(File.ReadAllBytes(Environment.ProcessPath)));
-                var fileUpToDate = File.Exists(path) && response.Content.Headers.ContentLength == new FileInfo(path).Length;
-                if (programUpToDate || fileUpToDate) //服务器返回的文件长度和当前文件大小一致，即没有新的可用版本，直接返回
+                var etag = string.Join(string.Empty, etags);
+                if (ETAG_RECORDS.Contains(etag)) // Etag已下载过，所以是最新的。这么做的话第一次更新必定会下载所有文件，包括程序
                 {
                     task.Increment(response.Content.Headers.ContentLength ?? 0);
                     return;
                 }
+                else
+                {
+                    ETAG_RECORDS.Add(etag);
+                }
             }
 
-            response = await client.GetAsync(downloadURL, HttpCompletionOption.ResponseHeadersRead);
-            while (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently || response.StatusCode == System.Net.HttpStatusCode.Found)
-            {
-                response = await client.GetAsync(response.Headers.Location, HttpCompletionOption.ResponseHeadersRead);
-            }
+            response = await client.GetAsync(downloadURL);
 
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);

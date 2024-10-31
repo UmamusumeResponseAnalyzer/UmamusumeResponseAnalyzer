@@ -34,22 +34,25 @@ namespace UmamusumeResponseAnalyzer
         /// <param name="id">唯一ID，CharaId及CardId均可。</param>
         /// <returns>10x为各剧本的NPC<c>BaseName</c><br/>
         /// 其他则为人物<c>BaseName</c></returns>
-        public BaseName GetCharacter(int id) => names.TryGetValue(id, out BaseName? value) ? value : nullBaseName;
+        public BaseName GetCharacter(int id) => names.TryGetValue(id, out var value) ? value : nullBaseName;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:转换为条件表达式", Justification = "<挂起>")]
         public SupportCardName GetSupportCard(int id)
         {
-            if (!names.TryGetValue(id, out BaseName? value)) return nullSupportCardName;
+            if (!names.TryGetValue(id, out var value)) return nullSupportCardName;
             if (value is not SupportCardName) throw new Exception(string.Format(I18N_CastToSupportCardNameFail, value.GetType()));
             return (SupportCardName)value;
         }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:转换为条件表达式", Justification = "<挂起>")]
         public UmaName GetUmamusume(int id)
         {
-            if (!names.TryGetValue(id, out BaseName? value)) return nullUmaName;
+            if (!names.TryGetValue(id, out var value)) return nullUmaName;
             if (value is not UmaName) throw new Exception(string.Format(I18N_CastToUmaNameFail, value.GetType()));
             return (UmaName)value;
         }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:转换为条件表达式", Justification = "<挂起>")]
         private string GetSimpleName(int id)
         {
-            if (!names.TryGetValue(id, out BaseName? value)) return I18N_Unknown;
+            if (!names.TryGetValue(id, out var value)) return I18N_Unknown;
             return value switch
             {
                 SupportCardName scn => scn.SimpleName,
