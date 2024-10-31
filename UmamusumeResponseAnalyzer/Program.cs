@@ -454,7 +454,12 @@ namespace UmamusumeResponseAnalyzer
                         if (!string.IsNullOrEmpty(hddSerial)) DMM.hdd_serial = hddSerial;
                         if (!string.IsNullOrEmpty(motherboard)) DMM.motherboard = motherboard;
                         if (!string.IsNullOrEmpty(userOS)) DMM.user_os = userOS;
-                        if (!string.IsNullOrEmpty(umamusumePath)) DMM.umamusume_file_path = umamusumePath;
+                        if (!string.IsNullOrEmpty(umamusumePath))
+                        {
+                            DMM.umamusume_file_path = umamusumePath.EndsWith("umamusume.exe")
+                                ? umamusumePath
+                                : Directory.GetFiles(umamusumePath, "umamusume.exe", SearchOption.AllDirectories).First();
+                        }
 
                         AnsiConsole.Clear();
                         DMM.Save();

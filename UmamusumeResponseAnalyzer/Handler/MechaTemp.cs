@@ -17,7 +17,7 @@ namespace UmamusumeResponseAnalyzer.Handler
         public static void ParseMechaCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
-            
+
             var layout = new Layout().SplitColumns(
                 new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
                     new Layout("体力干劲条").SplitColumns(
@@ -111,14 +111,16 @@ namespace UmamusumeResponseAnalyzer.Handler
                     {30,0},
                     {10,0},
                 };
-                foreach (var item in turn.GetCommonResponse().home_info.command_info_array)
-                {
-                    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out var value) && value == trainId)
-                    {
-                        foreach (var trainParam in item.params_inc_dec_info_array)
-                            trainParams[trainParam.target_type] += trainParam.value;
-                    }
-                }
+                //foreach (var item in turn.GetCommonResponse().home_info.command_info_array)
+                //{
+                //    if (GameGlobal.ToTrainId.TryGetValue(item.command_id, out var value) && value == trainId)
+                //    {
+                //        foreach (var trainParam in item.params_inc_dec_info_array)
+                //            trainParams[trainParam.target_type] += trainParam.value;
+                //    }
+                //}
+                foreach (var trainParam in trainItem.Value.params_inc_dec_info_array)
+                    trainParams[trainParam.target_type] += trainParam.value;
 
                 var stats = new TrainStats
                 {
@@ -135,16 +137,18 @@ namespace UmamusumeResponseAnalyzer.Handler
                 // 取上半数值
                 // cook_data_set.command_info_array和CommandInfo，SingleCommandInfo都不一样，只能直接取
                 // 目前放在1200减半之前，不知道对不对
-                var gainUpper = dataset.command_info_array.FirstOrDefault(x => x.command_id == trainId || x.command_id == GameGlobal.XiahesuIds[trainId])?.params_inc_dec_info_array;
+                var gainUpper = dataset.command_info_array.FirstOrDefault(x => x.command_id == trainItem.Value.command_id || x.command_id == GameGlobal.XiahesuIds[trainId])?.params_inc_dec_info_array;
                 if (gainUpper != null)
                 {
                     foreach (var item in gainUpper)
+                    {
                         if (item.target_type == 30)
                             stats.PtGain += item.value;
                         else if (item.target_type <= 5)
                             stats.FiveValueGain[item.target_type - 1] += item.value;
                         else
                             AnsiConsole.MarkupLine("[red]here[/]");
+                    }
                 }
 
                 for (var j = 0; j < 5; j++)
@@ -201,7 +205,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                     _ => $"{I18N_Vital}:[green]{afterVital}[/]/{turn.MaxVital}"
                 });
 
-                table.AddRow($"Lv{command.TrainLevel} | ");
+#warning 还没做超过上限的检测
+                table.AddRow($"Lv{command.TrainLevel} | {command.PointUpInfoArray.Sum(x => x.Value)}");
                 table.AddRow(new Rule());
 
                 var stats = trainStats[command.TrainIndex - 1];
