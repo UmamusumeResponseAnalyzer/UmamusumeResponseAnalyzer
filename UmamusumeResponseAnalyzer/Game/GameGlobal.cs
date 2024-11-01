@@ -7,6 +7,8 @@ namespace UmamusumeResponseAnalyzer.Game
     public static class GameGlobal
     {
         public static readonly int[] TrainIds = [101, 105, 102, 103, 106];
+        public static readonly int[] TrainIdsMecha = [901, 105, 902, 103, 906]; //Mecha杯（9号剧本）
+        public static readonly String[] TrainEnglishName = ["speed", "stamina", "power", "guts", "wiz"]; 
         public static readonly FrozenDictionary<int, int> XiahesuIds = new Dictionary<int, int>
         {
             { 101, 601 },
@@ -83,6 +85,17 @@ namespace UmamusumeResponseAnalyzer.Game
             { 2105, 4 },
             { 2205, 4 },
             { 2305, 4 },
+            { 901, 0 },
+            { 902, 2 },
+            { 906, 4 },
+        }.ToFrozenDictionary();
+        public static readonly FrozenDictionary<string, int> EnglishNameToTrainIndex = new Dictionary<string, int>
+        {
+            { "speed", 0 },
+            { "stamina", 1 },
+            { "power", 2 },
+            { "guts", 3 },
+            { "wiz", 4 },
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> TrainNames = new Dictionary<int, string>
         {
@@ -266,7 +279,8 @@ namespace UmamusumeResponseAnalyzer.Game
         {
             { 6, [ 2000, 2000, 1800, 1800, 1400] },
             { 7, [ 2200, 1800, 1800, 1800, 1400] },
-            { 8, [ 2300, 1000, 2200, 2200, 1500] }
+            { 8, [ 2300, 1000, 2200, 2200, 1500] },
+            { 9, [ 2300, 2200, 1800, 1400, 1400] }
         };
     }
 
