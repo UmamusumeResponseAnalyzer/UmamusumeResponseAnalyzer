@@ -85,7 +85,6 @@ namespace UmamusumeResponseAnalyzer.Handler
             var trainStats = new TrainStats[5];
             var failureRate = new Dictionary<int, int>();
 
-
             // 总属性计算
             var currentFiveValue = new int[]
             {
@@ -163,7 +162,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                 for (var j = 0; j < 5; j++)
                     stats.FiveValueGain[j] = ScoreUtils.ReviseOver1200(turn.Stats[j] + stats.FiveValueGain[j]) - ScoreUtils.ReviseOver1200(turn.Stats[j]);
 
-
                 if (turn.Turn == 1)
                 {
                     turnStat.trainLevel[i] = 1;
@@ -211,10 +209,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                         turnStat.trainLevelCount[i] = 0;//如果是半途开启小黑板，则会在下一次升级时变成正确的计数
                     }
                 }
-
-
-
-
                 trainStats[i] = stats;
             }
 
@@ -305,29 +299,41 @@ namespace UmamusumeResponseAnalyzer.Handler
                 };
                 var remainLv = mechaLvLimit - mechaLv;
                 var lvStr =
-                    remainLv > 60 ? $"[green]{mechaLv}[/]" :
-                    remainLv > 30 ? $"[yellow]{mechaLv}[/]" :
-                    remainLv > 0 ? $"[darkorange]{mechaLv}[/]" :
+                    remainLv > 100 ? $"[green]{mechaLv}[/]" :
+                    remainLv > 25 ? $"[orange1]{mechaLv}[/]" :
+                    remainLv > 0 ? $"[red]{mechaLv}[/]" :
                     remainLv == 0 ? $"[red]MAX[/]" :
                     "ERR{mechaLv}";
 
-//#warning 还没做超过上限的检测 //收到的数据已经考虑上限了
-                table.AddRow($"+[yellow]{command.PointUpInfoArray.Sum(x => x.Value)}[/] |{lvStr}/{mechaLvLimit} ");
-
+                // 计算颜色码：is_od*4 + is_shining*2 + is_gear
+                Color[] borderColors = [Color.Grey35, Color.RoyalBlue1, Color.Green, Color.Lime, Color.DeepSkyBlue2, Color.Cyan1, Color.GreenYellow, Color.Gold1];
+                var isShining = 0;
                 foreach (var trainingPartner in command.TrainingPartners)
                 {
                     table.AddRow(trainingPartner.Name);
                     if (trainingPartner.Shining)
-                        table.BorderColor(Color.LightGreen);
+                        isShining = 2;
                 }
-                if (dataset.command_info_array.First(x => x.command_id == command.CommandId).is_recommend == false)
-                    table.BorderColor(Color.DarkOrange3); //没齿轮，设成灰色
+                var isGear = dataset.command_info_array.First(x => x.command_id == command.CommandId).is_recommend ? 1 : 0;
+                var isOD = @event.data.mecha_data_set.overdrive_info.over_drive_state > 0 ? 4 : 0;
+                table.BorderColor(borderColors[isShining + isGear + isOD]);
 
                 for (var i = 5 - command.TrainingPartners.Count(); i > 0; i--)
                 {
                     table.AddRow(string.Empty);
                 }
                 table.AddRow(new Rule());
+                //#warning 还没做超过上限的检测 //收到的数据已经考虑上限了
+                var pointUp = command.PointUpInfoArray.Sum(x => x.Value);
+                // 如果等级上升量小于比赛(All+7)则标黄 <10则标红
+                var pointUpColor = (turn.Turn > 12 && pointUp < 35) ? "[orange1]" : "[lime]";
+                if (pointUp < 10)
+                    pointUpColor = "[red]";
+                table.AddRow($"{lvStr}/{mechaLvLimit} (+{pointUpColor}{pointUp}[/])");
+                if (isGear > 0)
+                    table.AddRow($"[royalblue1]齿[/]");
+                else
+                    table.AddRow("");
 
                 return new Padder(table).Padding(0, 0, 0, 0);
             }); // foreach command
@@ -358,7 +364,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             layout["EN分配"].Update(new Panel(
                 $"头[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 1).chip_info_array.First(x => x.chip_id > 2000).point}[/] "+
                 $"胸[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 2).chip_info_array.First(x => x.chip_id > 2000).point}[/] "+
-                $"脚[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 2).chip_info_array.First(x => x.chip_id > 2000).point}[/] "
+                $"脚[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 3).chip_info_array.First(x => x.chip_id > 2000).point}[/] "
                 ).Expand());
 
             var overrideRemain = @event.data.mecha_data_set.overdrive_info.remain_num;
@@ -368,9 +374,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 1 => $"[green]齿轮：{overrideRemain}(+{@event.data.mecha_data_set.overdrive_info.energy_num})[/]",
                 2 => $"[yellow]齿轮：{overrideRemain}[/]",
             }
-            + (@event.data.mecha_data_set.overdrive_info.over_drive_state > 0? " [green]已启动[/]" :"")
+            + (@event.data.mecha_data_set.overdrive_info.over_drive_state > 0? " [cyan]已启动[/]" :"")
             ).Expand());
-
 
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
 
