@@ -1,9 +1,6 @@
 ﻿using Gallop;
 using Newtonsoft.Json;
 using Spectre.Console;
-using System.Diagnostics.Eventing.Reader;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 using UmamusumeResponseAnalyzer.AI;
 using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 using UmamusumeResponseAnalyzer.Game;
