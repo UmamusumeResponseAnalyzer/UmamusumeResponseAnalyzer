@@ -1,9 +1,10 @@
 ﻿using Gallop;
 using MathNet.Numerics.Distributions;
+using Newtonsoft.Json;
 using Spectre.Console;
-using System.Diagnostics.Eventing.Reader;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using UmamusumeResponseAnalyzer.AI;
+using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
@@ -210,6 +211,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
                 trainStats[i] = stats;
+                // 把训练等级信息更新到GameStats
+                GameStats.stats[turn.Turn] = turnStat;
             }
 
             var grids = new Grid();
@@ -365,7 +368,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                 $"头[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 1).chip_info_array.First(x => x.chip_id > 2000).point}[/] "+
                 $"胸[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 2).chip_info_array.First(x => x.chip_id > 2000).point}[/] "+
                 $"脚[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 3).chip_info_array.First(x => x.chip_id > 2000).point}[/] "
-                ).Expand());
+            ).Expand());
 
             var overrideRemain = @event.data.mecha_data_set.overdrive_info.remain_num;
             layout["齿轮槽"].Update(new Panel(overrideRemain switch
@@ -377,12 +380,31 @@ namespace UmamusumeResponseAnalyzer.Handler
             + (@event.data.mecha_data_set.overdrive_info.over_drive_state > 0? " [cyan]已启动[/]" :"")
             ).Expand());
 
+            // 计算连续事件表现
+            var eventPerf = EventLogger.PrintCardEventPerf(@event.data.chara_info.scenario_id);
+            if (eventPerf.Count > 0)
+            {
+                exTable.AddRow(new Rule());
+                foreach (var row in eventPerf)
+                    exTable.AddRow(new Markup(row));
+            }
+
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
 
             layout["Ext"].Update(exTable);
             AnsiConsole.Write(layout);
             // 光标倒转一点
             AnsiConsole.Cursor.SetPosition(0, 31);
+
+            if (@event.IsScenario(ScenarioType.Mecha))
+            {
+                var gameStatusToSend = new GameStatusSend_Mecha(@event);
+                if (gameStatusToSend.islegal == false)
+                {
+                    return;
+                }
+                gameStatusToSend.doSend();
+            } // if
         }
     }
 }
