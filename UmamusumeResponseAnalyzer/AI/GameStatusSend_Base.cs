@@ -9,6 +9,7 @@ using Spectre.Console;
 using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 using MathNet.Numerics.RootFinding;
 using Newtonsoft.Json;
+using System.IO.IsolatedStorage;
 
 namespace UmamusumeResponseAnalyzer.AI
 {
@@ -37,7 +38,7 @@ namespace UmamusumeResponseAnalyzer.AI
     {
         public int umaId;//马娘编号，见KnownUmas.cpp
         public int umaStar;//几星
-        public bool islegal;
+        public bool islegal;//是否为有效的回合数据
 
         public int turn;//回合数，从0开始，到77结束
         public int vital;//体力，叫做“vital”是因为游戏里就这样叫的
@@ -92,7 +93,14 @@ namespace UmamusumeResponseAnalyzer.AI
             islegal = false;
             playing_state = @event.data.chara_info.playing_state;
             if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0)) return;
-            if ((@event.data.chara_info.playing_state != 1))
+            if (
+                (@event.data.chara_info.playing_state == 1) ||
+                (@event.data.chara_info.playing_state == 26 && @event.IsScenario(ScenarioType.Mecha)) 
+                )
+            {
+
+            }
+            else
             {
                 //重复显示的回合直接return，就不发了
                 return;
@@ -192,44 +200,27 @@ namespace UmamusumeResponseAnalyzer.AI
             }
 
             trainLevelCount = new int[5] { 0, 0, 0, 0, 0 };
-            var trainClickCount = new int[5] { 0, 0, 0, 0, 0 };
 
-            for (var t = @event.data.chara_info.turn - 1; t >= 1; t--)
-            {
-                if (GameStats.stats[t] == null)
-                {
-                    break;
-                }
-
-                if (!GameGlobal.TrainIds.Any(x => x == GameStats.stats[t].playerChoice)) //没训练
-                    continue;
-                if (GameStats.stats[t].isTrainingFailed)//训练失败
-                    continue;
-                if ((t >= 37 && t <= 40) || (t >= 61 && t <= 64)) //合宿点的次数不算
-                    continue;
-                var trainIdx = GameGlobal.ToTrainIndex[GameStats.stats[t].playerChoice];
-                trainClickCount[trainIdx] += 1;
-            }
-
-            /* 计算训练等级，改为从剧本对象中直接取结果
-            for (var i = 0; i < 5; i++)
-            {
-                var trLevel = @event.data.chara_info.training_level_info_array.First(x => x.command_id == GameGlobal.TrainIds[i]).level;
-                var count = (trLevel - 1) * 4;
-                if (count < 16)
-                    count += trainClickCount[i] % 4;
-                trainLevelCount[i] = count;
-            }
-            */
+            var trainLevelClickNumEvery = 4;
             var turnStat = GameStats.stats[@event.data.chara_info.turn];
             if (turnStat == null)
             {
                 AnsiConsole.MarkupLine($"[yellow]获取训练等级信息出错[/]");
+                for (var i = 0; i < 5; i++)
+                {
+                    var trId = @event.IsScenario(ScenarioType.Mecha) ? GameGlobal.TrainIdsMecha[i] : 
+                        GameGlobal.TrainIds[i];
+                    var trLevel = @event.data.chara_info.training_level_info_array.First(x => x.command_id == trId).level;
+                    var count = (trLevel - 1) * trainLevelClickNumEvery;
+                    trainLevelCount[i] = count;
+                }
             }
-            else 
+            else
             {
-                trainLevelCount = turnStat.trainLevelCount;
+                for (var i = 0; i < 5; i++)
+                    trainLevelCount[i] = turnStat.trainLevelCount[i] + trainLevelClickNumEvery * (turnStat.trainLevel[i] - 1);
             }
+
             //从游戏json的id到ai的人头编号的换算
             foreach (var s in @event.data.chara_info.support_card_array)
             {
