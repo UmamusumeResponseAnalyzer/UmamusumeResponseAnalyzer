@@ -81,12 +81,12 @@ namespace UmamusumeResponseAnalyzer.AI
                 };
                 mecha_overdrive_energy = mecha.overdrive_info.remain_num * 3 + mecha.overdrive_info.energy_num;
                 mecha_overdrive_enabled = mecha.overdrive_info.over_drive_state > 0 ? true : false;
-                if(mecha.overdrive_info.is_overdrive_burst > 0 && !mecha_overdrive_enabled)//ura期间连续开overdrive，还没开的时候不发给umaai
+                if(stage == 1 && mecha.overdrive_info.is_overdrive_burst > 0 && !mecha_overdrive_enabled)//ura期间连续开overdrive，还没开的时候不发给umaai
                 {
                     islegal = false;
                     return;
                 }
-                mecha_EN = mecha.board_info_array.Sum(x => x.chip_info_array.First(x => x.chip_id > 2000).point);
+                mecha_EN = mecha.board_info_array.Sum(x => x.chip_info_array.First(x => x.chip_id > 2000).point) + @event.data.mecha_data_set.tuning_point;
                 // 升级情况
                 mecha_upgrade = new List<List<int>>();
                 for (var i = 0; i < 3; ++i)

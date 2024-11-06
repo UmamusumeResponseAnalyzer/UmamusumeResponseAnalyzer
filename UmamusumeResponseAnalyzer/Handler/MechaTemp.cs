@@ -18,7 +18,7 @@ namespace UmamusumeResponseAnalyzer.Handler
     {
         public static void ParseMechaCommandInfo(Gallop.SingleModeCheckEventResponse @event)
         {
-            if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null) return;
+            if (@event.data.chara_info.playing_state != 26 && ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0) || @event.data.race_start_info != null)) return;
 
             var layout = new Layout().SplitColumns(
                 new Layout("Main").Size(CommandInfoLayout.Current.MainSectionWidth).SplitRows(
@@ -363,7 +363,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             var mechaLvTotal = rival_info.speed + rival_info.stamina + rival_info.power + rival_info.guts + rival_info.wiz;
             var progress_rate = rival_info.progress_rate;
             layout["总研究Lv"].Update(new Panel($"总Lv:{mechaLvTotal} ({progress_rate}%)").Expand());
-            layout["总EN"].Update(new Panel($"总EN:{@event.data.mecha_data_set.board_info_array.Sum(x => x.chip_info_array.First(x => x.chip_id > 2000).point)}").Expand());
+            layout["总EN"].Update(new Panel($"总EN:{@event.data.mecha_data_set.board_info_array.Sum(x => x.chip_info_array.First(x => x.chip_id > 2000).point) + @event.data.mecha_data_set.tuning_point}").Expand());
             layout["EN分配"].Update(new Panel(
                 $"头[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 1).chip_info_array.First(x => x.chip_id > 2000).point}[/] "+
                 $"胸[yellow]{@event.data.mecha_data_set.board_info_array.First(x => x.board_id == 2).chip_info_array.First(x => x.chip_id > 2000).point}[/] "+
