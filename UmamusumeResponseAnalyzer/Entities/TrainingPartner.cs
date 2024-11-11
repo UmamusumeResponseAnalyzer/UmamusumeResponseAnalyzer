@@ -32,10 +32,30 @@ namespace UmamusumeResponseAnalyzer.Entities
         {
             Position = partner;
             Friendship = turn.Evaluations[Position].evaluation;
-            //IsArcPartner = turn.IsScenario(ScenarioType.LArc, out TurnInfoArc arcTurn) && (partner is > 1000 || (partner is >= 1 and <= 7)) && arcTurn.EvaluationInfoArray.Any(x => x.target_id == partner);
+            IsArcPartner = turn.IsScenario(ScenarioType.LArc, out TurnInfoArc arcTurn) && (partner is > 1000 || (partner is >= 1 and <= 7)) && arcTurn.EvaluationInfoArray.Any(x => x.target_id == partner);
             if (!IsNpc) // 自己带的S卡
             {
                 CardId = turn.SupportCards[Position];
+                var turnStat = GameStats.stats[turn.Turn];
+                if (turnStat != null)   // UAF这里没有初始化,跳过
+                {
+                    var trainIdx = GameGlobal.ToTrainIndex[command.command_id];
+                    switch (CardId)
+                    {
+                        case 30137: // 三女神团队卡的友情训练
+                            turnStat.venus_venusTrain = GameGlobal.ToTrainId[command.command_id];
+                            break;
+                        case 30160 or 10094: // 佐岳友人卡
+                            turnStat.larc_zuoyueAtTrain[trainIdx] = true;
+                            break;
+                        case 30188 or 10104:    // 都留岐涼花
+                            turnStat.uaf_friendAtTrain[trainIdx] = true;
+                            break;
+                        case 30207 or 10109:    // 理事长
+                            turnStat.cook_friendAtTrain[trainIdx] = true;
+                            break;
+                    }
+                }
                 Name = Database.Names.GetSupportCard(CardId).Nickname.EscapeMarkup();
                 if (Name.Contains("[友]")) // 友人单独标绿
                 {

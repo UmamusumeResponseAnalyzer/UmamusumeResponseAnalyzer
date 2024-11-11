@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Text;
 using UmamusumeResponseAnalyzer.Communications.Subscriptions;
+using UmamusumeResponseAnalyzer.Communications;
 
 namespace UmamusumeResponseAnalyzer.Handler
 {
@@ -54,12 +55,12 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 GameStats.isFullGame = false;
                 AnsiConsole.MarkupLine($"[red]警告：回合数不正确，上一个回合为{GameStats.currentTurn}，当前回合为{turnNum}[/]");
-                EventLogger.Init();
+                EventLogger.Init(@event);
             }
             else if (turnNum == 1)
             {
                 GameStats.isFullGame = true;
-                EventLogger.Init();
+                EventLogger.Init(@event);
             }
 
             //买技能，大师杯剧本年末比赛，会重复显示
@@ -639,6 +640,9 @@ namespace UmamusumeResponseAnalyzer.Handler
                                     case 30188 or 10104:    // 都留岐涼花
                                         turnStat.uaf_friendAtTrain[trainIdx] = true;
                                         break;
+                                    case 30207 or 10109:    // 理事长
+                                        turnStat.cook_friendAtTrain[trainIdx] = true;
+                                        break;
                                 }
                             }
                             else if (friendship < 80) // 羁绊不满80，无法触发友情训练标黄
@@ -1001,6 +1005,49 @@ namespace UmamusumeResponseAnalyzer.Handler
                     var gameStatusToSend = new GameStatusSend_LArc(@event);
                     SubscribeAiInfo.Signal(gameStatusToSend);
 
+                    if (Config.Get(Localization.Config.I18N_WriteAIInfo))
+                    {
+                        var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
+                        Directory.CreateDirectory(currentGSdirectory);
+
+                        var success = false;
+                        var tried = 0;
+                        do
+                        {
+                            try
+                            {
+                                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }; // 去掉空值避免C++端抽风
+                                File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                                File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                                success = true; // 写入成功，跳出循环
+                                break;
+                            }
+                            catch
+                            {
+                                tried++;
+                                AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                                await Task.Delay(500); // 等待0.5秒
+                            }
+                        } while (!success && tried < 10);
+                        if (!success)
+                        {
+                            AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    AnsiConsole.MarkupLine($"[red]向AI发送数据失败！错误信息：{Environment.NewLine}{e.Message}[/]");
+                }
+            } // if
+
+            if (@event.IsScenario(ScenarioType.UAF))
+            {
+                try
+                {
+                    var gameStatusToSend = new GameStatusSend_UAF(@event);
+                    BaseSubscription<string>.Signal(JsonConvert.SerializeObject(gameStatusToSend));
+                    AnsiConsole.MarkupLine("[aqua]AI计算中...[/]");
                     if (Config.Get(Localization.Config.I18N_WriteAIInfo))
                     {
                         var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");

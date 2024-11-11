@@ -7,6 +7,8 @@ namespace UmamusumeResponseAnalyzer.Game
     public static class GameGlobal
     {
         public static readonly int[] TrainIds = [101, 105, 102, 103, 106];
+        public static readonly int[] TrainIdsMecha = [901, 105, 902, 103, 906]; //Mecha杯（9号剧本）
+        public static readonly String[] TrainEnglishName = ["speed", "stamina", "power", "guts", "wiz"]; 
         public static readonly FrozenDictionary<int, int> XiahesuIds = new Dictionary<int, int>
         {
             { 101, 601 },
@@ -68,9 +70,32 @@ namespace UmamusumeResponseAnalyzer.Game
             { 102, 2 },
             { 103, 3 },
             { 106, 4 },
+            { 2101, 0 },
+            { 2201, 0 },
+            { 2301, 0 },
+            { 2102, 1 },
+            { 2202, 1 },
+            { 2302, 1 },
+            { 2103, 2 },
+            { 2203, 2 },
+            { 2303, 2 },
+            { 2104, 3 },
+            { 2204, 3 },
+            { 2304, 3 },
+            { 2105, 4 },
+            { 2205, 4 },
+            { 2305, 4 },
             { 901, 0 },
             { 902, 2 },
-            { 906, 4 }
+            { 906, 4 },
+        }.ToFrozenDictionary();
+        public static readonly FrozenDictionary<string, int> EnglishNameToTrainIndex = new Dictionary<string, int>
+        {
+            { "speed", 0 },
+            { "stamina", 1 },
+            { "power", 2 },
+            { "guts", 3 },
+            { "wiz", 4 },
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<int, string> TrainNames = new Dictionary<int, string>
         {
@@ -184,9 +209,48 @@ namespace UmamusumeResponseAnalyzer.Game
             { 30, "力量III+2" },
             { 31, "根性III+2" },
             { 32, "智力III+2" },
-            { 33, "GI Plate" },
-            { 34, "GI Plate+1" },
-            { 35, "超满足GI Plate+1" }
+            { 33, "GI拼盘" },
+            { 34, "GI拼盘+1" },
+            { 35, "超满足GI拼盘+1" }
+        }.ToFrozenDictionary();
+
+        public static readonly FrozenDictionary<int, int> CookDishIdUmaAI = new Dictionary<int, int>
+        {
+            { 1, 1 },
+            { 2, 2 },
+            { 3, 3 },
+            { 4, 4 },
+            { 5, 5 },
+            { 6, 6 },
+            { 7, 7 },
+            { 8, 3 },
+            { 9, 4 },
+            { 10, 5 },
+            { 11, 6 },
+            { 12, 7 },
+            { 13, 3 },
+            { 14, 4 },
+            { 15, 5 },
+            { 16, 6 },
+            { 17, 7 },
+            { 18, 8 },
+            { 19, 9 },
+            { 20, 10 },
+            { 21, 11 },
+            { 22, 12 },
+            { 23, 8 },
+            { 24, 9 },
+            { 25, 10 },
+            { 26, 11 },
+            { 27, 12 },
+            { 28, 8 },
+            { 29, 9 },
+            { 30, 10 },
+            { 31, 11 },
+            { 32, 12 },
+            { 33, 13 },
+            { 34, 13 },
+            { 35, 13 }
         }.ToFrozenDictionary();
         public static FrozenDictionary<int, string> CookEffectName = new Dictionary<int, string>
         {
@@ -210,6 +274,14 @@ namespace UmamusumeResponseAnalyzer.Game
         public static readonly string[] CookSuccessEffect = ["体力+10", "心情+1", "羁绊+3", "分身+1", "体力上限+4"];
         public static readonly int[] CookGardenLevelUpCost = [0, 100, 180, 220, 250, 9999];
         public static readonly int[] CookGardenBaseHarvest = [20, 20, 30, 40, 40];
+
+        public static readonly Dictionary<int, int[]> FiveStatusLimit = new Dictionary<int, int[]>
+        {
+            { 6, [ 2000, 2000, 1800, 1800, 1400] },
+            { 7, [ 2200, 1800, 1800, 1800, 1400] },
+            { 8, [ 2300, 1000, 2200, 2200, 1500] },
+            { 9, [ 2300, 2200, 1800, 1400, 1400] }
+        };
     }
 
     public static class ScoreUtils

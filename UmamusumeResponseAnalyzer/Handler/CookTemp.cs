@@ -1,11 +1,12 @@
 ﻿using Gallop;
+using Newtonsoft.Json;
 using Spectre.Console;
-using System.Diagnostics.Eventing.Reader;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
+using UmamusumeResponseAnalyzer.AI;
+using UmamusumeResponseAnalyzer.Communications.Subscriptions;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using UmamusumeResponseAnalyzer.LocalizedLayout.Handlers;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.Cook;
 using static UmamusumeResponseAnalyzer.Localization.CommandInfo.UAF;
 using static UmamusumeResponseAnalyzer.Localization.Game;
@@ -31,7 +32,6 @@ namespace UmamusumeResponseAnalyzer.Handler
                     ).Ratio(4),
                 new Layout("Ext").Ratio(1)
                 );
-            var extInfos = new List<string>();
             var critInfos = new List<string>();
             var turn = new TurnInfoCook(@event.data);
             var eventCookDataset = @event.data.cook_data_set;
@@ -43,12 +43,12 @@ namespace UmamusumeResponseAnalyzer.Handler
             {
                 GameStats.isFullGame = false;
                 critInfos.Add(string.Format(I18N_WrongTurnAlert, GameStats.currentTurn, turn.Turn));
-                EventLogger.Init();
+                EventLogger.Init(@event);
             }
             else if (turn.Turn == 1)
             {
                 GameStats.isFullGame = true;
-                EventLogger.Init();
+                EventLogger.Init(@event);
             }
 
             //买技能，大师杯剧本年末比赛，会重复显示
@@ -257,7 +257,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             if (@event.data.chara_info.chara_effect_id_array.Any(x => x == 32))
             {
-                critInfos.Add("[lightgreen]【リフレッシュの心得】生效中[/]");
+                critInfos.Add("[lightgreen]【休息的心得】生效中[/]");
             }
             exTable.AddRow($"农田Pt: {eventCookDataset.cook_info.care_point} (+{eventCookDataset.care_point_gain_num})");
             exTable.AddRow($"料理Pt: {eventCookDataset.cook_info.cooking_friends_power}");
@@ -367,8 +367,16 @@ namespace UmamusumeResponseAnalyzer.Handler
                         sty = new Style(Color.Yellow);
                     exTable.AddRow(new Markup($"{GameGlobal.CookMaterialName[i]}: {matRemain[i].ToString("+#;-#;0")}", sty));
                 }
-
             }
+            // 计算连续事件表现
+            var eventPerf = EventLogger.PrintCardEventPerf(@event.data.chara_info.scenario_id);
+            if (eventPerf.Count > 0)
+            {
+                exTable.AddRow(new Rule());
+                foreach (var row in eventPerf)
+                    exTable.AddRow(new Markup(row));
+            }
+
             layout["日期"].Update(new Panel($"{turn.Year}{I18N_Year} {turn.Month}{I18N_Month}{turn.HalfMonth}").Expand());
             layout["总属性"].Update(new Panel($"[cyan]总属性: {totalValue}[/]").Expand());
             layout["体力"].Update(new Panel($"{I18N_Vital}: [green]{turn.Vital}[/]/{turn.MaxVital}").Expand());
@@ -381,12 +389,63 @@ namespace UmamusumeResponseAnalyzer.Handler
                 2 => $"[red]{I18N_MotivationBad}[/]",
                 1 => $"[red]{I18N_MotivationWorst}[/]"
             }).Expand());
+
+            var availableTrainingCount = @event.data.home_info.command_info_array.Count(x => x.is_enable == 1);
+            //AnsiConsole.MarkupLine($"[aqua]{availableTrainingCount}[/]");
+            if (availableTrainingCount <= 1)
+            {
+                critInfos.Add("[aqua]非训练回合[/]");
+            }
             layout["重要信息"].Update(new Panel(string.Join(Environment.NewLine, critInfos)).Expand());
            
             layout["Ext"].Update(exTable);
             AnsiConsole.Write(layout);
             // 光标倒转一点
             AnsiConsole.Cursor.SetPosition(0, 31);
+
+            if (@event.IsScenario(ScenarioType.Cook))
+            {
+                var gameStatusToSend = new GameStatusSend_Cook(@event);
+                if (gameStatusToSend.islegal == false)
+                {
+                    return;
+                }
+
+                //Console.Write(gameStatusToSend);
+                var wsCount = SubscribeAiInfo.Signal(gameStatusToSend);
+                if (wsCount > 0 && !critInfos.Contains(I18N_RepeatTurn))    // hack判断一下是否重复显示，是否已经连接AI
+                    AnsiConsole.MarkupLine("\n[aqua]AI计算中...[/]");
+                //if (Config.Get(Localization.Config.I18N_WriteAIInfo))
+                if(true)
+                {
+                    var currentGSdirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "GameData");
+                    Directory.CreateDirectory(currentGSdirectory);
+
+                    var success = false;
+                    var tried = 0;
+                    do
+                    {
+                        try
+                        {
+                            var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }; // 去掉空值避免C++端抽风
+                            File.WriteAllText($@"{currentGSdirectory}/thisTurn.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                            File.WriteAllText($@"{currentGSdirectory}/turn{@event.data.chara_info.turn}.json", JsonConvert.SerializeObject(gameStatusToSend, Formatting.Indented, settings));
+                            success = true; // 写入成功，跳出循环
+                            break;
+                        }
+                        catch
+                        {
+                            tried++;
+                            AnsiConsole.MarkupLine("[yellow]写入失败，0.5秒后重试...[/]");
+                            //await Task.Delay(500); // 等待0.5秒
+                        }
+                    } while (!success && tried < 10);
+                    if (!success)
+                    {
+                        AnsiConsole.MarkupLine($@"[red]写入{currentGSdirectory}/thisTurn.json失败！[/]");
+                    }
+                }
+            } // if
         }
     }
 }
