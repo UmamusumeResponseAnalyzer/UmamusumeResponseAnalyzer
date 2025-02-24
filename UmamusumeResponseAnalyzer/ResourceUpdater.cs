@@ -12,7 +12,14 @@ namespace UmamusumeResponseAnalyzer
     public static class ResourceUpdater
     {
         static readonly string UPDATE_RECORD_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".update_record");
-        static readonly ConcurrentBag<string> ETAG_RECORDS = new(File.ReadAllLines(UPDATE_RECORD_FILEPATH));
+        static readonly ConcurrentBag<string> ETAG_RECORDS = [];
+        static ResourceUpdater()
+        {
+            if (File.Exists(UPDATE_RECORD_FILEPATH))
+            {
+                ETAG_RECORDS = new(File.ReadAllLines(UPDATE_RECORD_FILEPATH));
+            }
+        }
         public static async Task TryUpdateProgram(string savepath = null!)
         {
             var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
