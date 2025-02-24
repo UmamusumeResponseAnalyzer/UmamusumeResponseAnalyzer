@@ -133,29 +133,20 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 Please enter actauth: 的本地化字符串。
+        /// </summary>
+        internal static string I18N_InputActauthPrompt {
+            get {
+                return ResourceManager.GetString("I18N_InputActauthPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Please enter hdd_serial (current value: {0}, leave blank to not modify): 的本地化字符串。
         /// </summary>
         internal static string I18N_InputHddSerialPrompt {
             get {
                 return ResourceManager.GetString("I18N_InputHddSerialPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Please enter login_[red]secure[/]_id: 的本地化字符串。
-        /// </summary>
-        internal static string I18N_InputLoginSecureIdPrompt {
-            get {
-                return ResourceManager.GetString("I18N_InputLoginSecureIdPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Please enter login_[green]session[/]_id: 的本地化字符串。
-        /// </summary>
-        internal static string I18N_InputLoginSessionIdPrompt {
-            get {
-                return ResourceManager.GetString("I18N_InputLoginSessionIdPrompt", resourceCulture);
             }
         }
         

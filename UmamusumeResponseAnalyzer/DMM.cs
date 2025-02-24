@@ -19,9 +19,9 @@ namespace UmamusumeResponseAnalyzer
         internal static readonly string DMM_CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", ".token");
         private const string AcceptEncoding = "gzip, deflate, br, zstd";
         private const string AcceptLanguage = "zh-CN";
-        private const string UserAgent = "DMMGamePlayer5-Win/5.3.11 Electron/32.1.0";
+        private const string UserAgent = "DMMGamePlayer5-Win/5.3.22 Electron/34.1.1";
         private const string ClientApp = "DMMGamePlayer5";
-        private const string ClientVersion = "5.3.11";
+        private const string ClientVersion = "5.3.22";
         private const string SecFetchDest = "empty";
         private const string SecFetchMode = "no-cors";
         private const string SecFetchSite = "none";
@@ -69,11 +69,9 @@ namespace UmamusumeResponseAnalyzer
                 {
                     Name = i.SectionName
                 };
-                dmm.login_secure_id = i.Keys[nameof(dmm.login_secure_id)];
-                dmm.login_session_id = i.Keys[nameof(dmm.login_session_id)];
+                dmm.actauth = i.Keys[nameof(dmm.actauth)];
                 dmm.savedata_file_path = i.Keys[nameof(dmm.savedata_file_path)];
                 dmm.split_umamusume_file_path = i.Keys[nameof(dmm.split_umamusume_file_path)];
-                if (!string.IsNullOrEmpty(dmm.login_secure_id) && !string.IsNullOrEmpty(dmm.login_session_id))
                     Accounts.Add(dmm);
             }
         }
@@ -103,16 +101,14 @@ namespace UmamusumeResponseAnalyzer
             {
                 if (config.Sections.Any(x => x.SectionName == account.Name))
                 {
-                    config[account.Name]["login_secure_id"] = account.login_secure_id;
-                    config[account.Name]["login_session_id"] = account.login_session_id;
+                    config[account.Name]["actauth"] = account.actauth;
                     config[account.Name]["savedata_file_path"] = account.savedata_file_path;
                     config[account.Name]["split_umamusume_file_path"] = account.split_umamusume_file_path;
                 }
                 else
                 {
                     config.Sections.AddSection(account.Name);
-                    config[account.Name].AddKey(nameof(account.login_secure_id), account.login_secure_id);
-                    config[account.Name].AddKey(nameof(account.login_session_id), account.login_session_id);
+                    config[account.Name].AddKey(nameof(account.actauth), account.actauth);
                     config[account.Name].AddKey(nameof(account.savedata_file_path), account.savedata_file_path);
                     config[account.Name].AddKey(nameof(account.split_umamusume_file_path), account.split_umamusume_file_path);
                 }
@@ -130,8 +126,7 @@ namespace UmamusumeResponseAnalyzer
             public string Name { get; set; } = string.Empty;
             internal string split_umamusume_file_path { get; set; } = string.Empty;
             internal string savedata_file_path { get; set; } = string.Empty;
-            internal string login_session_id { get; set; } = string.Empty;
-            internal string login_secure_id { get; set; } = string.Empty;
+            internal string actauth { get; set; } = string.Empty;
 
             public void RunUmamusume()
             {
@@ -234,18 +229,10 @@ namespace UmamusumeResponseAnalyzer
                 client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", SecFetchDest);
                 client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", SecFetchMode);
                 client.DefaultRequestHeaders.Add("Sec-Fetch-Site", SecFetchSite);
-                cookies.Add(new Cookie(nameof(login_session_id), login_session_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
-                cookies.Add(new Cookie(nameof(login_secure_id), login_secure_id) { Domain = "apidgp-gameplayer.games.dmm.com" });
+                client.DefaultRequestHeaders.Add("actauth", actauth);
 
-                await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/gameinfo", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
-                using var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
+                using var response = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/r2/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
                 var json = JObject.Parse(await response.Content.ReadAsStringAsync());
-                if (json["result_code"]?.ToObject<int>() == 308)
-                {
-                    await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/agreement/confirm/client", new StringContent("{\"product_id\":\"umamusume\",\"is_notification\":false,\"is_myapp\":false}", Encoding.UTF8, "application/json"));
-                    using var resp = await client.PostAsync("https://apidgp-gameplayer.games.dmm.com/v5/launch/cl", new StringContent($"{{\"product_id\":\"umamusume\",\"game_type\":\"GCL\",\"game_os\":\"win\",\"launch_type\":\"LIB\",\"mac_address\":\"{mac_address}\",\"hdd_serial\":\"{hdd_serial}\",\"motherboard\":\"{motherboard}\",\"user_os\":\"{user_os}\"}}", Encoding.UTF8, "application/json"));
-                    json = JObject.Parse(await resp.Content.ReadAsStringAsync());
-                }
                 if (json["result_code"]?.ToObject<int>() == 203)
                 {
                     return "DMM session has expired";

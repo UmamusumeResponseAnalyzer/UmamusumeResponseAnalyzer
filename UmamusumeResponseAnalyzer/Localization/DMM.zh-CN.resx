@@ -120,27 +120,6 @@
   <data name="I18N_AddAccount" xml:space="preserve">
     <value>添加账号</value>
   </data>
-  <data name="I18N_Back" xml:space="preserve">
-    <value>返回</value>
-  </data>
-  <data name="I18N_Cancel" xml:space="preserve">
-    <value>取消</value>
-  </data>
-  <data name="I18N_DeleteAccountInstruction" xml:space="preserve">
-    <value>选中对应的账号回车是删除</value>
-  </data>
-  <data name="I18N_InputAccountCommentPrompt" xml:space="preserve">
-    <value>请输入该账号的备注:</value>
-  </data>
-  <data name="I18N_InputHddSerialPrompt" xml:space="preserve">
-    <value>请输入hdd_serial(当前值:{0},留空不修改):</value>
-  </data>
-  <data name="I18N_InputLoginSecureIdPrompt" xml:space="preserve">
-    <value>请输入login_[red]secure[/]_id:</value>
-  </data>
-  <data name="I18N_InputLoginSessionIdPrompt" xml:space="preserve">
-    <value>请输入login_[green]session[/]_id:</value>
-  </data>
   <data name="I18N_InputMacAddressPrompt" xml:space="preserve">
     <value>请输入mac_address(当前值:{0},留空不修改):</value>
   </data>
@@ -167,6 +146,24 @@
   </data>
   <data name="I18N_SetDeviceInfo" xml:space="preserve">
     <value>设置设备信息</value>
+  </data>
+  <data name="I18N_Back" xml:space="preserve">
+    <value>返回</value>
+  </data>
+  <data name="I18N_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="I18N_DeleteAccountInstruction" xml:space="preserve">
+    <value>选中对应的账号回车是删除</value>
+  </data>
+  <data name="I18N_InputAccountCommentPrompt" xml:space="preserve">
+    <value>请输入该账号的备注:</value>
+  </data>
+  <data name="I18N_InputHddSerialPrompt" xml:space="preserve">
+    <value>请输入hdd_serial(当前值:{0},留空不修改):</value>
+  </data>
+  <data name="I18N_InputActauthPrompt" xml:space="preserve">
+    <value>请输入actauth:</value>
   </data>
   <data name="I18N_UnknownTokenKey" xml:space="preserve">
     <value>未知的.token键{0}</value>

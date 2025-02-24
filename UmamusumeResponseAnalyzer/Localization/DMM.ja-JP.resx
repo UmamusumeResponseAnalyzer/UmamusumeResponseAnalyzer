@@ -162,11 +162,8 @@
   <data name="I18N_InputHddSerialPrompt" xml:space="preserve">
     <value>hdd_serialを入力してください（現在の値:{0}、変更しない場合は空白のままにしてください）：</value>
   </data>
-  <data name="I18N_InputLoginSecureIdPrompt" xml:space="preserve">
-    <value>login_secure_idを入力してください：</value>
-  </data>
-  <data name="I18N_InputLoginSessionIdPrompt" xml:space="preserve">
-    <value>login_session_idを入力してください：</value>
+  <data name="I18N_InputActauthPrompt" xml:space="preserve">
+    <value>actauthを入力してください：</value>
   </data>
   <data name="I18N_UnknownTokenKey" xml:space="preserve">
     <value>未知の.tokenキー{0}</value>

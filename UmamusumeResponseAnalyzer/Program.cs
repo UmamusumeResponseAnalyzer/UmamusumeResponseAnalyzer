@@ -392,16 +392,14 @@ namespace UmamusumeResponseAnalyzer
 
                     if (dmmSelected == I18N_AddAccount)
                     {
-                        var secureId = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputLoginSecureIdPrompt));
-                        var sessionId = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputLoginSessionIdPrompt));
+                        var actauth = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputActauthPrompt));
                         var savedataPath = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputSaveDataFilePathPrompt).AllowEmpty());
                         var executablePath = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputSplitUmamusumeFilePathPrompt).AllowEmpty());
                         var name = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputAccountCommentPrompt));
 
                         var account = new DMM.DMMAccount
                         {
-                            login_secure_id = secureId,
-                            login_session_id = sessionId,
+                            actauth = actauth,
                             savedata_file_path = savedataPath,
                             split_umamusume_file_path = executablePath,
                             Name = name,

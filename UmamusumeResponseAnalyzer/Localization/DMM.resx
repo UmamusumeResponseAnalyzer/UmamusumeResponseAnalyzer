@@ -162,11 +162,8 @@
   <data name="I18N_InputHddSerialPrompt" xml:space="preserve">
     <value>Please enter hdd_serial (current value: {0}, leave blank to not modify):</value>
   </data>
-  <data name="I18N_InputLoginSecureIdPrompt" xml:space="preserve">
-    <value>Please enter login_[red]secure[/]_id:</value>
-  </data>
-  <data name="I18N_InputLoginSessionIdPrompt" xml:space="preserve">
-    <value>Please enter login_[green]session[/]_id:</value>
+  <data name="I18N_InputActauthPrompt" xml:space="preserve">
+    <value>Please enter actauth:</value>
   </data>
   <data name="I18N_UnknownTokenKey" xml:space="preserve">
     <value>Unknown .token key {0}</value>
