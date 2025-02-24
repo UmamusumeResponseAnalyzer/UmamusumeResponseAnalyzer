@@ -26,6 +26,7 @@ namespace UmamusumeResponseAnalyzer
         UAF = 7,
         Cook = 8,
         Mecha = 9,
+        Legend = 10,
         Unknown = int.MaxValue
     }
     public static class Extensions
@@ -103,6 +104,7 @@ namespace UmamusumeResponseAnalyzer
                 ScenarioType.UAF => data.chara_info.scenario_id == 7 && data.sport_data_set != null,
                 ScenarioType.Cook => data.chara_info.scenario_id == 8 && data.cook_data_set != null,
                 ScenarioType.Mecha => data.chara_info.scenario_id == 9 && data.mecha_data_set != null,
+                ScenarioType.Legend => data.chara_info.scenario_id == 10 && data.legend_data_set != null,
                 ScenarioType.Unknown => true,
                 _ => false
             };

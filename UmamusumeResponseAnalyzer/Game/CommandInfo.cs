@@ -1,4 +1,5 @@
 ﻿using Gallop;
+using Spectre.Console;
 using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer.Game
@@ -18,6 +19,8 @@ namespace UmamusumeResponseAnalyzer.Game
             CommandId = commandId;
             if (GameGlobal.ToTrainIndex.TryGetValue(commandId, out var ti))
                 TrainIndex = ti + 1;
+            else
+                AnsiConsole.WriteLine($"[red]未找到{commandId}对应的训练位置[/]");
             var training = resp.chara_info.training_level_info_array.FirstOrDefault(x => x.command_id == CommandId);
             TrainLevel = training != default ? training.level : 0;
             var normalCommand = resp.home_info.command_info_array.First(x => x.command_id == CommandId);

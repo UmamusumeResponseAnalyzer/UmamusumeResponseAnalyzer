@@ -87,7 +87,7 @@ namespace UmamusumeResponseAnalyzer.Game
             { 2305, 4 },
             { 901, 0 },
             { 902, 2 },
-            { 906, 4 },
+            { 906, 4 }
         }.ToFrozenDictionary();
         public static readonly FrozenDictionary<string, int> EnglishNameToTrainIndex = new Dictionary<string, int>
         {

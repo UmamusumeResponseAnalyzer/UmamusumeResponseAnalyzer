@@ -47,6 +47,8 @@ namespace Gallop
             public SingleModeCookDataSet cook_data_set;
             [Key("mecha_data_set")]
             public SingleModeMechaDataSet mecha_data_set;
+            [Key("legend_data_set")]
+            public SingleModeLegendDataSet legend_data_set;
             [Key("select_index")]
             public int? select_index;
         }

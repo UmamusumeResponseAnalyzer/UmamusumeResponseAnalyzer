@@ -152,6 +152,10 @@ namespace UmamusumeResponseAnalyzer
                         {
                             data1.mecha_data_set = data.mecha_data_set;
                         }
+                        if (data.legend_data_set != null)
+                        {
+                            data1.legend_data_set = data.legend_data_set;
+                        }
                         data = data1;
                         dyn.data = data;
                     }
@@ -172,6 +176,15 @@ namespace UmamusumeResponseAnalyzer
                         if (dyn.data.cook_data_set.last_command_info is JArray)
                             dyn.data.cook_data_set.last_command_info = null;
                     }
+                    if (data.chara_info?.scenario_id == 10 || data.legend_data_set != null)
+                    {
+                        if (dyn.data.legend_data_set.cm_info.race_result_info is JArray)
+                            dyn.data.legend_data_set.cm_info.race_result_info = null;
+                        if (dyn.data.legend_data_set.popularity_info is JArray)
+                            dyn.data.legend_data_set.popularity_info = null;
+                        else if (dyn.data.legend_data_set.popularity_info.poster_race_result_info is JArray)
+                            dyn.data.legend_data_set.popularity_info.poster_race_result_info = null;
+                    }
                     #endregion
                     #endregion
                     if (data.chara_info != null && data.home_info?.command_info_array != null && data.race_reward_info == null && !(data.chara_info.state == 2 || data.chara_info.state == 3)) //根据文本简单过滤防止重复、异常输出
@@ -188,6 +201,9 @@ namespace UmamusumeResponseAnalyzer
                                     break;
                                 case 9:
                                     Handlers.ParseMechaCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
+                                    break;
+                                case 10:
+                                    Handlers.ParseLegendCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
                                     break;
                                 default:
                                     Handlers.ParseCommandInfo(dyn.ToObject<Gallop.SingleModeCheckEventResponse>());
