@@ -174,4 +174,7 @@
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}:更新サーバーに接続できませんでした。「GitHubを使用した強制アップデート」を設定で有効にしてから再試行してください</value>
   </data>
+  <data name="I18N_DownloadingUraCore" xml:space="preserve">
+    <value>ura-core.dllをダウンロード中</value>
+  </data>
 </root>

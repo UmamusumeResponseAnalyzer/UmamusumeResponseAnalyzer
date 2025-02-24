@@ -286,15 +286,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Extraction of built-in resources failed, please try manual installation 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_ExtractUraCoreFail {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_ExtractUraCoreFail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Found valid game directory: {0} 的本地化字符串。
         /// </summary>
         internal static string I18N_UraCoreHelper_FoundAvailablePath {

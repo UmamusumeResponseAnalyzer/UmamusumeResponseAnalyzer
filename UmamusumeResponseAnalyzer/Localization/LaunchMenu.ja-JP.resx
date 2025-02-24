@@ -177,9 +177,6 @@
   <data name="I18N_LaunchFail" xml:space="preserve">
     <value>URAの起動に失敗し、Enterキーを押してプログラムを終了</value>
   </data>
-  <data name="I18N_UraCoreHelper_ExtractUraCoreFail" xml:space="preserve">
-    <value>内蔵リソースの抽出に失敗しました。手動でのインストールを試みてください</value>
-  </data>
   <data name="I18N_UraCoreHelper_FoundPaths" xml:space="preserve">
     <value>{0}個の可能性のあるディレクトリを見つけました</value>
   </data>

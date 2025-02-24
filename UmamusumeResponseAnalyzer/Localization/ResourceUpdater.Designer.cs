@@ -169,6 +169,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 Downloading ura-core.dll 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DownloadingUraCore {
+            get {
+                return ResourceManager.GetString("I18N_DownloadingUraCore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Downloading the latest names.br from GitHub 的本地化字符串。
         /// </summary>
         internal static string I18N_DownloadNamesInstruction {

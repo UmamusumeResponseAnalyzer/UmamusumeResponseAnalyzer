@@ -186,9 +186,6 @@
   <data name="I18N_UpdateProgram" xml:space="preserve">
     <value>更新程序</value>
   </data>
-  <data name="I18N_UraCoreHelper_ExtractUraCoreFail" xml:space="preserve">
-    <value>提取内置资源失败，请尝试手动安装</value>
-  </data>
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>发现有效的游戏目录:{0}</value>
   </data>

@@ -174,4 +174,7 @@
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}: [red]无法连接到更新服务器，请尝试在设置中启用"强制使用GitHub更新"后再试[/]</value>
   </data>
+  <data name="I18N_DownloadingUraCore" xml:space="preserve">
+    <value>正在下载ura-core.dll</value>
+  </data>
 </root>

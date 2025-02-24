@@ -178,6 +178,25 @@ namespace UmamusumeResponseAnalyzer
             Console.WriteLine(Localization.LaunchMenu.I18N_Options_BackToMenuInstruction);
             Console.ReadKey();
         }
+        public static async Task DownloadUraCore(string path)
+        {
+            if (!File.Exists(path))
+            {
+                await AnsiConsole.Progress()
+                    .Columns(
+                    [
+                            new TaskDescriptionColumn(),
+                        new ProgressBarColumn(),
+                        new PercentageColumn(),
+                        new RemainingTimeColumn(),
+                        new SpinnerColumn()
+                    ])
+                    .StartAsync(async ctx =>
+                    {
+                        await Download(ctx, I18N_DownloadingUraCore, path);
+                    });
+            }
+        }
         public static async Task DownloadNetFilter(string nfapiPath, string nfdriverPath, string redirectorPath)
         {
             if (!File.Exists(nfapiPath) || !File.Exists(nfdriverPath) || !File.Exists(redirectorPath))

@@ -177,9 +177,6 @@
   <data name="I18N_LaunchFail" xml:space="preserve">
     <value>URA launch failed, press Enter to exit the program</value>
   </data>
-  <data name="I18N_UraCoreHelper_ExtractUraCoreFail" xml:space="preserve">
-    <value>Extraction of built-in resources failed, please try manual installation</value>
-  </data>
   <data name="I18N_UraCoreHelper_FoundPaths" xml:space="preserve">
     <value>Found {0} possible directories</value>
   </data>

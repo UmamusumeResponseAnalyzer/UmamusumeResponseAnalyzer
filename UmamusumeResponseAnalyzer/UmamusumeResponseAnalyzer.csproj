@@ -18,7 +18,6 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<NoWarn>1701;1702;CS8509;CS8618;CA2211</NoWarn>
-		<Prefer32Bit>true</Prefer32Bit>
 		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
 	</PropertyGroup>
 
@@ -38,20 +37,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="AI\LArcPerson.cs" />
-	  <Compile Remove="AI\UAFPerson.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="ura-core.dll" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Content Include="icon.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="ura-core.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -61,12 +47,6 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Spectre.Console" Version="0.49.1" />
 		<PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="NetFilterAPI">
-	    <HintPath>NetFilterAPI.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -223,11 +203,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EditorConfigFiles Remove="K:\repos\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\.editorconfig" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="K:\repos\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\.editorconfig" />
+	  <Reference Include="NetFilterAPI">
+	    <HintPath>..\Assets\NetFilterAPI.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>
