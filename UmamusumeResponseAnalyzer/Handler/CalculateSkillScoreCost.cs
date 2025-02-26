@@ -44,8 +44,8 @@ namespace UmamusumeResponseAnalyzer.Handler
                 .Where(x => x.Rate > 0)
                 .ToList();
             //添加天赋技能
-            bool unknownUma = false;//新出的马娘的天赋技能不在数据库中
-            if (Database.TalentSkill.TryGetValue(@event.data.chara_info.card_id, out TalentSkillData[]? value))
+            var unknownUma = false;//新出的马娘的天赋技能不在数据库中
+            if (Database.TalentSkill.TryGetValue(@event.data.chara_info.card_id, out var value))
             {
                 foreach (var i in value.Where(x => x.Rank <= @event.data.chara_info.talent_level))
                 {
@@ -127,7 +127,7 @@ namespace UmamusumeResponseAnalyzer.Handler
             // 01背包变种
             var dp = new int[totalSP + 101]; //多计算100pt，用于计算“边际性价比”
             var dpLog = Enumerable.Range(0, totalSP + 101).Select(x => new List<int>()).ToList(); // 记录dp时所选的技能，存技能Id
-            for (int i = 0; i < tips.Count; i++)
+            for (var i = 0; i < tips.Count; i++)
             {
                 var s = tips[i];
                 // 读取此技能可以点的所有情况
@@ -165,7 +165,7 @@ namespace UmamusumeResponseAnalyzer.Handler
 
 
 
-                for (int j = totalSP + 100; j >= 0; j--)
+                for (var j = totalSP + 100; j >= 0; j--)
                 {
                     // 背包四种选法
                     // 0-不选
@@ -216,8 +216,8 @@ namespace UmamusumeResponseAnalyzer.Handler
 
                     bool IsBestOption(int index)
                     {
-                        bool IsBest = true;
-                        for (int k = 0; k < 4; k++)
+                        var IsBest = true;
+                        for (var k = 0; k < 4; k++)
                             IsBest = choice[index] >= choice[k] && IsBest;
                         return IsBest;
                     };
@@ -250,6 +250,7 @@ namespace UmamusumeResponseAnalyzer.Handler
                     }
                 }
             }
+            //learn = [.. learn.OrderByDescending(x => x.HintLevel).ThenBy(x => x.DisplayOrder)];
             learn = [.. learn.OrderBy(x => x.DisplayOrder)];
             return (learn, dp);
         }

@@ -46,6 +46,10 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// </summary>
         public int Cost { get; set; }
         /// <summary>
+        /// 打折等级，仅适用于对应游戏内排序，请不要用来进行其他计算！！
+        /// </summary>
+        public int HintLevel { get; set; }
+        /// <summary>
         /// 技能在学习界面的显示顺序，正向排序
         /// </summary>
         public int DisplayOrder { get; init; }
@@ -135,7 +139,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// <param name="upgradedSkillId">存在可进化的技能时为对应的技能ID(存在多个可进化的技能时为第一个)，否则为default</param>
         /// <param name="willLearnSkills">部分条件需要学习指定技能才能达成，传入的是额外纳入计算的技能</param>
         /// <returns></returns>
-        public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId,IEnumerable<SkillData> skills)
+        public bool CanUpgrade(Gallop.SingleModeChara chara_info, out int upgradedSkillId, IEnumerable<SkillData> skills)
         {
             upgradedSkillId = default;
             // 不存在技能进化信息时直接返回，是针对繁中服的兼容性判断
@@ -144,21 +148,26 @@ namespace UmamusumeResponseAnalyzer.Entities
             if (chara_info.talent_level < Rank) return false;
 
             // 当前剧本所拥有的、针对当前天赋技能的特殊条件
+#warning TODO
+            // 剧本6满足要求后所有技能都能进化，但其他剧本不全是，需要挨个检查
             var currentScenarioConditions = SCENARIO_CONDITIONS.Where(x => x.ScenarioId == chara_info.scenario_id && x.Rank == Rank);
-            // 满足的剧本特殊条件
-            var scenarioUpgradeInfo = chara_info.skill_upgrade_info_array.Where(x => currentScenarioConditions.Any(y => y.ConditionId == x.condition_id));
-            // 如果满足全部的剧本特殊条件则技能同样可进化，返回第一个进化技能ID
-            if (scenarioUpgradeInfo.All(x => x.current_count == x.total_count))
+            if (currentScenarioConditions.Any())
             {
-                upgradedSkillId = UpgradeSkills.Keys.First();
-                return true;
+                // 满足的剧本特殊条件
+                var scenarioUpgradeInfo = chara_info.skill_upgrade_info_array.Where(x => currentScenarioConditions.Any(y => y.ConditionId == x.condition_id));
+                // 如果满足全部的剧本特殊条件则技能同样可进化，返回第一个进化技能ID
+                if (scenarioUpgradeInfo.All(x => x.current_count == x.total_count))
+                {
+                    upgradedSkillId = UpgradeSkills.Keys.First();
+                    return true;
+                }
             }
 
             // 依次判断，返回第一个可进化的
             foreach (var i in UpgradeSkills)
             {
                 // 判断如果全部进化条件均满足，则认为可进化
-                if (i.Value.All(x => x.IsArchived(chara_info, skills)))
+                if (i.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(chara_info, skills))))
                 {
                     upgradedSkillId = i.Key;
                     return true;
@@ -175,6 +184,10 @@ namespace UmamusumeResponseAnalyzer.Entities
             /// 条件ID
             /// </summary>
             public int ConditionId;
+            /// <summary>
+            /// 组别，即数据库中的num，游戏中的二选一
+            /// </summary>
+            public int Group;
             /// <summary>
             /// 条件类型
             /// </summary>
@@ -194,6 +207,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                 var serverCondition = chara_info.skill_upgrade_info_array.FirstOrDefault(x => x.condition_id == ConditionId);
                 // 由服务器确定该条件已满足
                 if (serverCondition?.current_count == serverCondition?.total_count) return true;
+                var currentCount = serverCondition?.current_count ?? 0;
 
                 switch (Type)
                 {
@@ -208,7 +222,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                                     3 => SkillProper.StyleType.Sashi,
                                     4 => SkillProper.StyleType.Oikomi,
                                 };
-                                return skills.Count(x => x.Propers.Any(y => y.Style == properType)) >= AdditionalRequirement;
+                                return currentCount + skills.Count(x => x.Propers.Any(y => y.Style == properType)) >= AdditionalRequirement;
                             }
                             if (Requirement >= 5 && Requirement <= 8)
                             {
@@ -219,27 +233,27 @@ namespace UmamusumeResponseAnalyzer.Entities
                                     7 => SkillProper.DistanceType.Middle,
                                     8 => SkillProper.DistanceType.Long,
                                 };
-                                return skills.Count(x => x.Propers.Any(y => y.Distance == properType)) >= AdditionalRequirement;
+                                return currentCount + skills.Count(x => x.Propers.Any(y => y.Distance == properType)) >= AdditionalRequirement;
                             }
                             if (Requirement == 9)
                             {
                                 var properType = SkillProper.GroundType.Dirt;
-                                return skills.Count(x => x.Propers.Any(y => y.Ground == properType)) >= AdditionalRequirement;
+                                return currentCount + skills.Count(x => x.Propers.Any(y => y.Ground == properType)) >= AdditionalRequirement;
                             }
                             throw new Exception($"出现了预料外的Requirement");
                         }
-                    case UpgradeCondition.ConditionType.Specific:
+                    case ConditionType.Specific:
                         return skills.Any(x => x.Id == Requirement);
-                    case UpgradeCondition.ConditionType.Speed:
-                        return skills.Count(x => x.Category == SkillCategory.Speed) >= Requirement;
-                    case UpgradeCondition.ConditionType.Acceleration:
-                        return skills.Count(x => x.Category == SkillCategory.Acceleration) >= Requirement;
-                    case UpgradeCondition.ConditionType.Recovery:
-                        return skills.Count(x => x.Category == SkillCategory.Recovery) >= Requirement;
-                    case UpgradeCondition.ConditionType.Lane:
-                        return skills.Count(x => x.Category == SkillCategory.Lane) >= Requirement;
-                    case UpgradeCondition.ConditionType.Stat:
-                        return skills.Count(x => x.Category == SkillCategory.Stat) >= Requirement;
+                    case ConditionType.Speed:
+                        return currentCount + skills.Count(x => x.Category == SkillCategory.Speed) >= Requirement;
+                    case ConditionType.Acceleration:
+                        return currentCount + skills.Count(x => x.Category == SkillCategory.Acceleration) >= Requirement;
+                    case ConditionType.Recovery:
+                        return currentCount + skills.Count(x => x.Category == SkillCategory.Recovery) >= Requirement;
+                    case ConditionType.Lane:
+                        return currentCount + skills.Count(x => x.Category == SkillCategory.Lane) >= Requirement;
+                    case ConditionType.Stat:
+                        return currentCount + skills.Count(x => x.Category == SkillCategory.Stat) >= Requirement;
                 }
                 return false;
             }

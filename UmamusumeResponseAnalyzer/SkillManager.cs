@@ -24,6 +24,16 @@ namespace UmamusumeResponseAnalyzer
                 5 => 40
             };
             skill.Cost = skill.Cost * (100 - off - cutted) / 100;
+            // 猜测游戏内hint level排序顺序为先看最高的白，再看金，一致的看DisplayOrder
+            if (skill.Rarity == 2)
+            {
+                var infLvl = skill.Inferior?.HintLevel ?? 0;
+                skill.HintLevel = infLvl > level ? infLvl : level;
+            }
+            else
+            {
+                skill.HintLevel = level;
+            }
         }
         /// <summary>
         /// 根据马的属性应用相性加成，改变技能的分数
@@ -95,13 +105,6 @@ namespace UmamusumeResponseAnalyzer
             var skills = new List<SkillData>(list.Select(x => x.Clone()));
             foreach (var skill in skills)
             {
-                // 计算折扣
-                ApplyHint(skill, chara_info, chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == skill.GroupId && x.rarity == skill.Rarity)?.level ?? 0);
-                // 计算分数
-                ApplyProper(skill, chara_info);
-            }
-            foreach (var skill in skills)
-            {
                 // 同组技能
                 var group = skills.Where(x => x.GroupId == skill.GroupId);
                 if (group.Any())
@@ -110,9 +113,9 @@ namespace UmamusumeResponseAnalyzer
                     var normalSuperior = group.FirstOrDefault(x => x.Rarity == skill.Rarity && x.Rate == skill.Rate + 1);
                     // 高一级稀有度的上位技能(金)
                     var rareSuperior = group.FirstOrDefault(x => x.Rarity == skill.Rarity + 1 && x.Rate == skill.Rate + 1);
-                    if (normalSuperior != null)
+                    if (normalSuperior != null && chara_info.skill_tips_array.Any(x => x.group_id == normalSuperior.GroupId && x.rarity == normalSuperior.Rarity))
                         skill.Superior = normalSuperior;
-                    else if (rareSuperior != null)
+                    else if (rareSuperior != null && chara_info.skill_tips_array.Any(x => x.group_id == rareSuperior.GroupId && x.rarity == rareSuperior.Rarity))
                         skill.Superior = rareSuperior;
 
                     // 同稀有度的下位技能(单圈白)
@@ -124,6 +127,13 @@ namespace UmamusumeResponseAnalyzer
                     else if (lowerInferior != null)
                         skill.Inferior = lowerInferior;
                 }
+            }
+            foreach (var skill in skills.OrderBy(x => x.Rarity).OrderBy(x => x.Rate))
+            {
+                // 计算折扣
+                ApplyHint(skill, chara_info, chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == skill.GroupId && x.rarity == skill.Rarity)?.level ?? 0);
+                // 计算分数
+                ApplyProper(skill, chara_info);
             }
             foreach (var skill in skills.OrderByDescending(x => x.Rate))
             {

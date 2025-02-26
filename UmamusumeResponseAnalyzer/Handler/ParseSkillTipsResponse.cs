@@ -14,35 +14,11 @@ namespace UmamusumeResponseAnalyzer.Handler
             var totalSP = @event.data.chara_info.skill_point;
             // 可以进化的天赋技能，即觉醒3、5的那两个金技能
             var upgradableTalentSkills = Database.TalentSkill[@event.data.chara_info.card_id].Where(x => x.Rank <= @event.data.chara_info.talent_level && (x.Rank == 3 || x.Rank == 5));
-            // 把天赋技能替换成进化技能
-            var allTalentSkillUpgradable = ReplaceTalentSkillWithUpgradeSkill(@event, skills, tips, upgradableTalentSkills);
 
             var dpResult = DP(tips, ref totalSP, @event.data.chara_info);
-            var learn = dpResult.Item1;
+            var learn = ReplaceAllSkillWithUpgradeSkill(@event, skills, upgradableTalentSkills, dpResult.Item1).ToList();
             var willLearnPoint = learn.Sum(x => x.Grade);
-            if (!allTalentSkillUpgradable)
-            {
-                allTalentSkillUpgradable = ReplaceTalentSkillWithUpgradeSkill(@event, skills, tips, upgradableTalentSkills, dpResult.Item1);
-                var newDpResult = DP(tips, ref totalSP, @event.data.chara_info);
-                var newWillLearnPoint = newDpResult.Item1.Sum(x => x.Grade);
-                if (newWillLearnPoint > willLearnPoint)
-                {
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_1);
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_2);
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_3);
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_4);
-                    dpResult = newDpResult;
-                    learn = newDpResult.Item1;
-                    willLearnPoint = newWillLearnPoint;
-                }
-                else
-                {
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_5);
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_6);
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_3);
-                    AnsiConsole.MarkupLine(I18N_EvolveSkillAlert_4);
-                }
-            }
+
             var table = new Table();
             table.Title(string.Format(I18N_Title, @event.data.chara_info.skill_point, @event.data.chara_info.skill_point - totalSP, totalSP));
             table.AddColumns(I18N_Columns_SkillName, I18N_Columns_RequireSP, I18N_Columns_Grade);
@@ -114,22 +90,22 @@ namespace UmamusumeResponseAnalyzer.Handler
             if (totalSP0 > 50)
             {
                 double sxy = 0, sy = 0, sx2 = 0, n = 0;
-                for (int x = -50; x <= 50; x++)
+                for (var x = -50; x <= 50; x++)
                 {
-                    int y = dp[totalSP0 + x];
+                    var y = dp[totalSP0 + x];
                     sxy += x * y;
                     sy += y;
                     sx2 += x * x;
                     n += 1;
                 }
-                double b = sxy / sx2;
+                var b = sxy / sx2;
                 AnsiConsole.MarkupLine(I18N_MarginalCostEffectiveness, b.ToString("F3"));
             }
             //计算减少50/100/150/.../500pt的平均性价比
             AnsiConsole.MarkupLine(I18N_ExpectedCostEffectiveness);
-            for (int t = 1; t <= 10; t++)
+            for (var t = 1; t <= 10; t++)
             {
-                int start = totalSP0 - t * 50 - 25;
+                var start = totalSP0 - t * 50 - 25;
                 if (start < 0)
                     break;
 
@@ -140,26 +116,22 @@ namespace UmamusumeResponseAnalyzer.Handler
             }
             #endregion
         }
-        public static bool ReplaceTalentSkillWithUpgradeSkill(Gallop.SingleModeCheckEventResponse @event, SkillManager skillmanager, List<SkillData> tips, IEnumerable<TalentSkillData>? upgradableTalentSkills, List<SkillData>? willLearnSkills = null)
+        public static IEnumerable<SkillData> ReplaceAllSkillWithUpgradeSkill(Gallop.SingleModeCheckEventResponse @event, SkillManager skillmanager, IEnumerable<TalentSkillData> upgradableTalentSkills, List<SkillData> willLearnSkills)
         {
-            var allTalentSkillUpgradable = true;
-            var skills = @event.data.chara_info.skill_array.Select(x => SkillManagerGenerator.Default[x.skill_id]);
-            var scenario = @event.data.chara_info.scenario_id;
-            // 加入即将学习的技能(如果有)
-            if (willLearnSkills != null) skills = [.. skills, .. willLearnSkills];
+            #region 角色进化
             if (upgradableTalentSkills != null)
             {
                 foreach (var upgradableSkill in upgradableTalentSkills)
                 {
-                    var notUpgradedIndex = tips.FindIndex(x => x.Id == upgradableSkill.SkillId); // 天赋技能在tips中的位置
+                    var notUpgradedIndex = willLearnSkills.FindIndex(x => x.Id == upgradableSkill.SkillId); // 天赋技能在tips中的位置
                     if (notUpgradedIndex == -1) continue; // 如果没找到则说明已学会，不再需要
-                    var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
+                    var notUpgradedSkill = willLearnSkills[notUpgradedIndex]; // 原本的天赋技能
 
                     // 判定不学习时是否能进化，有多个可进化技能时按第一个计算
-                    if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, skills))
+                    if (upgradableSkill.CanUpgrade(@event.data.chara_info, out var upgradedSkillId, willLearnSkills))
                     {
                         var upgradedSkill = skillmanager[upgradedSkillId].Clone();
-                        upgradedSkill.Name = $"{notUpgradedSkill.Name}({I18N_Evolved})";
+                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(角色{I18N_Evolved})";
                         upgradedSkill.Cost = notUpgradedSkill.Cost;
 
                         var inferior = notUpgradedSkill.Inferior;
@@ -174,32 +146,34 @@ namespace UmamusumeResponseAnalyzer.Handler
                             inferior = inferior.Inferior;
                         }
 
-                        tips[notUpgradedIndex] = upgradedSkill;
-                    }
-                    else // 有技能不可进化，考虑学完技能之后再计算
-                    {
-                        allTalentSkillUpgradable = false;
+                        willLearnSkills[notUpgradedIndex] = upgradedSkill;
                     }
                 }
             }
+            #endregion
+            #region 剧本进化
+#warning TODO
+            /// 目前是只考虑进化前两个可进化技能。有没有可能进化后的技能分数也有高低？
+            var evolvedCount = 0; // 剧本进化最多两个，但是可进化的可能更多
             foreach (var i in Database.SkillUpgradeSpeciality.Keys)
             {
+                if (evolvedCount >= 2) continue;
                 var baseSkillId = i.Item1;
                 var requireScenario = i.Item2;
                 var spec = Database.SkillUpgradeSpeciality[i];
                 // 如果不是对应剧本或没有可进化的基础技能的Hint
-                if (scenario != requireScenario || !skillmanager.TryGetValue(baseSkillId, out var _)) continue;
+                if (@event.data.chara_info.scenario_id != requireScenario || !skillmanager.TryGetValue(baseSkillId, out var _)) continue;
                 foreach (var j in spec.UpgradeSkills)
                 {
                     var upgradedSkillId = j.Key;
-                    if (j.Value.All(x => x.IsArchived(@event.data.chara_info, skills)))
+                    if (j.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(@event.data.chara_info, willLearnSkills))))
                     {
-                        var notUpgradedIndex = tips.FindIndex(x => x.Id == baseSkillId); // 天赋技能在tips中的位置
+                        var notUpgradedIndex = willLearnSkills.FindIndex(x => x.Id == baseSkillId); // 天赋技能在tips中的位置
                         if (notUpgradedIndex == -1) continue; // 如果没找到则说明已学会，不再需要
-                        var notUpgradedSkill = tips[notUpgradedIndex]; // 原本的天赋技能
+                        var notUpgradedSkill = willLearnSkills[notUpgradedIndex]; // 原本的天赋技能
 
                         var upgradedSkill = skillmanager[upgradedSkillId].Clone();
-                        upgradedSkill.Name = $"{notUpgradedSkill.Name}({I18N_Evolved})";
+                        upgradedSkill.Name = $"{notUpgradedSkill.Name}(剧本{I18N_Evolved})";
                         upgradedSkill.Cost = notUpgradedSkill.Cost;
 
                         var inferior = notUpgradedSkill.Inferior;
@@ -213,12 +187,14 @@ namespace UmamusumeResponseAnalyzer.Handler
                             }
                             inferior = inferior.Inferior;
                         }
-                        tips[notUpgradedIndex] = upgradedSkill;
+                        willLearnSkills[notUpgradedIndex] = upgradedSkill;
+                        evolvedCount += 1;
                     }
                     break;
                 }
             }
-            return allTalentSkillUpgradable;
+#endregion
+            return willLearnSkills;
         }
     }
 }
