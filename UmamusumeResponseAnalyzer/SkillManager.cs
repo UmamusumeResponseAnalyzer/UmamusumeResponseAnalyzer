@@ -39,7 +39,7 @@ namespace UmamusumeResponseAnalyzer
         /// 根据马的属性应用相性加成，改变技能的分数
         /// </summary>
         /// <param name="chara_info">@event.data.chara_info</param>
-        private static void ApplyProper(SkillData skill, Gallop.SingleModeChara chara_info)
+        internal static void ApplyProper(SkillData skill, Gallop.SingleModeChara chara_info)
         {
             // 仅在技能有触发条件时应用，假设通用技能分数固定不变
             if (skill.Propers.Length != 0)
@@ -234,6 +234,7 @@ namespace UmamusumeResponseAnalyzer
                         foreach (var upgradedSkillId in talent.UpgradeSkills.Keys)
                         {
                             var upgraded = SkillManagerGenerator.Default[upgradedSkillId].Clone();
+                            SkillManagerGenerator.ApplyProper(upgraded, chara_info);
                             upgraded.Cost = this[talent.SkillId].Cost;
                             upgraded.IsScenarioEvolution = false;
                             this[talent.SkillId].Upgrades.Add(upgraded);
@@ -252,6 +253,7 @@ namespace UmamusumeResponseAnalyzer
                         if (j.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(chara_info, willLearnSkills ?? []))))
                         {
                             var upgradedSkill = SkillManagerGenerator.Default[j.Key].Clone();
+                            SkillManagerGenerator.ApplyProper(upgradedSkill, chara_info);
                             upgradedSkill.Cost = list.First(x => x.Id == upgraded.BaseSkillId).Cost;
                             upgradedSkill.IsScenarioEvolution = true;
                             baseSkill.Upgrades.Add(upgradedSkill);
