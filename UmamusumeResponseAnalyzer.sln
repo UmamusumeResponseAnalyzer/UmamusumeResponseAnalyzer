@@ -20,9 +20,11 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = False
-		RESX_SaveFilesImmediatelyUponChange = False
+		RESX_SortFileContentOnSave = True
+		RESX_SaveFilesImmediatelyUponChange = True
 		SolutionGuid = {60F98C58-0C19-4F88-A3C0-42E7762E8082}
 		RESX_Rules = {"EnabledRules":["WhiteSpaceLead","WhiteSpaceTail","PunctuationTail"]}
+		RESX_NeutralResourcesLanguage = zh-Hans
+		RESX_ConfirmAddLanguageFile = True
 	EndGlobalSection
 EndGlobal

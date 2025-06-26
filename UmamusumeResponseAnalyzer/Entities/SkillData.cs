@@ -9,6 +9,9 @@ namespace UmamusumeResponseAnalyzer.Entities
 {
     public class SkillData
     {
+        private string translatedName = null!;
+        public bool? IsScenarioEvolution { get; set; } = null;
+        public List<SkillData> Upgrades { get; set; } = [];
         /// <summary>
         /// 上位技能(不包含进化技能)
         /// </summary>
@@ -21,6 +24,14 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// 技能名
         /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// 显示的技能名，比如翻译过的
+        /// </summary>
+        public string DisplayName
+        {
+            get => translatedName ?? Name;
+            set => translatedName = value;
+        }
         /// <summary>
         /// 技能ID
         /// </summary>
@@ -66,8 +77,8 @@ namespace UmamusumeResponseAnalyzer.Entities
         public SkillData Clone()
         {
             var clone = (SkillData)MemberwiseClone();
-            clone.Superior = Superior?.Clone();
-            clone.Inferior = Inferior?.Clone();
+            //clone.Superior = Superior?.Clone();
+            //clone.Inferior = Inferior?.Clone();
             return clone;
         }
     }

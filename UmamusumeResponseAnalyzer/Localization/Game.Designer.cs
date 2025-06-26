@@ -22,7 +22,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Game {
+    public class Game {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("UmamusumeResponseAnalyzer.Localization.Game", typeof(Game).Assembly);
@@ -51,7 +51,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         ///   使用此强类型资源类的所有资源查找执行重写。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Blue 的本地化字符串。
         /// </summary>
-        internal static string I18N_Blue {
+        public static string I18N_Blue {
             get {
                 return ResourceManager.GetString("I18N_Blue", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Drt 的本地化字符串。
         /// </summary>
-        internal static string I18N_Dirt {
+        public static string I18N_Dirt {
             get {
                 return ResourceManager.GetString("I18N_Dirt", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Grs 的本地化字符串。
         /// </summary>
-        internal static string I18N_Grass {
+        public static string I18N_Grass {
             get {
                 return ResourceManager.GetString("I18N_Grass", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Lng 的本地化字符串。
         /// </summary>
-        internal static string I18N_Long {
+        public static string I18N_Long {
             get {
                 return ResourceManager.GetString("I18N_Long", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Mdl 的本地化字符串。
         /// </summary>
-        internal static string I18N_Middle {
+        public static string I18N_Middle {
             get {
                 return ResourceManager.GetString("I18N_Middle", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Mil 的本地化字符串。
         /// </summary>
-        internal static string I18N_Mile {
+        public static string I18N_Mile {
             get {
                 return ResourceManager.GetString("I18N_Mile", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Month 的本地化字符串。
         /// </summary>
-        internal static string I18N_Month {
+        public static string I18N_Month {
             get {
                 return ResourceManager.GetString("I18N_Month", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Bad 的本地化字符串。
         /// </summary>
-        internal static string I18N_MotivationBad {
+        public static string I18N_MotivationBad {
             get {
                 return ResourceManager.GetString("I18N_MotivationBad", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Best 的本地化字符串。
         /// </summary>
-        internal static string I18N_MotivationBest {
+        public static string I18N_MotivationBest {
             get {
                 return ResourceManager.GetString("I18N_MotivationBest", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Good 的本地化字符串。
         /// </summary>
-        internal static string I18N_MotivationGood {
+        public static string I18N_MotivationGood {
             get {
                 return ResourceManager.GetString("I18N_MotivationGood", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Normal 的本地化字符串。
         /// </summary>
-        internal static string I18N_MotivationNormal {
+        public static string I18N_MotivationNormal {
             get {
                 return ResourceManager.GetString("I18N_MotivationNormal", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Worst 的本地化字符串。
         /// </summary>
-        internal static string I18N_MotivationWorst {
+        public static string I18N_MotivationWorst {
             get {
                 return ResourceManager.GetString("I18N_MotivationWorst", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 逃 的本地化字符串。
         /// </summary>
-        internal static string I18N_Nige {
+        public static string I18N_Nige {
             get {
                 return ResourceManager.GetString("I18N_Nige", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Nuts 的本地化字符串。
         /// </summary>
-        internal static string I18N_Nuts {
+        public static string I18N_Nuts {
             get {
                 return ResourceManager.GetString("I18N_Nuts", resourceCulture);
             }
@@ -189,7 +189,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Nt 的本地化字符串。
         /// </summary>
-        internal static string I18N_NutsSimple {
+        public static string I18N_NutsSimple {
             get {
                 return ResourceManager.GetString("I18N_NutsSimple", resourceCulture);
             }
@@ -198,7 +198,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 追 的本地化字符串。
         /// </summary>
-        internal static string I18N_Oikomi {
+        public static string I18N_Oikomi {
             get {
                 return ResourceManager.GetString("I18N_Oikomi", resourceCulture);
             }
@@ -207,7 +207,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Power 的本地化字符串。
         /// </summary>
-        internal static string I18N_Power {
+        public static string I18N_Power {
             get {
                 return ResourceManager.GetString("I18N_Power", resourceCulture);
             }
@@ -216,7 +216,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Pw 的本地化字符串。
         /// </summary>
-        internal static string I18N_PowerSimple {
+        public static string I18N_PowerSimple {
             get {
                 return ResourceManager.GetString("I18N_PowerSimple", resourceCulture);
             }
@@ -225,7 +225,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Proper 的本地化字符串。
         /// </summary>
-        internal static string I18N_Proper {
+        public static string I18N_Proper {
             get {
                 return ResourceManager.GetString("I18N_Proper", resourceCulture);
             }
@@ -234,7 +234,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Red 的本地化字符串。
         /// </summary>
-        internal static string I18N_Red {
+        public static string I18N_Red {
             get {
                 return ResourceManager.GetString("I18N_Red", resourceCulture);
             }
@@ -243,7 +243,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 差 的本地化字符串。
         /// </summary>
-        internal static string I18N_Sashi {
+        public static string I18N_Sashi {
             get {
                 return ResourceManager.GetString("I18N_Sashi", resourceCulture);
             }
@@ -252,7 +252,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 先 的本地化字符串。
         /// </summary>
-        internal static string I18N_Senko {
+        public static string I18N_Senko {
             get {
                 return ResourceManager.GetString("I18N_Senko", resourceCulture);
             }
@@ -261,7 +261,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Srt 的本地化字符串。
         /// </summary>
-        internal static string I18N_Short {
+        public static string I18N_Short {
             get {
                 return ResourceManager.GetString("I18N_Short", resourceCulture);
             }
@@ -270,7 +270,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Speed 的本地化字符串。
         /// </summary>
-        internal static string I18N_Speed {
+        public static string I18N_Speed {
             get {
                 return ResourceManager.GetString("I18N_Speed", resourceCulture);
             }
@@ -279,7 +279,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Sp 的本地化字符串。
         /// </summary>
-        internal static string I18N_SpeedSimple {
+        public static string I18N_SpeedSimple {
             get {
                 return ResourceManager.GetString("I18N_SpeedSimple", resourceCulture);
             }
@@ -288,7 +288,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Stamina 的本地化字符串。
         /// </summary>
-        internal static string I18N_Stamina {
+        public static string I18N_Stamina {
             get {
                 return ResourceManager.GetString("I18N_Stamina", resourceCulture);
             }
@@ -297,7 +297,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 St 的本地化字符串。
         /// </summary>
-        internal static string I18N_StaminaSimple {
+        public static string I18N_StaminaSimple {
             get {
                 return ResourceManager.GetString("I18N_StaminaSimple", resourceCulture);
             }
@@ -306,7 +306,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Stat 的本地化字符串。
         /// </summary>
-        internal static string I18N_Stat {
+        public static string I18N_Stat {
             get {
                 return ResourceManager.GetString("I18N_Stat", resourceCulture);
             }
@@ -315,7 +315,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 St 的本地化字符串。
         /// </summary>
-        internal static string I18N_StatSimple {
+        public static string I18N_StatSimple {
             get {
                 return ResourceManager.GetString("I18N_StatSimple", resourceCulture);
             }
@@ -324,7 +324,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Vital 的本地化字符串。
         /// </summary>
-        internal static string I18N_Vital {
+        public static string I18N_Vital {
             get {
                 return ResourceManager.GetString("I18N_Vital", resourceCulture);
             }
@@ -333,7 +333,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Vt 的本地化字符串。
         /// </summary>
-        internal static string I18N_VitalSimple {
+        public static string I18N_VitalSimple {
             get {
                 return ResourceManager.GetString("I18N_VitalSimple", resourceCulture);
             }
@@ -342,7 +342,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Wiz 的本地化字符串。
         /// </summary>
-        internal static string I18N_Wiz {
+        public static string I18N_Wiz {
             get {
                 return ResourceManager.GetString("I18N_Wiz", resourceCulture);
             }
@@ -351,7 +351,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Wz 的本地化字符串。
         /// </summary>
-        internal static string I18N_WizSimple {
+        public static string I18N_WizSimple {
             get {
                 return ResourceManager.GetString("I18N_WizSimple", resourceCulture);
             }
@@ -360,7 +360,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Year 的本地化字符串。
         /// </summary>
-        internal static string I18N_Year {
+        public static string I18N_Year {
             get {
                 return ResourceManager.GetString("I18N_Year", resourceCulture);
             }
@@ -369,7 +369,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         /// <summary>
         ///   查找类似 Yellow 的本地化字符串。
         /// </summary>
-        internal static string I18N_Yellow {
+        public static string I18N_Yellow {
             get {
                 return ResourceManager.GetString("I18N_Yellow", resourceCulture);
             }

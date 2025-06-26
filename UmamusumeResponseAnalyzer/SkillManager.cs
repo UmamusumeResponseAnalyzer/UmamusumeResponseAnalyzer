@@ -2,7 +2,7 @@
 
 namespace UmamusumeResponseAnalyzer
 {
-    public class SkillManagerGenerator(IEnumerable<SkillData> list)
+    public class SkillManagerGenerator()
     {
         public static SkillManager Default;
         /// <summary>
@@ -102,50 +102,73 @@ namespace UmamusumeResponseAnalyzer
         }
         public SkillManager Apply(Gallop.SingleModeChara chara_info)
         {
-            var skills = new List<SkillData>(list.Select(x => x.Clone()));
-            foreach (var skill in skills)
+            var tips = chara_info.skill_tips_array.SelectMany(x => Default[(x.group_id, x.rarity)])
+                .Select(x => x.Clone())
+                .Where(x => x.Rate > 0)
+                .ToList();
+            //添加天赋技能
+            if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))
             {
-                // 同组技能
-                var group = skills.Where(x => x.GroupId == skill.GroupId);
-                if (group.Any())
+                foreach (var talent in talents.Where(x => x.Rank <= chara_info.talent_level))
                 {
-                    // 同稀有度的上位技能(双圈白)
-                    var normalSuperior = group.FirstOrDefault(x => x.Rarity == skill.Rarity && x.Rate == skill.Rate + 1);
-                    // 高一级稀有度的上位技能(金)
-                    var rareSuperior = group.FirstOrDefault(x => x.Rarity == skill.Rarity + 1 && x.Rate == skill.Rate + 1);
-                    if (normalSuperior != null && chara_info.skill_tips_array.Any(x => x.group_id == normalSuperior.GroupId && x.rarity == normalSuperior.Rarity))
-                        skill.Superior = normalSuperior;
-                    else if (rareSuperior != null && chara_info.skill_tips_array.Any(x => x.group_id == rareSuperior.GroupId && x.rarity == rareSuperior.Rarity))
-                        skill.Superior = rareSuperior;
-
-                    // 同稀有度的下位技能(单圈白)
-                    var normalInferior = group.FirstOrDefault(x => x.Rarity == skill.Rarity && x.Rate == skill.Rate - 1);
-                    // 低一级稀有度的下位技能(白/双圈白)
-                    var lowerInferior = group.FirstOrDefault(x => x.Rarity == skill.Rarity - 1 && x.Rate == skill.Rate - 1);
-                    if (normalInferior != null)
-                        skill.Inferior = normalInferior;
-                    else if (lowerInferior != null)
-                        skill.Inferior = lowerInferior;
+                    if (!tips.Any(x => x.Id == talent.SkillId) && !chara_info.skill_array.Any(y => y.skill_id == talent.SkillId))
+                    {
+                        tips.Add(Default[talent.SkillId].Clone());
+                    }
                 }
             }
-            foreach (var skill in skills.OrderBy(x => x.Rarity).OrderBy(x => x.Rate))
+            foreach (var learned in chara_info.skill_array)
+            {
+                tips.Add(Default[learned.skill_id].Clone());
+            }
+            //添加上位技能缺少的下位技能（为方便计算切者技能点）
+            foreach (var group in tips.GroupBy(x => x.GroupId))
+            {
+                var additionalSkills = Default.GetAllByGroupId(group.Key)
+                    .Where(x => x.Rarity < group.Max(y => y.Rarity) || x.Rate < group.Max(y => y.Rate))
+                    .Where(x => x.Rate > 0);
+                var ids = additionalSkills.ExceptBy(tips.Select(x => x.Id), x => x.Id);
+                tips.AddRange(ids.Select(x => x.Clone()));
+            }
+            foreach (var skill in tips)
+            {
+                // 同稀有度的上位技能(双圈白)
+                var normalSuperior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity && x.Rate == skill.Rate + 1);
+                // 高一级稀有度的上位技能(金)
+                var rareSuperior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity + 1 && x.Rate == skill.Rate + 1);
+                if (normalSuperior != null)
+                    skill.Superior = normalSuperior;
+                else if (rareSuperior != null)
+                    skill.Superior = rareSuperior;
+
+                // 同稀有度的下位技能(单圈白)
+                var normalInferior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity && x.Rate == skill.Rate - 1);
+                // 低一级稀有度的下位技能(白/双圈白)
+                var lowerInferior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity - 1 && x.Rate == skill.Rate - 1);
+                if (normalInferior != null)
+                    skill.Inferior = normalInferior;
+                else if (lowerInferior != null)
+                    skill.Inferior = lowerInferior;
+            }
+            foreach (var i in tips)
             {
                 // 计算折扣
-                ApplyHint(skill, chara_info, chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == skill.GroupId && x.rarity == skill.Rarity)?.level ?? 0);
+                ApplyHint(i, chara_info, chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == i.GroupId && x.rarity == i.Rarity)?.level ?? 0);
                 // 计算分数
-                ApplyProper(skill, chara_info);
+                ApplyProper(i, chara_info);
             }
-            foreach (var skill in skills.OrderByDescending(x => x.Rate))
+            foreach (var skill in tips.OrderByDescending(x => x.Rate))
             {
                 var inferior = skill.Inferior;
                 while (inferior != null)
                 {
-                    // 学了
+                    // 学了扣掉分数不然会加两次
                     if (chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
                     {
                         skill.Grade -= inferior.Grade;
                         break;
                     }
+                    // 否则把价格加上去
                     else
                     {
                         skill.Cost += inferior.Cost;
@@ -153,20 +176,11 @@ namespace UmamusumeResponseAnalyzer
                     inferior = inferior.Inferior;
                 }
             }
-            return new SkillManager(skills);
+            return new SkillManager(tips);
         }
     }
-    public class SkillManager(IEnumerable<SkillData> list)
+    public class SkillManager(List<SkillData> list)
     {
-        readonly Dictionary<int, SkillData> idMap = list.ToDictionary(x => x.Id, x => x);
-        readonly Dictionary<(int GroupId, int Rarity, int Rate), SkillData> rateMap = list.ToDictionary(x => (x.GroupId, x.Rarity, x.Rate), x => x);
-        readonly Dictionary<(int GroupId, int Rarity), SkillData[]> rarityMap = list.GroupBy(x => (x.GroupId, x.Rarity)).ToDictionary(x => x.Key, x => x.ToArray());
-
-        public SkillData this[(int GroupId, int Rarity, int Rate) tuple]
-        {
-            get => rateMap.TryGetValue(tuple, out var value) ? value : null!;
-            set => rateMap[tuple] = value;
-        }
         /// <summary>
         /// 根据GroupId和Rarity获得所有同类技能(通常是单圈双圈绿)
         /// </summary>
@@ -174,21 +188,83 @@ namespace UmamusumeResponseAnalyzer
         /// <returns>所有具有相同GroupId、Rarity的技能</returns>
         public SkillData[] this[(int GroupId, int Rarity) tuple]
         {
-            get => rarityMap.TryGetValue(tuple, out var value) ? value : null!;
-            set => rarityMap[tuple] = value;
+            get
+            {
+                return [.. list.Where(x => x.GroupId == tuple.GroupId && x.Rarity == tuple.Rarity)];
+            }
         }
         public SkillData this[int Id]
         {
-            get => idMap.TryGetValue(Id, out var value) ? value : null!;
-            set => idMap[Id] = value;
+            get
+            {
+                return list.FirstOrDefault(x => x.Id == Id)!;
+            }
+            set
+            {
+                var skill = list.FirstOrDefault(x => x.Id == Id);
+                if (skill == default)
+                {
+                    if (value != default)
+                        list.Add(value);
+                }
+                else
+                {
+                    skill = value;
+                }
+            }
         }
-        public bool TryGetValue(int id, out SkillData? value) => idMap.TryGetValue(id, out value);
         public (int GroupId, int Rarity, int Rate) Deconstruction(int Id) => this[Id].Deconstruction();
         /// <summary>
         /// 获得某个技能的所有子技能(金、双圈、单圈、×)
         /// </summary>
         /// <param name="groupId">技能的GroupId</param>
         /// <returns>所有具有相同GroupId的技能</returns>
-        public SkillData[] GetAllByGroupId(int groupId) => idMap.Where(x => x.Value.GroupId == groupId).Select(x => x.Value).ToArray();
+        public SkillData[] GetAllByGroupId(int groupId) => [.. list.Where(x => x.GroupId == groupId)];
+        public SkillData? GetSkillByName(string name) => list.FirstOrDefault(x => x.Name == name);
+
+        public void Evolve(Gallop.SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
+        {
+            list.ForEach(x => x.Upgrades.Clear());
+            if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))
+            {
+                foreach (var talent in talents.Where(x => x.Rank <= chara_info.talent_level))
+                {
+                    if (talent.CanUpgrade(chara_info, out _, willLearnSkills ?? []))
+                    {
+                        foreach (var upgradedSkillId in talent.UpgradeSkills.Keys)
+                        {
+                            var upgraded = SkillManagerGenerator.Default[upgradedSkillId].Clone();
+                            upgraded.Cost = this[talent.SkillId].Cost;
+                            upgraded.IsScenarioEvolution = false;
+                            this[talent.SkillId].Upgrades.Add(upgraded);
+                        }
+                    }
+                }
+            }
+            //添加剧本进化
+            foreach (var upgraded in Database.SkillUpgradeSpeciality.Values)
+            {
+                var baseSkill = list.FirstOrDefault(x => x.Id == upgraded.BaseSkillId);
+                if (baseSkill != default && chara_info.scenario_id == upgraded.ScenarioId)
+                {
+                    foreach (var j in upgraded.UpgradeSkills)
+                    {
+                        if (j.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(chara_info, willLearnSkills ?? []))))
+                        {
+                            var upgradedSkill = SkillManagerGenerator.Default[j.Key].Clone();
+                            upgradedSkill.Cost = list.First(x => x.Id == upgraded.BaseSkillId).Cost;
+                            upgradedSkill.IsScenarioEvolution = true;
+                            baseSkill.Upgrades.Add(upgradedSkill);
+                        }
+                    }
+                }
+            }
+        }
+        public void RemoveLearned(Gallop.SingleModeChara chara_info)
+        {
+            list.RemoveAll(x => chara_info.skill_array.Any(y => y.skill_id == x.Id));
+        }
+        public IEnumerator<SkillData> GetEnumerator() => list.GetEnumerator();
+        public List<SkillData> GetSkills() => list;
     }
 }

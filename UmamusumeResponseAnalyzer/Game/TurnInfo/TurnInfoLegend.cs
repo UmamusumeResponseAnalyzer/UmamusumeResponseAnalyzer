@@ -8,7 +8,7 @@ using UmamusumeResponseAnalyzer.Localization.CommandInfo;
 
 namespace UmamusumeResponseAnalyzer.Game.TurnInfo
 {
-    internal class TurnInfoLegend : TurnInfo
+    public class TurnInfoLegend : TurnInfo
     {
         /// command_type 4 休息？
         /// command_type 7 比赛？

@@ -1,13 +1,10 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Spectre.Console;
+﻿using Spectre.Console;
 using System.Diagnostics;
-using System.Net;
+using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using UmamusumeResponseAnalyzer.Entities;
-using UmamusumeResponseAnalyzer.LocalizedLayout;
+using UmamusumeResponseAnalyzer.Plugin;
 using static UmamusumeResponseAnalyzer.Localization.DMM;
 using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 using static UmamusumeResponseAnalyzer.Localization.NetFilter;
@@ -16,43 +13,23 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
-        static bool runInCmder = false;
-        static System.Globalization.CultureInfo defaultUICulture = null!;
+        public static bool Started => Server.IsRunning;
         public static async Task Main(string[] args)
         {
-            defaultUICulture = System.Globalization.CultureInfo.CurrentUICulture;
+            var handlerRoutine = new ConsoleHelper.HandlerRoutine(ConsoleHelper.ConsoleCtrlCheck);
+            GC.KeepAlive(handlerRoutine);
+            ConsoleHelper.SetConsoleCtrlHandler(handlerRoutine, true);
             ConsoleHelper.DisableQuickEditMode();
             Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
-            //加载设置
-            Config.Initialize();
+            Directory.SetCurrentDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             await ParseArguments(args);
 
-            if (!AnsiConsole.Profile.Capabilities.Ansi && !runInCmder)
-            { //不支持ANSI Escape Sequences，用Cmder打开
-                var cmderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "cmder");
-                if (!Directory.Exists(cmderPath))
-                    await ResourceUpdater.DownloadCmder(cmderPath);
-                using var Proc = new Process();
-                var StartInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(cmderPath, "Cmder.exe"),
-                    Arguments = $"/start \"{Environment.CurrentDirectory}\" /task URA",
-                    CreateNoWindow = false,
-                    UseShellExecute = true
-                };
-                Proc.StartInfo = StartInfo;
-                Proc.Start();
-                Proc.WaitForExit();
-                Environment.Exit(0);
-            }
+            Config.Initialize();
+            var initDbTask = Database.Initialize();
+            var initPluginTask = Task.Run(PluginManager.Init);
 
-            if (AnsiConsole.Console.Profile.Width < RecommendTerminalSize.Current.Width ||
-                AnsiConsole.Console.Profile.Height < RecommendTerminalSize.Current.Height)
-            {
-                AnsiConsole.WriteLine(I18N_ConsoleSizeSmall, RecommendTerminalSize.Current.Width, RecommendTerminalSize.Current.Height);
-            }
             var prompt = string.Empty;
             do
             {
@@ -60,60 +37,76 @@ namespace UmamusumeResponseAnalyzer
             }
             while (prompt != I18N_Start); //如果不是启动则重新显示主菜单
 
-            Database.Initialize(); //初始化马娘相关数据
+            Task.WaitAll(initDbTask, initPluginTask); //等待数据库初始化完成
             Server.Start(); //启动HTTP服务器
+            Task.WaitAll([.. PluginManager.LoadedPlugins.Select(x => Task.Run(x.Initialize))]);
 
-            if (Config.Get(Localization.Config.I18N_EnableNetFilter))
+            if (Config.NetFilter.Enable)
                 await NetFilter.Enable();
             //如果存在DMM的token文件则启用直接登录功能
-            if (File.Exists(DMM.DMM_CONFIG_FILEPATH) && Config.Get(Localization.Config.I18N_DMMLaunch) && DMM.Accounts.Count != 0)
+            if (Config.DMM.Enable && Config.DMM.Accounts.Count != 0)
             {
-                if (DMM.Accounts.Count == 1)
+                if (Config.DMM.Accounts.Count == 1)
                 {
-                    DMM.Accounts[0].RunUmamusume();
+                    await DMM.RunUmamusume(Config.DMM.Accounts[0]);
                 }
                 else
                 {
                     prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
                         .Title(I18N_MultipleAccountsFound)
-                        .AddChoices(DMM.Accounts.Select(x => x.Name))
+                        .WrapAround(true)
+                        .AddChoices(Config.DMM.Accounts.Select(x => x.Name))
                         .AddChoices([I18N_LaunchAll, I18N_Cancel]));
                     if (prompt == I18N_LaunchAll)
                     {
                         DMM.IgnoreExistProcess = true;
-                        foreach (var account in DMM.Accounts)
-                            account.RunUmamusume();
+                        foreach (var account in Config.DMM.Accounts)
+                            await DMM.RunUmamusume(account);
                     }
                     else if (prompt == I18N_Cancel)
                     {
                     }
                     else
                     {
-                        DMM.Accounts.Find(x => x.Name == prompt)?.RunUmamusume();
+                        var account = Config.DMM.Accounts.Find(x => x.Name == prompt);
+                        if (account != default)
+                        {
+                            await DMM.RunUmamusume(account);
+                        }
                     }
                 }
             }
 
+            for (var i = 0; i < 30; i++)
+            {
+                if (Server.IsRunning) break;
+                await Task.Delay(100);
+            }
             if (!Server.IsRunning)
             {
                 AnsiConsole.WriteLine(I18N_LaunchFail);
                 Console.ReadLine();
+                Environment.Exit(1);
             }
-            else
+
+            AnsiConsole.MarkupLine(I18N_Start_Started);
+            var _closingEvent = new AutoResetEvent(false);
+            Console.CancelKeyPress += (_, _) =>
             {
-                AnsiConsole.MarkupLine(I18N_Start_Started);
-                var _closingEvent = new AutoResetEvent(false);
-                Console.CancelKeyPress += ((s, a) =>
+                Server.Stop();
+                foreach (var plugin in PluginManager.LoadedPlugins)
                 {
-                    _closingEvent.Set();
-                });
-                _closingEvent.WaitOne();
-            }
+                    plugin.Dispose();
+                }
+                _closingEvent.Set();
+            };
+            _closingEvent.WaitOne();
         }
         static async Task<string> ShowMenu()
         {
             var selections = new SelectionPrompt<string>()
                 .Title(I18N_Instruction)
+                .WrapAround(true)
                 .AddChoices(
                 [
                     I18N_Start,
@@ -126,7 +119,7 @@ namespace UmamusumeResponseAnalyzer
             // Windows限定功能，其他平台不显示
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (Config.Get(Localization.Config.I18N_EnableNetFilter))
+                if (Config.NetFilter.Enable)
                 {
                     if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                     {
@@ -138,106 +131,13 @@ namespace UmamusumeResponseAnalyzer
                         selections.AddChoice(I18N_NFDriver_Install);
                     }
                 }
-                if (UraCoreHelper.GamePaths.Count != 0)
-                {
-                    selections.AddChoice(I18N_InstallUraCore);
-                }
-            }
-            // 仅在启用本地化设置时显示相关设置
-            if (Config.Get(Localization.Config.I18N_LoadLocalizedData) && (string.IsNullOrEmpty(Config.Get<string>(Localization.Config.I18N_LocalizedDataPath)) || (!string.IsNullOrEmpty(Config.Get<string>(Localization.Config.I18N_LocalizedDataPath)) && !File.Exists(Config.Get<string>(Localization.Config.I18N_LocalizedDataPath)))))
-            {
-                selections.AddChoice(I18N_SetLocalizedDataFilePath);
-            }
-            // 仅在启用跳过DMM启动时显示相关设置
-            if (Config.Get(Localization.Config.I18N_DMMLaunch))
-            {
-                selections.AddChoice(I18N_ManageDMMService);
+                selections.AddChoice(I18N_InstallUraCore);
             }
             #endregion
             var prompt = AnsiConsole.Prompt(selections);
             if (prompt == I18N_Options)
             {
-                var multiSelection = new MultiSelectionPrompt<string>()
-                    .Title(I18N_Options)
-                    .Mode(SelectionMode.Leaf)
-                    .PageSize(25)
-                    .InstructionsText(I18N_Options_Instruction);
-
-                // 根据预设值添加选项
-                foreach (var i in Config.ConfigSet)
-                {
-                    multiSelection.AddChoiceGroup(i.Key, i.Value.Where(x => x.Visiable).Select(x => x.Key));
-                }
-                // 复原配置文件的选择情况
-                foreach (var i in Config.Configuration)
-                {
-                    if (i.Value.Value.GetType() == typeof(bool) && (bool)i.Value.Value)
-                    {
-                        multiSelection.Select(i.Key);
-                    }
-                }
-                // 如果配置文件中的某一组全被选中，则也选中对应的组
-                foreach (var i in Config.ConfigSet)
-                {
-                    var visiableItems = Config.Configuration.Where(x => x.Value.Visiable);
-                    var visiableConfig = i.Value.Where(x => x.Visiable);
-                    if (i.Value.Any() && visiableItems.Where(x => x.Value.Value.GetType() == typeof(bool) && (bool)x.Value.Value).Select(x => x.Key).Intersect(i.Value.Select(x => x.Key)).Count() == visiableConfig.Count())
-                    {
-                        multiSelection.Select(i.Key);
-                    }
-                }
-
-                // 进入设置前先保存之前的语言设置
-                var previousLanguage = string.Empty;
-                var availableLanguages = Config.ConfigSet.First(x => Config.LanguageSectionKeys.Contains(x.Key)).Value.Select(x => x.Key);
-                var languages = availableLanguages.Select(x => Config.Configuration[x]);
-                var languagesEnabled = languages.Where(x => Config.Get(x.Key));
-                previousLanguage = languagesEnabled.First().Key;
-
-                var options = AnsiConsole.Prompt(multiSelection);
-                foreach (var i in Config.Configuration.Keys)
-                {
-                    if (Config.Get<object>(i)?.GetType() != typeof(bool))
-                        continue;
-                    Config.Set(i, options.Contains(i));
-                }
-
-                languages = availableLanguages.Select(x => Config.Configuration[x]);
-                languagesEnabled = languages.Where(x => Config.Get(x.Key));
-                var selectedLanguage = languagesEnabled.First();
-                if (selectedLanguage == default)
-                {
-                    Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
-                    Config.SaveConfigForLanguageChange();
-                    ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
-                    Config.LoadConfigForLanguageChange();
-                }
-                else if (languagesEnabled.Count() > 1)
-                {
-                    foreach (var i in languages)
-                    {
-                        Config.Set(i.Key, false);
-                    }
-                    Config.Set(Localization.Config.I18N_Language_AutoDetect, true);
-                    Config.SaveConfigForLanguageChange();
-                    ApplyCultureInfo(Localization.Config.I18N_Language_AutoDetect);
-                    Config.LoadConfigForLanguageChange();
-                    AnsiConsole.WriteLine(I18N_Options_MultipleLanguagesSelected);
-                    Thread.Sleep(3000);
-                }
-                else if (selectedLanguage.Key != previousLanguage)
-                {
-                    Config.SaveConfigForLanguageChange();
-                    ApplyCultureInfo(languages.First(x => Config.Get(x.Key)).Key);
-                    Config.LoadConfigForLanguageChange();
-                    //if (selectedLanguage.Key != Localization.Config.I18N_Language_AutoDetect)
-                    //{
-                    //    // 默认是true，所以不是自动检测的话就要再关掉
-                    //    Config.Set(Localization.Config.I18N_Language_AutoDetect, false);
-                    //}
-                }
-
-                Config.Save();
+                Config.Prompt();
             }
             else if (prompt == I18N_UpdateAssets)
             {
@@ -267,7 +167,10 @@ namespace UmamusumeResponseAnalyzer
                 Proc.Start();
                 Proc.WaitForExit();
                 if (File.Exists(nfapiPath) && File.Exists(nfdriverPath) && File.Exists(redirectorPath) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
-                    Config.Set(Localization.Config.I18N_EnableNetFilter, true);
+                {
+                    Config.NetFilter.Enable = true;
+                    Config.Save();
+                }
             }
             else if (prompt == I18N_NFDriver_Uninstall)
             {
@@ -283,162 +186,49 @@ namespace UmamusumeResponseAnalyzer
                 Proc.StartInfo = StartInfo;
                 Proc.Start();
                 Proc.WaitForExit();
-                Config.Set(Localization.Config.I18N_EnableNetFilter, false);
-            }
-            else if (prompt == I18N_ConfigProxyServer)
-            {
-                string host;
-                string port;
-                string username;
-                string password;
-                do
-                {
-                    host = AnsiConsole.Prompt(new TextPrompt<string>(I18N_ConfigProxyServer_AskHost).AllowEmpty());
-                    if (Uri.CheckHostName(host) == UriHostNameType.Dns)
-                        host = Dns.GetHostAddresses(host)[0].ToString();
-                    if (string.IsNullOrEmpty(host)) host = "127.0.0.1";
-                } while (!IPAddress.TryParse(host, out var _));
-                do
-                {
-                    port = AnsiConsole.Prompt(new TextPrompt<string>(I18N_ConfigProxyServer_AskPort).AllowEmpty());
-                    if (string.IsNullOrEmpty(port)) port = "1080";
-                } while (!int.TryParse(port, out var _));
-                Config.Set(Localization.Config.I18N_ProxyHost, host);
-                Config.Set(Localization.Config.I18N_ProxyPort, port);
-
-                var proxyType = string.Empty;
-                do
-                {
-                    proxyType = AnsiConsole.Ask<string>(I18N_ConfigProxyServer_AskType).ToLower();
-                } while (proxyType[0] is not 's' and not 'h');
-                Config.Set(Localization.Config.I18N_ProxyServerType, proxyType[0] == 'h' ? "http" : "socks");
-
-                if (proxyType[0] == 's' && AnsiConsole.Confirm(I18N_ConfigProxyServer_AskAuth, false))
-                {
-                    do
-                    {
-                        username = AnsiConsole.Ask<string>(I18N_ConfigProxyServer_AskAuthUsername);
-                    } while (string.IsNullOrEmpty(username));
-                    do
-                    {
-                        password = AnsiConsole.Prompt(new TextPrompt<string>(I18N_ConfigProxyServer_AskAuthPassword).Secret());
-                    } while (string.IsNullOrEmpty(password));
-                    Config.Set(Localization.Config.I18N_ProxyUsername, username);
-                    Config.Set(Localization.Config.I18N_ProxyPassword, password);
-                }
-                else
-                {
-                    Config.Set(Localization.Config.I18N_ProxyUsername, string.Empty);
-                    Config.Set(Localization.Config.I18N_ProxyPassword, string.Empty);
-                }
+                Config.NetFilter.Enable = false;
                 Config.Save();
             }
-            else if (prompt == I18N_InstallUraCore)
+            else if (prompt == I18N_InstallUraCore && UraCoreHelper.GamePaths.Count != 0)
             {
                 AnsiConsole.Clear();
-                var uraCorePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "ura-core.dll");
-                await ResourceUpdater.DownloadUraCore(uraCorePath);
+                var target = AnsiConsole.Prompt(new TextPrompt<string>("请选择想要安装的Mod: ").AddChoices(["umamusume-localify", "Hachimi"]).DefaultValue("Hachimi"));
                 AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundPaths, UraCoreHelper.GamePaths.Count);
 
                 foreach (var i in UraCoreHelper.GamePaths)
                 {
                     AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundAvailablePath, i);
-                    /// TODO
-                    /// 判断umamusume.exe.local是否存在
-                    ///     直接修改loadDll或者引导开启msgpackNotifier
-                    /// 否则
-                    ///     直接下载kimjio localify并安装（记得提醒安全风险）
-                    ///     或引导使用TLG（记得免责声明）
+                    var confirm = AnsiConsole.Prompt(new ConfirmationPrompt($"是否需要将{target}安装到{0}？该操作需要管理员权限。"));
+                    if (confirm)
+                    {
+                        using var proc = new Process();
+                        var startInfo = new ProcessStartInfo
+                        {
+                            FileName = Environment.ProcessPath,
+                            Arguments = "--enable-dll-redirection",
+                            CreateNoWindow = true,
+                            UseShellExecute = true,
+                            Verb = "runas"
+                        };
+                        proc.StartInfo = startInfo;
+                        proc.Start();
+                        proc.WaitForExit();
+
+                        if (proc.ExitCode == 0)
+                        {
+                            var url = target == "Hachimi"
+                                ? "https://assets.shuise.net/URA/Hachimi.zip"
+                                : "https://assets.shuise.net/URA/UmamusumeLocalify.zip";
+                            var client = new HttpClient();
+                            using var stream = await client.GetStreamAsync(url);
+                            using var archive = new ZipArchive(stream);
+                            archive.ExtractToDirectory(i, true);
+
+                            AnsiConsole.WriteLine(I18N_UraCoreHelper_InstallSuccess, i);
+                        }
+                    }
                 }
                 Console.ReadKey();
-            }
-            else if (prompt == I18N_SetLocalizedDataFilePath)
-            {
-                AnsiConsole.Clear();
-                AnsiConsole.MarkupLine(I18N_LocalizationData_FormatRequirement);
-                string path;
-                var valid = false;
-                do
-                {
-                    path = AnsiConsole.Prompt(new TextPrompt<string>(I18N_LocalizationData_InputPathPrompt));
-                    try
-                    {
-                        JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(path));
-                        valid = true;
-                    }
-                    catch (Exception)
-                    {
-                        AnsiConsole.WriteLine(I18N_LocalizationData_FileCorrupt);
-                        valid = false;
-                        continue;
-                    }
-                } while (!valid);
-                Config.Set(Localization.Config.I18N_LocalizedDataPath, path);
-                Config.Save();
-            }
-            else if (prompt == I18N_ManageDMMService)
-            {
-                string dmmSelected;
-                var dmmSelections = new List<string>([I18N_AddAccount, I18N_SetDeviceInfo, I18N_Cancel]);
-                foreach (var i in DMM.Accounts)
-                {
-                    dmmSelections = dmmSelections.Prepend(i.Name).ToList();
-                }
-                do
-                {
-                    dmmSelected = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                        .Title(I18N_DeleteAccountInstruction)
-                        .AddChoices(dmmSelections));
-
-                    if (dmmSelected == I18N_AddAccount)
-                    {
-                        var actauth = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputActauthPrompt));
-                        var savedataPath = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputSaveDataFilePathPrompt).AllowEmpty());
-                        var executablePath = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputSplitUmamusumeFilePathPrompt).AllowEmpty());
-                        var name = AnsiConsole.Prompt(new TextPrompt<string>(I18N_InputAccountCommentPrompt));
-
-                        var account = new DMM.DMMAccount
-                        {
-                            actauth = actauth,
-                            savedata_file_path = savedataPath,
-                            split_umamusume_file_path = executablePath,
-                            Name = name,
-                        };
-
-                        dmmSelections = dmmSelections.Prepend(name).ToList();
-                        AnsiConsole.Clear();
-                        DMM.Accounts.Add(account);
-                        DMM.Save();
-                    }
-                    else if (dmmSelected == I18N_SetDeviceInfo)
-                    {
-                        var macAddress = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputMacAddressPrompt, string.IsNullOrEmpty(DMM.mac_address) ? "无" : DMM.mac_address)).AllowEmpty());
-                        var hddSerial = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputHddSerialPrompt, string.IsNullOrEmpty(DMM.hdd_serial) ? "无" : DMM.hdd_serial)).AllowEmpty());
-                        var motherboard = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputMotherboardPrompt, string.IsNullOrEmpty(DMM.motherboard) ? "无" : DMM.motherboard)).AllowEmpty());
-                        var userOS = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputUserOsPrompt, string.IsNullOrEmpty(DMM.user_os) ? "无" : DMM.user_os)).AllowEmpty());
-                        var umamusumePath = AnsiConsole.Prompt(new TextPrompt<string>(string.Format(I18N_InputUmamusumeFilePathPrompt, string.IsNullOrEmpty(DMM.umamusume_file_path) ? "无" : DMM.umamusume_file_path)).AllowEmpty());
-
-                        if (!string.IsNullOrEmpty(macAddress)) DMM.mac_address = macAddress;
-                        if (!string.IsNullOrEmpty(hddSerial)) DMM.hdd_serial = hddSerial;
-                        if (!string.IsNullOrEmpty(motherboard)) DMM.motherboard = motherboard;
-                        if (!string.IsNullOrEmpty(userOS)) DMM.user_os = userOS;
-                        if (!string.IsNullOrEmpty(umamusumePath))
-                        {
-                            DMM.umamusume_file_path = umamusumePath.EndsWith("umamusume.exe")
-                                ? umamusumePath
-                                : Directory.GetFiles(umamusumePath, "umamusume.exe", SearchOption.AllDirectories).First();
-                        }
-
-                        AnsiConsole.Clear();
-                        DMM.Save();
-                    }
-                    else if (dmmSelected != I18N_Cancel)
-                    {
-                        DMM.Accounts.RemoveAt(DMM.Accounts.FindIndex(x => x.Name == dmmSelected));
-                        dmmSelections.Remove(dmmSelected);
-                        DMM.Save();
-                    }
-                } while (dmmSelected != I18N_Cancel);
             }
             AnsiConsole.Clear();
 
@@ -455,10 +245,9 @@ namespace UmamusumeResponseAnalyzer
                     {
                         switch (args[0])
                         {
-                            case "-v":
-                            case "--version":
+                            case "-v" or "--version":
                                 {
-                                    Console.Write(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+                                    Console.Write(Assembly.GetExecutingAssembly().GetName().Version);
                                     Environment.Exit(0);
                                     return;
                                 }
@@ -482,10 +271,17 @@ namespace UmamusumeResponseAnalyzer
                                     Environment.Exit(0);
                                     return;
                                 }
-                            case "--cmder":
+                            case "--enable-dll-redirection":
                                 {
-                                    runInCmder = true;
-                                    return;
+                                    UraCoreHelper.EnableDllRedirection();
+                                    _ = Task.Run(async () =>
+                                    {
+                                        await Task.Delay(3000);
+                                        Environment.Exit(Environment.ExitCode);
+                                    });
+                                    Console.ReadLine();
+                                    Environment.Exit(Environment.ExitCode);
+                                    break;
                                 }
                         }
                         return;
@@ -501,13 +297,7 @@ namespace UmamusumeResponseAnalyzer
                                 }
                             case "--update-data":
                                 {
-                                    System.IO.Compression.ZipFile.ExtractToDirectory(args[1], Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
-                                    return;
-                                }
-                            case "--get-dmm-onetime-token":
-                                {
-                                    Console.Write(await DMM.Accounts[int.Parse(args[1])].GetExecuteArgsAsync());
-                                    Environment.Exit(0);
+                                    ZipFile.ExtractToDirectory(args[1], Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
                                     return;
                                 }
                         }
@@ -515,28 +305,10 @@ namespace UmamusumeResponseAnalyzer
                     }
             }
         }
-        internal static void ApplyCultureInfo(string culture)
+        internal static void ApplyCultureInfo(LanguageConfig.Language culture)
         {
-            if (culture == Localization.Config.I18N_Language_AutoDetect)
-            {
-                Thread.CurrentThread.CurrentCulture = defaultUICulture;
-                Thread.CurrentThread.CurrentUICulture = defaultUICulture;
-            }
-            else if (culture == Localization.Config.I18N_Language_English)
-            {
-                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-            }
-            else if (culture == Localization.Config.I18N_Language_Japanese)
-            {
-                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("ja-JP");
-                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("ja-JP");
-            }
-            else if (culture == Localization.Config.I18N_Language_SimplifiedChinese)
-            {
-                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
-                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
-            }
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
+            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
             foreach (var i in Assembly.GetExecutingAssembly().GetTypes().Where(x => x.IsClass && x.Namespace?.StartsWith("UmamusumeResponseAnalyzer.Localization") == true))
             {
                 var rc = i?.GetField("resourceCulture", BindingFlags.NonPublic | BindingFlags.Static);
@@ -546,12 +318,13 @@ namespace UmamusumeResponseAnalyzer
         }
     }
 
-    /// <summary>
-    ///     Adapted from
-    ///     http://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
-    /// </summary>
     internal static partial class ConsoleHelper
     {
+        /// <summary>
+        ///     Adapted from
+        ///     http://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
+        /// </summary>
+        #region Disable Quick Edit Mode
         private const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
         private const uint ENABLE_MOUSE_INPUT = 0x0010;
 
@@ -589,5 +362,42 @@ namespace UmamusumeResponseAnalyzer
 
             return true;
         }
+        #endregion
+
+        /// <summary>
+        /// https://danielkaes.wordpress.com/2009/06/30/how-to-catch-%E2%80%9Ckill%E2%80%9D-events-in-a-c-console-application/
+        /// </summary>
+        #region Dispose When Click X
+        /// <summary>
+        /// This function sets the handler for kill events.
+        /// </summary>
+        /// <param name="Handler"></param>
+        /// <param name="Add"></param>
+        /// <returns></returns>
+        [DllImport("Kernel32")]
+        internal static extern bool SetConsoleCtrlHandler(HandlerRoutine Handler, bool Add);
+
+        //delegate type to be used of the handler routine
+        internal delegate bool HandlerRoutine(CtrlTypes CtrlType);
+
+        // control messages
+        internal enum CtrlTypes
+        {
+            CTRL_C_EVENT = 0,
+            CTRL_BREAK_EVENT,
+            CTRL_CLOSE_EVENT,
+            CTRL_LOGOFF_EVENT = 5,
+            CTRL_SHUTDOWN_EVENT
+        }
+        internal static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+        {
+            Server.Stop();
+            foreach (var plugin in PluginManager.LoadedPlugins)
+            {
+                plugin.Dispose();
+            }
+            return true;
+        }
+        #endregion
     }
 }

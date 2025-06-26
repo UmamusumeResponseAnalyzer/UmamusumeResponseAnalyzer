@@ -1,33 +1,18 @@
 ﻿using Microsoft.Win32;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class UraCoreHelper
     {
-        public static readonly string[] uraCoreHashs =
-        {
-            "120046C0354DCF01C3B2EC71B99ED766DD90D87E49FBDECF3CCCDCDC43DDBD98", //1.2.4
-            "9CF7F9F8CE0769F79F9446917DE451E15D1E7B14461142A32F19ECC10BDCDCC3", //1.2.3
-            "97E1BD395E24DB2D6B67524871F67FAA32F03578433A21884366531974177109", //1.2.2
-            "3E781DE5D6CF4F0DAEC92A48C542A17631B001E89F3B8B91A7EA324AC208A4A3", //1.2.1
-            "C41770D8F0A2C8B0A437EC5585A9E8C8D98D4C4CEA396ABE49342168263BE075", //1.2.0
-            "195028C53FB1586987A9A981D948FF47521D5249DC7C3D04252CA5751CA7DBBD", //1.1.0
-            "30FD85DB47ADCA52093CB4D4C14F398874321A8EAA1CEE4A408CED4113D66930", //1.0.0
-        };
-        private static List<string> gamePaths = new();
+        private static List<string> gamePaths = [];
         public static List<string> GamePaths
         {
             get
             {
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || gamePaths.Any()) return gamePaths;
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || gamePaths.Count != 0) return gamePaths;
                 var _gamePaths = new List<string>();
                 try
                 {
@@ -88,37 +73,44 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
                 catch { }
-                _gamePaths = _gamePaths.Distinct().ToList();
-                foreach (var i in _gamePaths)
-                {
-                    var executableFilePath = Path.Combine(i, "umamusume.exe");
-                    var modulePath = Path.Combine(i, "version.dll");
-                    var compatiableModulePath = Path.Combine(i, "winhttp.dll");
-                    if (File.Exists(executableFilePath))
-                    {
-                        if (!File.Exists(modulePath) && !File.Exists(compatiableModulePath))
-                        {
-                            gamePaths.Add(i);
-                        }
-                        else if (File.Exists(compatiableModulePath))
-                        {
-                            var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(compatiableModulePath)));
-                            if (!uraCoreHashs.Contains(hash))
-                                gamePaths.Add(i);
-                        }
-                        else if (File.Exists(modulePath))
-                        {
-                            var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(modulePath)));
-                            if (uraCoreHashs.First() != hash || !uraCoreHashs.Contains(hash))
-                                gamePaths.Add(i);
-                        }
-                    }
-                }
+                _gamePaths = [.. _gamePaths.Distinct()];
                 return gamePaths;
             }
             set
             {
                 gamePaths = value;
+            }
+        }
+        public static void EnableDllRedirection()
+        {
+            using var registry = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options", true);
+            if (registry == null)
+            {
+                AnsiConsole.WriteLine("打开注册表失败，请手动操作：https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-redirection#optional-configure-the-registry");
+                Thread.Sleep(int.MaxValue);
+                return;
+            }
+            if(registry.GetValue("DevOverrideEnable") is int current and not 1)
+            {
+                var registryCaution = new ConfirmationPrompt(@"该行为具有一定风险，将注册表HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\DevOverrideEnable的值改为1。
+请仔细阅读https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-redirection 了解其风险后再做决定，我们不对此负责。");
+                if (AnsiConsole.Prompt(registryCaution))
+                {
+                    registry.SetValue("DevOverrideEnable", 1, RegistryValueKind.DWord);
+                    if (registry.GetValue("DevOverrideEnable") is int value && value == 1)
+                    {
+                        AnsiConsole.WriteLine("已启用DLL重定向，请手动重启Windows使其生效。");
+                    }
+                    else
+                    {
+                        AnsiConsole.WriteLine("注册表启用DLL重定向失败，请手动检查。");
+                        Environment.ExitCode = 1;
+                    }
+                }
+            }
+            else
+            {
+                AnsiConsole.WriteLine("注册表已启用DLL重定向，将在三秒后自动关闭。没有做任何改动。");
             }
         }
     }

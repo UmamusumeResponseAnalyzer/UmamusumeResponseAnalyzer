@@ -117,109 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="I18N_DisableSelectIndex" xml:space="preserve">
-    <value>Hide SelectIndex</value>
+  <data name="Return" xml:space="preserve">
+    <value>return</value>
   </data>
-  <data name="I18N_DMMLaunch" xml:space="preserve">
-    <value>Skip DMM to start the game</value>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
   </data>
-  <data name="I18N_EnableNetFilter" xml:space="preserve">
-    <value>Enable game acceleration feature</value>
-  </data>
-  <data name="I18N_Events" xml:space="preserve">
-    <value>Events</value>
-  </data>
-  <data name="I18N_ForceUseGithubToUpdate" xml:space="preserve">
-    <value>Force update using GitHub</value>
-  </data>
-  <data name="I18N_LoadLocalizedData" xml:space="preserve">
-    <value>Load data from localization plugin</value>
-  </data>
-  <data name="I18N_MaximiumGradeSkillRecommendation" xml:space="preserve">
-    <value>Provide skill learning recommendations for maximizing evaluation points</value>
-  </data>
-  <data name="I18N_ParseChampionsRaceStartResponse" xml:space="preserve">
-    <value>Analyze monthly race competitions</value>
-  </data>
-  <data name="I18N_ParseFriendSearchResponse" xml:space="preserve">
-    <value>Analyze friend's horse victories</value>
-  </data>
-  <data name="I18N_ParsePracticeRaceRaceStartResponse" xml:space="preserve">
-    <value>Analyze practice races</value>
-  </data>
-  <data name="I18N_ParseRoomMatchRaceStartResponse" xml:space="preserve">
-    <value>Analyze room matches</value>
-  </data>
-  <data name="I18N_ParseSingleModeCheckEventResponse" xml:space="preserve">
-    <value>Analyze upbringing events</value>
-  </data>
-  <data name="I18N_ParseTeamStadiumOpponentListResponse" xml:space="preserve">
-    <value>Analyze arena opponent attributes</value>
-  </data>
-  <data name="I18N_ParseTrainedCharaLoadResponse" xml:space="preserve">
-    <value>Analyze turnip horse victories</value>
-  </data>
-  <data name="I18N_SaveResponseForDebug" xml:space="preserve">
-    <value>Save communication packets for debugging</value>
-  </data>
-  <data name="I18N_ShowCommandInfo" xml:space="preserve">
-    <value>Show trainer head information</value>
-  </data>
-  <data name="I18N_WriteAIInfo" xml:space="preserve">
-    <value>Write round information to file for AI reading</value>
-  </data>
-  <data name="I18N_Language_English" xml:space="preserve">
-    <value>English</value>
-  </data>
-  <data name="I18N_Language_Japanese" xml:space="preserve">
-    <value>日本語</value>
-  </data>
-  <data name="I18N_Language_SimplifiedChinese" xml:space="preserve">
-    <value>简体中文</value>
-  </data>
-  <data name="I18N_Language" xml:space="preserve">
-    <value>Language</value>
-  </data>
-  <data name="I18N_ConfigLoadError" xml:space="preserve">
-    <value>[red]Error reading the configuration file, regenerated, please change the settings again[/]</value>
-  </data>
-  <data name="I18N_ConfigTypeCastError" xml:space="preserve">
-    <value>[red]Type error reading configuration &lt;{0}&gt;: Requested type was {1}, but actual type was {2}[/]</value>
-  </data>
-  <data name="I18N_Debug" xml:space="preserve">
+  <data name="Tabs_Debug_Title" xml:space="preserve">
     <value>Debug</value>
   </data>
-  <data name="I18N_Localization" xml:space="preserve">
+  <data name="Tabs_DMM_Title" xml:space="preserve">
+    <value>DMM</value>
+  </data>
+  <data name="Tabs_Language_Title" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Tabs_Localization_Title" xml:space="preserve">
     <value>Localization</value>
   </data>
-  <data name="I18N_LocalizedDataPath" xml:space="preserve">
-    <value>Localization file path</value>
+  <data name="Tabs_Misc_Title" xml:space="preserve">
+    <value>Miscellaneous</value>
   </data>
-  <data name="I18N_NetworkProxy" xml:space="preserve">
-    <value>Acceleration</value>
+  <data name="Tabs_NetFilter_Title" xml:space="preserve">
+    <value>Agent</value>
   </data>
-  <data name="I18N_Other" xml:space="preserve">
-    <value>Others</value>
-  </data>
-  <data name="I18N_ProxyHost" xml:space="preserve">
-    <value>Acceleration server address</value>
-  </data>
-  <data name="I18N_ProxyPassword" xml:space="preserve">
-    <value>Acceleration server password</value>
-  </data>
-  <data name="I18N_ProxyPort" xml:space="preserve">
-    <value>Acceleration server port</value>
-  </data>
-  <data name="I18N_ProxyServerType" xml:space="preserve">
-    <value>Acceleration server type</value>
-  </data>
-  <data name="I18N_ProxyUsername" xml:space="preserve">
-    <value>Acceleration server username</value>
-  </data>
-  <data name="I18N_Update" xml:space="preserve">
+  <data name="Tabs_Updater_Title" xml:space="preserve">
     <value>Update</value>
-  </data>
-  <data name="I18N_Language_AutoDetect" xml:space="preserve">
-    <value>Auto-detect</value>
   </data>
 </root>

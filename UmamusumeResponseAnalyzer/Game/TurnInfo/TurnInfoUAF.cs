@@ -1,12 +1,4 @@
 ﻿using Gallop;
-using MathNet.Numerics.RootFinding;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer.Game.TurnInfo
 {

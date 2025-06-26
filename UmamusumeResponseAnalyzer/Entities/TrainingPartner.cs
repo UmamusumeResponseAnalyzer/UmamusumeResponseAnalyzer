@@ -1,12 +1,6 @@
 ﻿using Gallop;
-using MathNet.Numerics.RootFinding;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Collections.Frozen;
 using UmamusumeResponseAnalyzer.Game;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 
@@ -14,6 +8,42 @@ namespace UmamusumeResponseAnalyzer.Entities
 {
     public class TrainingPartner
     {
+        static readonly FrozenDictionary<int, int> ToTrainId = new Dictionary<int, int>
+        {
+            [1101] = 101,
+            [1102] = 105,
+            [1103] = 102,
+            [1104] = 103,
+            [1105] = 106,
+            [601] = 101,
+            [602] = 105,
+            [603] = 102,
+            [604] = 103,
+            [605] = 106,
+            [101] = 101,
+            [105] = 105,
+            [102] = 102,
+            [103] = 103,
+            [106] = 106,
+            [2101] = 101,
+            [2201] = 101,
+            [2301] = 101,
+            [2102] = 105,
+            [2202] = 105,
+            [2302] = 105,
+            [2103] = 102,
+            [2203] = 102,
+            [2303] = 102,
+            [2104] = 103,
+            [2204] = 103,
+            [2304] = 103,
+            [2105] = 106,
+            [2205] = 106,
+            [2305] = 106,
+            [901] = 101,
+            [902] = 102,
+            [906] = 106
+        }.ToFrozenDictionary();
         public PartnerPriority Priority { get; private set; } = PartnerPriority.默认;
         /// <summary>
         /// 该卡在卡组中的位置(从0开始)
@@ -36,7 +66,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             if (!IsNpc) // 自己带的S卡
             {
                 CardId = turn.SupportCards[Position];
-                var turnStat = GameStats.stats[turn.Turn];
+                /*var turnStat = GameStats.stats[turn.Turn];
                 if (turnStat != null)   // UAF这里没有初始化,跳过
                 {
                     var trainIdx = GameGlobal.ToTrainIndex[command.command_id];
@@ -55,7 +85,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                             turnStat.cook_friendAtTrain[trainIdx] = true;
                             break;
                     }
-                }
+                }*/
                 Name = Database.Names.GetSupportCard(CardId).Nickname.EscapeMarkup();
                 if (Name.Contains("[友]")) // 友人单独标绿
                 {
@@ -70,7 +100,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                 }
                 //在得意位置上
                 Shining = Friendship >= 80 &&
-                    Name.Contains(GameGlobal.ToTrainId[command.command_id] switch
+                    Name.Contains(ToTrainId[command.command_id] switch
                     {
                         101 => "[速]",
                         105 => "[耐]",

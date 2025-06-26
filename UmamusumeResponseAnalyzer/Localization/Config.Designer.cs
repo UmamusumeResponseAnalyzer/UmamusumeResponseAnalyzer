@@ -61,317 +61,530 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 [red]Error reading the configuration file, regenerated, please change the settings again[/] 的本地化字符串。
+        ///   查找类似 返回 的本地化字符串。
         /// </summary>
-        internal static string I18N_ConfigLoadError {
+        internal static string Return {
             get {
-                return ResourceManager.GetString("I18N_ConfigLoadError", resourceCulture);
+                return ResourceManager.GetString("Return", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 [red]Type error reading configuration &lt;{0}&gt;: Requested type was {1}, but actual type was {2}[/] 的本地化字符串。
+        ///   查找类似 设置 的本地化字符串。
         /// </summary>
-        internal static string I18N_ConfigTypeCastError {
+        internal static string Settings_Title {
             get {
-                return ResourceManager.GetString("I18N_ConfigTypeCastError", resourceCulture);
+                return ResourceManager.GetString("Settings_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Debug 的本地化字符串。
+        ///   查找类似 监听地址 的本地化字符串。
         /// </summary>
-        internal static string I18N_Debug {
+        internal static string Tabs_Core_ListenAddress {
             get {
-                return ResourceManager.GetString("I18N_Debug", resourceCulture);
+                return ResourceManager.GetString("Tabs_Core_ListenAddress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Hide SelectIndex 的本地化字符串。
+        ///   查找类似 请输入监听地址(默认:127.0.0.1 管理员权限时为0.0.0.0) 的本地化字符串。
         /// </summary>
-        internal static string I18N_DisableSelectIndex {
+        internal static string Tabs_Core_ListenAddressPrompt {
             get {
-                return ResourceManager.GetString("I18N_DisableSelectIndex", resourceCulture);
+                return ResourceManager.GetString("Tabs_Core_ListenAddressPrompt", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Skip DMM to start the game 的本地化字符串。
+        ///   查找类似 监听端口 的本地化字符串。
         /// </summary>
-        internal static string I18N_DMMLaunch {
+        internal static string Tabs_Core_ListenPort {
             get {
-                return ResourceManager.GetString("I18N_DMMLaunch", resourceCulture);
+                return ResourceManager.GetString("Tabs_Core_ListenPort", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Enable game acceleration feature 的本地化字符串。
+        ///   查找类似 请输入监听端口(默认:4693) 的本地化字符串。
         /// </summary>
-        internal static string I18N_EnableNetFilter {
+        internal static string Tabs_Core_ListenPortPrompt {
             get {
-                return ResourceManager.GetString("I18N_EnableNetFilter", resourceCulture);
+                return ResourceManager.GetString("Tabs_Core_ListenPortPrompt", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Events 的本地化字符串。
+        ///   查找类似 请求含有额外内容 的本地化字符串。
         /// </summary>
-        internal static string I18N_Events {
+        internal static string Tabs_Core_RequestAdditionalHeader {
             get {
-                return ResourceManager.GetString("I18N_Events", resourceCulture);
+                return ResourceManager.GetString("Tabs_Core_RequestAdditionalHeader", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Force update using GitHub 的本地化字符串。
+        ///   查找类似 核心 的本地化字符串。
         /// </summary>
-        internal static string I18N_ForceUseGithubToUpdate {
+        internal static string Tabs_Core_Title {
             get {
-                return ResourceManager.GetString("I18N_ForceUseGithubToUpdate", resourceCulture);
+                return ResourceManager.GetString("Tabs_Core_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Language 的本地化字符串。
+        ///   查找类似 保存通讯文件 的本地化字符串。
         /// </summary>
-        internal static string I18N_Language {
+        internal static string Tabs_Debug_SaveResponseForDebug {
             get {
-                return ResourceManager.GetString("I18N_Language", resourceCulture);
+                return ResourceManager.GetString("Tabs_Debug_SaveResponseForDebug", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Auto-detect 的本地化字符串。
+        ///   查找类似 调试 的本地化字符串。
         /// </summary>
-        internal static string I18N_Language_AutoDetect {
+        internal static string Tabs_Debug_Title {
             get {
-                return ResourceManager.GetString("I18N_Language_AutoDetect", resourceCulture);
+                return ResourceManager.GetString("Tabs_Debug_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 该功能需求一个不需要代理就能访问DMM/赛马娘的环境（在日本/有全局代理等，不包括加速器因为他们不会加速URA本身）。
+        ///该功能仅适合不喜欢每次都要启动DMM，或讨厌DMM经常更新的人，但仍需要安装DMMGamePlayer，且仍需其负责更新。
+        ///是否要启用此功能？ 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_Caution {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_Caution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 编辑账号 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 添加 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_Add {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 删除 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_Delete {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入备注 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_InputName {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_InputName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 备注不可重复 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_InputName_Duplicate {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_InputName_Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入分离的SaveData路径(可以为空) 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_InputSavePath {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_InputSavePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入分离的可执行文件路径(可以为空) 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_InputSplitPath {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_InputSplitPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 备注 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_Name {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 分离的SaveData路径 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_SavePath {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_SavePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 分离的可执行文件路径 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditAccounts_SplitPath {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditAccounts_SplitPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 编辑机器信息 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditMachineInformation {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditMachineInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入hdd_serial 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditMachineInformation_InputHS {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditMachineInformation_InputHS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入mac_address 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditMachineInformation_InputMA {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditMachineInformation_InputMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入motherboard 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditMachineInformation_InputMB {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditMachineInformation_InputMB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入user_os 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditMachineInformation_InputOS {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditMachineInformation_InputOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 输入马娘执行文件路径 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_EditMachineInformation_InputUmamusumePath {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_EditMachineInformation_InputUmamusumePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 启用 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_Enable {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 DMM 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_Title {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 查看DMMGamePlayer信息 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_ViewLauncherInformation {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_ViewLauncherInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不支持修改，如有需求请直接修改config.yaml。选中任意回车返回 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_DMM_ViewLauncherInformation_Caution {
+            get {
+                return ResourceManager.GetString("Tabs_DMM_ViewLauncherInformation_Caution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Auto 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Language_AutoDetect {
+            get {
+                return ResourceManager.GetString("Tabs_Language_AutoDetect", resourceCulture);
             }
         }
         
         /// <summary>
         ///   查找类似 English 的本地化字符串。
         /// </summary>
-        internal static string I18N_Language_English {
+        internal static string Tabs_Language_English {
             get {
-                return ResourceManager.GetString("I18N_Language_English", resourceCulture);
+                return ResourceManager.GetString("Tabs_Language_English", resourceCulture);
             }
         }
         
         /// <summary>
         ///   查找类似 日本語 的本地化字符串。
         /// </summary>
-        internal static string I18N_Language_Japanese {
+        internal static string Tabs_Language_Japanese {
             get {
-                return ResourceManager.GetString("I18N_Language_Japanese", resourceCulture);
+                return ResourceManager.GetString("Tabs_Language_Japanese", resourceCulture);
             }
         }
         
         /// <summary>
         ///   查找类似 简体中文 的本地化字符串。
         /// </summary>
-        internal static string I18N_Language_SimplifiedChinese {
+        internal static string Tabs_Language_SimplifiedChinese {
             get {
-                return ResourceManager.GetString("I18N_Language_SimplifiedChinese", resourceCulture);
+                return ResourceManager.GetString("Tabs_Language_SimplifiedChinese", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Load data from localization plugin 的本地化字符串。
+        ///   查找类似 语言 的本地化字符串。
         /// </summary>
-        internal static string I18N_LoadLocalizedData {
+        internal static string Tabs_Language_Title {
             get {
-                return ResourceManager.GetString("I18N_LoadLocalizedData", resourceCulture);
+                return ResourceManager.GetString("Tabs_Language_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Localization 的本地化字符串。
+        ///   查找类似 输入本地化文件路径 的本地化字符串。
         /// </summary>
-        internal static string I18N_Localization {
+        internal static string Tabs_Localization_InputPath {
             get {
-                return ResourceManager.GetString("I18N_Localization", resourceCulture);
+                return ResourceManager.GetString("Tabs_Localization_InputPath", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Localization file path 的本地化字符串。
+        ///   查找类似 本地化文件路径 的本地化字符串。
         /// </summary>
-        internal static string I18N_LocalizedDataPath {
+        internal static string Tabs_Localization_Path {
             get {
-                return ResourceManager.GetString("I18N_LocalizedDataPath", resourceCulture);
+                return ResourceManager.GetString("Tabs_Localization_Path", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Provide skill learning recommendations for maximizing evaluation points 的本地化字符串。
+        ///   查找类似 本地化 的本地化字符串。
         /// </summary>
-        internal static string I18N_MaximiumGradeSkillRecommendation {
+        internal static string Tabs_Localization_Title {
             get {
-                return ResourceManager.GetString("I18N_MaximiumGradeSkillRecommendation", resourceCulture);
+                return ResourceManager.GetString("Tabs_Localization_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Acceleration 的本地化字符串。
+        ///   查找类似 杂项 的本地化字符串。
         /// </summary>
-        internal static string I18N_NetworkProxy {
+        internal static string Tabs_Misc_Title {
             get {
-                return ResourceManager.GetString("I18N_NetworkProxy", resourceCulture);
+                return ResourceManager.GetString("Tabs_Misc_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Others 的本地化字符串。
+        ///   查找类似 AI 的本地化字符串。
         /// </summary>
-        internal static string I18N_Other {
+        internal static string Tabs_Misc_WriteAIInfo {
             get {
-                return ResourceManager.GetString("I18N_Other", resourceCulture);
+                return ResourceManager.GetString("Tabs_Misc_WriteAIInfo", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze monthly race competitions 的本地化字符串。
+        ///   查找类似 &quot;代理&quot;功能并非使URA本身经过代理，而是通过NetFilter驱动使本身无法经过代理的程序强制经过代理，如赛马娘本体、模拟器等。
+        ///启用此功能需要安装一个驱动（来自https://netfiltersdk.com/ ），这会请求一次管理员权限，并将其安装在%windir%\System32中。
+        ///NetFilter驱动也会被其他程序安装，比如ACGPower和Netch，此时会直接显示卸载而非安装。
+        ///该功能的效果与某些软件的TUN模式相同。
+        ///是否要启用此功能？ 的本地化字符串。
         /// </summary>
-        internal static string I18N_ParseChampionsRaceStartResponse {
+        internal static string Tabs_NetFilter_Caution {
             get {
-                return ResourceManager.GetString("I18N_ParseChampionsRaceStartResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Caution", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze friend&apos;s horse victories 的本地化字符串。
+        ///   查找类似 启用 的本地化字符串。
         /// </summary>
-        internal static string I18N_ParseFriendSearchResponse {
+        internal static string Tabs_NetFilter_Enable {
             get {
-                return ResourceManager.GetString("I18N_ParseFriendSearchResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Enable", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze practice races 的本地化字符串。
+        ///   查找类似 地址 的本地化字符串。
         /// </summary>
-        internal static string I18N_ParsePracticeRaceRaceStartResponse {
+        internal static string Tabs_NetFilter_Host {
             get {
-                return ResourceManager.GetString("I18N_ParsePracticeRaceRaceStartResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Host", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze room matches 的本地化字符串。
+        ///   查找类似 输入IP地址:  的本地化字符串。
         /// </summary>
-        internal static string I18N_ParseRoomMatchRaceStartResponse {
+        internal static string Tabs_NetFilter_InputHost {
             get {
-                return ResourceManager.GetString("I18N_ParseRoomMatchRaceStartResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_InputHost", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze upbringing events 的本地化字符串。
+        ///   查找类似 输入密码(可以为空) 的本地化字符串。
         /// </summary>
-        internal static string I18N_ParseSingleModeCheckEventResponse {
+        internal static string Tabs_NetFilter_InputPassword {
             get {
-                return ResourceManager.GetString("I18N_ParseSingleModeCheckEventResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_InputPassword", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze arena opponent attributes 的本地化字符串。
+        ///   查找类似 输入端口:  的本地化字符串。
         /// </summary>
-        internal static string I18N_ParseTeamStadiumOpponentListResponse {
+        internal static string Tabs_NetFilter_InputPort {
             get {
-                return ResourceManager.GetString("I18N_ParseTeamStadiumOpponentListResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_InputPort", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Analyze turnip horse victories 的本地化字符串。
+        ///   查找类似 端口只能是数字 的本地化字符串。
         /// </summary>
-        internal static string I18N_ParseTrainedCharaLoadResponse {
+        internal static string Tabs_NetFilter_InputPort_FormatError {
             get {
-                return ResourceManager.GetString("I18N_ParseTrainedCharaLoadResponse", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_InputPort_FormatError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Acceleration server address 的本地化字符串。
+        ///   查找类似 输入用户名(可以为空) 的本地化字符串。
         /// </summary>
-        internal static string I18N_ProxyHost {
+        internal static string Tabs_NetFilter_InputUsername {
             get {
-                return ResourceManager.GetString("I18N_ProxyHost", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_InputUsername", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Acceleration server password 的本地化字符串。
+        ///   查找类似 密码 的本地化字符串。
         /// </summary>
-        internal static string I18N_ProxyPassword {
+        internal static string Tabs_NetFilter_Password {
             get {
-                return ResourceManager.GetString("I18N_ProxyPassword", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Password", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Acceleration server port 的本地化字符串。
+        ///   查找类似 端口 的本地化字符串。
         /// </summary>
-        internal static string I18N_ProxyPort {
+        internal static string Tabs_NetFilter_Port {
             get {
-                return ResourceManager.GetString("I18N_ProxyPort", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Port", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Acceleration server type 的本地化字符串。
+        ///   查找类似 选择代理服务器类型 的本地化字符串。
         /// </summary>
-        internal static string I18N_ProxyServerType {
+        internal static string Tabs_NetFilter_SelectType {
             get {
-                return ResourceManager.GetString("I18N_ProxyServerType", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_SelectType", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Acceleration server username 的本地化字符串。
+        ///   查找类似 代理类型 的本地化字符串。
         /// </summary>
-        internal static string I18N_ProxyUsername {
+        internal static string Tabs_NetFilter_ServerType {
             get {
-                return ResourceManager.GetString("I18N_ProxyUsername", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_ServerType", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Save communication packets for debugging 的本地化字符串。
+        ///   查找类似 代理 的本地化字符串。
         /// </summary>
-        internal static string I18N_SaveResponseForDebug {
+        internal static string Tabs_NetFilter_Title {
             get {
-                return ResourceManager.GetString("I18N_SaveResponseForDebug", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Show trainer head information 的本地化字符串。
+        ///   查找类似 用户名 的本地化字符串。
         /// </summary>
-        internal static string I18N_ShowCommandInfo {
+        internal static string Tabs_NetFilter_Username {
             get {
-                return ResourceManager.GetString("I18N_ShowCommandInfo", resourceCulture);
+                return ResourceManager.GetString("Tabs_NetFilter_Username", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Update 的本地化字符串。
+        ///   查找类似 插件 的本地化字符串。
         /// </summary>
-        internal static string I18N_Update {
+        internal static string Tabs_Plugin_Title {
             get {
-                return ResourceManager.GetString("I18N_Update", resourceCulture);
+                return ResourceManager.GetString("Tabs_Plugin_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   查找类似 Write round information to file for AI reading 的本地化字符串。
+        ///   查找类似 强制使用GitHub更新 的本地化字符串。
         /// </summary>
-        internal static string I18N_WriteAIInfo {
+        internal static string Tabs_Updater_ForceUseGithubToUpdate {
             get {
-                return ResourceManager.GetString("I18N_WriteAIInfo", resourceCulture);
+                return ResourceManager.GetString("Tabs_Updater_ForceUseGithubToUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 更新 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Updater_Title {
+            get {
+                return ResourceManager.GetString("Tabs_Updater_Title", resourceCulture);
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using NetFilterAPI;
 using Spectre.Console;
-using static UmamusumeResponseAnalyzer.Localization.Config;
 using static UmamusumeResponseAnalyzer.Localization.NetFilter;
 
 namespace UmamusumeResponseAnalyzer
@@ -38,24 +37,24 @@ namespace UmamusumeResponseAnalyzer
                     AnsiConsole.MarkupLine(I18N_NFDriver_NotInstall);
                     return;
                 }
-                if (!Config.ContainsKey(I18N_ProxyHost) || !Config.ContainsKey(I18N_ProxyPort) || !Config.ContainsKey(I18N_ProxyServerType))
+                if (string.IsNullOrEmpty(Config.NetFilter.Host) || Config.NetFilter.Port == 0)
                 {
                     AnsiConsole.WriteLine(I18N_ProxyServerNotConfigure);
                     return;
                 }
-                NFAPI.Host = Config.Get<string>(I18N_ProxyHost) ?? string.Empty;
-                NFAPI.Port = int.Parse(Config.Get<string>(I18N_ProxyPort) ?? string.Empty);
+                NFAPI.Host = Config.NetFilter.Host ?? string.Empty;
+                NFAPI.Port = Config.NetFilter.Port;
                 NFAPI.HandleList = ["umamusume.exe", "UmamusumeResponseAnalyzer.exe", "Nox.exe", "NoxVMHandle.exe", "NoxVMSVC.exe"];
 
-                if (Config.Get<string>(I18N_ProxyServerType) == "http")
+                if (Config.NetFilter.ServerType == "http")
                 {
                     await NFAPI.StartAsync(true);
                 }
                 else
                 {
-                    if (Config.TryGetValue(I18N_ProxyUsername, out var username) && Config.TryGetValue(I18N_ProxyPassword, out var password) && username is not null && password is not null)
+                    if (!string.IsNullOrEmpty(Config.NetFilter.Username))
                     {
-                        await NFAPI.StartAsync(false, (string)username.Value, (string)password.Value);
+                        await NFAPI.StartAsync(false, Config.NetFilter.Username, Config.NetFilter.Password);
                     }
                     else
                     {

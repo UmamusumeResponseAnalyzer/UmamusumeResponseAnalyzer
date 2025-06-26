@@ -1,0 +1,85 @@
+﻿using Spectre.Console;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UmamusumeResponseAnalyzer.Plugin
+{
+    public interface IPlugin
+    {
+        string Name { get; }
+        string Author { get; }
+        Version Version { get; }
+
+        void Initialize() { }
+        void Dispose() { }
+        public void ConfigPrompt()
+        {
+            var properties = GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != default);
+
+            var selection = string.Empty;
+            do
+            {
+                var choices = new List<string>
+                {
+                    $"插件: {Name}",
+                    $"版本: {Version}",
+                    $"作者: {Author}"
+                };
+                foreach (var i in properties)
+                {
+                    choices.Add($"{i.Name}: {i.GetValue(this)}");
+                }
+                choices.Add("Reload");
+                choices.Add(Localization.LaunchMenu.I18N_UpdateProgram);
+                choices.Add(Localization.Config.Return);
+                var selectionPrompt = new SelectionPrompt<string>()
+                    .Title(Name)
+                    .WrapAround(true)
+                    .AddChoices(choices);
+                selection = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
+                if (selection == "Reload")
+                {
+                    Initialize();
+                }
+                else if (selection == Localization.LaunchMenu.I18N_UpdateProgram)
+                {
+                    AnsiConsole.Progress().Start(UpdatePlugin);
+                }
+                else
+                {
+                    var property = properties.FirstOrDefault(x => x.Name == selection);
+                    if (property != default)
+                    {
+                        var type = property.PropertyType;
+                        if (type == typeof(bool))
+                        {
+                            var boolean = AnsiConsole.Prompt(new TextPrompt<bool>($"{property.Name}: {property.GetCustomAttribute<PluginSettingAttribute>()?.Description}"));
+                            property.SetValue(this, boolean);
+                        }
+                        else if (type.IsPrimitive || type == typeof(decimal))
+                        {
+                            var promptType = typeof(TextPrompt<>).MakeGenericType(type);
+                            var prompt = Activator.CreateInstance(promptType, $"{property.Name}: {property.GetCustomAttribute<PluginSettingAttribute>()?.Description}", null);
+                            var method = typeof(AnsiConsole).GetMethod("Prompt")!.MakeGenericMethod(type);
+                            var value = method.Invoke(null, [prompt]);
+                            property.SetValue(this, value);
+                        }
+                        else if (type == typeof(string))
+                        {
+                            var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {property.GetCustomAttribute<PluginSettingAttribute>()?.Description}"));
+                            property.SetValue(this, str);
+                        }
+                        Config.Plugin.PluginSettings[Name][property.Name] = property.GetValue(this)!;
+                    }
+                }
+                AnsiConsole.Clear();
+            } while (selection != Localization.Config.Return);
+        }
+        Task UpdatePlugin(ProgressContext ctx);
+    }
+}

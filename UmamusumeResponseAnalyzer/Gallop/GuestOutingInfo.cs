@@ -14,6 +14,7 @@ namespace Gallop
         public int support_card_id; // 0x10
         [Key("story_step")]
         public int story_step; // 0x14
+        [Key("group_outing_info_array")]
         public GroupOutingInfo[] group_outing_info_array; // 0x18
     }
 }

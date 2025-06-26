@@ -117,109 +117,184 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="I18N_ConfigLoadError" xml:space="preserve">
-    <value>[red]Error reading the configuration file, regenerated, please change the settings again[/]</value>
+  <data name="Return" xml:space="preserve">
+    <value>返回</value>
   </data>
-  <data name="I18N_ConfigTypeCastError" xml:space="preserve">
-    <value>[red]Type error reading configuration &lt;{0}&gt;: Requested type was {1}, but actual type was {2}[/]</value>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>设置</value>
   </data>
-  <data name="I18N_Debug" xml:space="preserve">
-    <value>Debug</value>
+  <data name="Tabs_Core_ListenAddress" xml:space="preserve">
+    <value>监听地址</value>
   </data>
-  <data name="I18N_DisableSelectIndex" xml:space="preserve">
-    <value>Hide SelectIndex</value>
+  <data name="Tabs_Core_ListenAddressPrompt" xml:space="preserve">
+    <value>请输入监听地址(默认:127.0.0.1 管理员权限时为0.0.0.0)</value>
   </data>
-  <data name="I18N_DMMLaunch" xml:space="preserve">
-    <value>Skip DMM to start the game</value>
+  <data name="Tabs_Core_ListenPort" xml:space="preserve">
+    <value>监听端口</value>
   </data>
-  <data name="I18N_EnableNetFilter" xml:space="preserve">
-    <value>Enable game acceleration feature</value>
+  <data name="Tabs_Core_ListenPortPrompt" xml:space="preserve">
+    <value>请输入监听端口(默认:4693)</value>
   </data>
-  <data name="I18N_Events" xml:space="preserve">
-    <value>Events</value>
+  <data name="Tabs_Core_RequestAdditionalHeader" xml:space="preserve">
+    <value>请求含有额外内容</value>
   </data>
-  <data name="I18N_ForceUseGithubToUpdate" xml:space="preserve">
-    <value>Force update using GitHub</value>
+  <data name="Tabs_Core_Title" xml:space="preserve">
+    <value>核心</value>
   </data>
-  <data name="I18N_LoadLocalizedData" xml:space="preserve">
-    <value>Load data from localization plugin</value>
+  <data name="Tabs_Debug_SaveResponseForDebug" xml:space="preserve">
+    <value>保存通讯文件</value>
   </data>
-  <data name="I18N_Localization" xml:space="preserve">
-    <value>Localization</value>
+  <data name="Tabs_Debug_Title" xml:space="preserve">
+    <value>调试</value>
   </data>
-  <data name="I18N_LocalizedDataPath" xml:space="preserve">
-    <value>Localization file path</value>
+  <data name="Tabs_DMM_Caution" xml:space="preserve">
+    <value>该功能需求一个不需要代理就能访问DMM/赛马娘的环境（在日本/有全局代理等，不包括加速器因为他们不会加速URA本身）。
+该功能仅适合不喜欢每次都要启动DMM，或讨厌DMM经常更新的人，但仍需要安装DMMGamePlayer，且仍需其负责更新。
+是否要启用此功能？</value>
   </data>
-  <data name="I18N_MaximiumGradeSkillRecommendation" xml:space="preserve">
-    <value>Provide skill learning recommendations for maximizing evaluation points</value>
+  <data name="Tabs_DMM_EditAccounts" xml:space="preserve">
+    <value>编辑账号</value>
   </data>
-  <data name="I18N_NetworkProxy" xml:space="preserve">
-    <value>Acceleration</value>
+  <data name="Tabs_DMM_EditAccounts_Add" xml:space="preserve">
+    <value>添加</value>
   </data>
-  <data name="I18N_Other" xml:space="preserve">
-    <value>Others</value>
+  <data name="Tabs_DMM_EditAccounts_Delete" xml:space="preserve">
+    <value>删除</value>
   </data>
-  <data name="I18N_ParseChampionsRaceStartResponse" xml:space="preserve">
-    <value>Analyze monthly race competitions</value>
+  <data name="Tabs_DMM_EditAccounts_InputName" xml:space="preserve">
+    <value>输入备注</value>
   </data>
-  <data name="I18N_ParseFriendSearchResponse" xml:space="preserve">
-    <value>Analyze friend's horse victories</value>
+  <data name="Tabs_DMM_EditAccounts_InputName_Duplicate" xml:space="preserve">
+    <value>备注不可重复</value>
   </data>
-  <data name="I18N_ParsePracticeRaceRaceStartResponse" xml:space="preserve">
-    <value>Analyze practice races</value>
+  <data name="Tabs_DMM_EditAccounts_InputSavePath" xml:space="preserve">
+    <value>输入分离的SaveData路径(可以为空)</value>
   </data>
-  <data name="I18N_ParseRoomMatchRaceStartResponse" xml:space="preserve">
-    <value>Analyze room matches</value>
+  <data name="Tabs_DMM_EditAccounts_InputSplitPath" xml:space="preserve">
+    <value>输入分离的可执行文件路径(可以为空)</value>
   </data>
-  <data name="I18N_ParseSingleModeCheckEventResponse" xml:space="preserve">
-    <value>Analyze upbringing events</value>
+  <data name="Tabs_DMM_EditAccounts_Name" xml:space="preserve">
+    <value>备注</value>
   </data>
-  <data name="I18N_ParseTeamStadiumOpponentListResponse" xml:space="preserve">
-    <value>Analyze arena opponent attributes</value>
+  <data name="Tabs_DMM_EditAccounts_SavePath" xml:space="preserve">
+    <value>分离的SaveData路径</value>
   </data>
-  <data name="I18N_ParseTrainedCharaLoadResponse" xml:space="preserve">
-    <value>Analyze turnip horse victories</value>
+  <data name="Tabs_DMM_EditAccounts_SplitPath" xml:space="preserve">
+    <value>分离的可执行文件路径</value>
   </data>
-  <data name="I18N_ProxyHost" xml:space="preserve">
-    <value>Acceleration server address</value>
+  <data name="Tabs_DMM_EditMachineInformation" xml:space="preserve">
+    <value>编辑机器信息</value>
   </data>
-  <data name="I18N_ProxyPassword" xml:space="preserve">
-    <value>Acceleration server password</value>
+  <data name="Tabs_DMM_EditMachineInformation_InputHS" xml:space="preserve">
+    <value>输入hdd_serial</value>
   </data>
-  <data name="I18N_ProxyPort" xml:space="preserve">
-    <value>Acceleration server port</value>
+  <data name="Tabs_DMM_EditMachineInformation_InputMA" xml:space="preserve">
+    <value>输入mac_address</value>
   </data>
-  <data name="I18N_ProxyServerType" xml:space="preserve">
-    <value>Acceleration server type</value>
+  <data name="Tabs_DMM_EditMachineInformation_InputMB" xml:space="preserve">
+    <value>输入motherboard</value>
   </data>
-  <data name="I18N_ProxyUsername" xml:space="preserve">
-    <value>Acceleration server username</value>
+  <data name="Tabs_DMM_EditMachineInformation_InputOS" xml:space="preserve">
+    <value>输入user_os</value>
   </data>
-  <data name="I18N_SaveResponseForDebug" xml:space="preserve">
-    <value>Save communication packets for debugging</value>
+  <data name="Tabs_DMM_EditMachineInformation_InputUmamusumePath" xml:space="preserve">
+    <value>输入马娘执行文件路径</value>
   </data>
-  <data name="I18N_ShowCommandInfo" xml:space="preserve">
-    <value>Show trainer head information</value>
+  <data name="Tabs_DMM_Enable" xml:space="preserve">
+    <value>启用</value>
   </data>
-  <data name="I18N_Update" xml:space="preserve">
-    <value>Update</value>
+  <data name="Tabs_DMM_Title" xml:space="preserve">
+    <value>DMM</value>
   </data>
-  <data name="I18N_WriteAIInfo" xml:space="preserve">
-    <value>Write round information to file for AI reading</value>
+  <data name="Tabs_DMM_ViewLauncherInformation" xml:space="preserve">
+    <value>查看DMMGamePlayer信息</value>
   </data>
-  <data name="I18N_Language_AutoDetect" xml:space="preserve">
-    <value>Auto-detect</value>
+  <data name="Tabs_DMM_ViewLauncherInformation_Caution" xml:space="preserve">
+    <value>不支持修改，如有需求请直接修改config.yaml。选中任意回车返回</value>
   </data>
-  <data name="I18N_Language_English" xml:space="preserve">
+  <data name="Tabs_Language_AutoDetect" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="Tabs_Language_English" xml:space="preserve">
     <value>English</value>
   </data>
-  <data name="I18N_Language_Japanese" xml:space="preserve">
+  <data name="Tabs_Language_Japanese" xml:space="preserve">
     <value>日本語</value>
   </data>
-  <data name="I18N_Language_SimplifiedChinese" xml:space="preserve">
+  <data name="Tabs_Language_SimplifiedChinese" xml:space="preserve">
     <value>简体中文</value>
   </data>
-  <data name="I18N_Language" xml:space="preserve">
-    <value>Language</value>
+  <data name="Tabs_Language_Title" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="Tabs_Localization_InputPath" xml:space="preserve">
+    <value>输入本地化文件路径</value>
+  </data>
+  <data name="Tabs_Localization_Path" xml:space="preserve">
+    <value>本地化文件路径</value>
+  </data>
+  <data name="Tabs_Localization_Title" xml:space="preserve">
+    <value>本地化</value>
+  </data>
+  <data name="Tabs_Misc_Title" xml:space="preserve">
+    <value>杂项</value>
+  </data>
+  <data name="Tabs_Misc_WriteAIInfo" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="Tabs_NetFilter_Caution" xml:space="preserve">
+    <value>"代理"功能并非使URA本身经过代理，而是通过NetFilter驱动使本身无法经过代理的程序强制经过代理，如赛马娘本体、模拟器等。
+启用此功能需要安装一个驱动（来自https://netfiltersdk.com/ ），这会请求一次管理员权限，并将其安装在%windir%\System32中。
+NetFilter驱动也会被其他程序安装，比如ACGPower和Netch，此时会直接显示卸载而非安装。
+该功能的效果与某些软件的TUN模式相同。
+是否要启用此功能？</value>
+  </data>
+  <data name="Tabs_NetFilter_Enable" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="Tabs_NetFilter_Host" xml:space="preserve">
+    <value>地址</value>
+  </data>
+  <data name="Tabs_NetFilter_InputHost" xml:space="preserve">
+    <value>输入IP地址: </value>
+  </data>
+  <data name="Tabs_NetFilter_InputPassword" xml:space="preserve">
+    <value>输入密码(可以为空)</value>
+  </data>
+  <data name="Tabs_NetFilter_InputPort" xml:space="preserve">
+    <value>输入端口: </value>
+  </data>
+  <data name="Tabs_NetFilter_InputPort_FormatError" xml:space="preserve">
+    <value>端口只能是数字</value>
+  </data>
+  <data name="Tabs_NetFilter_InputUsername" xml:space="preserve">
+    <value>输入用户名(可以为空)</value>
+  </data>
+  <data name="Tabs_NetFilter_Password" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Tabs_NetFilter_Port" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="Tabs_NetFilter_SelectType" xml:space="preserve">
+    <value>选择代理服务器类型</value>
+  </data>
+  <data name="Tabs_NetFilter_ServerType" xml:space="preserve">
+    <value>代理类型</value>
+  </data>
+  <data name="Tabs_NetFilter_Title" xml:space="preserve">
+    <value>代理</value>
+  </data>
+  <data name="Tabs_NetFilter_Username" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+  <data name="Tabs_Plugin_Title" xml:space="preserve">
+    <value>插件</value>
+  </data>
+  <data name="Tabs_Updater_ForceUseGithubToUpdate" xml:space="preserve">
+    <value>强制使用GitHub更新</value>
+  </data>
+  <data name="Tabs_Updater_Title" xml:space="preserve">
+    <value>更新</value>
   </data>
 </root>

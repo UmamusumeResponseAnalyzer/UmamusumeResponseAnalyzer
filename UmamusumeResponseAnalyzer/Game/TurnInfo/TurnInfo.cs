@@ -11,19 +11,19 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         /// 马娘ID
         /// </summary>
         public int CharacterId => int.Parse(CharaInfo.card_id.ToString()[..4]);
-        public int SpeedRevised => ScoreUtils.ReviseOver1200(CharaInfo.speed);
-        public int StaminaRevised => ScoreUtils.ReviseOver1200(CharaInfo.stamina);
-        public int PowerRevised => ScoreUtils.ReviseOver1200(CharaInfo.power);
-        public int GutsRevised => ScoreUtils.ReviseOver1200(CharaInfo.guts);
-        public int WizRevised => ScoreUtils.ReviseOver1200(CharaInfo.wiz);
+        public int SpeedRevised => ReviseOver1200(CharaInfo.speed);
+        public int StaminaRevised => ReviseOver1200(CharaInfo.stamina);
+        public int PowerRevised => ReviseOver1200(CharaInfo.power);
+        public int GutsRevised => ReviseOver1200(CharaInfo.guts);
+        public int WizRevised => ReviseOver1200(CharaInfo.wiz);
         public int[] Stats => [CharaInfo.speed, CharaInfo.stamina, CharaInfo.power, CharaInfo.guts, CharaInfo.wiz];
         public int[] StatsRevised => [SpeedRevised, StaminaRevised, PowerRevised, GutsRevised, WizRevised];
         public int[] MaxStatsRevised => [
-            ScoreUtils.ReviseOver1200(CharaInfo.max_speed),
-            ScoreUtils.ReviseOver1200(CharaInfo.max_stamina),
-            ScoreUtils.ReviseOver1200(CharaInfo.max_power),
-            ScoreUtils.ReviseOver1200(CharaInfo.max_guts),
-            ScoreUtils.ReviseOver1200(CharaInfo.max_wiz)]
+            ReviseOver1200(CharaInfo.max_speed),
+            ReviseOver1200(CharaInfo.max_stamina),
+            ReviseOver1200(CharaInfo.max_power),
+            ReviseOver1200(CharaInfo.max_guts),
+            ReviseOver1200(CharaInfo.max_wiz)]
         ;
         public ScenarioType Scenario => (ScenarioType)CharaInfo.scenario_id;
         public int Turn => CharaInfo.turn;
@@ -55,5 +55,10 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         }
         public bool IsScenario(ScenarioType type) => IsScenario<TurnInfo>(type, out _);
         public SingleModeCheckEventResponse.CommonResponse GetCommonResponse() => resp;
+
+        private static int ReviseOver1200(int x)
+        {
+            return x > 1200 ? x * 2 - 1200 : x;
+        }
     }
 }

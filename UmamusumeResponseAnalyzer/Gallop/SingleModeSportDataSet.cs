@@ -25,6 +25,7 @@ namespace Gallop
         [Key("compe_effect_id_array")]
         public int[] compe_effect_id_array;
     }
+    [MessagePackObject]
     public class SingleModeSportTraining
     {
         [Key("command_type")]
@@ -34,6 +35,7 @@ namespace Gallop
         [Key("sport_rank")]
         public int sport_rank;
     }
+    [MessagePackObject]
     public class SingleModeSportCommandInfo
     {
         [Key("command_type")]
