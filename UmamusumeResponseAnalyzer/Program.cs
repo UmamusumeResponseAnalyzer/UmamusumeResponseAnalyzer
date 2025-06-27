@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
@@ -114,7 +115,8 @@ namespace UmamusumeResponseAnalyzer
                     I18N_Start,
                     I18N_Options,
                     I18N_UpdateAssets,
-                    I18N_UpdateProgram
+                    I18N_UpdateProgram,
+                    "加入QQ群（号被封过之后在频道里说话会概率被夹"
                 ]
                 );
             #region 条件显示功能
@@ -230,6 +232,17 @@ namespace UmamusumeResponseAnalyzer
                         }
                     }
                 }
+                Console.ReadKey();
+            }
+            else if (prompt == "加入QQ群（号被封过之后在频道里说话会概率被夹")
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://qm.qq.com/q/4z6xHQ908w",
+                    UseShellExecute = true
+                });
+                AnsiConsole.WriteLine("https://qm.qq.com/q/4z6xHQ908w");
+                AnsiConsole.WriteLine("按任意键返回到主菜单...");
                 Console.ReadKey();
             }
             AnsiConsole.Clear();
