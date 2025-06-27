@@ -58,7 +58,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         public string NameAppend { get; } = string.Empty;
         public bool Shining { get; } = false;
 
-        public TrainingPartner(TurnInfo turn, int partner, SingleModeCommandInfo command)
+        public TrainingPartner(TurnInfo turn, int partner, SingleModeCommandInfo command, IDictionary<int, int> toTrainIdDictionary = null!)
         {
             Position = partner;
             Friendship = turn.Evaluations[Position].evaluation;
@@ -100,7 +100,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                 }
                 //在得意位置上
                 Shining = Friendship >= 80 &&
-                    Name.Contains(ToTrainId[command.command_id] switch
+                    Name.Contains((toTrainIdDictionary ?? ToTrainId)[command.command_id] switch
                     {
                         101 => "[速]",
                         105 => "[耐]",

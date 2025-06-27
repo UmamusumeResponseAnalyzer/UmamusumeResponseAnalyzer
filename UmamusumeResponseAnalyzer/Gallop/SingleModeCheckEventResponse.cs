@@ -28,6 +28,7 @@ namespace Gallop
             public SingleModeCookDataSet cook_data_set;
             public SingleModeMechaDataSet mecha_data_set;
             public SingleModeLegendDataSet legend_data_set;
+            public SingleModePioneerDataSet pioneer_data_set;
             public int? select_index;
         }
     }

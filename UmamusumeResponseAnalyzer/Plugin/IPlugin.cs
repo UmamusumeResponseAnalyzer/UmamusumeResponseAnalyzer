@@ -58,8 +58,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         var type = property.PropertyType;
                         if (type == typeof(bool))
                         {
-                            var boolean = AnsiConsole.Prompt(new TextPrompt<bool>($"{property.Name}: {property.GetCustomAttribute<PluginSettingAttribute>()?.Description}"));
-                            property.SetValue(this, boolean);
+                            var value = (bool)(property.GetValue(this) ?? false);
+                            property.SetValue(this, !value);
                         }
                         else if (type.IsPrimitive || type == typeof(decimal))
                         {

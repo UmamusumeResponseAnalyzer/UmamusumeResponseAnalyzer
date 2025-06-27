@@ -151,6 +151,7 @@ namespace UmamusumeResponseAnalyzer
 
         public void Prompt()
         {
+            Task.WaitAll(UmamusumeResponseAnalyzer._plugin_initialize_task);
             var selected = string.Empty;
             do
             {

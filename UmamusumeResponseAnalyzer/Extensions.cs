@@ -18,6 +18,7 @@ namespace UmamusumeResponseAnalyzer
         Cook = 8,
         Mecha = 9,
         Legend = 10,
+        Pioneer = 11,
         Unknown = int.MaxValue
     }
     public static class Extensions

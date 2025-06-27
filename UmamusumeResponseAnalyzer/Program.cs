@@ -13,6 +13,8 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
+        internal static Task _database_initialize_task = null!;
+        internal static Task _plugin_initialize_task = null!;
         public static bool Started => Server.IsRunning;
         public static async Task Main(string[] args)
         {
@@ -27,8 +29,8 @@ namespace UmamusumeResponseAnalyzer
             await ParseArguments(args);
 
             Config.Initialize();
-            var initDbTask = Database.Initialize();
-            var initPluginTask = Task.Run(PluginManager.Init);
+            _database_initialize_task = Database.Initialize();
+            _plugin_initialize_task = Task.Run(PluginManager.Init);
 
             var prompt = string.Empty;
             do
@@ -37,7 +39,7 @@ namespace UmamusumeResponseAnalyzer
             }
             while (prompt != I18N_Start); //如果不是启动则重新显示主菜单
 
-            Task.WaitAll(initDbTask, initPluginTask); //等待数据库初始化完成
+            Task.WaitAll(_database_initialize_task, _plugin_initialize_task); //等待数据库初始化完成
             Server.Start(); //启动HTTP服务器
             Task.WaitAll([.. PluginManager.LoadedPlugins.Select(x => Task.Run(x.Initialize))]);
 

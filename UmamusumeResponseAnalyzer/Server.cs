@@ -145,6 +145,12 @@ namespace UmamusumeResponseAnalyzer
                                 popularity_info["poster_race_result_info"] = null;
                             obj["data"]!["legend_data_set"] = ds;
                         }
+                        if (scenario_id == 11 && data.TryGetValue("pioneer_data_set", out ds))
+                        {
+                            if (ds["shima_training_info"] is JArray)
+                                ds["shima_training_info"] = null;
+                            obj["data"]!["pioneer_data_set"] = ds;
+                        }
                     }
                 }
 
