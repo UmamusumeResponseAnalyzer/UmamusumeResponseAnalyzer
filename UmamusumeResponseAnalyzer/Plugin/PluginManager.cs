@@ -29,13 +29,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
         internal static void Init()
         {
-            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
-            {
-                foreach (var plugin in LoadedPlugins)
-                {
-                    //plugin.Dispose();
-                }
-            };
             Directory.CreateDirectory("Plugins");
             foreach (var dll in PLUGIN_FILES)
             {
@@ -98,7 +91,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         }
         internal static PluginMetadata LoadMetadata(string pluginPath)
         {
-            var tempContext = new AssemblyLoadContext("LoadMetadataContext", true);
+            var tempContext = new PluginLoadContext("LoadMetadataContext");
             var tempAssembly = tempContext.LoadFromAssemblyPath(pluginPath);
             var shouldLoadInHost = tempAssembly.GetCustomAttribute<LoadInHostContextAttribute>() != null;
             var sharedContextsWith = tempAssembly.GetCustomAttributes<SharedContextWithAttribute>().SelectMany(x => x.PluginNames).ToList();
@@ -134,7 +127,11 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
                 if (Activator.CreateInstance(type) is IPlugin plugin)
                 {
-                    RegisterHandlers(plugin);
+                    // 插件没有指定目标，或者插件目标兼容当前的目标才注册
+                    if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any())
+                    {
+                        RegisterHandlers(plugin);
+                    }
                     Assemblies.Add(assembly);
                 }
                 else

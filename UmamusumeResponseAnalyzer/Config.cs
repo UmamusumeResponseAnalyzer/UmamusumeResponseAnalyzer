@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Spectre.Console;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Reflection;
 using UmamusumeResponseAnalyzer.Entities;
@@ -11,13 +12,14 @@ using i18n = UmamusumeResponseAnalyzer.Localization.Config;
 
 namespace UmamusumeResponseAnalyzer
 {
-    internal static class Config
+    public static class Config
     {
         internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "config.yaml");
         private static YamlConfig Current { get; set; }
         private readonly static ISerializer _serializer = new SerializerBuilder().WithQuotingNecessaryStrings().WithNamingConvention(HyphenatedNamingConvention.Instance).Build();
         private readonly static IDeserializer _deserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().WithNamingConvention(HyphenatedNamingConvention.Instance).Build();
         public static CoreConfig Core => Current.Core;
+        public static RepositoryConfig Repository => Current.Repository;
         public static PluginConfig Plugin => Current.Plugin;
         public static UpdaterConfig Updater => Current.Updater;
         public static NetFilterConfig NetFilter => Current.NetFilter;
@@ -40,6 +42,7 @@ namespace UmamusumeResponseAnalyzer
                 Current = new()
                 {
                     Core = new(),
+                    Repository = new(),
                     Plugin = new(),
                     Updater = new(),
                     NetFilter = new(),
@@ -67,7 +70,8 @@ namespace UmamusumeResponseAnalyzer
                     .Title(i18n.Settings_Title)
                     .WrapAround(true)
                     .AddChoices(translatedTabs.Keys)
-                    .AddChoices(i18n.Return);
+                    .AddChoices(i18n.Return)
+                    .PageSize(30);
                 prompt = AnsiConsole.Prompt(selection);
                 if (prompt == i18n.Return) break;
                 var config = typeof(Config).GetProperty(translatedTabs[prompt]).GetValue(null);
@@ -78,6 +82,7 @@ namespace UmamusumeResponseAnalyzer
     public class YamlConfig
     {
         public CoreConfig Core { get; set; }
+        public RepositoryConfig Repository { get; set; }
         public PluginConfig Plugin { get; set; }
         public UpdaterConfig Updater { get; set; }
         public NetFilterConfig NetFilter { get; set; }
@@ -93,6 +98,7 @@ namespace UmamusumeResponseAnalyzer
         public string ListenAddress { get; set; } = "127.0.0.1";
         public int ListenPort { get; set; } = 4693;
         public bool RequestAdditionalHeader { get; set; } = false;
+        public bool ShowFirstRunPrompt { get; set; } = true;
         public void Prompt()
         {
             var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -140,6 +146,69 @@ namespace UmamusumeResponseAnalyzer
                 {
                     RequestAdditionalHeader = !RequestAdditionalHeader;
                 }
+                else if (selected == nameof(ShowFirstRunPrompt))
+                {
+                    ShowFirstRunPrompt = !ShowFirstRunPrompt;
+
+                }
+                Config.Save();
+            } while (selected != i18n.Return);
+        }
+    }
+    public class RepositoryConfig
+    {
+        public List<string> Targets { get; set; } = [];
+        public Dictionary<string, string> AdditionalPluginRepositories { get; set; } = [];
+
+        public void Prompt()
+        {
+            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => x.Name != "AdditionalPluginRepositories");
+            var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_Repository_{x}", i18n.Culture)!);
+            var selected = string.Empty;
+            do
+            {
+                var selectionPrompt = new SelectionPrompt<string>()
+                    .Title(i18n.Tabs_Repository_Title)
+                    .WrapAround(true)
+                    .AddChoices(_properties.Select(x => x.AppendValue(this, translated)))
+                    .AddChoices(AdditionalPluginRepositories.Select(x => $"{x.Key}: {x.Value}"))
+                    .AddChoices([i18n.Add, i18n.Return]);
+                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
+
+                if (selected == i18n.Tabs_Repository_Targets)
+                {
+                    var targetPrompt = new TextPrompt<string>(i18n.Tabs_Repository_TargetsPrompt)
+                        .AllowEmpty();
+                    var targetsInput = AnsiConsole.Prompt(targetPrompt);
+                    Targets = string.IsNullOrEmpty(targetsInput) ? [] : [.. targetsInput.Replace('，', ',').Split(',')];
+                    AnsiConsole.Clear();
+                }
+                else if (selected == i18n.Add)
+                {
+                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesPrompt);
+                    do
+                    {
+                        var url = AnsiConsole.Prompt(urlPrompt);
+                        if (Uri.TryCreate(url, UriKind.Absolute, out var _))
+                        {
+                            var namePrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesNamePrompt)
+                                .AllowEmpty();
+                            var name = AnsiConsole.Prompt(namePrompt);
+                            if (string.IsNullOrEmpty(name))
+                            {
+                                name = url.GetHashCode().ToString();
+                            }
+                            AdditionalPluginRepositories.Add(name, url);
+                            break;
+                        }
+                    } while (true);
+                    AnsiConsole.Clear();
+                }
+                else
+                {
+                    AdditionalPluginRepositories.Remove(selected);
+                }
+
                 Config.Save();
             } while (selected != i18n.Return);
         }
@@ -151,15 +220,16 @@ namespace UmamusumeResponseAnalyzer
 
         public void Prompt()
         {
-            Task.WaitAll(UmamusumeResponseAnalyzer._plugin_initialize_task);
+            UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
             var selected = string.Empty;
             do
             {
                 var selectionPrompt = new SelectionPrompt<string>()
-                    .Title(i18n.Tabs_Core_Title)
+                    .Title(i18n.Tabs_Plugin_Title)
                     .WrapAround(true)
                     .AddChoices(PluginManager.LoadedPlugins.Select(x => x.Name))
-                    .AddChoices(i18n.Return);
+                    .AddChoices(i18n.Return)
+                    .PageSize(30);
                 selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
                 if (selected != i18n.Return)
                 {
@@ -172,10 +242,11 @@ namespace UmamusumeResponseAnalyzer
     }
     public class UpdaterConfig
     {
+        public bool IsGithubBlocked { get; set; } = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
         public bool ForceUseGithubToUpdate { get; set; }
         public void Prompt()
         {
-            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => x.Name != "IsGithubBlocked");
             var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_Updater_{x}", i18n.Culture)!);
             var l3Prompt = new MultiSelectionPrompt<string>()
                 .Title(i18n.Tabs_Updater_Title)

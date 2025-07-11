@@ -297,4 +297,22 @@ NetFilter驱动也会被其他程序安装，比如ACGPower和Netch，此时会�
   <data name="Tabs_Updater_Title" xml:space="preserve">
     <value>更新</value>
   </data>
+  <data name="Tabs_Repository_Targets" xml:space="preserve">
+    <value>目标服务器</value>
+  </data>
+  <data name="Tabs_Repository_TargetsPrompt" xml:space="preserve">
+    <value>请输入目标服务器，留空为不加限制，多个目标以逗号分隔。(日服建议填Cygames，繁中服建议填Komoe)</value>
+  </data>
+  <data name="Tabs_Repository_AdditionalPluginRepositoriesPrompt" xml:space="preserve">
+    <value>请输入额外仓库的URL: </value>
+  </data>
+  <data name="Tabs_Repository_AdditionalPluginRepositoriesNamePrompt" xml:space="preserve">
+    <value>请输入额外仓库的备注: </value>
+  </data>
+  <data name="Tabs_Repository_Title" xml:space="preserve">
+    <value>插件仓库</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
 </root>

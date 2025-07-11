@@ -14,6 +14,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         string Name { get; }
         string Author { get; }
         Version Version { get; }
+        string[] Targets { get; }
 
         void Initialize() { }
         void Dispose() { }
@@ -55,6 +56,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     var property = properties.FirstOrDefault(x => x.Name == selection);
                     if (property != default)
                     {
+                        var description = property.GetCustomAttribute<PluginDescriptionAttribute>()?.Description;
                         var type = property.PropertyType;
                         if (type == typeof(bool))
                         {
@@ -64,14 +66,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         else if (type.IsPrimitive || type == typeof(decimal))
                         {
                             var promptType = typeof(TextPrompt<>).MakeGenericType(type);
-                            var prompt = Activator.CreateInstance(promptType, $"{property.Name}: {property.GetCustomAttribute<PluginSettingAttribute>()?.Description}", null);
+                            var prompt = Activator.CreateInstance(promptType, $"{property.Name}: {description}", null);
                             var method = typeof(AnsiConsole).GetMethod("Prompt")!.MakeGenericMethod(type);
                             var value = method.Invoke(null, [prompt]);
                             property.SetValue(this, value);
                         }
                         else if (type == typeof(string))
                         {
-                            var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {property.GetCustomAttribute<PluginSettingAttribute>()?.Description}"));
+                            var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}"));
                             property.SetValue(this, str);
                         }
                         Config.Plugin.PluginSettings[Name][property.Name] = property.GetValue(this)!;

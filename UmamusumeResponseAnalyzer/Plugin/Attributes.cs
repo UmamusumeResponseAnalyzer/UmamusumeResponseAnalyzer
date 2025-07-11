@@ -16,7 +16,11 @@
         public bool Response { get; } = response;
     }
     [AttributeUsage(AttributeTargets.Property)]
-    public class PluginSettingAttribute(string description = null!) : Attribute
+    public class PluginSettingAttribute() : Attribute
+    {
+    }
+    [AttributeUsage(AttributeTargets.Property)]
+    public class PluginDescriptionAttribute(string description) : Attribute
     {
         public string Description { get; } = description ?? string.Empty;
     }

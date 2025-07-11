@@ -61,6 +61,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
+        ///   查找类似 添加 的本地化字符串。
+        /// </summary>
+        internal static string Add {
+            get {
+                return ResourceManager.GetString("Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 返回 的本地化字符串。
         /// </summary>
         internal static string Return {
@@ -567,6 +576,51 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string Tabs_Plugin_Title {
             get {
                 return ResourceManager.GetString("Tabs_Plugin_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入额外仓库的备注:  的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Repository_AdditionalPluginRepositoriesNamePrompt {
+            get {
+                return ResourceManager.GetString("Tabs_Repository_AdditionalPluginRepositoriesNamePrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入额外仓库的URL:  的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Repository_AdditionalPluginRepositoriesPrompt {
+            get {
+                return ResourceManager.GetString("Tabs_Repository_AdditionalPluginRepositoriesPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 目标服务器 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Repository_Targets {
+            get {
+                return ResourceManager.GetString("Tabs_Repository_Targets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入目标服务器，留空为不加限制，多个目标以逗号分隔。(日服建议填Cygames，繁中服建议填Komoe) 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Repository_TargetsPrompt {
+            get {
+                return ResourceManager.GetString("Tabs_Repository_TargetsPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 插件仓库 的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Repository_Title {
+            get {
+                return ResourceManager.GetString("Tabs_Repository_Title", resourceCulture);
             }
         }
         

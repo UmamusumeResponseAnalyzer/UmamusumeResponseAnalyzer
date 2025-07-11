@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using UmamusumeResponseAnalyzer.Plugin;
 using WatsonWebserver.Core;
 using WatsonWebserver.Lite;
@@ -21,8 +23,8 @@ namespace UmamusumeResponseAnalyzer
                 var buffer = ctx.Request.DataAsBytes;
 #if DEBUG
                 Directory.CreateDirectory("packets");
-                File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.bin", buffer);
-                File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
+                File.WriteAllBytes($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}R.bin", buffer);
+                File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
 #endif
                 if (Config.Debug.SaveResponseForDebug)
                 {
@@ -51,9 +53,9 @@ namespace UmamusumeResponseAnalyzer
 #if DEBUG
                 Directory.CreateDirectory("packets");
                 if (Config.Core.RequestAdditionalHeader)
-                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
+                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
                 else
-                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory())).ToString());
+                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory())).ToString());
 #endif
                 if (Config.Core.RequestAdditionalHeader)
                     _ = Task.Run(() => ParseRequest(buffer[170..]));
@@ -61,7 +63,34 @@ namespace UmamusumeResponseAnalyzer
                     _ = Task.Run(() => ParseRequest(buffer));
                 return ctx.Response.Send(string.Empty);
             });
+            server.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
+            {
+                AnsiConsole.MarkupLine(I18N_PingReceived);
+                OnPing.Signal();
+                return ctx.Response.Send("pong");
+            });
             server.Start();
+            foreach (var plugin in PluginManager.LoadedPlugins)
+            {
+                AnsiConsole.MarkupLine($"插件{plugin.Name}[lightgreen]加载成功[/]");
+            }
+            foreach (var plugin in PluginManager.FailedPlugins)
+            {
+                AnsiConsole.MarkupLine($"插件{Path.GetFileName(plugin)}[red]加载失败[/] ({plugin})");
+            }
+            if (Config.Core.ListenAddress == "0.0.0.0")
+            {
+                var interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                       .Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                       .SelectMany(x => x.GetIPProperties().UnicastAddresses)
+                       .Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork)
+                       .Select(x => x.Address.ToString())
+                       .ToList();
+                foreach (var i in interfaces)
+                {
+                    AnsiConsole.WriteLine(I18N_AvailableEndpointTip, i);
+                }
+            }
         }
         public static void Stop() => server.Dispose();
         static void ParseRequest(byte[] buffer)

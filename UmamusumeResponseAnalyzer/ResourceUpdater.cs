@@ -1,16 +1,25 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using UmamusumeResponseAnalyzer.Plugin;
 using static UmamusumeResponseAnalyzer.Localization.ResourceUpdater;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class ResourceUpdater
     {
+        public static async Task<IEnumerable<PluginInformation>> GetPluginsFromRepository(string repositoryUrl)
+        {
+            using var client = new HttpClient();
+            var jsonText = await client.GetStringAsync(repositoryUrl);
+            var plugins = JsonConvert.DeserializeObject<IEnumerable<PluginInformation>>(jsonText);
+            return plugins ?? [];
+        }
         public static bool NeedUpdate()
         {
             var json = JObject.Parse(new HttpClient().GetStringAsync("https://api.github.com/repos/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest").Result);
@@ -198,10 +207,14 @@ namespace UmamusumeResponseAnalyzer
         }
         static string GetDownloadUrl(string filepath)
         {
-            const string CNHost = "https://assets.shuise.net/UmamusumeResponseAnalyzer";
-            const string GithubHost = "https://raw.githubusercontent.com/EtherealAO/UmamusumeResponseAnalyzer/master";
-            const string OSSHost = "https://assets.shuise.net/URA";
-            var isCN = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
+            var ProgramUrl = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe";
+            var GithubHost = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/raw/refs/heads/master/";
+            var OSSHost = "https://assets.shuise.net/URA";
+            if (Config.Updater.IsGithubBlocked && !Config.Updater.ForceUseGithubToUpdate)
+            {
+                ProgramUrl = ProgramUrl.Replace("https://", "https://gh.shuise.dev/");
+                GithubHost = GithubHost.Replace("https://", "https://gh.shuise.dev/");
+            }
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
             switch (filename)
@@ -209,14 +222,13 @@ namespace UmamusumeResponseAnalyzer
                 case var _ when filename.Contains("UmamusumeResponseAnalyzer.exe"):
                     filename = "UmamusumeResponseAnalyzer.exe";
                     break;
-                case var _ when filename == "nfapi.dll":
+                case "nfapi.dll":
                     return OSSHost + "/nfapi.dll";
-                case var _ when filename == "nfdriver.sys":
+                case "nfdriver.sys":
                     return OSSHost + "/nfdriver.sys";
-                case var _ when filename == "Redirector.dll":
+                case "Redirector.dll":
                     return OSSHost + "/Redirector.dll";
             }
-            var host = !Config.Updater.ForceUseGithubToUpdate && isCN ? CNHost : GithubHost;
             var i18n = Thread.CurrentThread.CurrentUICulture.Name switch
             {
                 "zh-CN" => "zh-CN/",
@@ -224,9 +236,8 @@ namespace UmamusumeResponseAnalyzer
             };
             return ext switch
             {
-                ".json" => $"{host}/GameData/{i18n}{filename}",
-                ".br" => $"{host}/GameData/{i18n}{filename}",
-                ".exe" => !Config.Updater.ForceUseGithubToUpdate && isCN ? $"{host}/{filename}" : $"https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe"
+                ".br" => $"{GithubHost}/GameData/{i18n}{filename}",
+                ".exe" => ProgramUrl
             };
         }
         public static async Task Download(ProgressContext ctx = null!, string instruction = null!, string path = null!)
