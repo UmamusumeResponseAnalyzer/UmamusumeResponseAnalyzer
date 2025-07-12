@@ -35,6 +35,14 @@ namespace UmamusumeResponseAnalyzer
             if (File.Exists(CONFIG_FILEPATH))
             {
                 Current = _deserializer.Deserialize<YamlConfig>(File.ReadAllText(CONFIG_FILEPATH));
+                foreach(var property in Current.GetType().GetProperties())
+                {
+                    var value = property.GetValue(Current);
+                    if(value == default)
+                    {
+                        property.SetValue(Current, property.PropertyType.GetConstructor(Type.EmptyTypes)!.Invoke([]));
+                    }
+                }
                 UmamusumeResponseAnalyzer.ApplyCultureInfo(Language.Selected);
             }
             else
