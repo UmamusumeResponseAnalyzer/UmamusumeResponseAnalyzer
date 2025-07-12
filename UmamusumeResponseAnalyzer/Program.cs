@@ -188,6 +188,23 @@ namespace UmamusumeResponseAnalyzer
                 AnsiConsole.WriteLine("在正式开始使用之前，请先根据需求前往[插件仓库]安装自己需要的插件，并重启URA。");
                 AnsiConsole.WriteLine("否则URA将没有任何功能。");
             }
+
+            var targets = AnsiConsole.Prompt(
+                new MultiSelectionPrompt<string>()
+                .Title("请选择你所使用的UM:PD版本，只选择繁中服的话就不会显示未来才能使用的插件防止报错。")
+                .AddChoices(["日服(Cygames)", "繁中服(Komoe)"]));
+            foreach(var target in targets)
+            {
+                switch (target)
+                {
+                    case "日服(Cygames)":
+                        Config.Repository.Targets.Add("Cygames");
+                        break;
+                    case "繁中服(Komoe)":
+                        Config.Repository.Targets.Add("Komoe");
+                        break;
+                }
+            }
         }
         static async Task<string> ShowMenu()
         {
