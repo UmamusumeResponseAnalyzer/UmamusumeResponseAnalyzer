@@ -42,6 +42,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 ShowFirstLaunchPrompt();
                 Config.Core.ShowFirstRunPrompt = false;
+                Config.Save();
             }
 
             var prompt = string.Empty;
