@@ -263,12 +263,10 @@ namespace UmamusumeResponseAnalyzer
             }
             #endregion
 
-            var response = await HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL), HttpCompletionOption.ResponseHeadersRead);
+            var response = await HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, downloadURL), HttpCompletionOption.ResponseHeadersRead);
             var task = ctx?.AddTask(instruction, false);
             task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task?.StartTask();
-
-            response = await HttpClient.GetAsync(downloadURL);
 
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
