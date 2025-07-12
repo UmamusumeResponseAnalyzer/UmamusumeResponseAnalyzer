@@ -113,6 +113,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     plugin.Dispose();
                 }
+                ResourceUpdater.HttpClient.Dispose();
                 _closingEvent.Set();
             };
             _closingEvent.WaitOne();
@@ -249,7 +250,6 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (prompt == "插件仓库")
             {
-                using var client = new HttpClient();
                 var defaultRepository = "https://raw.githubusercontent.com/URA-Plugins/PluginMaster/refs/heads/master/PluginMaster/manifests.json".AllowMirror();
                 var repositories = new Dictionary<string, string>
                 {
@@ -264,7 +264,7 @@ namespace UmamusumeResponseAnalyzer
                 foreach (var (repositoryName, repository) in repositories)
                 {
                     AnsiConsole.WriteLine($"正在从{repositoryName}获取插件信息");
-                    var jsonText = await client.GetStringAsync(repository);
+                    var jsonText = await ResourceUpdater.HttpClient.GetStringAsync(repository);
                     var jsonObj = JsonConvert.DeserializeObject<List<PluginInformation>>(jsonText);
                     if (jsonObj != default)
                     {
@@ -314,7 +314,7 @@ namespace UmamusumeResponseAnalyzer
                 foreach (var plugin in selectedPlugins)
                 {
                     AnsiConsole.WriteLine($"[{plugin.Name}] 正在下载");
-                    using var stream = await client.GetStreamAsync(plugin.DownloadUrl);
+                    using var stream = await ResourceUpdater.HttpClient.GetStreamAsync(plugin.DownloadUrl);
                     using var archive = new ZipArchive(stream);
                     AnsiConsole.WriteLine($"[{plugin.Name}] 正在解压");
                     archive.ExtractToDirectory(WORKING_DIRECTORY, true);
@@ -409,8 +409,7 @@ namespace UmamusumeResponseAnalyzer
                                 ? "https://github.com/UmamusumeResponseAnalyzer/Hachimi/releases/latest/download/Hachimi.zip"
                                 : "https://github.com/UmamusumeResponseAnalyzer/Hachimi/releases/latest/download/UmamusumeLocalify.zip")
                                 .AllowMirror();
-                            using var client = new HttpClient();
-                            using var stream = await client.GetStreamAsync(url);
+                            using var stream = await ResourceUpdater.HttpClient.GetStreamAsync(url);
                             using var archive = new ZipArchive(stream);
                             archive.ExtractToDirectory(i, true);
 
@@ -597,6 +596,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 plugin.Dispose();
             }
+            ResourceUpdater.HttpClient.Dispose();
             return true;
         }
         #endregion

@@ -13,22 +13,28 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class ResourceUpdater
     {
+        public static HttpClient HttpClient = new()
+        {
+            DefaultRequestHeaders =
+            {
+                UserAgent = { new System.Net.Http.Headers.ProductInfoHeaderValue("UmamusumeResponseAnalyzer", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown Version") }
+            }
+        };
         public static async Task<IEnumerable<PluginInformation>> GetPluginsFromRepository(string repositoryUrl)
         {
-            using var client = new HttpClient();
-            var jsonText = await client.GetStringAsync(repositoryUrl);
+            var jsonText = await HttpClient.GetStringAsync(repositoryUrl);
             var plugins = JsonConvert.DeserializeObject<IEnumerable<PluginInformation>>(jsonText);
             return plugins ?? [];
         }
-        public static bool NeedUpdate()
+        public static async Task<bool> NeedUpdate()
         {
-            var json = JObject.Parse(new HttpClient().GetStringAsync("https://api.github.com/repos/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest").Result);
+            var json = JObject.Parse(await HttpClient.GetStringAsync("https://api.github.com/repos/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest"));
             var latestVersion = json["tag_name"]?.ToString() ?? string.Empty;
             return !latestVersion.Equals("v" + Assembly.GetExecutingAssembly().GetName().Version);
         }
         public static async Task UpdateProgram()
         {
-            if (!NeedUpdate())
+            if (!await NeedUpdate())
             {
                 Console.WriteLine(I18N_AlreadyLatestInstruction);
                 Console.WriteLine(Localization.LaunchMenu.I18N_Options_BackToMenuInstruction);
@@ -238,15 +244,10 @@ namespace UmamusumeResponseAnalyzer
         public static async Task Download(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
             var downloadURL = GetDownloadUrl(path);
-            var client = new HttpClient()
-            {
-                DefaultRequestVersion = HttpVersion.Version20
-            };
-
             #region 检测更新服务器是否可用
             try
             {
-                await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL));
+                await HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL));
             }
             catch
             {
@@ -262,12 +263,12 @@ namespace UmamusumeResponseAnalyzer
             }
             #endregion
 
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL), HttpCompletionOption.ResponseHeadersRead);
+            var response = await HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL), HttpCompletionOption.ResponseHeadersRead);
             var task = ctx?.AddTask(instruction, false);
             task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
             task?.StartTask();
 
-            response = await client.GetAsync(downloadURL);
+            response = await HttpClient.GetAsync(downloadURL);
 
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
