@@ -127,8 +127,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
                 if (Activator.CreateInstance(type) is IPlugin plugin)
                 {
-                    // 插件没有指定目标，或者插件目标兼容当前的目标才注册
-                    if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any())
+                    // 插件没有指定目标，或者插件目标兼容当前的目标，或当前没有设置任何目标才注册
+                    if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any() || Config.Repository.Targets.Count == 0)
                     {
                         RegisterHandlers(plugin);
                     }
