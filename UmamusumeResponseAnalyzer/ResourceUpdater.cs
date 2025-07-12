@@ -207,14 +207,9 @@ namespace UmamusumeResponseAnalyzer
         }
         static string GetDownloadUrl(string filepath)
         {
-            var ProgramUrl = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe";
-            var GithubHost = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/raw/refs/heads/master/";
+            var ProgramUrl = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe".AllowMirror();
+            var GithubHost = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/raw/refs/heads/master/".AllowMirror();
             var OSSHost = "https://assets.shuise.net/URA";
-            if (Config.Updater.IsGithubBlocked && !Config.Updater.ForceUseGithubToUpdate)
-            {
-                ProgramUrl = ProgramUrl.Replace("https://", "https://gh.shuise.dev/");
-                GithubHost = GithubHost.Replace("https://", "https://gh.shuise.dev/");
-            }
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
             switch (filename)

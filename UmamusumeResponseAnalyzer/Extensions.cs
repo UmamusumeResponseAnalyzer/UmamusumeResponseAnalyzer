@@ -1,6 +1,7 @@
 ﻿using Gallop;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
+using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 
@@ -95,15 +96,24 @@ namespace UmamusumeResponseAnalyzer
                 _ => false
             };
         }
+        public static string AllowMirror(this string? url)
+        {
+            if (url == null) return string.Empty;
+            if (Config.Updater.IsGithubBlocked && !Config.Updater.ForceUseGithubToUpdate)
+            {
+                url = url.Replace("https://", "https://gh.shuise.dev/");
+            }
+            return url;
+        }
         public static string AppendValue(this PropertyInfo property, object? obj, Dictionary<string, string> translatedDic = null!)
         {
             var value = property.GetValue(obj);
             var valueString = string.Empty;
-            if(value is IEnumerable<string> enumerable)
+            if (value is IEnumerable<string> enumerable)
             {
                 valueString = string.Join(",", enumerable.Select(x => x.Replace("[", "[[").Replace("]", "]]")));
             }
-            else if (value is IDictionary<string,string> dictionary)
+            else if (value is IDictionary<string, string> dictionary)
             {
                 valueString = string.Join(',', dictionary.Keys);
             }

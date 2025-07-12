@@ -2,6 +2,7 @@
 using Spectre.Console;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -150,7 +151,7 @@ namespace UmamusumeResponseAnalyzer
                 new SelectionPrompt<string>()
                 .Title("Github的所有功能是否都能在你当前所在地区正常使用？如果不知道请保持默认")
                 .AddChoices(["否", "是"]));
-            Config.Updater.IsGithubBlocked = githubBlocked == "是";
+            Config.Updater.IsGithubBlocked = githubBlocked == "否";
             AnsiConsole.WriteLine("进行网络连接时将优先通过URA的代理，如果URA的代理不可用请在选项->更新中启用[强制使用Github更新]");
             AnsiConsole.WriteLine();
 
@@ -193,7 +194,7 @@ namespace UmamusumeResponseAnalyzer
                 new MultiSelectionPrompt<string>()
                 .Title("请选择你所使用的UM:PD版本，只选择繁中服的话就不会显示未来才能使用的插件防止报错。")
                 .AddChoices(["日服(Cygames)", "繁中服(Komoe)"]));
-            foreach(var target in targets)
+            foreach (var target in targets)
             {
                 switch (target)
                 {
@@ -248,11 +249,7 @@ namespace UmamusumeResponseAnalyzer
             else if (prompt == "插件仓库")
             {
                 using var client = new HttpClient();
-                var defaultRepository = "https://raw.githubusercontent.com/URA-Plugins/PluginMaster/refs/heads/master/PluginMaster/manifests.json";
-                if (Config.Updater.IsGithubBlocked && !Config.Updater.ForceUseGithubToUpdate)
-                {
-                    defaultRepository = defaultRepository.Replace("https://", "https://gh.shuise.dev/");
-                }
+                var defaultRepository = "https://raw.githubusercontent.com/URA-Plugins/PluginMaster/refs/heads/master/PluginMaster/manifests.json".AllowMirror();
                 var repositories = new Dictionary<string, string>
                 {
                     ["默认仓库"] = defaultRepository
@@ -272,9 +269,9 @@ namespace UmamusumeResponseAnalyzer
                     {
                         foreach (var plugin in jsonObj.Where(x => x.Targets.Length == 0 || x.Targets.Intersect(Config.Repository.Targets).Any()))
                         {
-                            if (repositoryName == "默认仓库" && Config.Updater.IsGithubBlocked && !Config.Updater.ForceUseGithubToUpdate && Uri.TryCreate(plugin.DownloadUrl, UriKind.Absolute, out var uri) && uri.Host.EndsWith("github.com"))
+                            if (repositoryName == "默认仓库" && Uri.TryCreate(plugin.DownloadUrl, UriKind.Absolute, out var uri) && uri.Host.EndsWith("github.com"))
                             {
-                                plugin.DownloadUrl = plugin.DownloadUrl.Replace("https://", "https://gh.shuise.dev/");
+                                plugin.DownloadUrl = plugin.DownloadUrl.AllowMirror();
                             }
                             if (plugins.ContainsKey(plugin.Name))
                             {
@@ -389,7 +386,7 @@ namespace UmamusumeResponseAnalyzer
                 foreach (var i in UraCoreHelper.GamePaths)
                 {
                     AnsiConsole.WriteLine(I18N_UraCoreHelper_FoundAvailablePath, i);
-                    var confirm = AnsiConsole.Prompt(new ConfirmationPrompt($"是否需要将{target}安装到{0}？该操作需要管理员权限。"));
+                    var confirm = AnsiConsole.Prompt(new ConfirmationPrompt($"是否需要将{target}安装到{i}？该操作需要管理员权限。"));
                     if (confirm)
                     {
                         using var proc = new Process();
@@ -407,9 +404,10 @@ namespace UmamusumeResponseAnalyzer
 
                         if (proc.ExitCode == 0)
                         {
-                            var url = target == "Hachimi"
-                                ? "https://assets.shuise.net/URA/Hachimi.zip"
-                                : "https://assets.shuise.net/URA/UmamusumeLocalify.zip";
+                            var url = (target == "Hachimi"
+                                ? "https://github.com/UmamusumeResponseAnalyzer/Hachimi/releases/latest/download/Hachimi.zip"
+                                : "https://github.com/UmamusumeResponseAnalyzer/Hachimi/releases/latest/download/UmamusumeLocalify.zip")
+                                .AllowMirror();
                             using var client = new HttpClient();
                             using var stream = await client.GetStreamAsync(url);
                             using var archive = new ZipArchive(stream);

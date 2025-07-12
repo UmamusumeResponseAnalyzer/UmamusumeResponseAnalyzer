@@ -19,10 +19,9 @@ namespace UmamusumeResponseAnalyzer
                     var muiCache = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Classes")?.OpenSubKey("Local Settings")?.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("Shell")?.OpenSubKey("MuiCache");
                     if (muiCache != null)
                     {
-                        foreach (var i in muiCache.GetValueNames())
+                        foreach (var i in muiCache.GetValueNames().Where(x => x.Contains("umamusume.exe")))
                         {
-                            if (i.Contains("umamusume.exe"))
-                                _gamePaths.Add(i[..i.IndexOf("umamusume.exe")]);
+                            _gamePaths.Add(i[..i.IndexOf("umamusume.exe")]);
                         }
                     }
                 }
@@ -32,10 +31,9 @@ namespace UmamusumeResponseAnalyzer
                     var explorerFeatureUsage = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows")?.OpenSubKey("CurrentVersion")?.OpenSubKey("Explorer")?.OpenSubKey("FeatureUsage")?.OpenSubKey("AppSwitched");
                     if (explorerFeatureUsage != null)
                     {
-                        foreach (var i in explorerFeatureUsage.GetValueNames())
+                        foreach (var i in explorerFeatureUsage.GetValueNames().Where(x => x.Contains("umamusume.exe")))
                         {
-                            if (i.Contains("umamusume.exe"))
-                                _gamePaths.Add(i[..i.IndexOf("umamusume.exe")]);
+                            _gamePaths.Add(i[..i.IndexOf("umamusume.exe")]);
                         }
                     }
                 }
@@ -45,10 +43,9 @@ namespace UmamusumeResponseAnalyzer
                     var compatibilityAssistant = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("Microsoft")?.OpenSubKey("Windows NT")?.OpenSubKey("CurrentVersion")?.OpenSubKey("AppCompatFlags")?.OpenSubKey("Compatibility Assistant")?.OpenSubKey("Store");
                     if (compatibilityAssistant != null)
                     {
-                        foreach (var i in compatibilityAssistant.GetValueNames())
+                        foreach (var i in compatibilityAssistant.GetValueNames().Where(x => x.Contains("umamusume.exe")))
                         {
-                            if (i.Contains("umamusume.exe"))
-                                _gamePaths.Add(i[..i.IndexOf("umamusume.exe")]);
+                            _gamePaths.Add(i[..i.IndexOf("umamusume.exe")]);
                         }
                     }
                 }
@@ -73,7 +70,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
                 catch { }
-                _gamePaths = [.. _gamePaths.Distinct()];
+                gamePaths = [.. _gamePaths.Distinct()];
                 return gamePaths;
             }
             set
@@ -90,7 +87,7 @@ namespace UmamusumeResponseAnalyzer
                 Thread.Sleep(int.MaxValue);
                 return;
             }
-            if(registry.GetValue("DevOverrideEnable") is int current and not 1)
+            if (registry.GetValue("DevOverrideEnable") is int current and not 1)
             {
                 var registryCaution = new ConfirmationPrompt(@"该行为具有一定风险，将注册表HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\DevOverrideEnable的值改为1。
 请仔细阅读https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-redirection 了解其风险后再做决定，我们不对此负责。");
