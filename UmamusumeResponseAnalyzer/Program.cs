@@ -187,9 +187,6 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
                 AnsiConsole.WriteLine();
-
-                AnsiConsole.WriteLine("在正式开始使用之前，请先根据需求前往[插件仓库]安装自己需要的插件，并重启URA。");
-                AnsiConsole.WriteLine("否则URA将没有任何功能。");
             }
 
             var targets = AnsiConsole.Prompt(
@@ -208,6 +205,9 @@ namespace UmamusumeResponseAnalyzer
                         break;
                 }
             }
+
+            AnsiConsole.WriteLine("在正式开始使用之前，请先根据需求前往[插件仓库]安装自己需要的插件，并重启URA。");
+            AnsiConsole.WriteLine("否则URA将没有任何功能。");
         }
         static async Task<string> ShowMenu()
         {
@@ -323,8 +323,7 @@ namespace UmamusumeResponseAnalyzer
 
                 if (selectedPlugins.Count > 0)
                 {
-                    AnsiConsole.WriteLine("插件安装已全部完成，按任何键返回主菜单。");
-                    GC.Collect();
+                    AnsiConsole.WriteLine("插件安装已全部完成，请重新打开URA以使插件生效。");
                 }
                 Console.ReadKey();
             }
