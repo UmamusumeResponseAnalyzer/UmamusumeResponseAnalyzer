@@ -125,7 +125,7 @@ namespace UmamusumeResponseAnalyzer
             foreach (var group in tips.GroupBy(x => x.GroupId))
             {
                 var additionalSkills = Default.GetAllByGroupId(group.Key)
-                    .Where(x => x.Rarity < group.Max(y => y.Rarity) || x.Rate < group.Max(y => y.Rate))
+                    .Where(x => x.Rarity <= group.Max(y => y.Rarity))
                     .Where(x => x.Rate > 0);
                 var ids = additionalSkills.ExceptBy(tips.Select(x => x.Id), x => x.Id);
                 tips.AddRange(ids.Select(x => x.Clone()));
