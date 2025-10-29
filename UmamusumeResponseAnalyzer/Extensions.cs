@@ -20,6 +20,7 @@ namespace UmamusumeResponseAnalyzer
         Mecha = 9,
         Legend = 10,
         Pioneer = 11,
+        Onsen = 12,
         Unknown = int.MaxValue
     }
     public static class Extensions

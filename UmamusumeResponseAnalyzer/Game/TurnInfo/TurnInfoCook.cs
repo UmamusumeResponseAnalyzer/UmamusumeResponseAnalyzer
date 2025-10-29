@@ -4,7 +4,7 @@ using System.ComponentModel.Design;
 
 namespace UmamusumeResponseAnalyzer.Game.TurnInfo
 {
-    internal class TurnInfoCook : TurnInfo
+    public class TurnInfoCook : TurnInfo
     {
         /// <summary>
         /// 将要收货的食材
