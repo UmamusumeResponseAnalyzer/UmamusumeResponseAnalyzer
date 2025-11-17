@@ -140,15 +140,6 @@ namespace UmamusumeResponseAnalyzer
             }
             AnsiConsole.WriteLine();
 
-            var haveAdditionalData = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                .Title("你在UM:PD中所使用的Mod，是否会在请求中添加额外数据？如果不知道请保持默认")
-                .AddChoices(["否", "是"]));
-            Config.Core.RequestAdditionalHeader = haveAdditionalData == "是";
-            AnsiConsole.WriteLine("如果URA会持续报错，且某些插件的功能无法使用，则说明你的选择与实际选择的Mod的情况不符。");
-            AnsiConsole.WriteLine("此时请去选项->核心切换一下[请求含有额外数据]");
-            AnsiConsole.WriteLine();
-
             var githubBlocked = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                 .Title("Github的所有功能是否都能在你当前所在地区正常使用？如果不知道请保持默认")
@@ -156,38 +147,6 @@ namespace UmamusumeResponseAnalyzer
             Config.Updater.IsGithubBlocked = githubBlocked == "否";
             AnsiConsole.WriteLine("进行网络连接时将优先通过URA的代理，如果URA的代理不可用请在选项->更新中启用[强制使用Github更新]");
             AnsiConsole.WriteLine();
-
-            var useLocalization = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                .Title("是否需要使用本地化？如果你使用的Mod含有翻译功能，或希望URA对一些游戏内容进行汉化，请选是。")
-                .AddChoices(["否", "是"]));
-            if (useLocalization == "是")
-            {
-                var path = AnsiConsole.Prompt(
-                    new TextPrompt<string>("请输入本地化文件的路径(需要带text_data_dict.json)，或UM:PD游戏根目录: ")
-                    );
-                if (File.GetAttributes(path).HasFlag(FileAttributes.Directory))
-                {
-                    path = Directory.EnumerateFiles(path, "text_data_dict.json", SearchOption.AllDirectories).FirstOrDefault() ?? string.Empty;
-                }
-                if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                {
-                    AnsiConsole.WriteLine("未找到本地化文件，请自行下载之后重新在选项->本地化中设置。");
-                }
-                else
-                {
-                    try
-                    {
-                        JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(path));
-                        AnsiConsole.WriteLine("请注意，部分地方可能缺少翻译，这是正常的。");
-                    }
-                    catch (Exception)
-                    {
-                        AnsiConsole.WriteLine("本地化文件内容错误，请自行下载之后重新在选项->本地化中设置。");
-                    }
-                }
-                AnsiConsole.WriteLine();
-            }
 
             var targets = AnsiConsole.Prompt(
                 new MultiSelectionPrompt<string>()

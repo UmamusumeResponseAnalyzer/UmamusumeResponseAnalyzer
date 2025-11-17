@@ -50,13 +50,6 @@ namespace UmamusumeResponseAnalyzer
             server.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/request", (ctx) =>
             {
                 var buffer = ctx.Request.DataAsBytes;
-#if DEBUG
-                Directory.CreateDirectory("packets");
-                if (Config.Core.RequestAdditionalHeader)
-                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory()[170..])).ToString());
-                else
-                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer.AsMemory())).ToString());
-#endif
                 if (Config.Core.RequestAdditionalHeader)
                     _ = Task.Run(() => ParseRequest(buffer[170..]));
                 else
@@ -99,6 +92,13 @@ namespace UmamusumeResponseAnalyzer
             {
                 var str = MessagePackSerializer.ConvertToJson(buffer);
                 var obj = JsonConvert.DeserializeObject<JObject>(str);
+#if DEBUG
+                Directory.CreateDirectory("packets");
+                if (Config.Core.RequestAdditionalHeader)
+                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
+                else
+                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
+#endif
                 if (obj == default) return;
 
                 foreach (var (k, v) in PluginManager.RequsetAnalyzerMethods)
@@ -116,9 +116,11 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
-                AnsiConsole.WriteException(e);
+                if (!Config.Core.RequestAdditionalHeader) buffer = buffer[170..];
+                Config.Core.RequestAdditionalHeader = !Config.Core.RequestAdditionalHeader;
+                Config.Save();
             }
         }
         static void ParseResponse(byte[] buffer)
