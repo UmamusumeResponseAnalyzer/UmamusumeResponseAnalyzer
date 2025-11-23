@@ -8,11 +8,11 @@ using static UmamusumeResponseAnalyzer.Localization.Database;
 
 namespace UmamusumeResponseAnalyzer
 {
-    public static partial class Database
+    public static class Database
     {
         public static bool Initialized { get; private set; } = false;
         #region Paths
-        internal static string EVENT_NAME_FILEPATH = "events.br";
+        internal static string EVENT_NAME_FILEPATH = $"events_{(Config.Updater.TrainerIsMale ? "male" : "female")}.br";
         internal static string SUCCESS_EVENT_FILEPATH = "success_events.br";
         internal static string NAMES_FILEPATH = "names.br";
         internal static string SKILLS_FILEPATH = "skill_data.br";
@@ -68,8 +68,6 @@ namespace UmamusumeResponseAnalyzer
         #endregion
         public static async Task Initialize()
         {
-            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
-
             Events = (await DeserializeAsync<List<Story>>(EVENT_NAME_FILEPATH)).ToDictionary(y => y.Id, y => y);
             //if (TryDeserialize(SUCCESS_EVENT_FILEPATH, out var successEvent, x => x.ToObject<List<SuccessStory>>()!.ToDictionary(y => y.Id, y => y)))
             //{
@@ -98,107 +96,6 @@ namespace UmamusumeResponseAnalyzer
             SkillUpgradeSpeciality = (await DeserializeAsync<List<SkillUpgradeSpeciality>>(SKILL_UPGRADE_SPECIALITY_FILEPATH)).ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
             TalentSkill = await DeserializeAsync<Dictionary<int, TalentSkillData[]>>(TALENT_SKILLS_FILEPATH);
             FactorIds = await DeserializeAsync<NullableIntStringDictionary>(FACTOR_IDS_FILEPATH);
-            if (!string.IsNullOrEmpty(Config.Localization.LocalizationFilePath) && File.Exists(Config.Localization.LocalizationFilePath))
-            {
-                var textData = JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(Config.Localization.LocalizationFilePath));
-                var staticTranslation = JsonConvert.DeserializeObject<Dictionary<string, string>>("{\"ウマ娘の\":\"马娘的\",\"スピード\":\"速度\",\"スタミナ\":\"耐力\",\"パワー\":\"力量\",\"根性\":\"根性\",\"賢さ\":\"智力\",\"マイナススキル\":\"负面寄能\",\"スキル\":\"技能\",\"ヒント\":\"Hint \",\"やる気\":\"干劲\",\"の絆ゲージ\":\"的羁绊\",\"ステータス\":\"属性\",\"ランダムな\":\"随机\",\"つの\":\"项\",\"〜\":\"~\",\"練習上手\":\"擅长练习\",\"愛嬌\":\"惹人怜爱\",\"切れ者\":\"能人（概率获得）\",\"直前のトレーニング能力\":\"之前训练的属性\",\"直前のトレーニングに応じた\":\"之前训练的\",\"太り気味\":\"变胖\",\"練習ベタ\":\"不擅长练习\",\"夜ふかし気味\":\"熬夜\",\"バッドコンディションが治る\":\"治疗负面状态\",\"バッドコンディションが解消\":\"解除部分负面状态\",\"確率で\":\"概率\",\"なまけ癖\":\"摸鱼癖\",\"進行イベント打ち切り\":\"事件中断\",\"アタシに指図しないで！！！\":\"别对我指指点点！\",\"スターゲージ\":\"明星量表\",\"お出かけ不可になる\":\"不能外出\",\"とお出かけできる\":\"外出解锁\",\"ようになる\":\"\",\"ポジティブ思考\":\"正向思考\",\"ファン\":\"粉丝\",\"絆が一番低いサポートカード\":\"羁绊最低的支援卡\",\"全ての\":\"全部\",\"ランダム\":\"随机\",\"」の\":\"」的\"}")!;
-                var localizedSkillNames = new Dictionary<string, string>();  // 日文-中文技能名
-                var localizedUmaNames = new Dictionary<string, string>();  // 日文-中文角色和马娘全名
-                if (textData != default)
-                {
-                    foreach (var i in textData)
-                    {
-                        switch (i.Key)
-                        {
-                            case TextDataCategory.UmamusumeFullName:
-                                foreach (var j in i.Value)
-                                    localizedUmaNames[Names.GetUmamusume(j.Key).FullName] = j.Value;  // 暂存马娘全名
-                                break;
-                            case TextDataCategory.CostumeName:
-                                foreach (var j in i.Value)
-                                    Names.GetUmamusume(j.Key).Name = j.Value;
-                                break;
-                            case TextDataCategory.CharacterName:
-                                foreach (var j in i.Value)
-                                {
-                                    localizedUmaNames[Names.GetCharacter(j.Key).Name] = j.Value;  // 暂存角色名字
-                                    Names.GetCharacter(j.Key).Name = j.Value;
-                                }
-                                break;
-                            case TextDataCategory.SkillName:
-                                var translatedSkills = JsonConvert.DeserializeObject<List<SkillData>>(await Load(SKILLS_FILEPATH)) ?? [];
-                                foreach (var j in translatedSkills)
-                                {
-                                    if (i.Value.TryGetValue(j.Id, out var localized_name))
-                                    {
-                                        localizedSkillNames[j.Name] = localized_name;   // 暂存技能名字
-                                        j.DisplayName = localized_name;
-                                    }
-                                }
-                                Skills = new SkillManagerGenerator();
-                                SkillManagerGenerator.Default = new(translatedSkills);
-                                break;
-                            case TextDataCategory.WinSaddleName:
-                                SaddleNames = i.Value;
-                                break;
-                            case TextDataCategory.FactorName:
-                                foreach (var j in i.Value)
-                                    FactorIds[j.Key] = $"{j.Value}{string.Join(string.Empty, Enumerable.Repeat('★', int.Parse(j.Key.ToString()[^1..])))}";
-                                break;
-                            case TextDataCategory.EventName:
-                                foreach (var j in Events)
-                                    if (i.Value.TryGetValue(j.Key, out var localized_name))
-                                        j.Value.Name = localized_name;
-                                break;
-                            case TextDataCategory.ClimaxItemName:
-                                ClimaxItem = [];
-                                foreach (var j in i.Value)
-                                    ClimaxItem.Add(j.Key, j.Value);
-                                break;
-                        }
-                    }
-
-                    // 替换事件触发者名字和效果行
-                    foreach (var j in Events)
-                    {
-                        if (localizedUmaNames.TryGetValue(j.Value.TriggerName, out var localized_name))
-                            j.Value.TriggerName = localized_name;
-                        foreach (var choiceList in j.Value.Choices)
-                        {
-                            foreach (var choice in choiceList)
-                            {
-                                choice.SuccessEffect = TranslateLine(choice.SuccessEffect);
-                                if (choice.FailedEffect.Length > 0)
-                                    choice.FailedEffect = TranslateLine(choice.FailedEffect);
-                            }
-                        }
-                    }
-
-                    string TranslateLine(string s)
-                    {
-                        s = DictionaryReplace(s, localizedUmaNames); // 替换马娘名字
-                        // 技能名字
-                        foreach (var match in LocalizedLineRegex().Matches(s).Cast<Match>())
-                        {
-                            if (match.Success)
-                            {
-                                var skillName = match.Groups[1].Value;
-                                if (localizedSkillNames.TryGetValue(skillName, out var value))
-                                    s = s.Replace(skillName, $"{skillName}/{value}");
-                            }
-                        }
-                        s = DictionaryReplace(s, staticTranslation);    // 替换固定文本
-                        return s;
-                    }
-                    static string DictionaryReplace(string line, Dictionary<string, string> dict)
-                    {
-                        var s = new StringBuilder(line);
-                        foreach (var item in dict)
-                            s.Replace(item.Key, item.Value);
-                        return s.ToString();
-                    }
-                }
-            }
             Initialized = true;
         }
         static async Task<T> DeserializeAsync<T>(string filepath)
@@ -240,8 +137,6 @@ namespace UmamusumeResponseAnalyzer
                 return string.Empty;
             }
         }
-        [GeneratedRegex(@"「(.*?)」")]
-        private static partial Regex LocalizedLineRegex();
     }
 
     public class NullableIntStringDictionary : Dictionary<int, string>

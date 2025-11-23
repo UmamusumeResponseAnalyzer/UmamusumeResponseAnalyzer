@@ -214,7 +214,7 @@ namespace UmamusumeResponseAnalyzer
         static string GetDownloadUrl(string filepath)
         {
             var ProgramUrl = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe".AllowMirror();
-            var GithubHost = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/raw/refs/heads/master/".AllowMirror();
+            var GithubHost = string.IsNullOrEmpty(Config.Updater.CustomDatabaseRepository) ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror() : Config.Updater.CustomDatabaseRepository;
             var OSSHost = "https://assets.shuise.net/URA";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
@@ -230,14 +230,9 @@ namespace UmamusumeResponseAnalyzer
                 case "Redirector.dll":
                     return OSSHost + "/Redirector.dll";
             }
-            var i18n = Thread.CurrentThread.CurrentUICulture.Name switch
-            {
-                "zh-CN" => "zh-CN/",
-                _ => string.Empty
-            };
             return ext switch
             {
-                ".br" => $"{GithubHost}/GameData/{i18n}{filename}",
+                ".br" => $"{GithubHost}/GameData/{Config.Updater.DatabaseLanguage}/{filename}",
                 ".exe" => ProgramUrl
             };
         }

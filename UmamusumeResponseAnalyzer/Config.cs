@@ -14,7 +14,7 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class Config
     {
-        internal static string CONFIG_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer", "config.yaml");
+        internal static string CONFIG_FILEPATH = "config.yaml";
         private static YamlConfig Current { get; set; }
         private readonly static ISerializer _serializer = new SerializerBuilder().WithQuotingNecessaryStrings().WithNamingConvention(HyphenatedNamingConvention.Instance).Build();
         private readonly static IDeserializer _deserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().WithNamingConvention(HyphenatedNamingConvention.Instance).Build();
@@ -25,20 +25,17 @@ namespace UmamusumeResponseAnalyzer
         public static NetFilterConfig NetFilter => Current.NetFilter;
         public static DMMConfig DMM => Current.DMM;
         public static LanguageConfig Language => Current.Language;
-        public static LocalizationConfig Localization => Current.Localization;
-        public static DebugConfig Debug => Current.Debug;
         public static MiscConfig Misc => Current.Misc;
 
         internal static void Initialize()
         {
-            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
             if (File.Exists(CONFIG_FILEPATH))
             {
                 Current = _deserializer.Deserialize<YamlConfig>(File.ReadAllText(CONFIG_FILEPATH));
-                foreach(var property in Current.GetType().GetProperties())
+                foreach (var property in Current.GetType().GetProperties())
                 {
                     var value = property.GetValue(Current);
-                    if(value == default)
+                    if (value == default)
                     {
                         property.SetValue(Current, property.PropertyType.GetConstructor(Type.EmptyTypes)!.Invoke([]));
                     }
@@ -56,8 +53,6 @@ namespace UmamusumeResponseAnalyzer
                     NetFilter = new(),
                     DMM = new(),
                     Language = new(),
-                    Localization = new(),
-                    Debug = new(),
                     Misc = new()
                 };
                 Save();
@@ -82,8 +77,8 @@ namespace UmamusumeResponseAnalyzer
                     .PageSize(30);
                 prompt = AnsiConsole.Prompt(selection);
                 if (prompt == i18n.Return) break;
-                var config = typeof(Config).GetProperty(translatedTabs[prompt]).GetValue(null);
-                config.GetType().GetMethod("Prompt").Invoke(config, null);
+                var config = typeof(Config).GetProperty(translatedTabs[prompt])?.GetValue(null);
+                config?.GetType()?.GetMethod("Prompt")?.Invoke(config, null);
             }
         }
     }
@@ -96,8 +91,6 @@ namespace UmamusumeResponseAnalyzer
         public NetFilterConfig NetFilter { get; set; }
         public DMMConfig DMM { get; set; }
         public LanguageConfig Language { get; set; }
-        public LocalizationConfig Localization { get; set; }
-        public DebugConfig Debug { get; set; }
         public MiscConfig Misc { get; set; }
     }
     #region class
@@ -193,10 +186,11 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (selected == i18n.Add)
                 {
-                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesPrompt);
+                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesPrompt).AllowEmpty();
                     do
                     {
                         var url = AnsiConsole.Prompt(urlPrompt);
+                        if (string.IsNullOrEmpty(url)) break;
                         if (Uri.TryCreate(url, UriKind.Absolute, out var _))
                         {
                             var namePrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesNamePrompt)
@@ -230,18 +224,19 @@ namespace UmamusumeResponseAnalyzer
         {
             UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
             var selected = string.Empty;
+            var plugins = PluginManager.LoadedPlugins.ToDictionary(x => x.GetType().GetProperty("Name")?.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? x.Name, x => x);
             do
             {
                 var selectionPrompt = new SelectionPrompt<string>()
                     .Title(i18n.Tabs_Plugin_Title)
                     .WrapAround(true)
-                    .AddChoices(PluginManager.LoadedPlugins.Select(x => x.Name))
+                    .AddChoices(plugins.Keys)
                     .AddChoices(i18n.Return)
                     .PageSize(30);
-                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
+                selected = AnsiConsole.Prompt(selectionPrompt);
                 if (selected != i18n.Return)
                 {
-                    var plugin = PluginManager.LoadedPlugins.First(x => x.Name == selected);
+                    var plugin = plugins[selected];
                     plugin.ConfigPrompt();
                     Config.Save();
                 }
@@ -251,28 +246,62 @@ namespace UmamusumeResponseAnalyzer
     public class UpdaterConfig
     {
         public bool IsGithubBlocked { get; set; } = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
+        public bool TrainerIsMale { get; set; } = true;
+        public string DatabaseLanguage { get; set; }
+        public string CustomDatabaseRepository { get; set; }
         public bool ForceUseGithubToUpdate { get; set; }
         public void Prompt()
         {
             var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => x.Name != "IsGithubBlocked");
             var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_Updater_{x}", i18n.Culture)!);
-            var l3Prompt = new MultiSelectionPrompt<string>()
-                .Title(i18n.Tabs_Updater_Title)
-                .WrapAround(true)
-                .Required(false)
-                .AddChoices(translated.Values);
-            foreach (var i in _properties)
+
+            var selected = string.Empty;
+            do
             {
-                if ((bool)i.GetValue(this)!)
+                var l3Prompt = new SelectionPrompt<string>()
+                    .Title(i18n.Tabs_Updater_Title)
+                    .WrapAround(true)
+                    .AddChoices(_properties.Select(x => x.AppendValue(this, translated)))
+                    .AddChoices(i18n.Return);
+                selected = AnsiConsole.Prompt(l3Prompt).Split(':')[0];
+                if (selected == nameof(TrainerIsMale))
                 {
-                    l3Prompt.Select(translated[i.Name]);
+                    TrainerIsMale = !TrainerIsMale;
                 }
-            }
-            var l3 = AnsiConsole.Prompt(l3Prompt);
-            foreach (var i in _properties)
-            {
-                i.SetValue(this, l3.Contains(translated[i.Name]));
-            }
+                else if (selected == nameof(DatabaseLanguage))
+                {
+                    var dbLangPrompt = new SelectionPrompt<string>()
+                        .Title(nameof(DatabaseLanguage))
+                        .WrapAround(true)
+                        .AddChoices(["ja-JP", "zh-TW", "zh-CN"]);
+                    var dbLang = AnsiConsole.Prompt(dbLangPrompt);
+                    DatabaseLanguage = dbLang;
+                    AnsiConsole.Clear();
+                }
+                else if (selected == nameof(CustomDatabaseRepository))
+                {
+                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesPrompt).AllowEmpty();
+                    do
+                    {
+                        var url = AnsiConsole.Prompt(urlPrompt);
+                        if (string.IsNullOrEmpty(url))
+                        {
+                            CustomDatabaseRepository = string.Empty;
+                            break;
+                        }
+                        if (Uri.TryCreate(url, UriKind.Absolute, out var _))
+                        {
+                            CustomDatabaseRepository = url;
+                            break;
+                        }
+                    } while (true);
+                    AnsiConsole.Clear();
+                }
+                else if (selected == i18n.Tabs_Updater_ForceUseGithubToUpdate)
+                {
+                    ForceUseGithubToUpdate = !ForceUseGithubToUpdate;
+                }
+            } while (selected != i18n.Return);
             Config.Save();
         }
     }
@@ -594,9 +623,7 @@ namespace UmamusumeResponseAnalyzer
                 Selected = langEnum;
             }
             Config.Save();
-            var exePath = Environment.ProcessPath!;
-            Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
-            Environment.Exit(0);
+            UmamusumeResponseAnalyzer.Restart();
         }
         public static string GetCulture()
         {
@@ -616,46 +643,7 @@ namespace UmamusumeResponseAnalyzer
             English
         }
     }
-    public class LocalizationConfig
-    {
-        public string LocalizationFilePath { get; set; }
-
-        public void Prompt()
-        {
-            var selected = string.Empty;
-            do
-            {
-                var selectionPrompt = new SelectionPrompt<string>()
-                    .Title(i18n.Tabs_Localization_Title)
-                    .WrapAround(true)
-                    .AddChoices([$"{i18n.Tabs_Localization_Path}: {LocalizationFilePath}"])
-                    .AddChoices(i18n.Return);
-                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
-                if (selected == i18n.Tabs_Localization_Path)
-                {
-                    var path = string.Empty;
-                    var valid = false;
-                    do
-                    {
-                        path = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_Localization_InputPath));
-                        try
-                        {
-                            JsonConvert.DeserializeObject<Dictionary<TextDataCategory, Dictionary<int, string>>>(File.ReadAllText(path));
-                            valid = true;
-                        }
-                        catch (Exception)
-                        {
-                            valid = false;
-                            continue;
-                        }
-                    } while (!valid);
-                    LocalizationFilePath = path;
-                    Config.Save();
-                }
-            } while (selected != i18n.Return);
-        }
-    }
-    public class DebugConfig
+    public class MiscConfig
     {
         public bool SaveResponseForDebug { get; set; }
         public void Prompt()
@@ -664,33 +652,6 @@ namespace UmamusumeResponseAnalyzer
             var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_Debug_{x}", i18n.Culture)!);
             var l3Prompt = new MultiSelectionPrompt<string>()
                 .Title(i18n.Tabs_Debug_Title)
-                .WrapAround(true)
-                .Required(false)
-                .AddChoices(translated.Values);
-            foreach (var i in _properties)
-            {
-                if ((bool)i.GetValue(this)!)
-                {
-                    l3Prompt.Select(translated[i.Name]);
-                }
-            }
-            var l3 = AnsiConsole.Prompt(l3Prompt);
-            foreach (var i in _properties)
-            {
-                i.SetValue(this, l3.Contains(translated[i.Name]));
-            }
-            Config.Save();
-        }
-    }
-    public class MiscConfig
-    {
-        public bool WriteAIInfo { get; set; }
-        public void Prompt()
-        {
-            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_Misc_{x}", i18n.Culture)!);
-            var l3Prompt = new MultiSelectionPrompt<string>()
-                .Title(i18n.Tabs_Misc_Title)
                 .WrapAround(true)
                 .Required(false)
                 .AddChoices(translated.Values);

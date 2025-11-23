@@ -142,7 +142,7 @@
     <value>対応するコンストラクタが見つかりません</value>
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
-    <value>http://{0}:4693から接続を試みることができます</value>
+    <value>http://{0}:{1}から接続を試みることができます</value>
   </data>
   <data name="I18N_TrainingFailed" xml:space="preserve">
     <value>[red]トレーニングに失敗しました[/]</value>

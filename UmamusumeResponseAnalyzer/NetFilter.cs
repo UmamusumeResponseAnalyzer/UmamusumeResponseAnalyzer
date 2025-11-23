@@ -6,10 +6,9 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class NetFilter
     {
-        static readonly string applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-        static readonly string nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
-        static readonly string nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
-        static readonly string redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
+        public static readonly string nfapiPath = "nfapi.dll";
+        public static readonly string nfdriverPath = "nfdriver.sys";
+        public static readonly string redirectorPath = "Redirector.dll";
         static NetFilter()
         {
             try
@@ -20,7 +19,7 @@ namespace UmamusumeResponseAnalyzer
                     ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath).Wait();
                 }
                 NFAPI.SetDriverPath(nfdriverPath);
-                Redirector.SetBinaryDirectory(applicationDir);
+                Redirector.SetBinaryDirectory("./");
                 NFAPI.EnableLog(false);
             }
             catch (Exception ex)

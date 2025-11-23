@@ -121,7 +121,7 @@
     <value>[red]Error reading data file {0}, please update the program before updating data[/]</value>
   </data>
   <data name="I18N_LoadFail" xml:space="preserve">
-    <value>[red] An error occurred while loading {0}. Please try updating the data again. If the update fails, try deleting %localappdata%/UmamusumeResponseAnalyzer/.update_record and retry. [/]</value>
+    <value>[red] An error occurred while loading {0}. Please try updating the data again. [/]</value>
   </data>
   <data name="I18N_NotExist" xml:space="preserve">
     <value>[red]Data file {0} does not exist, please try updating the data again[/]</value>

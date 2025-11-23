@@ -121,7 +121,7 @@
     <value>[red]データファイル{0}の読み込み時にエラーが発生しました。プログラムを更新してからデータを更新してください[/]</value>
   </data>
   <data name="I18N_LoadFail" xml:space="preserve">
-    <value>[red] {0} の読み込み中にエラーが発生しました。データの再更新をお試しください。更新に失敗した場合は、%localappdata%/UmamusumeResponseAnalyzer/.update_record を削除してから再試行してください。[/]</value>
+    <value>[red] {0} の読み込み中にエラーが発生しました。データの再更新をお試しください。[/]</value>
   </data>
   <data name="I18N_NotExist" xml:space="preserve">
     <value>[red]データファイル{0}が存在しません。データを再更新してみてください[/]</value>

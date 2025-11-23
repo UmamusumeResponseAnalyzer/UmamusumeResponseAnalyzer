@@ -117,40 +117,40 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="I18N_WildcardServerStarted" xml:space="preserve">
-    <value>服务器已于http://*:4693启动</value>
-  </data>
-  <data name="I18N_AvailableEndpointTip" xml:space="preserve">
-    <value>可尝试通过http://{0}:4693连接</value>
-  </data>
-  <data name="I18N_NormalServerStarted" xml:space="preserve">
-    <value>服务器已于{0}启动，如需模拟器/手机连入请以管理员权限运行</value>
-  </data>
-  <data name="I18N_ServerStartFail" xml:space="preserve">
-    <value>服务器启动失败，请检查是否已有URA实例正在运行</value>
-  </data>
-  <data name="I18N_PingReceived" xml:space="preserve">
-    <value>[green]检测到从游戏发来的请求，配置正确[/]</value>
-  </data>
-  <data name="I18N_WebSocket_ConstructorNotFound" xml:space="preserve">
-    <value>未找到对应构造函数</value>
+  <data name="I18N_LoginRequestDetected" xml:space="preserve">
+    <value>[green]检测到帐号登录请求[/]</value>
   </data>
   <data name="I18N_WebSocket_CommandNotFound" xml:space="preserve">
     <value>未找到Command: {0}</value>
   </data>
+  <data name="I18N_ResponseAnalyzeFail" xml:space="preserve">
+    <value>[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]</value>
+  </data>
   <data name="I18N_WebSocket_CommandTypeNone" xml:space="preserve">
     <value>[WS]{0}: CommandType不得为None</value>
   </data>
-  <data name="I18N_WebSocket_DeserializeRequestFail" xml:space="preserve">
-    <value>反序列化WSRequest失败</value>
+  <data name="I18N_PingReceived" xml:space="preserve">
+    <value>[green]检测到从游戏发来的请求，配置正确[/]</value>
+  </data>
+  <data name="I18N_WildcardServerStarted" xml:space="preserve">
+    <value>服务器已于http://*:4693启动</value>
+  </data>
+  <data name="I18N_NormalServerStarted" xml:space="preserve">
+    <value>服务器已于{0}启动，如需模拟器/手机连入请以管理员权限运行</value>
+  </data>
+  <data name="I18N_WebSocket_ConstructorNotFound" xml:space="preserve">
+    <value>未找到对应构造函数</value>
+  </data>
+  <data name="I18N_AvailableEndpointTip" xml:space="preserve">
+    <value>可尝试通过http://{0}:{1}连接</value>
   </data>
   <data name="I18N_TrainingFailed" xml:space="preserve">
     <value>[red]训练失败！[/]</value>
   </data>
-  <data name="I18N_ResponseAnalyzeFail" xml:space="preserve">
-    <value>[red]解析Response时出现错误: (如果程序运行正常则可以忽略)[/]</value>
+  <data name="I18N_ServerStartFail" xml:space="preserve">
+    <value>服务器启动失败，请检查是否已有URA实例正在运行</value>
   </data>
-  <data name="I18N_LoginRequestDetected" xml:space="preserve">
-    <value>[green]检测到帐号登录请求[/]</value>
+  <data name="I18N_WebSocket_DeserializeRequestFail" xml:space="preserve">
+    <value>反序列化WSRequest失败</value>
   </data>
 </root>

@@ -21,6 +21,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         public void ConfigPrompt()
         {
             var properties = GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != default);
+            var propDic = new Dictionary<string, PropertyInfo>();
 
             var selection = string.Empty;
             do
@@ -33,13 +34,15 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 };
                 foreach (var i in properties)
                 {
-                    choices.Add($"{i.Name}: {i.GetValue(this)}");
+                    var key = i.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? i.Name;
+                    propDic.TryAdd(key, i);
+                    choices.Add($"{key}: {i.GetValue(this)}");
                 }
                 choices.Add("Reload");
                 choices.Add(Localization.LaunchMenu.I18N_UpdateProgram);
                 choices.Add(Localization.Config.Return);
                 var selectionPrompt = new SelectionPrompt<string>()
-                    .Title(Name)
+                    .Title(GetType().GetProperty("Name")?.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? Name)
                     .WrapAround(true)
                     .AddChoices(choices);
                 selection = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
@@ -51,9 +54,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 {
                     AnsiConsole.Progress().Start(UpdatePlugin);
                 }
-                else
+                else if (selection != Localization.Config.Return)
                 {
-                    var property = properties.FirstOrDefault(x => x.Name == selection);
+                    var property = propDic[selection];
                     if (property != default)
                     {
                         var description = property.GetCustomAttribute<PluginDescriptionAttribute>()?.Description;
@@ -73,7 +76,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         }
                         else if (type == typeof(string))
                         {
-                            var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}"));
+                            var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}").AllowEmpty());
                             property.SetValue(this, str);
                         }
                         Config.Plugin.PluginSettings[Name][property.Name] = property.GetValue(this)!;

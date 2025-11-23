@@ -142,7 +142,7 @@
     <value>Constructor not found</value>
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
-    <value>You may try connecting via http://{0}:4693</value>
+    <value>You may try connecting via http://{0}:{1}</value>
   </data>
   <data name="I18N_TrainingFailed" xml:space="preserve">
     <value>[red]Training failed![/]</value>

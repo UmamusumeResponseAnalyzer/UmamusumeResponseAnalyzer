@@ -20,7 +20,8 @@ namespace UmamusumeResponseAnalyzer
         internal static Task _database_initialize_task = null!;
         internal static Task _plugin_initialize_task = null!;
         public static bool Started => Server.IsRunning;
-        public static string WORKING_DIRECTORY = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
+        const string PORTABLE_WORKING_DIRECTORY = "./.portable";
+        public readonly static string WORKING_DIRECTORY = Directory.Exists(PORTABLE_WORKING_DIRECTORY) ? PORTABLE_WORKING_DIRECTORY : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
         public static async Task Main(string[] args)
         {
             var handlerRoutine = new ConsoleHelper.HandlerRoutine(ConsoleHelper.ConsoleCtrlCheck);
@@ -35,9 +36,6 @@ namespace UmamusumeResponseAnalyzer
             await ParseArguments(args);
 
             Config.Initialize();
-            _database_initialize_task = Database.Initialize();
-            _plugin_initialize_task = Task.Run(PluginManager.Init);
-
             if (Config.Core.ShowFirstRunPrompt)
             {
                 ShowFirstLaunchPrompt();
@@ -45,6 +43,7 @@ namespace UmamusumeResponseAnalyzer
                 Config.Save();
             }
 
+            _plugin_initialize_task = Task.Run(PluginManager.Init);
             var prompt = string.Empty;
             do
             {
@@ -52,6 +51,7 @@ namespace UmamusumeResponseAnalyzer
             }
             while (prompt != I18N_Start); //如果不是启动则重新显示主菜单
 
+            _database_initialize_task = Database.Initialize();
             Task.WaitAll(_database_initialize_task, _plugin_initialize_task); //等待数据库初始化完成
             Server.Start(); //启动HTTP服务器
             Task.WaitAll([.. PluginManager.LoadedPlugins.Select(x => Task.Run(x.Initialize))]);
@@ -121,8 +121,7 @@ namespace UmamusumeResponseAnalyzer
         static void ShowFirstLaunchPrompt()
         {
             AnsiConsole.WriteLine("检测到是第一次运行，将进行一些初始设置。使用方向键↑与↓切换选项，使用回车[Enter]确认。");
-            AnsiConsole.WriteLine("本程序的所有开发均使用如下设置：3840x2160分辨率、150%缩放、Windows终端(Windows Terminal)、启动大小120列35行。");
-            AnsiConsole.WriteLine("如果终端的分辨率过低，可能会导致显示异常。请优先考虑使用推荐设置以获得期望中的体验。");
+            AnsiConsole.WriteLine("推荐使用Windows终端(Windows Terminal)，并将启动大小设置为120列35行以获得更好的体验。");
             AnsiConsole.WriteLine();
 
             var mobileOrPc = AnsiConsole.Prompt(
@@ -136,16 +135,8 @@ namespace UmamusumeResponseAnalyzer
             }
             else
             {
-                AnsiConsole.WriteLine("已配置URA为仅接受来自此计算机的请求。如需要使模拟器连入，需从选项->核心中将监听地址更改为0.0.0.0并在启动时允许放行。");
+                AnsiConsole.WriteLine("已配置URA为仅接受来自此计算机的请求。如需要使模拟器连入，需从选项->核心中将监听地址更改为0.0.0.0并在启动时放行防火墙。");
             }
-            AnsiConsole.WriteLine();
-
-            var githubBlocked = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                .Title("Github的所有功能是否都能在你当前所在地区正常使用？如果不知道请保持默认")
-                .AddChoices(["否", "是"]));
-            Config.Updater.IsGithubBlocked = githubBlocked == "否";
-            AnsiConsole.WriteLine("进行网络连接时将优先通过URA的代理，如果URA的代理不可用请在选项->更新中启用[强制使用Github更新]");
             AnsiConsole.WriteLine();
 
             var targets = AnsiConsole.Prompt(
@@ -165,8 +156,20 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
 
-            AnsiConsole.WriteLine("在正式开始使用之前，请先根据需求前往[插件仓库]安装自己需要的插件，并重启URA。");
-            AnsiConsole.WriteLine("否则URA将没有任何功能。");
+            var dbLang = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                .Title("请选择事件数据语言，选择繁中等将会使用对应客户端已实装的内容翻译。不会影响实际效果及数据库总大小。")
+                .AddChoices(["日文", "繁中"]));
+            Config.Updater.DatabaseLanguage = dbLang == "繁中" ? "zh-TW" : "ja-JP";
+
+            var trainerGender = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                .Title("请选择训练员性别，用于精确显示事件选项。")
+                .AddChoices(["男", "女"]));
+            Config.Updater.TrainerIsMale = trainerGender == "男";
+
+            AnsiConsole.MarkupLine("在正式开始使用之前，请先[green]更新数据文件[/]并根据需求[green]前往[[插件仓库]]安装自己需要的插件[/]。");
+            AnsiConsole.MarkupLine("否则URA将[red]没有任何功能[/]。");
         }
         static async Task<string> ShowMenu()
         {
@@ -187,7 +190,7 @@ namespace UmamusumeResponseAnalyzer
             // Windows限定功能，其他平台不显示
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (Config.NetFilter.Enable)
+                if (Config.NetFilter.Enable && WORKING_DIRECTORY != PORTABLE_WORKING_DIRECTORY)
                 {
                     if (File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                     {
@@ -247,10 +250,16 @@ namespace UmamusumeResponseAnalyzer
                     .Title("选择要安装的插件")
                     .WrapAround(true)
                     .AddChoices(plugins.Select(x => $"{x.Key}: {x.Value.Description}"))
-                    .PageSize(30);
+                    .PageSize(30)
+                    .NotRequired();
                 var selectedPlugins = AnsiConsole.Prompt(pluginSelection)
                     .Select(x => plugins[x.Split(':')[0]].PluginInfo)
                     .ToList();
+                if (selectedPlugins.Count == 0)
+                {
+                    AnsiConsole.Clear();
+                    return prompt;
+                }
 
 #warning TODO: 如果依赖套依赖，需要再处理，偷个懒先
                 var dependencies = selectedPlugins.SelectMany(x => x.Dependencies).Distinct().ToArray();
@@ -276,13 +285,15 @@ namespace UmamusumeResponseAnalyzer
                     using var stream = await ResourceUpdater.HttpClient.GetStreamAsync(plugin.DownloadUrl);
                     using var archive = new ZipArchive(stream);
                     AnsiConsole.WriteLine($"[{plugin.Name}] 正在解压");
-                    archive.ExtractToDirectory(WORKING_DIRECTORY, true);
+                    archive.ExtractToDirectory("./", true);
                     AnsiConsole.WriteLine($"[{plugin.Name}] 安装完成");
                 }
 
                 if (selectedPlugins.Count > 0)
                 {
-                    AnsiConsole.WriteLine("插件安装已全部完成，请重新打开URA以使插件生效。");
+                    AnsiConsole.WriteLine("插件安装已全部完成，按任意键重新启动。");
+                    Console.ReadKey();
+                    Restart();
                 }
                 Console.ReadKey();
             }
@@ -296,11 +307,7 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (prompt == I18N_NFDriver_Install)
             {
-                var applicationDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-                var nfapiPath = Path.Combine(applicationDir, "nfapi.dll");
-                var nfdriverPath = Path.Combine(applicationDir, "nfdriver.sys");
-                var redirectorPath = Path.Combine(applicationDir, "Redirector.dll");
-                await ResourceUpdater.DownloadNetFilter(nfapiPath, nfdriverPath, redirectorPath);
+                await ResourceUpdater.DownloadNetFilter(NetFilter.nfapiPath, NetFilter.nfdriverPath, NetFilter.redirectorPath);
                 using var Proc = new Process();
                 var StartInfo = new ProcessStartInfo
                 {
@@ -313,7 +320,7 @@ namespace UmamusumeResponseAnalyzer
                 Proc.StartInfo = StartInfo;
                 Proc.Start();
                 Proc.WaitForExit();
-                if (File.Exists(nfapiPath) && File.Exists(nfdriverPath) && File.Exists(redirectorPath) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
+                if (File.Exists(NetFilter.nfapiPath) && File.Exists(NetFilter.nfdriverPath) && File.Exists(NetFilter.redirectorPath) && File.Exists($"{Environment.SystemDirectory}\\drivers\\netfilter2.sys"))
                 {
                     Config.NetFilter.Enable = true;
                     Config.Save();
@@ -455,7 +462,7 @@ namespace UmamusumeResponseAnalyzer
                                 }
                             case "--update-data":
                                 {
-                                    ZipFile.ExtractToDirectory(args[1], Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer"));
+                                    ZipFile.ExtractToDirectory(args[1], "./");
                                     return;
                                 }
                         }
@@ -473,6 +480,16 @@ namespace UmamusumeResponseAnalyzer
                 if (rc == null) continue;
                 rc.SetValue(rc, Thread.CurrentThread.CurrentUICulture);
             }
+        }
+        internal static void Restart()
+        {
+            var exePath = Environment.ProcessPath!;
+            Process.Start(new ProcessStartInfo(exePath)
+            {
+                UseShellExecute = true,
+                WorkingDirectory = Path.GetDirectoryName(exePath)!
+            });
+            Environment.Exit(0);
         }
     }
 
@@ -532,8 +549,9 @@ namespace UmamusumeResponseAnalyzer
         /// <param name="Handler"></param>
         /// <param name="Add"></param>
         /// <returns></returns>
-        [DllImport("Kernel32")]
-        internal static extern bool SetConsoleCtrlHandler(HandlerRoutine Handler, bool Add);
+        [LibraryImport("Kernel32")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool SetConsoleCtrlHandler(HandlerRoutine Handler, [MarshalAs(UnmanagedType.Bool)] bool Add);
 
         //delegate type to be used of the handler routine
         internal delegate bool HandlerRoutine(CtrlTypes CtrlType);

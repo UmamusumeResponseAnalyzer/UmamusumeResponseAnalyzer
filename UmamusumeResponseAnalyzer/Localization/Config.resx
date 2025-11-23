@@ -310,7 +310,7 @@ NetFilter驱动也会被其他程序安装，比如ACGPower和Netch，此时会�
     <value>请输入额外仓库的备注: </value>
   </data>
   <data name="Tabs_Repository_Title" xml:space="preserve">
-    <value>插件仓库</value>
+    <value>仓库</value>
   </data>
   <data name="Add" xml:space="preserve">
     <value>添加</value>

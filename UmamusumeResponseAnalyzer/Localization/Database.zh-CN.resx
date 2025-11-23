@@ -121,7 +121,7 @@
     <value>[red]读取数据文件{0}时出现错误，请先更新程序，再更新数据[/]</value>
   </data>
   <data name="I18N_LoadFail" xml:space="preserve">
-    <value>[red]加载{0}时出现错误，请尝试重新更新数据。若无法更新请删除%localappdata%/UmamusumeResponseAnalyzer/.update_record后再试[/]</value>
+    <value>[red]加载{0}时出现错误，请尝试重新更新数据。[/]</value>
   </data>
   <data name="I18N_NotExist" xml:space="preserve">
     <value>[red]数据文件{0}不存在，请尝试重新更新数据[/]</value>
