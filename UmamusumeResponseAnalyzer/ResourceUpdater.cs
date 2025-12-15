@@ -176,6 +176,12 @@ namespace UmamusumeResponseAnalyzer
                     var skillUpgradeSpecialityTask = Download(ctx, I18N_DownloadSkillUpgradeSpecialityInstruction, Database.SKILL_UPGRADE_SPECIALITY_FILEPATH);
                     tasks.Add(skillUpgradeSpecialityTask);
 
+                    var winSaddleTask = Download(ctx, Database.SADDLE_IDS_FILEPATH, Database.SADDLE_IDS_FILEPATH);
+                    tasks.Add(winSaddleTask);
+
+                    var successionRelationTask = Download(ctx, Database.SUCCESSION_RELATION_FILEPATH, Database.SUCCESSION_RELATION_FILEPATH);
+                    tasks.Add(successionRelationTask);
+
                     await Task.WhenAll(tasks);
                 });
             AnsiConsole.MarkupLine(I18N_DownloadedInstruction);

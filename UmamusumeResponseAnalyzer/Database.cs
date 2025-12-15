@@ -19,6 +19,8 @@ namespace UmamusumeResponseAnalyzer
         internal static string TALENT_SKILLS_FILEPATH = "talent_skill_sets.br";
         internal static string FACTOR_IDS_FILEPATH = "factor_ids.br";
         internal static string SKILL_UPGRADE_SPECIALITY_FILEPATH = "skill_upgrade_speciality.br";
+        internal static string SADDLE_IDS_FILEPATH = "wins_saddle.br";
+        internal static string SUCCESSION_RELATION_FILEPATH = "succession_relation.br";
         #endregion
         #region Properties
         /// <summary>
@@ -60,11 +62,8 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 可获得胜鞍的Id
         /// </summary>
-        public static int[] SaddleIds { get; } = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 147, 148, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 184];
-        /// <summary>
-        /// 胜鞍ID对应的比赛/奖章名
-        /// </summary>
-        public static Dictionary<int, string> SaddleNames { get; set; } = [];
+        public static int[] SaddleIds { get; set; } = [];
+        public static SuccessionRelationTable SuccessionRelation { get; set; }
         #endregion
         public static async Task Initialize()
         {
@@ -96,6 +95,8 @@ namespace UmamusumeResponseAnalyzer
             SkillUpgradeSpeciality = (await DeserializeAsync<List<SkillUpgradeSpeciality>>(SKILL_UPGRADE_SPECIALITY_FILEPATH)).ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
             TalentSkill = await DeserializeAsync<Dictionary<int, TalentSkillData[]>>(TALENT_SKILLS_FILEPATH);
             FactorIds = await DeserializeAsync<NullableIntStringDictionary>(FACTOR_IDS_FILEPATH);
+            SaddleIds = await DeserializeAsync<int[]>(SADDLE_IDS_FILEPATH);
+            SuccessionRelation = await DeserializeAsync<SuccessionRelationTable>(SUCCESSION_RELATION_FILEPATH);
             Initialized = true;
         }
         static async Task<T> DeserializeAsync<T>(string filepath)

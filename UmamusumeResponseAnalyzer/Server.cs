@@ -63,7 +63,7 @@ namespace UmamusumeResponseAnalyzer
             server.Start();
             foreach (var plugin in PluginManager.LoadedPlugins)
             {
-                AnsiConsole.MarkupLine($"插件{plugin.Name}[lightgreen]加载成功[/]");
+                AnsiConsole.MarkupLine($"插件{plugin.Name} v{plugin.Version}[lightgreen]加载成功[/]");
             }
             foreach (var plugin in PluginManager.FailedPlugins)
             {

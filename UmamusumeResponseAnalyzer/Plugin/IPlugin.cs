@@ -16,7 +16,10 @@ namespace UmamusumeResponseAnalyzer.Plugin
         Version Version { get; }
         string[] Targets { get; }
 
-        void Initialize() { }
+        void Initialize()
+        {
+            Directory.CreateDirectory(Path.Combine("PluginData", Name));
+        }
         void Dispose() { }
         public void ConfigPrompt()
         {

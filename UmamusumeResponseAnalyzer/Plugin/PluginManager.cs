@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer.Plugin
 {
-    internal static class PluginManager
+    public static class PluginManager
     {
         internal static List<string> PLUGIN_FILES => [.. new DirectoryInfo("Plugins").GetFiles("*.dll", SearchOption.AllDirectories).Select(x => x.FullName)];
         /// <summary>
@@ -20,7 +20,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         /// </summary>
         private static Dictionary<string, PluginMetadata> Metadatas { get; } = [];
         internal static List<string> FailedPlugins { get; } = [];
-        internal static List<IPlugin> LoadedPlugins { get; } = [];
+        public static List<IPlugin> LoadedPlugins { get; } = [];
         internal static SortedDictionary<int, List<(IPlugin Self, MethodInfo Method)>> RequsetAnalyzerMethods { get; } = [];
         internal static SortedDictionary<int, List<(IPlugin Self, MethodInfo Method)>> ResponseAnalyzerMethods { get; } = [];
         internal static List<HashSet<string>> ContextGroups { get; } = [];
