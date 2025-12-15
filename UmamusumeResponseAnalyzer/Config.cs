@@ -247,7 +247,7 @@ namespace UmamusumeResponseAnalyzer
     {
         public bool IsGithubBlocked { get; set; } = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
         public bool TrainerIsMale { get; set; } = true;
-        public string DatabaseLanguage { get; set; }
+        public string DatabaseLanguage { get; set; } = "ja-JP";
         public string CustomDatabaseRepository { get; set; }
         public bool ForceUseGithubToUpdate { get; set; }
         public void Prompt()
