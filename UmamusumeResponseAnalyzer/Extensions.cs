@@ -93,6 +93,8 @@ namespace UmamusumeResponseAnalyzer
                 ScenarioType.Cook => data.chara_info.scenario_id == 8 && data.cook_data_set != null,
                 ScenarioType.Mecha => data.chara_info.scenario_id == 9 && data.mecha_data_set != null,
                 ScenarioType.Legend => data.chara_info.scenario_id == 10 && data.legend_data_set != null,
+                ScenarioType.Pioneer => data.chara_info.scenario_id == 11 && data.pioneer_data_set != null,
+                ScenarioType.Onsen => data.chara_info.scenario_id == 12 && data.onsen_data_set != null,
                 ScenarioType.Unknown => true,
                 _ => false
             };
