@@ -13,7 +13,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
     {
         string Name { get; }
         string Author { get; }
-        Version Version { get; }
+        Version Version { get => GetType().Assembly.GetName().Version ?? new Version(0, 0, 0); }
         string[] Targets { get; }
 
         void Initialize()

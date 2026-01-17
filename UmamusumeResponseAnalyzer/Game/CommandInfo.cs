@@ -56,8 +56,6 @@ namespace UmamusumeResponseAnalyzer.Game
             CommandId = commandId;
             if ((trainIndexDictionary ?? ToTrainIndex).TryGetValue(commandId, out var ti))
                 TrainIndex = ti + 1;
-            else
-                AnsiConsole.MarkupLine($"[red]未找到{commandId}对应的训练位置[/]");
             var training = resp.chara_info.training_level_info_array.FirstOrDefault(x => x.command_id == CommandId);
             TrainLevel = training != default ? training.level : 0;
             var normalCommand = resp.home_info.command_info_array.First(x => x.command_id == CommandId);

@@ -13,12 +13,12 @@ namespace UmamusumeResponseAnalyzer
 {
     internal static class Server
     {
-        private static WebserverLite server = new(new WebserverSettings(Config.Core.ListenAddress, Config.Core.ListenPort), (ctx) => { return ctx.Response.Send(string.Empty); });
+        internal static WebserverLite Instance = new(new WebserverSettings(Config.Core.ListenAddress, Config.Core.ListenPort), (ctx) => { return ctx.Response.Send(string.Empty); });
         public static readonly ManualResetEvent OnPing = new(false);
-        public static bool IsRunning => server.IsListening;
+        public static bool IsRunning => Instance.IsListening;
         public static void Start()
         {
-            server.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/response", (ctx) =>
+            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/response", (ctx) =>
             {
                 var buffer = ctx.Request.DataAsBytes;
 #if DEBUG
@@ -45,7 +45,7 @@ namespace UmamusumeResponseAnalyzer
                 _ = Task.Run(() => ParseResponse(buffer));
                 return ctx.Response.Send(string.Empty);
             });
-            server.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/request", (ctx) =>
+            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/request", (ctx) =>
             {
                 var buffer = ctx.Request.DataAsBytes;
                 if (Config.Core.RequestAdditionalHeader)
@@ -54,13 +54,13 @@ namespace UmamusumeResponseAnalyzer
                     _ = Task.Run(() => ParseRequest(buffer));
                 return ctx.Response.Send(string.Empty);
             });
-            server.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
+            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
             {
                 AnsiConsole.MarkupLine(I18N_PingReceived);
                 OnPing.Signal();
                 return ctx.Response.Send("pong");
             });
-            server.Start();
+            Instance.Start();
             foreach (var plugin in PluginManager.LoadedPlugins)
             {
                 AnsiConsole.MarkupLine($"插件{plugin.Name} v{plugin.Version}[lightgreen]加载成功[/]");
@@ -83,7 +83,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
-        public static void Stop() => server.Dispose();
+        public static void Stop() => Instance.Dispose();
         static void ParseRequest(byte[] buffer)
         {
             try

@@ -1,9 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
 using Spectre.Console;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
+using YamlDotNet.Core.Tokens;
 using static UmamusumeResponseAnalyzer.DMMConfig;
 using static UmamusumeResponseAnalyzer.Localization.DMM;
 using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
@@ -13,8 +18,12 @@ namespace UmamusumeResponseAnalyzer
     /// <summary>
     /// 直接抓的包，然后重放
     /// </summary>
-    internal static class DMM
+    internal static partial class DMM
     {
+        [GeneratedRegex("<input type=\"hidden\" name=\"token\" value=\"([^\"]+)\"/>")]
+        private static partial Regex TokenRegex();
+        [GeneratedRegex("<input type=\"hidden\" id=\"js-app-url\" data-url = \"([^\\\"]+)\"/>")]
+        private static partial Regex OAuthTokenRegex();
         public static bool IgnoreExistProcess = false;
 
         public static async Task<string> LoginUrl()
@@ -24,6 +33,25 @@ namespace UmamusumeResponseAnalyzer
             var restr = await resp.Content.ReadAsStringAsync();
             var jo = JObject.Parse(restr);
             return jo["data"]!["url"]!.ToString();
+        }
+        public static async Task<string> Authenticate(string account, string password)
+        { // 这里本来是在网页里登录的，所以UA用的是浏览器
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36");
+
+            var loginUrl = await LoginUrl();
+            var path = HttpUtility.UrlEncode(loginUrl
+                .Replace("https://accounts.dmm.com/service/oauth/select/=/path=", string.Empty)
+                .Replace("oauth/select/", "oauth/")
+                .Replace("accounts?prompt=choose", "accounts"));
+            var token = TokenRegex().Match(await client.GetStringAsync(loginUrl)).Groups[1].Value;
+
+            var oauthTokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://accounts.dmm.com/service/oauth/authenticate");
+            oauthTokenRequest.Headers.Add("check_done_login", "true");
+            oauthTokenRequest.Content = new StringContent($"token={token}&login_id={HttpUtility.UrlEncode(account)}&password={HttpUtility.UrlEncode(password)}&use_auto_login=1&path={path}&recaptchaToken=", Encoding.UTF8, "application/x-www-form-urlencoded");
+            var oauth_token = await (await client.SendAsync(oauthTokenRequest)).Content.ReadAsStringAsync();
+            oauth_token = OAuthTokenRegex().Match(oauth_token).Groups[1].Value.Replace("dmmgameplayer://view/page?code=", string.Empty);
+            return oauth_token;
         }
         public static async Task<string> IssueAccessToken(string code)
         {

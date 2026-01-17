@@ -24,4 +24,10 @@
     {
         public string Description { get; } = description ?? string.Empty;
     }
+    [AttributeUsage(AttributeTargets.Method)]
+    public class RouteAttribute(WatsonWebserver.Core.HttpMethod method, string path) : Attribute
+    {
+        public WatsonWebserver.Core.HttpMethod Method { get; } = method;
+        public string Path { get; } = path;
+    }
 }

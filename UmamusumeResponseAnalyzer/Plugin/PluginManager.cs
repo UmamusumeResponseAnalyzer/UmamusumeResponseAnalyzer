@@ -1,14 +1,7 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text;
-using System.Threading.Tasks;
+using WatsonWebserver.Core;
 
 namespace UmamusumeResponseAnalyzer.Plugin
 {
@@ -130,7 +123,11 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     // 插件没有指定目标，或者插件目标兼容当前的目标，或当前没有设置任何目标才注册
                     if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any() || Config.Repository.Targets.Count == 0)
                     {
+                        Directory.CreateDirectory(@$"./PluginData/{plugin.Name}");
+                        LoadedPlugins.Add(plugin);
+                        RegisterSettings(plugin);
                         RegisterHandlers(plugin);
+                        RegisterRoutes(plugin);
                     }
                     Assemblies.Add(assembly);
                 }
@@ -145,10 +142,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 FailedPlugins.Add(pluginPath);
             }
         }
-        internal static void RegisterHandlers(IPlugin plugin)
+        internal static void RegisterSettings(IPlugin plugin)
         {
-            Directory.CreateDirectory(@$"./PluginData/{plugin.Name}");
-            LoadedPlugins.Add(plugin);
             var settings = plugin.GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != default);
             if (Config.Plugin.PluginSettings.TryGetValue(plugin.Name, out var config))
             {
@@ -183,6 +178,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     Config.Plugin.PluginSettings[plugin.Name].Add(setting.Name, setting.GetValue(plugin)!);
                 }
             }
+        }
+        internal static void RegisterHandlers(IPlugin plugin)
+        {
             foreach (var method in plugin.GetType().GetMethods())
             {
                 var analyzerAttribute = method.GetCustomAttribute<AnalyzerAttribute>();
@@ -199,6 +197,25 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         if (!RequsetAnalyzerMethods.ContainsKey(analyzerAttribute.Priority))
                             RequsetAnalyzerMethods.Add(analyzerAttribute.Priority, []);
                         RequsetAnalyzerMethods[analyzerAttribute.Priority].Add((plugin, method));
+                    }
+                }
+            }
+        }
+        internal static void RegisterRoutes(IPlugin plugin)
+        {
+            foreach (var method in plugin.GetType().GetMethods())
+            {
+                var route = method.GetCustomAttribute<RouteAttribute>();
+                if (route != default)
+                {
+                    var parameters = method.GetParameters();
+                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(HttpContextBase))
+                    {
+                        Server.Instance.Routes.PreAuthentication.Static.Add(route.Method, $"/{plugin.Name}/{route.Path}", x => (Task)method.Invoke(null, [x])!);
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine($"{plugin.Name}注册Route{route.Path}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", parameters.Select(x => x.ParameterType.Name))}");
                     }
                 }
             }
