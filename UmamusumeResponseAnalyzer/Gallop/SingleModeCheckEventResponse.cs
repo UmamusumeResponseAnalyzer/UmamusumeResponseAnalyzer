@@ -31,6 +31,7 @@ namespace Gallop
             public SingleModePioneerDataSet pioneer_data_set;
             public SingleModeOnsenDataSet onsen_data_set;
             public SingleModeBreedersDataSet breeders_data_set;
+            public SingleModeBreedersDataSetLoad breeders_data_set_load;
             public int? select_index;
         }
     }
