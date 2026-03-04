@@ -50,12 +50,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="NetFilterAPI">
-	    <HintPath>..\..\URA-Assets\Deps\NetFilterAPI.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-
-	<ItemGroup>
 		<Compile Update="Localization\CommandInfo\Cook.zh-CN.Designer.cs">
 		  <DependentUpon>Cook.zh-CN.resx</DependentUpon>
 		  <DesignTime>True</DesignTime>
@@ -100,11 +94,6 @@
 		  <DesignTime>True</DesignTime>
 		  <AutoGen>True</AutoGen>
 		  <DependentUpon>NameManager.resx</DependentUpon>
-		</Compile>
-		<Compile Update="Localization\NetFilter.Designer.cs">
-		  <DesignTime>True</DesignTime>
-		  <AutoGen>True</AutoGen>
-		  <DependentUpon>NetFilter.resx</DependentUpon>
 		</Compile>
 		<Compile Update="Localization\ResourceUpdater.Designer.cs">
 		  <DesignTime>True</DesignTime>
@@ -157,10 +146,6 @@
 		<EmbeddedResource Update="Localization\NameManager.resx">
 		  <Generator>ResXFileCodeGenerator</Generator>
 		  <LastGenOutput>NameManager.Designer.cs</LastGenOutput>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Localization\NetFilter.resx">
-		  <Generator>ResXFileCodeGenerator</Generator>
-		  <LastGenOutput>NetFilter.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Localization\ResourceUpdater.resx">
 		  <Generator>ResXFileCodeGenerator</Generator>

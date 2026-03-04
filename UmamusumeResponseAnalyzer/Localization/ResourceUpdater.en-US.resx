@@ -153,15 +153,6 @@
   <data name="I18N_UpdatedFileCorrupted" xml:space="preserve">
     <value>[red]Update file corrupted, main program update failed[/]</value>
   </data>
-  <data name="I18N_DownloadingNFApi" xml:space="preserve">
-    <value>Downloading nfapi.dll</value>
-  </data>
-  <data name="I18N_DownloadingNFDriver" xml:space="preserve">
-    <value>Downloading nfdriver.sys</value>
-  </data>
-  <data name="I18N_DownloadingRedirector" xml:space="preserve">
-    <value>Downloading Redirector.dll</value>
-  </data>
   <data name="I18N_DownloadingCmder" xml:space="preserve">
     <value>Downloading cmder.zip</value>
   </data>

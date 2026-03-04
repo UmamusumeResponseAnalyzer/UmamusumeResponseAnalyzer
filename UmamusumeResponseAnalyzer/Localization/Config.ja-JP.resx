@@ -138,9 +138,6 @@
   <data name="Tabs_Misc_Title" xml:space="preserve">
     <value>その他</value>
   </data>
-  <data name="Tabs_NetFilter_Title" xml:space="preserve">
-    <value>代理</value>
-  </data>
   <data name="Tabs_Updater_Title" xml:space="preserve">
     <value>更新</value>
   </data>

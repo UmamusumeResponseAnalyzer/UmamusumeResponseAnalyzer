@@ -22,7 +22,6 @@ namespace UmamusumeResponseAnalyzer
         public static RepositoryConfig Repository => Current.Repository;
         public static PluginConfig Plugin => Current.Plugin;
         public static UpdaterConfig Updater => Current.Updater;
-        public static NetFilterConfig NetFilter => Current.NetFilter;
         public static DMMConfig DMM => Current.DMM;
         public static LanguageConfig Language => Current.Language;
         public static MiscConfig Misc => Current.Misc;
@@ -50,7 +49,6 @@ namespace UmamusumeResponseAnalyzer
                     Repository = new(),
                     Plugin = new(),
                     Updater = new(),
-                    NetFilter = new(),
                     DMM = new(),
                     Language = new(),
                     Misc = new()
@@ -88,7 +86,6 @@ namespace UmamusumeResponseAnalyzer
         public RepositoryConfig Repository { get; set; }
         public PluginConfig Plugin { get; set; }
         public UpdaterConfig Updater { get; set; }
-        public NetFilterConfig NetFilter { get; set; }
         public DMMConfig DMM { get; set; }
         public LanguageConfig Language { get; set; }
         public MiscConfig Misc { get; set; }
@@ -303,86 +300,6 @@ namespace UmamusumeResponseAnalyzer
                 }
             } while (selected != i18n.Return);
             Config.Save();
-        }
-    }
-    public class NetFilterConfig
-    {
-        public string Host { get; set; }
-        public int Port { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string ServerType { get; set; }
-        public bool Enable { get; set; }
-        public void Prompt()
-        {
-            if (!Enable)
-            {
-                var enablePrompt = new ConfirmationPrompt(i18n.Tabs_NetFilter_Caution)
-                {
-                    DefaultValue = false
-                };
-                if (AnsiConsole.Prompt(enablePrompt))
-                {
-                    Enable = true;
-                    Config.Save();
-                    Prompt();
-                }
-                else
-                {
-                    AnsiConsole.Clear();
-                }
-                return;
-            }
-            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_NetFilter_{x}", i18n.Culture)!);
-            var selected = string.Empty;
-            do
-            {
-                var selectionPrompt = new SelectionPrompt<string>()
-                    .Title(i18n.Tabs_NetFilter_Title)
-                    .WrapAround(true)
-                    .AddChoices(_properties.Select(x => $"{translated[x.Name]}: {x.GetValue(this)}"))
-                    .AddChoices(i18n.Return);
-                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
-                if (selected == i18n.Tabs_NetFilter_Enable)
-                {
-                    Enable = false;
-                    selected = i18n.Return;
-                }
-                else if (selected == i18n.Tabs_NetFilter_Host)
-                {
-                    Host = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_NetFilter_InputHost));
-                }
-                else if (selected == i18n.Tabs_NetFilter_Port)
-                {
-                    do
-                    {
-                        var portText = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_NetFilter_InputPort));
-                        if (int.TryParse(portText, out var port))
-                        {
-                            Port = port;
-                            break;
-                        }
-                        else
-                        {
-                            AnsiConsole.WriteLine(i18n.Tabs_NetFilter_InputPort_FormatError);
-                        }
-                    } while (true);
-                }
-                else if (selected == i18n.Tabs_NetFilter_Username)
-                {
-                    Username = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_NetFilter_InputUsername).AllowEmpty());
-                }
-                else if (selected == i18n.Tabs_NetFilter_Password)
-                {
-                    Password = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_NetFilter_InputPassword).AllowEmpty());
-                }
-                else if (selected == i18n.Tabs_NetFilter_ServerType)
-                {
-                    ServerType = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_NetFilter_SelectType).AddChoices(["socks5", "http", "socks4a"]).DefaultValue("socks5"));
-                }
-                Config.Save();
-            } while (selected != i18n.Return);
         }
     }
     public class DMMConfig

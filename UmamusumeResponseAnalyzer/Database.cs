@@ -105,7 +105,7 @@ namespace UmamusumeResponseAnalyzer
         }
         private static readonly JsonSerializer _serializer = new JsonSerializer();
 
-        static async Task<T> DeserializeAsync<T>(string filepath, JsonSerializerSettings settings = null)
+        static async Task<T> DeserializeAsync<T>(string filepath, JsonSerializerSettings settings = null!)
         {
             if (File.Exists(filepath))
             {
@@ -143,7 +143,6 @@ namespace UmamusumeResponseAnalyzer
             }
             return default!;
         }
-
     }
 
     public class NullableIntStringDictionary : Dictionary<int, string>

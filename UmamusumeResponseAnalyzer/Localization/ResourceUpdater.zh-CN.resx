@@ -153,15 +153,6 @@
   <data name="I18N_UpdatedFileCorrupted" xml:space="preserve">
     <value>[red]更新文件受损，主程序更新失败[/]</value>
   </data>
-  <data name="I18N_DownloadingNFApi" xml:space="preserve">
-    <value>正在下载nfapi.dll</value>
-  </data>
-  <data name="I18N_DownloadingNFDriver" xml:space="preserve">
-    <value>正在下载nfdriver.sys</value>
-  </data>
-  <data name="I18N_DownloadingRedirector" xml:space="preserve">
-    <value>正在下载Redirector.dll</value>
-  </data>
   <data name="I18N_DownloadingCmder" xml:space="preserve">
     <value>正在下载cmder.zip</value>
   </data>

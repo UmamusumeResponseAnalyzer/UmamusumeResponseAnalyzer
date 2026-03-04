@@ -153,15 +153,6 @@
   <data name="I18N_UpdatedFileCorrupted" xml:space="preserve">
     <value>[red]更新ファイルが損傷しており、メインプログラムの更新に失敗しました[/]</value>
   </data>
-  <data name="I18N_DownloadingNFApi" xml:space="preserve">
-    <value>nfapi.dllをダウンロード中</value>
-  </data>
-  <data name="I18N_DownloadingNFDriver" xml:space="preserve">
-    <value>nfdriver.sysをダウンロード中</value>
-  </data>
-  <data name="I18N_DownloadingRedirector" xml:space="preserve">
-    <value>Redirector.dllをダウンロード中</value>
-  </data>
   <data name="I18N_DownloadingCmder" xml:space="preserve">
     <value>cmder.zipをダウンロード中</value>
   </data>

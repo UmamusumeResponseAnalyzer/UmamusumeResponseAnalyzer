@@ -187,36 +187,6 @@ namespace UmamusumeResponseAnalyzer
             AnsiConsole.MarkupLine(I18N_DownloadedInstruction);
             Console.ReadKey();
         }
-        public static async Task DownloadNetFilter(string nfapiPath, string nfdriverPath, string redirectorPath)
-        {
-            if (!File.Exists(nfapiPath) || !File.Exists(nfdriverPath) || !File.Exists(redirectorPath))
-            {
-                await AnsiConsole.Progress()
-                    .Columns(
-                    [
-                            new TaskDescriptionColumn(),
-                        new ProgressBarColumn(),
-                        new PercentageColumn(),
-                        new RemainingTimeColumn(),
-                        new SpinnerColumn()
-                    ])
-                    .StartAsync(async ctx =>
-                    {
-                        var tasks = new List<Task>();
-
-                        var nfAPITask = Download(ctx, I18N_DownloadingNFApi, nfapiPath);
-                        tasks.Add(nfAPITask);
-
-                        var nfDriverTask = Download(ctx, I18N_DownloadingNFDriver, nfdriverPath);
-                        tasks.Add(nfDriverTask);
-
-                        var redirectorTask = Download(ctx, I18N_DownloadingRedirector, redirectorPath);
-                        tasks.Add(redirectorTask);
-
-                        await Task.WhenAll(tasks);
-                    });
-            }
-        }
         static string GetDownloadUrl(string filepath)
         {
             var ProgramUrl = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe".AllowMirror();
@@ -224,18 +194,6 @@ namespace UmamusumeResponseAnalyzer
             var OSSHost = "https://assets.shuise.net/URA";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
-            switch (filename)
-            {
-                case var _ when filename.Contains("UmamusumeResponseAnalyzer.exe"):
-                    filename = "UmamusumeResponseAnalyzer.exe";
-                    break;
-                case "nfapi.dll":
-                    return OSSHost + "/nfapi.dll";
-                case "nfdriver.sys":
-                    return OSSHost + "/nfdriver.sys";
-                case "Redirector.dll":
-                    return OSSHost + "/Redirector.dll";
-            }
             return ext switch
             {
                 ".br" => $"{GithubHost}/GameData/{Config.Updater.DatabaseLanguage}/{filename}",

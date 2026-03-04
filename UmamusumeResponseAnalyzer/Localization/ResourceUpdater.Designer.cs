@@ -19,7 +19,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ResourceUpdater {
@@ -138,33 +138,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string I18N_DownloadingCmder {
             get {
                 return ResourceManager.GetString("I18N_DownloadingCmder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Downloading nfapi.dll 的本地化字符串。
-        /// </summary>
-        internal static string I18N_DownloadingNFApi {
-            get {
-                return ResourceManager.GetString("I18N_DownloadingNFApi", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Downloading nfdriver.sys 的本地化字符串。
-        /// </summary>
-        internal static string I18N_DownloadingNFDriver {
-            get {
-                return ResourceManager.GetString("I18N_DownloadingNFDriver", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Downloading Redirector.dll 的本地化字符串。
-        /// </summary>
-        internal static string I18N_DownloadingRedirector {
-            get {
-                return ResourceManager.GetString("I18N_DownloadingRedirector", resourceCulture);
             }
         }
         

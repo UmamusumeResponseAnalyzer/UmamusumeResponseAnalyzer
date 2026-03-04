@@ -242,52 +242,6 @@
   <data name="Tabs_Misc_WriteAIInfo" xml:space="preserve">
     <value>AI</value>
   </data>
-  <data name="Tabs_NetFilter_Caution" xml:space="preserve">
-    <value>"代理"功能并非使URA本身经过代理，而是通过NetFilter驱动使本身无法经过代理的程序强制经过代理，如赛马娘本体、模拟器等。
-启用此功能需要安装一个驱动（来自https://netfiltersdk.com/ ），这会请求一次管理员权限，并将其安装在%windir%\System32中。
-NetFilter驱动也会被其他程序安装，比如ACGPower和Netch，此时会直接显示卸载而非安装。
-该功能的效果与某些软件的TUN模式相同。
-是否要启用此功能？</value>
-  </data>
-  <data name="Tabs_NetFilter_Enable" xml:space="preserve">
-    <value>启用</value>
-  </data>
-  <data name="Tabs_NetFilter_Host" xml:space="preserve">
-    <value>地址</value>
-  </data>
-  <data name="Tabs_NetFilter_InputHost" xml:space="preserve">
-    <value>输入IP地址: </value>
-  </data>
-  <data name="Tabs_NetFilter_InputPassword" xml:space="preserve">
-    <value>输入密码(可以为空)</value>
-  </data>
-  <data name="Tabs_NetFilter_InputPort" xml:space="preserve">
-    <value>输入端口: </value>
-  </data>
-  <data name="Tabs_NetFilter_InputPort_FormatError" xml:space="preserve">
-    <value>端口只能是数字</value>
-  </data>
-  <data name="Tabs_NetFilter_InputUsername" xml:space="preserve">
-    <value>输入用户名(可以为空)</value>
-  </data>
-  <data name="Tabs_NetFilter_Password" xml:space="preserve">
-    <value>密码</value>
-  </data>
-  <data name="Tabs_NetFilter_Port" xml:space="preserve">
-    <value>端口</value>
-  </data>
-  <data name="Tabs_NetFilter_SelectType" xml:space="preserve">
-    <value>选择代理服务器类型</value>
-  </data>
-  <data name="Tabs_NetFilter_ServerType" xml:space="preserve">
-    <value>代理类型</value>
-  </data>
-  <data name="Tabs_NetFilter_Title" xml:space="preserve">
-    <value>代理</value>
-  </data>
-  <data name="Tabs_NetFilter_Username" xml:space="preserve">
-    <value>用户名</value>
-  </data>
   <data name="Tabs_Plugin_Title" xml:space="preserve">
     <value>插件</value>
   </data>
