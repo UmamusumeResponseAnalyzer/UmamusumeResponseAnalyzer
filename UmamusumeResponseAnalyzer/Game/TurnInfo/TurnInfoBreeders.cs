@@ -45,13 +45,18 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
             [103] = 604,
             [106] = 605
         }.ToFrozenDictionary();
+
+        public static string[] TeamMemberRank = [
+            "G", "F", "E", "D", "C", "B", "A", "S", "SS",
+            "UG", "UF", "UE", "UD", "UC", "UB", "UA", "US"
+        ];
         public List<CommandInfo> CommandInfoArray { get; private set; } = [];
         public Dictionary<int, int> PointGainInfoDictionary { get; private set; } = [];
         public Dictionary<int, SingleModeBreedersTeamMemberInfo> TeamMemberInfoDictionary { get; private set; } = [];
-        public Dictionary<int, SingleModeBreedersCommandTeamMemberInfo[]> CommandTeamMemmberInfoDictionary { get; private set; } = [];
+        public Dictionary<int, SingleModeBreedersCommandTeamMemberInfo[]> CommandTeamMemberInfoDictionary { get; private set; } = [];
         public int SpecialTrainingStock = 0;
         public int SpecialTrainingMax = 0;
-        public bool SpecialTraningActivated = false;
+        public bool SpecialTrainingActivated = false;
         public TurnInfoBreeders(SingleModeCheckEventResponse.CommonResponse resp) : base(resp)
         {
             var breeders = resp.breeders_data_set;
@@ -62,9 +67,9 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
             }
             SpecialTrainingStock = breeders.team_sp_training_info.stock_num;
             SpecialTrainingMax = breeders.team_sp_training_info.stock_max;
-            SpecialTraningActivated = breeders.team_sp_training_info.activated_state == 1;
+            SpecialTrainingActivated = breeders.team_sp_training_info.activated_state == 1;
             TeamMemberInfoDictionary = breeders.team_member_info_array.ToDictionary(x => x.chara_id, x => x);
-            CommandTeamMemmberInfoDictionary = breeders.command_info_array.ToDictionary(x => x.command_id, x => x.team_member_info_array);
+            CommandTeamMemberInfoDictionary = breeders.command_info_array.ToDictionary(x => x.command_id, x => x.team_member_info_array);
         }
     }
 }

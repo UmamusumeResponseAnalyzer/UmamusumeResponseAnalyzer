@@ -138,6 +138,11 @@ namespace UmamusumeResponseAnalyzer
                         {
                             common[key] = data[key];
                         }
+                        var keyLoad = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set_load"))?.Name;
+                        if (keyLoad != default)
+                        {
+                            common[keyLoad] = data[keyLoad];
+                        }
                         obj.Remove("data");
                         obj.Add("data", common);
                         data = common; // 这一行是给下面用的，不然data还是最初的那个
