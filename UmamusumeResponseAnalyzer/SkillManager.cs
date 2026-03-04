@@ -1,4 +1,5 @@
-﻿using UmamusumeResponseAnalyzer.Entities;
+﻿using System.Runtime.CompilerServices;
+using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -16,12 +17,12 @@ namespace UmamusumeResponseAnalyzer
             var cutted = chara_info.chara_effect_id_array.Contains(7) ? 10 : 0; //切者
             var off = level switch //打折等级
             {
-                0 => 0,
                 1 => 10,
                 2 => 20,
                 3 => 30,
                 4 => 35,
-                5 => 40
+                5 => 40,
+                _ => 0
             };
             skill.Cost = skill.Cost * (100 - off - cutted) / 100;
             // 猜测游戏内hint level排序顺序为先看最高的白，再看金，一致的看DisplayOrder
@@ -42,128 +43,131 @@ namespace UmamusumeResponseAnalyzer
         internal static void ApplyProper(SkillData skill, Gallop.SingleModeChara chara_info)
         {
             // 仅在技能有触发条件时应用，假设通用技能分数固定不变
-            if (skill.Propers.Length != 0)
-            {
-                skill.Grade = skill.Propers.Max(i =>
-                {
-                    var grade = skill.Grade;
-                    // 泥地技能似乎不受适性影响，gamewith报告为1.0，bwiki报告为+120，按gw的试试
-                    //switch (i.Ground)
-                    //{
-                    //    case SkillProper.GroundType.Dirt:
-                    //        grade = applyProperLevel(grade, chara_info.proper_ground_dirt);
-                    //        break;
-                    //    case SkillProper.GroundType.Turf:
-                    //        grade = applyProperLevel(grade, chara_info.proper_ground_turf);
-                    //        break;
-                    //}
-                    switch (i.Style)
-                    {
-                        case SkillProper.StyleType.Nige:
-                            grade = applyProperLevel(grade, chara_info.proper_running_style_nige);
-                            break;
-                        case SkillProper.StyleType.Senko:
-                            grade = applyProperLevel(grade, chara_info.proper_running_style_senko);
-                            break;
-                        case SkillProper.StyleType.Sashi:
-                            grade = applyProperLevel(grade, chara_info.proper_running_style_sashi);
-                            break;
-                        case SkillProper.StyleType.Oikomi:
-                            grade = applyProperLevel(grade, chara_info.proper_running_style_oikomi);
-                            break;
-                    }
-                    switch (i.Distance)
-                    {
-                        case SkillProper.DistanceType.Short:
-                            grade = applyProperLevel(grade, chara_info.proper_distance_short);
-                            break;
-                        case SkillProper.DistanceType.Mile:
-                            grade = applyProperLevel(grade, chara_info.proper_distance_mile);
-                            break;
-                        case SkillProper.DistanceType.Middle:
-                            grade = applyProperLevel(grade, chara_info.proper_distance_middle);
-                            break;
-                        case SkillProper.DistanceType.Long:
-                            grade = applyProperLevel(grade, chara_info.proper_distance_long);
-                            break;
-                    }
-                    return grade;
-                });
+            if (skill.Propers.Length == 0) return;
 
-                static int applyProperLevel(int grade, int level) => level switch
+            skill.Grade = skill.Propers.Max(i =>
+            {
+                var grade = skill.Grade;
+                // 泥地技能似乎不受适性影响，gamewith报告为1.0，bwiki报告为+120，按gw的试试
+                //switch (i.Ground)
+                //{
+                //    case SkillProper.GroundType.Dirt:
+                //        grade = ApplyProperLevel(grade, chara_info.proper_ground_dirt);
+                //        break;
+                //    case SkillProper.GroundType.Turf:
+                //        grade = ApplyProperLevel(grade, chara_info.proper_ground_turf);
+                //        break;
+                //}
+                grade = i.Style switch
                 {
-                    8 or 7 => (int)Math.Round(grade * 1.1), //S,A
-                    6 or 5 => (int)Math.Round(grade * 0.9), //B,C
-                    4 or 3 or 2 => (int)Math.Round(grade * 0.8), //D,E,F
-                    1 => (int)Math.Round(grade * 0.7), //G
-                    _ => 0,
+                    SkillProper.StyleType.Nige => ApplyProperLevel(grade, chara_info.proper_running_style_nige),
+                    SkillProper.StyleType.Senko => ApplyProperLevel(grade, chara_info.proper_running_style_senko),
+                    SkillProper.StyleType.Sashi => ApplyProperLevel(grade, chara_info.proper_running_style_sashi),
+                    SkillProper.StyleType.Oikomi => ApplyProperLevel(grade, chara_info.proper_running_style_oikomi),
+                    _ => grade,
                 };
-            }
+                grade = i.Distance switch
+                {
+                    SkillProper.DistanceType.Short => ApplyProperLevel(grade, chara_info.proper_distance_short),
+                    SkillProper.DistanceType.Mile => ApplyProperLevel(grade, chara_info.proper_distance_mile),
+                    SkillProper.DistanceType.Middle => ApplyProperLevel(grade, chara_info.proper_distance_middle),
+                    SkillProper.DistanceType.Long => ApplyProperLevel(grade, chara_info.proper_distance_long),
+                    _ => grade,
+                };
+                return grade;
+            });
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int ApplyProperLevel(int grade, int level) => level switch
+        {
+            8 or 7 => (int)Math.Round(grade * 1.1), //S,A
+            6 or 5 => (int)Math.Round(grade * 0.9), //B,C
+            4 or 3 or 2 => (int)Math.Round(grade * 0.8), //D,E,F
+            1 => (int)Math.Round(grade * 0.7), //G
+            _ => 0,
+        };
+
         public SkillManager Apply(Gallop.SingleModeChara chara_info)
         {
             var tips = chara_info.skill_tips_array.SelectMany(x => Default[(x.group_id, x.rarity)])
                 .Select(x => x.Clone())
                 .Where(x => x.Rate > 0)
                 .ToList();
+            var tipIds = tips.Select(x => x.Id).ToHashSet();
+            var learnedIds = chara_info.skill_array.Select(x => x.skill_id).ToHashSet();
             //添加天赋技能
             if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))
             {
                 foreach (var talent in talents.Where(x => x.Rank <= chara_info.talent_level))
                 {
-                    if (!tips.Any(x => x.Id == talent.SkillId) && !chara_info.skill_array.Any(y => y.skill_id == talent.SkillId))
+                    if (!tipIds.Contains(talent.SkillId) && !learnedIds.Contains(talent.SkillId))
                     {
-                        tips.Add(Default[talent.SkillId].Clone());
+                        var cloned = Default[talent.SkillId].Clone();
+                        tips.Add(cloned);
+                        tipIds.Add(cloned.Id);
                     }
                 }
             }
             foreach (var learned in chara_info.skill_array)
             {
-                tips.Add(Default[learned.skill_id].Clone());
+                var cloned = Default[learned.skill_id].Clone();
+                tips.Add(cloned);
+                tipIds.Add(cloned.Id);
             }
+
             //添加上位技能缺少的下位技能（为方便计算切者技能点）
-            foreach (var group in tips.GroupBy(x => x.GroupId))
+            var tipsByGroup = tips.ToLookup(x => x.GroupId);
+            foreach (var group in tipsByGroup)
             {
+                var maxRarity = group.Max(y => y.Rarity);
                 var additionalSkills = Default.GetAllByGroupId(group.Key)
-                    .Where(x => x.Rarity <= group.Max(y => y.Rarity))
-                    .Where(x => x.Rate > 0);
-                var ids = additionalSkills.ExceptBy(tips.Select(x => x.Id), x => x.Id);
-                tips.AddRange(ids.Select(x => x.Clone()));
+                    .Where(x => x.Rarity <= maxRarity && x.Rate > 0 && !tipIds.Contains(x.Id));
+                foreach (var s in additionalSkills)
+                {
+                    var cloned = s.Clone();
+                    tips.Add(cloned);
+                    tipIds.Add(cloned.Id);
+                }
             }
+
+            var skillIndex = tips.ToDictionary(x => (x.GroupId, x.Rarity, x.Rate));
+
             foreach (var skill in tips)
             {
                 // 同稀有度的上位技能(双圈白)
-                var normalSuperior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity && x.Rate == skill.Rate + 1);
-                // 高一级稀有度的上位技能(金)
-                var rareSuperior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity + 1 && x.Rate == skill.Rate + 1);
-                if (normalSuperior != null)
+                if (skillIndex.TryGetValue((skill.GroupId, skill.Rarity, skill.Rate + 1), out var normalSuperior))
                     skill.Superior = normalSuperior;
-                else if (rareSuperior != null)
+                // 高一级稀有度的上位技能(金)
+                else if (skillIndex.TryGetValue((skill.GroupId, skill.Rarity + 1, skill.Rate + 1), out var rareSuperior))
                     skill.Superior = rareSuperior;
-
                 // 同稀有度的下位技能(单圈白)
-                var normalInferior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity && x.Rate == skill.Rate - 1);
-                // 低一级稀有度的下位技能(白/双圈白)
-                var lowerInferior = tips.FirstOrDefault(x => x.GroupId == skill.GroupId && x.Rarity == skill.Rarity - 1 && x.Rate == skill.Rate - 1);
-                if (normalInferior != null)
+                if (skillIndex.TryGetValue((skill.GroupId, skill.Rarity, skill.Rate - 1), out var normalInferior))
                     skill.Inferior = normalInferior;
-                else if (lowerInferior != null)
+                // 低一级稀有度的下位技能(白/双圈白)
+                else if (skillIndex.TryGetValue((skill.GroupId, skill.Rarity - 1, skill.Rate - 1), out var lowerInferior))
                     skill.Inferior = lowerInferior;
             }
+
+            var hintLevelMap = chara_info.skill_tips_array
+                .ToDictionary(x => (x.group_id, x.rarity), x => x.level);
+
             foreach (var i in tips)
             {
                 // 计算折扣
-                ApplyHint(i, chara_info, chara_info.skill_tips_array.FirstOrDefault(x => x.group_id == i.GroupId && x.rarity == i.Rarity)?.level ?? 0);
+                hintLevelMap.TryGetValue((i.GroupId, i.Rarity), out var hintLevel);
+                ApplyHint(i, chara_info, hintLevel);
                 // 计算分数
                 ApplyProper(i, chara_info);
             }
+
             foreach (var skill in tips.OrderByDescending(x => x.Rate))
             {
                 var inferior = skill.Inferior;
                 while (inferior != null)
                 {
                     // 学了扣掉分数不然会加两次
-                    if (chara_info.skill_array.Any(x => x.skill_id == inferior.Id))
+                    if (learnedIds.Contains(inferior.Id))
                     {
                         skill.Grade -= inferior.Grade;
                         break;
@@ -181,6 +185,9 @@ namespace UmamusumeResponseAnalyzer
     }
     public class SkillManager(List<SkillData> list)
     {
+        private Dictionary<int, SkillData>? _idIndex;
+        private Dictionary<int, SkillData> IdIndex => _idIndex ??= list.ToDictionary(x => x.Id);
+
         /// <summary>
         /// 根据GroupId和Rarity获得所有同类技能(通常是单圈双圈绿)
         /// </summary>
@@ -188,28 +195,21 @@ namespace UmamusumeResponseAnalyzer
         /// <returns>所有具有相同GroupId、Rarity的技能</returns>
         public SkillData[] this[(int GroupId, int Rarity) tuple]
         {
-            get
-            {
-                return [.. list.Where(x => x.GroupId == tuple.GroupId && x.Rarity == tuple.Rarity)];
-            }
+            get => [.. list.Where(x => x.GroupId == tuple.GroupId && x.Rarity == tuple.Rarity)];
         }
         public SkillData this[int Id]
         {
-            get
-            {
-                return list.FirstOrDefault(x => x.Id == Id)!;
-            }
+            get => IdIndex.GetValueOrDefault(Id)!;
             set
             {
-                var skill = list.FirstOrDefault(x => x.Id == Id);
-                if (skill == default)
+                if (IdIndex.TryGetValue(Id, out _))
                 {
-                    if (value != default)
-                        list.Add(value);
+                    IdIndex[Id] = value;
                 }
-                else
+                else if (value != default)
                 {
-                    skill = value;
+                    list.Add(value);
+                    IdIndex[Id] = value;
                 }
             }
         }
@@ -225,19 +225,22 @@ namespace UmamusumeResponseAnalyzer
         public void Evolve(Gallop.SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
         {
             list.ForEach(x => x.Upgrades.Clear());
+            var willLearn = willLearnSkills ?? [];
+
             if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))
             {
                 foreach (var talent in talents.Where(x => x.Rank <= chara_info.talent_level))
                 {
-                    if (talent.CanUpgrade(chara_info, out _, willLearnSkills ?? []))
+                    if (talent.CanUpgrade(chara_info, out _, willLearn))
                     {
+                        var baseSkill = this[talent.SkillId];
                         foreach (var upgradedSkillId in talent.UpgradeSkills.Keys)
                         {
                             var upgraded = SkillManagerGenerator.Default[upgradedSkillId].Clone();
                             SkillManagerGenerator.ApplyProper(upgraded, chara_info);
-                            upgraded.Cost = this[talent.SkillId].Cost;
+                            upgraded.Cost = baseSkill.Cost;
                             upgraded.IsScenarioEvolution = false;
-                            this[talent.SkillId].Upgrades.Add(upgraded);
+                            baseSkill.Upgrades.Add(upgraded);
                         }
                     }
                 }
@@ -245,26 +248,28 @@ namespace UmamusumeResponseAnalyzer
             //添加剧本进化
             foreach (var upgraded in Database.SkillUpgradeSpeciality.Values)
             {
-                var baseSkill = list.FirstOrDefault(x => x.Id == upgraded.BaseSkillId);
-                if (baseSkill != default && chara_info.scenario_id == upgraded.ScenarioId)
+                if (chara_info.scenario_id != upgraded.ScenarioId) continue;
+                var baseSkill = IdIndex.GetValueOrDefault(upgraded.BaseSkillId);
+                if (baseSkill == default) continue;
+
+                foreach (var j in upgraded.UpgradeSkills)
                 {
-                    foreach (var j in upgraded.UpgradeSkills)
+                    if (j.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(chara_info, willLearn))))
                     {
-                        if (j.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(chara_info, willLearnSkills ?? []))))
-                        {
-                            var upgradedSkill = SkillManagerGenerator.Default[j.Key].Clone();
-                            SkillManagerGenerator.ApplyProper(upgradedSkill, chara_info);
-                            upgradedSkill.Cost = list.First(x => x.Id == upgraded.BaseSkillId).Cost;
-                            upgradedSkill.IsScenarioEvolution = true;
-                            baseSkill.Upgrades.Add(upgradedSkill);
-                        }
+                        var upgradedSkill = SkillManagerGenerator.Default[j.Key].Clone();
+                        SkillManagerGenerator.ApplyProper(upgradedSkill, chara_info);
+                        upgradedSkill.Cost = baseSkill.Cost;
+                        upgradedSkill.IsScenarioEvolution = true;
+                        baseSkill.Upgrades.Add(upgradedSkill);
                     }
                 }
             }
         }
         public void RemoveLearned(Gallop.SingleModeChara chara_info)
         {
-            list.RemoveAll(x => chara_info.skill_array.Any(y => y.skill_id == x.Id));
+            var learnedIds = chara_info.skill_array.Select(x => x.skill_id).ToHashSet();
+            list.RemoveAll(x => learnedIds.Contains(x.Id));
+            _idIndex = null;
         }
         public IEnumerator<SkillData> GetEnumerator() => list.GetEnumerator();
         public List<SkillData> GetSkills() => list;

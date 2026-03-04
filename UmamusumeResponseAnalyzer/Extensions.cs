@@ -209,7 +209,7 @@ namespace UmamusumeResponseAnalyzer
             }
         }
     }
-    public static class  GallopExtensions
+    public static class GallopExtensions
     {
         public static int GetCommandInfoStage(this SingleModeCheckEventResponse @event)
         {
