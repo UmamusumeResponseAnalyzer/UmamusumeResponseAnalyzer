@@ -8,7 +8,7 @@
 		<AssemblyVersion></AssemblyVersion>
 		<FileVersion></FileVersion>
 		<Authors>$(AssemblyName)</Authors>
-		<Version>1.14.3.0</Version>
+		<Version>1.14.3.1</Version>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Platforms>AnyCPU;x64</Platforms>
@@ -75,11 +75,6 @@
 		  <AutoGen>True</AutoGen>
 		  <DependentUpon>Database.resx</DependentUpon>
 		</Compile>
-		<Compile Update="Localization\DMM.Designer.cs">
-		  <DesignTime>True</DesignTime>
-		  <AutoGen>True</AutoGen>
-		  <DependentUpon>DMM.resx</DependentUpon>
-		</Compile>
 		<Compile Update="Localization\Game.Designer.cs">
 		  <DesignTime>True</DesignTime>
 		  <AutoGen>True</AutoGen>
@@ -130,10 +125,6 @@
 		</EmbeddedResource>
 		<EmbeddedResource Update="Localization\Database.zh-CN.resx">
 		  <Generator>ResXFileCodeGenerator</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Localization\DMM.resx">
-		  <Generator>ResXFileCodeGenerator</Generator>
-		  <LastGenOutput>DMM.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Localization\Game.resx">
 		  <Generator>PublicResXFileCodeGenerator</Generator>

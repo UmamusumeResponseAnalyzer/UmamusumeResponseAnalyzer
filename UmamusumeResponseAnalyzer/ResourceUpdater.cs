@@ -191,7 +191,6 @@ namespace UmamusumeResponseAnalyzer
         {
             var ProgramUrl = "https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest/download/UmamusumeResponseAnalyzer.exe".AllowMirror();
             var GithubHost = string.IsNullOrEmpty(Config.Updater.CustomDatabaseRepository) ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror() : Config.Updater.CustomDatabaseRepository;
-            var OSSHost = "https://assets.shuise.net/URA";
             var ext = Path.GetExtension(filepath);
             var filename = Path.GetFileName(filepath);
             return ext switch

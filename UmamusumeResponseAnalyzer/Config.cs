@@ -22,7 +22,6 @@ namespace UmamusumeResponseAnalyzer
         public static RepositoryConfig Repository => Current.Repository;
         public static PluginConfig Plugin => Current.Plugin;
         public static UpdaterConfig Updater => Current.Updater;
-        public static DMMConfig DMM => Current.DMM;
         public static LanguageConfig Language => Current.Language;
         public static MiscConfig Misc => Current.Misc;
 
@@ -49,7 +48,6 @@ namespace UmamusumeResponseAnalyzer
                     Repository = new(),
                     Plugin = new(),
                     Updater = new(),
-                    DMM = new(),
                     Language = new(),
                     Misc = new()
                 };
@@ -86,7 +84,6 @@ namespace UmamusumeResponseAnalyzer
         public RepositoryConfig Repository { get; set; }
         public PluginConfig Plugin { get; set; }
         public UpdaterConfig Updater { get; set; }
-        public DMMConfig DMM { get; set; }
         public LanguageConfig Language { get; set; }
         public MiscConfig Misc { get; set; }
     }
@@ -300,226 +297,6 @@ namespace UmamusumeResponseAnalyzer
                 }
             } while (selected != i18n.Return);
             Config.Save();
-        }
-    }
-    public class DMMConfig
-    {
-        public DMMLauncherInfomation LauncherInfomation { get; set; } = new();
-        public DMMMachineInformation MachineInformation { get; set; } = new();
-        public List<DMMAccountInformation> Accounts { get; set; } = [];
-        public bool Enable { get; set; }
-
-        public void Prompt()
-        {
-            if (!Enable)
-            {
-                var enablePrompt = new ConfirmationPrompt(i18n.Tabs_DMM_Caution)
-                {
-                    DefaultValue = false
-                };
-                if (AnsiConsole.Prompt(enablePrompt))
-                {
-                    Enable = true;
-                    Config.Save();
-                    Prompt();
-                }
-                else
-                {
-                    AnsiConsole.Clear();
-                }
-                return;
-            }
-            var selected = string.Empty;
-            do
-            {
-                var selectionPrompt = new SelectionPrompt<string>()
-                    .Title(i18n.Tabs_DMM_Title)
-                    .WrapAround(true)
-                    .AddChoices([i18n.Tabs_DMM_ViewLauncherInformation, i18n.Tabs_DMM_EditMachineInformation, i18n.Tabs_DMM_EditAccounts, i18n.Tabs_DMM_Enable])
-                    .AddChoices(i18n.Return);
-                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
-                if (selected == i18n.Tabs_DMM_Enable)
-                {
-                    Enable = false;
-                    selected = i18n.Return;
-                }
-                else if (selected == i18n.Tabs_DMM_ViewLauncherInformation)
-                {
-                    LauncherInfomation.Prompt();
-                }
-                else if (selected == i18n.Tabs_DMM_EditMachineInformation)
-                {
-                    MachineInformation.Prompt();
-                }
-                else if (selected == i18n.Tabs_DMM_EditAccounts)
-                {
-                    var eaSelected = string.Empty;
-                    do
-                    {
-                        var eaPrompt = new SelectionPrompt<string>()
-                            .Title(i18n.Tabs_DMM_EditAccounts)
-                            .WrapAround(true)
-                            .AddChoices(Accounts.Select(x => x.Name))
-                            .AddChoices([i18n.Tabs_DMM_EditAccounts_Add, i18n.Return]);
-                        eaSelected = AnsiConsole.Prompt(eaPrompt);
-
-                        if (eaSelected == i18n.Tabs_DMM_EditAccounts_Add)
-                        {
-                            var account = new DMMAccountInformation();
-                            Accounts.Add(account);
-                            account.EditPrompt();
-                        }
-                        else if (eaSelected == i18n.Return)
-                        {
-                        }
-                        else
-                        {
-                            var account = Accounts.First(x => x.Name == eaSelected);
-                            account.EditPrompt();
-                        }
-                    } while (eaSelected != i18n.Return);
-                }
-                Config.Save();
-            } while (selected != i18n.Return);
-        }
-
-        public class DMMLauncherInfomation
-        {
-            public string AcceptEncoding { get; set; } = "gzip, deflate, br, zstd";
-            public string AcceptLanguage { get; set; } = "zh-CN";
-            public string UserAgent { get; set; } = "DMMGamePlayer5-Win/5.4.2 Electron/34.3.0";
-            public string ClientApp { get; set; } = "DMMGamePlayer5";
-            public string ClientVersion { get; set; } = "5.4.2";
-            public string SecFetchDest { get; set; } = "empty";
-            public string SecFetchMode { get; set; } = "no-cors";
-            public string SecFetchSite { get; set; } = "none";
-
-            public void Prompt()
-            {
-                var liSelectionPrompt = new SelectionPrompt<string>()
-                    .Title(i18n.Tabs_DMM_ViewLauncherInformation_Caution)
-                    .WrapAround(true)
-                    .AddChoices(GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(x => $"{x.Name}: {x.GetValue(this)}"));
-                AnsiConsole.Prompt(liSelectionPrompt);
-                Config.Save();
-            }
-        }
-        public class DMMMachineInformation
-        {
-            public string mac_address { get; set; }
-            public string hdd_serial { get; set; }
-            public string motherboard { get; set; }
-            public string user_os { get; set; }
-            public string umamusume_file_path { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Umamusume", "umamusume.exe");
-
-            public void Prompt()
-            {
-                var miProperties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                var miSelected = string.Empty;
-                do
-                {
-                    var miSelectionPrompt = new SelectionPrompt<string>()
-                        .Title(i18n.Tabs_DMM_EditMachineInformation)
-                        .WrapAround(true)
-                        .AddChoices(miProperties.Select(x => $"{x.Name}: {x.GetValue(this)}"))
-                        .AddChoices(i18n.Return);
-                    miSelected = AnsiConsole.Prompt(miSelectionPrompt);
-
-                    switch (miSelected.Split(':')[0])
-                    {
-                        case "mac_address":
-                            {
-                                mac_address = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_DMM_EditMachineInformation_InputMA));
-                                break;
-                            }
-                        case "hdd_serial":
-                            {
-                                hdd_serial = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_DMM_EditMachineInformation_InputHS));
-                                break;
-                            }
-                        case "motherboard":
-                            {
-                                motherboard = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_DMM_EditMachineInformation_InputMB));
-                                break;
-                            }
-                        case "user_os":
-                            {
-                                user_os = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_DMM_EditMachineInformation_InputOS));
-                                break;
-                            }
-                        case "umamusume_file_path":
-                            {
-                                umamusume_file_path = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_DMM_EditMachineInformation_InputUmamusumePath));
-                                break;
-                            }
-                    }
-                    AnsiConsole.Clear();
-                    Config.Save();
-                } while (miSelected != i18n.Return);
-            }
-        }
-        public class DMMAccountInformation
-        {
-            public string Name { get; set; }
-            public string access_token { get; set; }
-            public string split_umamusume_file_path { get; set; }
-            public string savedata_file_path { get; set; }
-
-            public void EditPrompt()
-            {
-                var aiSelected = string.Empty;
-                do
-                {
-                    var aiPrompt = new SelectionPrompt<string>()
-                    .WrapAround(true)
-                    .AddChoices([$"{i18n.Tabs_DMM_EditAccounts_Name}: {Name}", "access_token", $"{i18n.Tabs_DMM_EditAccounts_SplitPath}: {split_umamusume_file_path}", $"{i18n.Tabs_DMM_EditAccounts_SavePath}: {savedata_file_path}"])
-                    .AddChoices(i18n.Tabs_DMM_EditAccounts_Delete, i18n.Return);
-                    aiSelected = AnsiConsole.Prompt(aiPrompt).Split(':')[0];
-                    if (aiSelected == i18n.Tabs_DMM_EditAccounts_Name)
-                    {
-                        while (true)
-                        {
-                            var name = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_DMM_EditAccounts_InputName));
-                            if (Config.DMM.Accounts.Any(x => x.Name == name))
-                            {
-                                AnsiConsole.WriteLine(i18n.Tabs_DMM_EditAccounts_InputName_Duplicate);
-                            }
-                            else
-                            {
-                                Name = name;
-                                break;
-                            }
-                        }
-                    }
-                    else if (aiSelected == "access_token")
-                    {
-                        var readyToOpenWeb = new ConfirmationPrompt("即将打开网页，请在浏览器内登录DMM账号但不要关闭网页");
-                        if (AnsiConsole.Prompt(readyToOpenWeb))
-                        {
-                            var loginUrl = DMM.LoginUrl().Result;
-                            Process.Start(new ProcessStartInfo(loginUrl) { UseShellExecute = true });
-                            var code = AnsiConsole.Ask<string>("请输入地址栏中，code=后面的内容");
-                            var accessToken = DMM.IssueAccessToken(code).Result;
-                            access_token = accessToken;
-                        }
-                    }
-                    else if (aiSelected == "split_umamusume_file_path")
-                    {
-                        split_umamusume_file_path = AnsiConsole.Prompt(new TextPrompt<string>("Input split_umamusume_file_path"));
-                    }
-                    else if (aiSelected == "savedata_file_path")
-                    {
-                        savedata_file_path = AnsiConsole.Prompt(new TextPrompt<string>("Input savedata_file_path"));
-                    }
-                    else if (aiSelected == i18n.Tabs_DMM_EditAccounts_Delete)
-                    {
-                        aiSelected = i18n.Return;
-                        Config.DMM.Accounts.Remove(this);
-                    }
-                    AnsiConsole.Clear();
-                    Config.Save();
-                } while (aiSelected != i18n.Return);
-            }
         }
     }
     public class LanguageConfig

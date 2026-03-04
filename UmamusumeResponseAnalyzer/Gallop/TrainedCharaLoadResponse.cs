@@ -220,8 +220,10 @@ namespace Gallop
 		public UserSupportCardAtFriend user_support_card; // 0x78
 		[Key("leader_chara_dress_id")]
 		public int leader_chara_dress_id; // 0x80
-		[Key("user_trained_chara")]
-		public UserTrainedCharaAtFriend user_trained_chara; // 0x88
+        [Key("user_trained_chara")]
+        public UserTrainedCharaAtFriend user_trained_chara; // 0x88
+        [Key("user_trained_chara_array")]
+        public UserTrainedCharaAtFriend[] user_trained_chara_array; // 0x88
         [Key("total_login_day_count")]
         public int total_login_day_count;
 	}

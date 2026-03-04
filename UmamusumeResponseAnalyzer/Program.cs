@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Plugin;
-using static UmamusumeResponseAnalyzer.Localization.DMM;
 using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 
 namespace UmamusumeResponseAnalyzer
@@ -54,40 +53,6 @@ namespace UmamusumeResponseAnalyzer
             Task.WaitAll(_database_initialize_task, _plugin_initialize_task); //等待数据库初始化完成
             Server.Start(); //启动HTTP服务器
             Task.WaitAll([.. PluginManager.LoadedPlugins.Select(x => Task.Run(x.Initialize))]);
-
-            //如果存在DMM的token文件则启用直接登录功能
-            if (Config.DMM.Enable && Config.DMM.Accounts.Count != 0)
-            {
-                if (Config.DMM.Accounts.Count == 1)
-                {
-                    await DMM.RunUmamusume(Config.DMM.Accounts[0]);
-                }
-                else
-                {
-                    prompt = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                        .Title(I18N_MultipleAccountsFound)
-                        .WrapAround(true)
-                        .AddChoices(Config.DMM.Accounts.Select(x => x.Name))
-                        .AddChoices([I18N_LaunchAll, I18N_Cancel]));
-                    if (prompt == I18N_LaunchAll)
-                    {
-                        DMM.IgnoreExistProcess = true;
-                        foreach (var account in Config.DMM.Accounts)
-                            await DMM.RunUmamusume(account);
-                    }
-                    else if (prompt == I18N_Cancel)
-                    {
-                    }
-                    else
-                    {
-                        var account = Config.DMM.Accounts.Find(x => x.Name == prompt);
-                        if (account != default)
-                        {
-                            await DMM.RunUmamusume(account);
-                        }
-                    }
-                }
-            }
 
             for (var i = 0; i < 30; i++)
             {

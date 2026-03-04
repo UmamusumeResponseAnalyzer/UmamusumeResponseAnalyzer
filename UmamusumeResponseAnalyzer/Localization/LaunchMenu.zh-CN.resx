@@ -153,33 +153,6 @@
   <data name="I18N_Start" xml:space="preserve">
     <value>启动！</value>
   </data>
-  <data name="I18N_Start_Checking" xml:space="preserve">
-    <value>[yellow]正在检测umamusume.exe是否运行[/]</value>
-  </data>
-  <data name="I18N_Start_Checking_AlreadyRunning" xml:space="preserve">
-    <value>检测到umamusume.exe正在运行,直接启动服务器</value>
-  </data>
-  <data name="I18N_Start_Checking_Found" xml:space="preserve">
-    <value>检测到{0}个正在运行的umamusume.exe</value>
-  </data>
-  <data name="I18N_Start_Checking_Log" xml:space="preserve">
-    <value>[grey]日志: [/] {0}</value>
-  </data>
-  <data name="I18N_Start_GetToken" xml:space="preserve">
-    <value>[bold blue]正在获取DMM Onetime Token[/]</value>
-  </data>
-  <data name="I18N_Start_Launching" xml:space="preserve">
-    <value>正在启动umamusume.exe</value>
-  </data>
-  <data name="I18N_Start_Started" xml:space="preserve">
-    <value>[bold green]已启动[/]</value>
-  </data>
-  <data name="I18N_Start_TokenFailed" xml:space="preserve">
-    <value>获取DMM Onetime Token失败</value>
-  </data>
-  <data name="I18N_Start_TokenGot" xml:space="preserve">
-    <value>已获取DMM Onetime Token</value>
-  </data>
   <data name="I18N_UpdateAssets" xml:space="preserve">
     <value>更新数据文件</value>
   </data>
@@ -206,5 +179,8 @@
   </data>
   <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
     <value>[yellow]控制台尺寸过小:推荐尺寸为宽{0}、高{1}[/]</value>
+  </data>
+  <data name="I18N_Start_Started" xml:space="preserve">
+    <value>[bold green]已启动[/]</value>
   </data>
 </root>

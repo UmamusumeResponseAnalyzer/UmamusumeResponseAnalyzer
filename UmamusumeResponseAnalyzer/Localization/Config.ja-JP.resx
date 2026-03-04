@@ -126,9 +126,6 @@
   <data name="Tabs_Debug_Title" xml:space="preserve">
     <value>デバッグ</value>
   </data>
-  <data name="Tabs_DMM_Title" xml:space="preserve">
-    <value>DMM</value>
-  </data>
   <data name="Tabs_Language_Title" xml:space="preserve">
     <value>言語</value>
   </data>

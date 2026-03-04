@@ -185,30 +185,6 @@ namespace UmamusumeResponseAnalyzer
             return true;
         }
     }
-    public static class ManualResetEventExtensions
-    {
-        static ConcurrentDictionary<ManualResetEvent, ConcurrentDictionary<Action, bool>> _dictionaries { get; set; } = new();
-        public static void Signal(this ManualResetEvent mre)
-        {
-            if (_dictionaries.TryGetValue(mre, out var waitings))
-            {
-                if (!waitings.IsEmpty)
-                    mre.Set();
-            }
-        }
-        public static void Wait(this ManualResetEvent mre, Action action)
-        {
-            _dictionaries.TryAdd(mre, new());
-            _dictionaries[mre][action] = false;
-            mre.WaitOne();
-            _ = Task.Run(action);
-            _dictionaries[mre][action] = true;
-            if (_dictionaries[mre].Values.All(x => x))
-            {
-                mre.Reset();
-            }
-        }
-    }
     public static class GallopExtensions
     {
         public static int GetCommandInfoStage(this SingleModeCheckEventResponse @event)

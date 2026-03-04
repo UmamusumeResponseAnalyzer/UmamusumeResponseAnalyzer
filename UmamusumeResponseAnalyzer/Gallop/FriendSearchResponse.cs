@@ -21,14 +21,18 @@ namespace Gallop
 			[Key("user_info_summary")]
 			public UserInfoAtFriend user_info_summary; // 0x18
 			[Key("practice_partner_info")]
-			public TrainedChara practice_partner_info; // 0x20
-			[Key("directory_chara_info")]
+			public TrainedChara practice_partner_info; // 支持6代表马娘以前
+            [Key("partner_chara_info_array")]
+            public TrainedChara[] partner_chara_info_array; // 6代表
+            [Key("directory_chara_info")]
 			public TrainedChara[] directory_chara_info; // 0x28
 			[Key("directory_card_array")]
 			public DirectoryCard[] directory_card_array; // 0x30
-			[Key("support_card_data")]
-			public UserSupportCard support_card_data; // 0x38
-			[Key("trophy_num_info")]
+            [Key("support_card_data")]
+            public UserSupportCard support_card_data; // 支持6代表马娘以前
+            [Key("support_card_data_array")]
+            public UserSupportCard[] support_card_data_array; // 6代表
+            [Key("trophy_num_info")]
 			public TrophyNumInfo trophy_num_info; // 0x40
 			[Key("release_num_info")]
 			public ReleaseNumInfo release_num_info; // 0x48

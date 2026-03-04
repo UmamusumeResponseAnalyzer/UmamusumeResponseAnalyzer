@@ -19,7 +19,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LaunchMenu {
@@ -187,83 +187,11 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 [yellow]Detecting if umamusume.exe is running[/] 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_Checking {
-            get {
-                return ResourceManager.GetString("I18N_Start_Checking", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Detected umamusume.exe is running, directly starting the server 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_Checking_AlreadyRunning {
-            get {
-                return ResourceManager.GetString("I18N_Start_Checking_AlreadyRunning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Detected {0} instances of umamusume.exe running 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_Checking_Found {
-            get {
-                return ResourceManager.GetString("I18N_Start_Checking_Found", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 [grey]Log: [/] {0} 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_Checking_Log {
-            get {
-                return ResourceManager.GetString("I18N_Start_Checking_Log", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 [bold blue]Acquiring DMM One-time Token[/] 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_GetToken {
-            get {
-                return ResourceManager.GetString("I18N_Start_GetToken", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Starting umamusume.exe 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_Launching {
-            get {
-                return ResourceManager.GetString("I18N_Start_Launching", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 [bold green]Launched[/] 的本地化字符串。
         /// </summary>
         internal static string I18N_Start_Started {
             get {
                 return ResourceManager.GetString("I18N_Start_Started", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Failed to acquire DMM One-time Token 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_TokenFailed {
-            get {
-                return ResourceManager.GetString("I18N_Start_TokenFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 DMM One-time Token acquired 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Start_TokenGot {
-            get {
-                return ResourceManager.GetString("I18N_Start_TokenGot", resourceCulture);
             }
         }
         

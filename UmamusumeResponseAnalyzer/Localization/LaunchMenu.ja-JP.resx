@@ -141,33 +141,6 @@
   <data name="I18N_Start" xml:space="preserve">
     <value>スタート！</value>
   </data>
-  <data name="I18N_Start_Checking" xml:space="preserve">
-    <value>[yellow]umamusume.exeが実行中かどうかを検出中[/]</value>
-  </data>
-  <data name="I18N_Start_Checking_AlreadyRunning" xml:space="preserve">
-    <value>umamusume.exeが実行中であることが検出され、直接サーバーを起動</value>
-  </data>
-  <data name="I18N_Start_Checking_Found" xml:space="preserve">
-    <value>実行中のumamusume.exeが{0}個検出されました</value>
-  </data>
-  <data name="I18N_Start_Checking_Log" xml:space="preserve">
-    <value>[grey]ログ：{0}[/]</value>
-  </data>
-  <data name="I18N_Start_GetToken" xml:space="preserve">
-    <value>[bold blue]DMM Onetime Tokenを取得中[/]</value>
-  </data>
-  <data name="I18N_Start_Launching" xml:space="preserve">
-    <value>umamusume.exeを起動中</value>
-  </data>
-  <data name="I18N_Start_Started" xml:space="preserve">
-    <value>[bold green]起動しました[/]</value>
-  </data>
-  <data name="I18N_Start_TokenFailed" xml:space="preserve">
-    <value>DMM Onetime Tokenの取得に失敗</value>
-  </data>
-  <data name="I18N_Start_TokenGot" xml:space="preserve">
-    <value>DMM Onetime Tokenを取得しました</value>
-  </data>
   <data name="I18N_UpdateAssets" xml:space="preserve">
     <value>データファイルを更新</value>
   </data>
@@ -206,5 +179,8 @@
   </data>
   <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
     <value>[yellow]コンソールサイズが小さすぎる：推奨サイズは幅{0}、高さ{1}[/]</value>
+  </data>
+  <data name="I18N_Start_Started" xml:space="preserve">
+    <value>[bold green]起動しました[/]</value>
   </data>
 </root>

@@ -11,12 +11,11 @@ using static UmamusumeResponseAnalyzer.Localization.Server;
 
 namespace UmamusumeResponseAnalyzer
 {
-    internal static class Server
+    public static class Server
     {
         internal static WebserverLite Instance = new(new WebserverSettings(Config.Core.ListenAddress, Config.Core.ListenPort), (ctx) => { return ctx.Response.Send(string.Empty); });
-        public static readonly ManualResetEvent OnPing = new(false);
         public static bool IsRunning => Instance.IsListening;
-        public static void Start()
+        internal static void Start()
         {
             Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/response", (ctx) =>
             {
@@ -57,7 +56,6 @@ namespace UmamusumeResponseAnalyzer
             Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
             {
                 AnsiConsole.MarkupLine(I18N_PingReceived);
-                OnPing.Signal();
                 return ctx.Response.Send("pong");
             });
             Instance.Start();
@@ -83,7 +81,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
-        public static void Stop() => Instance.Dispose();
+        internal static void Stop() => Instance.Dispose();
         static void ParseRequest(byte[] buffer)
         {
             try

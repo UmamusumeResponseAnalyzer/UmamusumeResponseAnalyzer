@@ -141,33 +141,6 @@
   <data name="I18N_Start" xml:space="preserve">
     <value>Start!</value>
   </data>
-  <data name="I18N_Start_Checking" xml:space="preserve">
-    <value>[yellow]Detecting if umamusume.exe is running[/]</value>
-  </data>
-  <data name="I18N_Start_Checking_AlreadyRunning" xml:space="preserve">
-    <value>Detected umamusume.exe is running, directly starting the server</value>
-  </data>
-  <data name="I18N_Start_Checking_Found" xml:space="preserve">
-    <value>Detected {0} instances of umamusume.exe running</value>
-  </data>
-  <data name="I18N_Start_Checking_Log" xml:space="preserve">
-    <value>[grey]Log: [/] {0}</value>
-  </data>
-  <data name="I18N_Start_GetToken" xml:space="preserve">
-    <value>[bold blue]Acquiring DMM One-time Token[/]</value>
-  </data>
-  <data name="I18N_Start_Launching" xml:space="preserve">
-    <value>Starting umamusume.exe</value>
-  </data>
-  <data name="I18N_Start_Started" xml:space="preserve">
-    <value>[bold green]Launched[/]</value>
-  </data>
-  <data name="I18N_Start_TokenFailed" xml:space="preserve">
-    <value>Failed to acquire DMM One-time Token</value>
-  </data>
-  <data name="I18N_Start_TokenGot" xml:space="preserve">
-    <value>DMM One-time Token acquired</value>
-  </data>
   <data name="I18N_UpdateAssets" xml:space="preserve">
     <value>Update data files</value>
   </data>
@@ -206,5 +179,8 @@
   </data>
   <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
     <value>[yellow] Console size is too small: recommended sizes are width {0}, height {1} [/]</value>
+  </data>
+  <data name="I18N_Start_Started" xml:space="preserve">
+    <value>[bold green]Launched[/]</value>
   </data>
 </root>
