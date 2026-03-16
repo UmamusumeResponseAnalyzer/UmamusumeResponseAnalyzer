@@ -97,7 +97,7 @@ namespace UmamusumeResponseAnalyzer
 #endif
                 if (obj == default) return;
 
-                foreach (var (k, v) in PluginManager.RequsetAnalyzerMethods)
+                foreach (var (k, v) in PluginManager.RequestAnalyzerMethods)
                 {
                     foreach (var (self, method) in v)
                     {

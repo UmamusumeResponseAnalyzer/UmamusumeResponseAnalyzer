@@ -14,7 +14,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         private static Dictionary<string, PluginMetadata> Metadatas { get; } = [];
         internal static List<string> FailedPlugins { get; } = [];
         public static List<IPlugin> LoadedPlugins { get; } = [];
-        internal static SortedDictionary<int, List<(IPlugin Self, MethodInfo Method)>> RequsetAnalyzerMethods { get; } = [];
+        internal static SortedDictionary<int, List<(IPlugin Self, MethodInfo Method)>> RequestAnalyzerMethods { get; } = [];
         internal static SortedDictionary<int, List<(IPlugin Self, MethodInfo Method)>> ResponseAnalyzerMethods { get; } = [];
         internal static List<HashSet<string>> ContextGroups { get; } = [];
         internal static Dictionary<string, PluginLoadContext> Contexts { get; } = [];
@@ -194,9 +194,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                     else
                     {
-                        if (!RequsetAnalyzerMethods.ContainsKey(analyzerAttribute.Priority))
-                            RequsetAnalyzerMethods.Add(analyzerAttribute.Priority, []);
-                        RequsetAnalyzerMethods[analyzerAttribute.Priority].Add((plugin, method));
+                        if (!RequestAnalyzerMethods.ContainsKey(analyzerAttribute.Priority))
+                            RequestAnalyzerMethods.Add(analyzerAttribute.Priority, []);
+                        RequestAnalyzerMethods[analyzerAttribute.Priority].Add((plugin, method));
                     }
                 }
             }
