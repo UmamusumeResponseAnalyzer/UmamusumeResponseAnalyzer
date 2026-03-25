@@ -4,6 +4,8 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -53,6 +55,28 @@ namespace UmamusumeResponseAnalyzer
             Task.WaitAll(_database_initialize_task, _plugin_initialize_task); //等待数据库初始化完成
             Server.Start(); //启动HTTP服务器
             Task.WaitAll([.. PluginManager.LoadedPlugins.Select(x => Task.Run(x.Initialize))]);
+
+            foreach (var plugin in PluginManager.LoadedPlugins)
+            {
+                AnsiConsole.MarkupLine($"插件{plugin.Name.EscapeMarkup()} v{plugin.Version} [lightgreen]加载成功[/]");
+            }
+            foreach (var plugin in PluginManager.FailedPlugins)
+            {
+                AnsiConsole.MarkupLine($"插件{Path.GetFileName(plugin).EscapeMarkup()}[red]加载失败[/] ({plugin.EscapeMarkup()})");
+            }
+            if (Config.Core.ListenAddress == "0.0.0.0")
+            {
+                var interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                       .Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                       .SelectMany(x => x.GetIPProperties().UnicastAddresses)
+                       .Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork)
+                       .Select(x => x.Address.ToString())
+                       .ToList();
+                foreach (var i in interfaces)
+                {
+                    AnsiConsole.WriteLine(Localization.Server.I18N_AvailableEndpointTip, i, Config.Core.ListenPort);
+                }
+            }
 
             for (var i = 0; i < 30; i++)
             {
@@ -365,7 +389,7 @@ namespace UmamusumeResponseAnalyzer
                     }
             }
         }
-        internal static void ApplyCultureInfo(LanguageConfig.Language culture)
+        internal static void ApplyCultureInfo()
         {
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
             Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
@@ -460,7 +484,7 @@ namespace UmamusumeResponseAnalyzer
             CTRL_LOGOFF_EVENT = 5,
             CTRL_SHUTDOWN_EVENT
         }
-        internal static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+        internal static bool ConsoleCtrlCheck(CtrlTypes _)
         {
             Server.Stop();
             foreach (var plugin in PluginManager.LoadedPlugins)

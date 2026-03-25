@@ -2,8 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using UmamusumeResponseAnalyzer.Plugin;
 using WatsonWebserver.Core;
 using WatsonWebserver.Lite;
@@ -59,27 +57,6 @@ namespace UmamusumeResponseAnalyzer
                 return ctx.Response.Send("pong");
             });
             Instance.Start();
-            foreach (var plugin in PluginManager.LoadedPlugins)
-            {
-                AnsiConsole.MarkupLine($"插件{plugin.Name.EscapeMarkup()} v{plugin.Version}[lightgreen]加载成功[/]");
-            }
-            foreach (var plugin in PluginManager.FailedPlugins)
-            {
-                AnsiConsole.MarkupLine($"插件{Path.GetFileName(plugin).EscapeMarkup()}[red]加载失败[/] ({plugin.EscapeMarkup()})");
-            }
-            if (Config.Core.ListenAddress == "0.0.0.0")
-            {
-                var interfaces = NetworkInterface.GetAllNetworkInterfaces()
-                       .Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-                       .SelectMany(x => x.GetIPProperties().UnicastAddresses)
-                       .Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork)
-                       .Select(x => x.Address.ToString())
-                       .ToList();
-                foreach (var i in interfaces)
-                {
-                    AnsiConsole.WriteLine(I18N_AvailableEndpointTip, i, Config.Core.ListenPort);
-                }
-            }
         }
         internal static void Stop() => Instance.Dispose();
         static void ParseRequest(byte[] buffer)

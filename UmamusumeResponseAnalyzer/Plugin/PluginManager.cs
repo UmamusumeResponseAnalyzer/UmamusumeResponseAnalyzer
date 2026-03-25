@@ -1,4 +1,5 @@
 using Spectre.Console;
+using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.Loader;
 using WatsonWebserver.Core;
@@ -7,10 +8,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
 {
     public static class PluginManager
     {
-        internal static List<string> PLUGIN_FILES => [.. new DirectoryInfo("Plugins").GetFiles("*.dll", SearchOption.AllDirectories).Select(x => x.FullName)];
-        /// <summary>
-        /// Key是插件名称
-        /// </summary>
         private static Dictionary<string, PluginMetadata> Metadatas { get; } = [];
         internal static List<string> FailedPlugins { get; } = [];
         public static List<IPlugin> LoadedPlugins { get; } = [];
@@ -18,196 +15,303 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static SortedDictionary<int, List<(IPlugin Self, MethodInfo Method)>> ResponseAnalyzerMethods { get; } = [];
         internal static List<HashSet<string>> ContextGroups { get; } = [];
         internal static Dictionary<string, PluginLoadContext> Contexts { get; } = [];
+        internal static Dictionary<string, Assembly> AssemblyMap { get; } = [];
         internal static List<Assembly> Assemblies { get; } = [];
+        private static HashSet<string> HostAssemblyNames { get; } = [];
 
         internal static void Init()
         {
             Directory.CreateDirectory("Plugins");
-            foreach (var dll in PLUGIN_FILES)
+            LoadMetadatas();
+            BuildGroups();
+            LoadPlugins();
+        }
+
+        internal static void LoadMetadatas()
+        {
+            var culture = LanguageConfig.GetCulture();
+            var pluginsDir = new DirectoryInfo("Plugins");
+
+            foreach (var dll in pluginsDir.GetFiles("*.dll", SearchOption.AllDirectories))
             {
-                if (dll.EndsWith(".resources.dll") && !dll.Contains(LanguageConfig.GetCulture())) continue;
-                var metadata = LoadMetadata(dll);
-                Metadatas.Add(metadata.PluginName, metadata);
+                if (dll.Name.EndsWith(".resources.dll") && !dll.FullName.Contains(culture)) continue;
+                var metadata = LoadMetadata(dll.FullName, null, false);
+                Metadatas[metadata.PluginName] = metadata;
             }
 
-            foreach (var metadata in Metadatas.Values.Where(x => x.SharedContextsWith.Count != 0))
+            foreach (var zip in pluginsDir.GetFiles("*.zip", SearchOption.TopDirectoryOnly).Select(x => x.FullName))
             {
-                metadata.SharedContextsWith.RemoveAll(x => Metadatas[x].LoadInHost);
-                foreach (var share in metadata.SharedContextsWith)
+                try
                 {
-                    var existingGroup = ContextGroups.FirstOrDefault(x => x.Contains(share));
-                    // 这个插件已经和别的插件一个组了，加入自己
-                    if (existingGroup != default)
-                    {
-                        existingGroup.Add(metadata.PluginName);
-                    }
-                    else
-                    {
-                        ContextGroups.Add([share, metadata.PluginName]);
-                    }
-                }
-            }
-            foreach (var metadata in Metadatas.Values.Where(x => !x.LoadInHost && x.SharedContextsWith.Count == 0))
-            {
-                var existingGroup = ContextGroups.FirstOrDefault(x => x.Contains(metadata.PluginName));
-                if (existingGroup == default)
-                {
-                    ContextGroups.Add([metadata.PluginName]);
-                }
-            }
+                    using var archive = ZipFile.OpenRead(zip);
+                    // 收集需要后处理的卫星资源条目
+                    List<ZipArchiveEntry> satelliteEntries = [];
 
-            foreach (var loadInHostPlugin in Metadatas.Where(x => x.Value.LoadInHost))
-            {
-                var assembly = AssemblyLoadContext.Default.LoadFromStream(PluginLoadContext.LoadStreamIndependent(loadInHostPlugin.Value.FilePath));
-                foreach (var reference in assembly.GetReferencedAssemblies())
-                {
-                    var localPath = Metadatas.FirstOrDefault(x => x.Value.FilePath.EndsWith($"{reference.Name}.dll")).Value?.FilePath;
-                    if (localPath == default || AssemblyLoadContext.Default.Assemblies.Any(x => x.GetName().Name == reference.Name)) continue;
-                    AssemblyLoadContext.Default.LoadFromStream(PluginLoadContext.LoadStreamIndependent(localPath));
+                    foreach (var entry in archive.Entries)
+                    {
+                        if (!entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) continue;
+
+                        if (!entry.FullName.Contains('/'))
+                        {
+                            // 主dll（根目录下）
+                            using var stream = entry.Open();
+                            var ms = new MemoryStream();
+                            stream.CopyTo(ms);
+                            ms.Position = 0;
+
+                            try
+                            {
+                                var metadata = LoadMetadata($"{zip}|{entry.FullName}", ms, true);
+                                Metadatas[metadata.PluginName] = metadata;
+                            }
+                            catch { }
+                        }
+                        else if (entry.FullName.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase) &&
+                                 entry.FullName.Contains(culture, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // 卫星资源文件（子目录下），延迟处理以确保主dll元数据已加载
+                            satelliteEntries.Add(entry);
+                        }
+                    }
+
+                    // 关联卫星资源到对应的主插件元数据
+                    foreach (var entry in satelliteEntries)
+                    {
+                        var resourceName = Path.GetFileNameWithoutExtension(entry.FullName);
+                        if (resourceName.EndsWith(".resources"))
+                        {
+                            var assemblyName = resourceName[..^".resources".Length];
+                            if (Metadatas.TryGetValue(assemblyName, out var metadata))
+                            {
+                                metadata.SatelliteEntries.Add(entry.FullName);
+                            }
+                        }
+                    }
                 }
-                var type = assembly.GetExportedTypes().FirstOrDefault(x => typeof(IPlugin).IsAssignableFrom(x)) ?? throw new TypeLoadException();
-                if (Activator.CreateInstance(type) is IPlugin plugin)
+                catch (Exception ex)
                 {
-                    RegisterHandlers(plugin);
+                    AnsiConsole.WriteException(ex);
                 }
-                else
-                {
-                    FailedPlugins.Add(loadInHostPlugin.Value.FilePath);
-                }
-                Assemblies.Add(assembly);
-            }
-            foreach (var group in ContextGroups)
-            {
-                LoadContextGroup(group);
             }
         }
 
-        internal static PluginMetadata LoadMetadata(string pluginPath)
+        internal static PluginMetadata LoadMetadata(string path, Stream? stream, bool isFromZip)
         {
-            var tempContext = new PluginLoadContext("LoadMetadataContext");
-            var tempAssembly = tempContext.LoadFromAssemblyPath(pluginPath);
-            var shouldLoadInHost = tempAssembly.GetCustomAttribute<LoadInHostContextAttribute>() != null;
-            var sharedContextsWith = tempAssembly.GetCustomAttributes<SharedContextWithAttribute>().SelectMany(x => x.PluginNames).ToList();
-            var metadata = new PluginMetadata(pluginPath, tempAssembly.GetName().Name ?? string.Empty, shouldLoadInHost, sharedContextsWith);
+            var tempContext = new PluginLoadContext("temp");
+            var assembly = stream != null ? tempContext.LoadFromStream(stream) : tempContext.LoadFromAssemblyPath(path);
+            var loadInHost = assembly.GetCustomAttribute<LoadInHostContextAttribute>() != null;
+            var sharedWith = assembly.GetCustomAttributes<SharedContextWithAttribute>().SelectMany(x => x.PluginNames).ToList();
+            var metadata = new PluginMetadata(path, assembly.GetName().Name ?? string.Empty, loadInHost, sharedWith, isFromZip);
             tempContext.Unload();
             return metadata;
         }
 
-        internal static void LoadContextGroup(HashSet<string> group)
+        internal static void BuildGroups()
         {
-            var contextKey = string.Join("&", group);
-            PluginLoadContext context;
-            if (!Contexts.TryGetValue(contextKey, out context!))
+            var pluginToGroup = new Dictionary<string, HashSet<string>>();
+
+            foreach (var m in Metadatas.Values.Where(x => x.SharedContextsWith.Count != 0))
             {
-                context = new PluginLoadContext(contextKey);
-                Contexts.Add(contextKey, context);
+                m.SharedContextsWith.RemoveAll(x => Metadatas.TryGetValue(x, out var v) && v.LoadInHost);
+                foreach (var share in m.SharedContextsWith)
+                {
+                    if (pluginToGroup.TryGetValue(share, out var group))
+                    {
+                        group.Add(m.PluginName);
+                        pluginToGroup[m.PluginName] = group;
+                    }
+                    else
+                    {
+                        var newGroup = new HashSet<string> { share, m.PluginName };
+                        ContextGroups.Add(newGroup);
+                        pluginToGroup[share] = newGroup;
+                        pluginToGroup[m.PluginName] = newGroup;
+                    }
+                }
             }
-            foreach (var plugin in group)
+
+            foreach (var m in Metadatas.Values.Where(x => !x.LoadInHost && x.SharedContextsWith.Count == 0))
             {
-                LoadPlugin(context, Metadatas[plugin].FilePath);
+                if (!pluginToGroup.ContainsKey(m.PluginName))
+                    ContextGroups.Add([m.PluginName]);
             }
         }
 
-        internal static void LoadPlugin(PluginLoadContext context, string pluginPath)
+        internal static void LoadPlugins()
+        {
+            foreach (var a in AssemblyLoadContext.Default.Assemblies)
+            {
+                var name = a.GetName().Name;
+                if (name != null) HostAssemblyNames.Add(name);
+            }
+
+            foreach (var m in Metadatas.Values.Where(x => x.LoadInHost))
+            {
+                LoadIntoContext(AssemblyLoadContext.Default, m);
+            }
+
+            foreach (var group in ContextGroups)
+            {
+                var key = string.Join("&", group);
+                if (!Contexts.TryGetValue(key, out var ctx))
+                {
+                    ctx = new PluginLoadContext(key);
+                    Contexts[key] = ctx;
+                }
+                foreach (var name in group)
+                    LoadIntoContext(ctx, Metadatas[name]);
+            }
+        }
+
+        internal static void LoadIntoContext(AssemblyLoadContext ctx, PluginMetadata m)
         {
             try
             {
-                var assembly = context.LoadFromStream(PluginLoadContext.LoadStreamIndependent(pluginPath));
+                using var stream = CreateStream(m);
+                var assembly = ctx.LoadFromStream(stream);
 
                 var type = assembly.GetExportedTypes().FirstOrDefault(x => typeof(IPlugin).IsAssignableFrom(x));
-                if (type is null)
+                if (type == null) return;
+
+                if (Activator.CreateInstance(type) is not IPlugin plugin)
                 {
-                    context.Unload();
+                    FailedPlugins.Add(m.FilePath);
                     return;
                 }
-                if (Activator.CreateInstance(type) is IPlugin plugin)
+
+                if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any() || Config.Repository.Targets.Count == 0)
                 {
-                    // 插件没有指定目标，或者插件目标兼容当前的目标，或当前没有设置任何目标才注册
-                    if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any() || Config.Repository.Targets.Count == 0)
-                    {
-                        Directory.CreateDirectory(@$"./PluginData/{plugin.Name}");
-                        LoadedPlugins.Add(plugin);
-                        PluginSettingsManager.LoadSettings(plugin);
-                        RegisterHandlers(plugin);
-                        RegisterRoutes(plugin);
-                    }
-                    Assemblies.Add(assembly);
+                    Directory.CreateDirectory($"./PluginData/{plugin.Name}");
+                    LoadedPlugins.Add(plugin);
+                    PluginSettingsManager.LoadSettings(plugin);
+                    RegisterMethods(plugin);
                 }
-                else
+
+                var assemblyName = assembly.GetName().Name;
+                if (assemblyName != null) AssemblyMap[assemblyName] = assembly;
+                Assemblies.Add(assembly);
+
+                if (m.LoadInHost)
                 {
-                    FailedPlugins.Add(pluginPath);
+                    foreach (var r in assembly.GetReferencedAssemblies())
+                    {
+                        if (r.Name != null && Metadatas.TryGetValue(r.Name, out var dep) &&
+                            !HostAssemblyNames.Contains(r.Name))
+                        {
+                            using var s = CreateStream(dep);
+                            var loaded = AssemblyLoadContext.Default.LoadFromStream(s);
+                            HostAssemblyNames.Add(r.Name);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 AnsiConsole.WriteException(ex);
-                FailedPlugins.Add(pluginPath);
+                FailedPlugins.Add(m.FilePath);
             }
         }
 
-        internal static void RegisterHandlers(IPlugin plugin)
+        internal static Stream CreateStream(PluginMetadata m)
         {
-            foreach (var method in plugin.GetType().GetMethods())
+            if (!m.IsFromZip)
+                return PluginLoadContext.LoadFileStream(m.FilePath);
+
+            var parts = m.FilePath.Split('|', 2);
+            using var archive = ZipFile.OpenRead(parts[0]);
+            var entry = archive.GetEntry(parts[1])!;
+            var ms = new MemoryStream();
+            using (var s = entry.Open()) s.CopyTo(ms);
+            ms.Position = 0;
+            return ms;
+        }
+
+        internal static void RegisterMethods(IPlugin plugin)
+        {
+            foreach (var method in plugin.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
             {
-                var analyzerAttribute = method.GetCustomAttribute<AnalyzerAttribute>();
-                if (analyzerAttribute != default)
+                var analyzer = method.GetCustomAttribute<AnalyzerAttribute>();
+                if (analyzer != null)
                 {
-                    if (analyzerAttribute.Response)
+                    var dict = analyzer.Response ? ResponseAnalyzerMethods : RequestAnalyzerMethods;
+                    if (!dict.TryGetValue(analyzer.Priority, out var list))
                     {
-                        if (!ResponseAnalyzerMethods.ContainsKey(analyzerAttribute.Priority))
-                            ResponseAnalyzerMethods.Add(analyzerAttribute.Priority, []);
-                        ResponseAnalyzerMethods[analyzerAttribute.Priority].Add((plugin, method));
+                        list = [];
+                        dict[analyzer.Priority] = list;
                     }
-                    else
-                    {
-                        if (!RequestAnalyzerMethods.ContainsKey(analyzerAttribute.Priority))
-                            RequestAnalyzerMethods.Add(analyzerAttribute.Priority, []);
-                        RequestAnalyzerMethods[analyzerAttribute.Priority].Add((plugin, method));
-                    }
+                    list.Add((plugin, method));
+                    continue;
                 }
-            }
-        }
 
-        internal static void RegisterRoutes(IPlugin plugin)
-        {
-            foreach (var method in plugin.GetType().GetMethods())
-            {
                 var route = method.GetCustomAttribute<RouteAttribute>();
-                if (route != default)
+                if (route != null)
                 {
-                    var parameters = method.GetParameters();
-                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(HttpContextBase))
+                    var ps = method.GetParameters();
+                    if (ps.Length == 1 && ps[0].ParameterType == typeof(HttpContextBase))
                     {
                         Server.Instance.Routes.PreAuthentication.Static.Add(route.Method, $"/{plugin.Name}/{route.Path}", x => (Task)method.Invoke(null, [x])!);
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"{plugin.Name.EscapeMarkup()}注册Route{route.Path.EscapeMarkup()}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", parameters.Select(x => x.ParameterType.Name)).EscapeMarkup()}");
+                        AnsiConsole.MarkupLine($"{plugin.Name.EscapeMarkup()}注册Route{route.Path.EscapeMarkup()}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", ps.Select(x => x.ParameterType.Name)).EscapeMarkup()}");
                     }
                 }
             }
         }
 
-        internal class PluginLoadContext(string contextName) : AssemblyLoadContext(contextName, true)
+        internal class PluginLoadContext(string name) : AssemblyLoadContext(name, true)
         {
-            protected override Assembly? Load(AssemblyName assemblyName)
+            protected override Assembly? Load(AssemblyName name)
             {
-                var sharedAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == assemblyName.Name);
-                if (sharedAssembly != null) return sharedAssembly;
+                if (name.Name != null && AssemblyMap.TryGetValue(name.Name, out var shared))
+                    return shared;
 
-                var hostAssembly = Default.Assemblies
-                    .FirstOrDefault(a => a.GetName().Name == assemblyName.Name);
-                if (hostAssembly != null) return hostAssembly;
+                if (name.Name != null && HostAssemblyNames.Contains(name.Name))
+                {
+                    var host = Default.Assemblies.FirstOrDefault(a => a.GetName().Name == name.Name);
+                    if (host != null) return host;
+                }
 
-                var localPath = Metadatas.FirstOrDefault(x => x.Value.FilePath.EndsWith($"{assemblyName.Name}.dll")).Value?.FilePath;
+                // 处理卫星资源文件加载（从zip中）
+                if (!string.IsNullOrEmpty(name.CultureName) && name.Name != null && name.Name.EndsWith(".resources"))
+                {
+                    var searchSuffix = $"{name.CultureName}/{name.Name}.dll";
+                    foreach (var metadata in Metadatas.Values.Where(m => m.IsFromZip))
+                    {
+                        var satelliteEntry = metadata.SatelliteEntries.FirstOrDefault(e =>
+                            e.Contains(searchSuffix, StringComparison.OrdinalIgnoreCase));
 
-                return File.Exists(localPath) ? LoadFromStream(LoadStreamIndependent(localPath)) : null;
+                        if (satelliteEntry != null)
+                        {
+                            var zipPath = metadata.FilePath.Split('|', 2)[0];
+                            using var satelliteStream = CreateZipEntryStream(zipPath, satelliteEntry);
+                            if (satelliteStream != null) return LoadFromStream(satelliteStream);
+                        }
+                    }
+                    return null;
+                }
+
+                if (name.Name == null || !Metadatas.TryGetValue(name.Name, out var dep)) return null;
+
+                using var stream = CreateStream(dep);
+                return LoadFromStream(stream);
             }
 
-            internal static MemoryStream LoadStreamIndependent(string path)
+            private static MemoryStream? CreateZipEntryStream(string zipPath, string entryName)
+            {
+                using var archive = ZipFile.OpenRead(zipPath);
+                var entry = archive.GetEntry(entryName);
+                if (entry == null) return null;
+
+                var ms = new MemoryStream();
+                using (var s = entry.Open()) s.CopyTo(ms);
+                ms.Position = 0;
+                return ms;
+            }
+
+            internal static MemoryStream LoadFileStream(string path)
             {
                 var ms = new MemoryStream();
-                // 可能不需要加FileShare？或者不需要再弄个MS？
                 using var fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                 fs.CopyTo(ms);
                 ms.Position = 0;
@@ -215,12 +319,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
         }
 
-        internal class PluginMetadata(string path, string name, bool loadInHost, List<string> sharedContextsWith)
+        internal class PluginMetadata(string path, string name, bool loadInHost, List<string> shared, bool isFromZip)
         {
             public string FilePath { get; } = path;
             public string PluginName { get; } = name;
             public bool LoadInHost { get; } = loadInHost;
-            public List<string> SharedContextsWith { get; } = sharedContextsWith;
+            public List<string> SharedContextsWith { get; } = shared;
+            public bool IsFromZip { get; } = isFromZip;
+            public List<string> SatelliteEntries { get; } = [];
         }
     }
 }

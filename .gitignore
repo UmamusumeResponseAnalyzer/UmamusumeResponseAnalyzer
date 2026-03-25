@@ -365,3 +365,5 @@ FodyWeavers.xsd
 # AI
 .claude/
 CLAUDE.MD
+
+AGENTS.md

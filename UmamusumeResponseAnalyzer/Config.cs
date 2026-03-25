@@ -38,7 +38,7 @@ namespace UmamusumeResponseAnalyzer
                         property.SetValue(Current, property.PropertyType.GetConstructor(Type.EmptyTypes)!.Invoke([]));
                     }
                 }
-                UmamusumeResponseAnalyzer.ApplyCultureInfo(Language.Selected);
+                UmamusumeResponseAnalyzer.ApplyCultureInfo();
             }
             else
             {
