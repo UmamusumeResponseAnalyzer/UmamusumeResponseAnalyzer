@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 using System.Reflection;
 using System.Runtime.Loader;
 using WatsonWebserver.Core;
@@ -69,7 +69,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (Activator.CreateInstance(type) is IPlugin plugin)
                 {
                     RegisterHandlers(plugin);
-                    Assemblies.Add(assembly);
                 }
                 else
                 {
@@ -82,6 +81,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 LoadContextGroup(group);
             }
         }
+
         internal static PluginMetadata LoadMetadata(string pluginPath)
         {
             var tempContext = new PluginLoadContext("LoadMetadataContext");
@@ -92,6 +92,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             tempContext.Unload();
             return metadata;
         }
+
         internal static void LoadContextGroup(HashSet<string> group)
         {
             var contextKey = string.Join("&", group);
@@ -106,6 +107,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 LoadPlugin(context, Metadatas[plugin].FilePath);
             }
         }
+
         internal static void LoadPlugin(PluginLoadContext context, string pluginPath)
         {
             try
@@ -125,7 +127,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     {
                         Directory.CreateDirectory(@$"./PluginData/{plugin.Name}");
                         LoadedPlugins.Add(plugin);
-                        RegisterSettings(plugin);
+                        PluginSettingsManager.LoadSettings(plugin);
                         RegisterHandlers(plugin);
                         RegisterRoutes(plugin);
                     }
@@ -142,43 +144,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 FailedPlugins.Add(pluginPath);
             }
         }
-        internal static void RegisterSettings(IPlugin plugin)
-        {
-            var settings = plugin.GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != default);
-            if (Config.Plugin.PluginSettings.TryGetValue(plugin.Name, out var config))
-            {
-                foreach (var setting in settings)
-                {
-                    if (config.TryGetValue(setting.Name, out var value))
-                    {
-                        if (value is string str && setting.PropertyType != typeof(string))
-                        { // Yaml会把object value=1;反序列化成"1"
-                            if (setting.PropertyType == typeof(int))
-                            {
-                                value = int.Parse(str);
-                            }
-                            else if (setting.PropertyType == typeof(bool))
-                            {
-                                value = bool.Parse(str);
-                            }
-                            else if (setting.PropertyType == typeof(double))
-                            {
-                                value = double.Parse(str);
-                            }
-                        }
-                        setting.SetValue(plugin, value);
-                    }
-                }
-            }
-            else
-            {
-                Config.Plugin.PluginSettings.Add(plugin.Name, []);
-                foreach (var setting in settings)
-                {
-                    Config.Plugin.PluginSettings[plugin.Name].Add(setting.Name, setting.GetValue(plugin)!);
-                }
-            }
-        }
+
         internal static void RegisterHandlers(IPlugin plugin)
         {
             foreach (var method in plugin.GetType().GetMethods())
@@ -201,6 +167,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
             }
         }
+
         internal static void RegisterRoutes(IPlugin plugin)
         {
             foreach (var method in plugin.GetType().GetMethods())
@@ -215,7 +182,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"{plugin.Name}注册Route{route.Path}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", parameters.Select(x => x.ParameterType.Name))}");
+                        AnsiConsole.MarkupLine($"{plugin.Name.EscapeMarkup()}注册Route{route.Path.EscapeMarkup()}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", parameters.Select(x => x.ParameterType.Name)).EscapeMarkup()}");
                     }
                 }
             }
@@ -247,6 +214,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 return ms;
             }
         }
+
         internal class PluginMetadata(string path, string name, bool loadInHost, List<string> sharedContextsWith)
         {
             public string FilePath { get; } = path;

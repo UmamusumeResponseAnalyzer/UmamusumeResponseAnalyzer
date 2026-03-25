@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Spectre.Console;
 using System.Diagnostics;
 using System.Globalization;
@@ -78,6 +78,7 @@ namespace UmamusumeResponseAnalyzer
             }
         }
     }
+
     public class YamlConfig
     {
         public CoreConfig Core { get; set; }
@@ -87,6 +88,7 @@ namespace UmamusumeResponseAnalyzer
         public LanguageConfig Language { get; set; }
         public MiscConfig Misc { get; set; }
     }
+
     #region class
     public class CoreConfig
     {
@@ -150,6 +152,7 @@ namespace UmamusumeResponseAnalyzer
             } while (selected != i18n.Return);
         }
     }
+
     public class RepositoryConfig
     {
         public List<string> Targets { get; set; } = [];
@@ -209,11 +212,9 @@ namespace UmamusumeResponseAnalyzer
             } while (selected != i18n.Return);
         }
     }
+
     public class PluginConfig
     {
-        // 插件名 -> (属性名 -> 值)
-        public Dictionary<string, Dictionary<string, object>> PluginSettings { get; set; } = [];
-
         public void Prompt()
         {
             UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
@@ -232,11 +233,11 @@ namespace UmamusumeResponseAnalyzer
                 {
                     var plugin = plugins[selected];
                     plugin.ConfigPrompt();
-                    Config.Save();
                 }
             } while (selected != i18n.Return);
         }
     }
+
     public class UpdaterConfig
     {
         public bool IsGithubBlocked { get; set; } = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
@@ -299,6 +300,7 @@ namespace UmamusumeResponseAnalyzer
             Config.Save();
         }
     }
+
     public class LanguageConfig
     {
         public Language Selected { get; private set; } = Language.AutoDetect;
@@ -319,6 +321,7 @@ namespace UmamusumeResponseAnalyzer
             Config.Save();
             UmamusumeResponseAnalyzer.Restart();
         }
+
         public static string GetCulture()
         {
             return Config.Language.Selected switch
@@ -329,6 +332,7 @@ namespace UmamusumeResponseAnalyzer
                 _ => Thread.CurrentThread.CurrentCulture.Name,
             };
         }
+
         public enum Language
         {
             AutoDetect,
@@ -337,6 +341,7 @@ namespace UmamusumeResponseAnalyzer
             English
         }
     }
+
     public class MiscConfig
     {
         public bool SaveResponseForDebug { get; set; }

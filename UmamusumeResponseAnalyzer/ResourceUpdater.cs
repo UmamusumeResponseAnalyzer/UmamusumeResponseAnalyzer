@@ -211,11 +211,11 @@ namespace UmamusumeResponseAnalyzer
             {
                 if (new Uri(downloadURL).Host == "raw.githubusercontent.com")
                 {
-                    AnsiConsole.MarkupLine(I18N_AccessGithubFail, downloadURL);
+                    AnsiConsole.MarkupLine(I18N_AccessGithubFail, downloadURL.EscapeMarkup());
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine(I18N_AccessMirrorFail, downloadURL);
+                    AnsiConsole.MarkupLine(I18N_AccessMirrorFail, downloadURL.EscapeMarkup());
                 }
                 return;
             }

@@ -61,11 +61,11 @@ namespace UmamusumeResponseAnalyzer
             Instance.Start();
             foreach (var plugin in PluginManager.LoadedPlugins)
             {
-                AnsiConsole.MarkupLine($"插件{plugin.Name} v{plugin.Version}[lightgreen]加载成功[/]");
+                AnsiConsole.MarkupLine($"插件{plugin.Name.EscapeMarkup()} v{plugin.Version}[lightgreen]加载成功[/]");
             }
             foreach (var plugin in PluginManager.FailedPlugins)
             {
-                AnsiConsole.MarkupLine($"插件{Path.GetFileName(plugin)}[red]加载失败[/] ({plugin})");
+                AnsiConsole.MarkupLine($"插件{Path.GetFileName(plugin).EscapeMarkup()}[red]加载失败[/] ({plugin.EscapeMarkup()})");
             }
             if (Config.Core.ListenAddress == "0.0.0.0")
             {
@@ -90,10 +90,7 @@ namespace UmamusumeResponseAnalyzer
                 var obj = JsonConvert.DeserializeObject<JObject>(str);
 #if DEBUG
                 Directory.CreateDirectory("packets");
-                if (Config.Core.RequestAdditionalHeader)
-                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
-                else
-                    File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
+                File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
 #endif
                 if (obj == default) return;
 
@@ -146,43 +143,39 @@ namespace UmamusumeResponseAnalyzer
                         data = common; // 这一行是给下面用的，不然data还是最初的那个
                     }
 
-                    if (data["chara_info"] is JObject chara_info)
+                    if (data.TryGetValue("venus_data_set", out var ds))
                     {
-                        var scenario_id = chara_info["scenario_id"].ToInt();
-                        if (scenario_id == 5 && data.TryGetValue("venus_data_set", out var ds))
-                        {
-                            if (ds["race_start_info"] is JArray)
-                                ds["race_start_info"] = null;
-                            if (ds["venus_race_condition"] is JArray)
-                                ds["venus_race_condition"] = null;
-                            obj["data"]!["venus_data_set"] = ds;
-                        }
-                        if (scenario_id == 8 && data.TryGetValue("cook_data_set", out ds))
-                        {
-                            if (ds["dish_skill_info"] is JArray)
-                                ds["dish_skill_info"] = null;
-                            if (ds["gain_material_info"] is JArray)
-                                ds["gain_material_info"] = null;
-                            if (ds["last_command_info"] is JArray)
-                                ds["last_command_info"] = null;
-                            obj["data"]!["cook_data_set"] = ds;
-                        }
-                        if (scenario_id == 10 && data.TryGetValue("legend_data_set", out ds))
-                        {
-                            if (ds["cm_info"] is JObject cm_info && cm_info["race_result_info"] is JArray)
-                                cm_info["race_result_info"] = null;
-                            if (ds["popularity_info"] is JArray)
-                                ds["popularity_info"] = null;
-                            else if (ds["popularity_info"] is JObject popularity_info && popularity_info["poster_race_result_info"] is JArray)
-                                popularity_info["poster_race_result_info"] = null;
-                            obj["data"]!["legend_data_set"] = ds;
-                        }
-                        if (scenario_id == 11 && data.TryGetValue("pioneer_data_set", out ds))
-                        {
-                            if (ds["shima_training_info"] is JArray)
-                                ds["shima_training_info"] = null;
-                            obj["data"]!["pioneer_data_set"] = ds;
-                        }
+                        if (ds["race_start_info"] is JArray)
+                            ds["race_start_info"] = null;
+                        if (ds["venus_race_condition"] is JArray)
+                            ds["venus_race_condition"] = null;
+                        obj["data"]!["venus_data_set"] = ds;
+                    }
+                    if (data.TryGetValue("cook_data_set", out ds))
+                    {
+                        if (ds["dish_skill_info"] is JArray)
+                            ds["dish_skill_info"] = null;
+                        if (ds["gain_material_info"] is JArray)
+                            ds["gain_material_info"] = null;
+                        if (ds["last_command_info"] is JArray)
+                            ds["last_command_info"] = null;
+                        obj["data"]!["cook_data_set"] = ds;
+                    }
+                    if (data.TryGetValue("legend_data_set", out ds))
+                    {
+                        if (ds["cm_info"] is JObject cm_info && cm_info["race_result_info"] is JArray)
+                            cm_info["race_result_info"] = null;
+                        if (ds["popularity_info"] is JArray)
+                            ds["popularity_info"] = null;
+                        else if (ds["popularity_info"] is JObject popularity_info && popularity_info["poster_race_result_info"] is JArray)
+                            popularity_info["poster_race_result_info"] = null;
+                        obj["data"]!["legend_data_set"] = ds;
+                    }
+                    if (data.TryGetValue("pioneer_data_set", out ds))
+                    {
+                        if (ds["shima_training_info"] is JArray)
+                            ds["shima_training_info"] = null;
+                        obj["data"]!["pioneer_data_set"] = ds;
                     }
                 }
 

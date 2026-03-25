@@ -68,39 +68,29 @@ namespace UmamusumeResponseAnalyzer
         #endregion
         public static async Task Initialize()
         {
-            Events = (await DeserializeAsync<List<Story>>(EVENT_NAME_FILEPATH)).ToDictionary(y => y.Id, y => y);
-            //if (TryDeserialize(SUCCESS_EVENT_FILEPATH, out var successEvent, x => x.ToObject<List<SuccessStory>>()!.ToDictionary(y => y.Id, y => y)))
-            //{
-            //    SuccessEvent = successEvent;
-            //}
-            // Names需要额外设定TypeNameHandling，所以要单独处理
-            if (File.Exists(NAMES_FILEPATH))
-            {
-                try
-                {
-                    var names = await DeserializeAsync<List<BaseName>>(NAMES_FILEPATH, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-                    if (names != null)
-                    {
-                        Names = new(names);
-                    }
-                }
-                catch
-                {
-                    AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(NAMES_FILEPATH));
-                }
-            }
-            else
-            {
-                AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(NAMES_FILEPATH));
-            }
-            var skills = await DeserializeAsync<List<SkillData>>(SKILLS_FILEPATH);
+            // 并行加载所有数据文件
+            var eventsTask = DeserializeAsync<List<Story>>(EVENT_NAME_FILEPATH);
+            var namesTask = DeserializeAsync<List<BaseName>>(NAMES_FILEPATH, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+            var skillsTask = DeserializeAsync<List<SkillData>>(SKILLS_FILEPATH);
+            var skillUpgradeTask = DeserializeAsync<List<SkillUpgradeSpeciality>>(SKILL_UPGRADE_SPECIALITY_FILEPATH);
+            var talentSkillTask = DeserializeAsync<Dictionary<int, TalentSkillData[]>>(TALENT_SKILLS_FILEPATH);
+            var factorIdsTask = DeserializeAsync<NullableIntStringDictionary>(FACTOR_IDS_FILEPATH);
+            var saddleIdsTask = DeserializeAsync<int[]>(SADDLE_IDS_FILEPATH);
+            var successionTask = DeserializeAsync<SuccessionRelationTable>(SUCCESSION_RELATION_FILEPATH);
+
+            await Task.WhenAll(eventsTask, namesTask, skillsTask, skillUpgradeTask, talentSkillTask, factorIdsTask, saddleIdsTask, successionTask);
+
+            Events = eventsTask.Result.ToDictionary(y => y.Id, y => y);
+            var names = namesTask.Result;
+            if (names != null) Names = new(names);
+            var skills = skillsTask.Result;
             Skills = new();
             SkillManagerGenerator.Default = new(skills);
-            SkillUpgradeSpeciality = (await DeserializeAsync<List<SkillUpgradeSpeciality>>(SKILL_UPGRADE_SPECIALITY_FILEPATH)).ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
-            TalentSkill = await DeserializeAsync<Dictionary<int, TalentSkillData[]>>(TALENT_SKILLS_FILEPATH);
-            FactorIds = await DeserializeAsync<NullableIntStringDictionary>(FACTOR_IDS_FILEPATH);
-            SaddleIds = await DeserializeAsync<int[]>(SADDLE_IDS_FILEPATH);
-            SuccessionRelation = await DeserializeAsync<SuccessionRelationTable>(SUCCESSION_RELATION_FILEPATH);
+            SkillUpgradeSpeciality = skillUpgradeTask.Result.ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
+            TalentSkill = talentSkillTask.Result;
+            FactorIds = factorIdsTask.Result;
+            SaddleIds = saddleIdsTask.Result;
+            SuccessionRelation = successionTask.Result;
             Initialized = true;
         }
         private static readonly JsonSerializer _serializer = new JsonSerializer();
@@ -125,21 +115,21 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath));
+                        AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
                     }
                 }
                 catch (InvalidDataException)
                 {
-                    AnsiConsole.MarkupLine(I18N_DecompressError, Path.GetFileName(filepath));
+                    AnsiConsole.MarkupLine(I18N_DecompressError, Path.GetFileName(filepath).EscapeMarkup());
                 }
                 catch (Exception)
                 {
-                    AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath));
+                    AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
                 }
             }
             else
             {
-                AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(filepath));
+                AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(filepath).EscapeMarkup());
             }
             return default!;
         }

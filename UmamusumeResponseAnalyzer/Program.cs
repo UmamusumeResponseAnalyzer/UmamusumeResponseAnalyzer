@@ -67,6 +67,9 @@ namespace UmamusumeResponseAnalyzer
             }
 
             AnsiConsole.MarkupLine(I18N_Start_Started);
+            
+            await UraEvents.TriggerStartedAsync();
+            
             var _closingEvent = new AutoResetEvent(false);
             Console.CancelKeyPress += (_, _) =>
             {
@@ -370,7 +373,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 var rc = i?.GetField("resourceCulture", BindingFlags.NonPublic | BindingFlags.Static);
                 if (rc == null) continue;
-                rc.SetValue(rc, Thread.CurrentThread.CurrentUICulture);
+                rc.SetValue(null, Thread.CurrentThread.CurrentUICulture);
             }
         }
         internal static void Restart()

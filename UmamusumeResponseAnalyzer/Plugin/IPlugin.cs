@@ -1,11 +1,5 @@
-﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using Spectre.Console;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UmamusumeResponseAnalyzer.Plugin
 {
@@ -15,15 +9,17 @@ namespace UmamusumeResponseAnalyzer.Plugin
         string Author { get; }
         Version Version { get => GetType().Assembly.GetName().Version ?? new Version(0, 0, 0); }
         string[] Targets { get; }
+        string DataDirectory => Path.Combine("PluginData", Name);
+        string SettingsFilePath => Path.Combine(DataDirectory, "settings.yaml");
 
         void Initialize()
         {
-            Directory.CreateDirectory(Path.Combine("PluginData", Name));
+            Directory.CreateDirectory(DataDirectory);
         }
         void Dispose() { }
-        public void ConfigPrompt()
+        void ConfigPrompt()
         {
-            var properties = GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != default);
+            var properties = GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != null);
             var propDic = new Dictionary<string, PropertyInfo>();
 
             var selection = string.Empty;
@@ -51,43 +47,65 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 selection = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
                 if (selection == "Reload")
                 {
-                    Initialize();
+                    PluginSettingsManager.LoadSettings(this);
                 }
                 else if (selection == Localization.LaunchMenu.I18N_UpdateProgram)
                 {
                     AnsiConsole.Progress().Start(UpdatePlugin);
                 }
-                else if (selection != Localization.Config.Return)
+                else if (selection != Localization.Config.Return && propDic.TryGetValue(selection, out var property))
                 {
-                    var property = propDic[selection];
-                    if (property != default)
+                    var description = property.GetCustomAttribute<PluginDescriptionAttribute>()?.Description;
+                    var type = property.PropertyType;
+                    if (type == typeof(bool))
                     {
-                        var description = property.GetCustomAttribute<PluginDescriptionAttribute>()?.Description;
-                        var type = property.PropertyType;
-                        if (type == typeof(bool))
-                        {
-                            var value = (bool)(property.GetValue(this) ?? false);
-                            property.SetValue(this, !value);
-                        }
-                        else if (type.IsPrimitive || type == typeof(decimal))
-                        {
-                            var promptType = typeof(TextPrompt<>).MakeGenericType(type);
-                            var prompt = Activator.CreateInstance(promptType, $"{property.Name}: {description}", null);
-                            var method = typeof(AnsiConsole).GetMethod("Prompt")!.MakeGenericMethod(type);
-                            var value = method.Invoke(null, [prompt]);
-                            property.SetValue(this, value);
-                        }
-                        else if (type == typeof(string))
-                        {
-                            var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}").AllowEmpty());
-                            property.SetValue(this, str);
-                        }
-                        Config.Plugin.PluginSettings[Name][property.Name] = property.GetValue(this)!;
+                        var value = (bool)(property.GetValue(this) ?? false);
+                        property.SetValue(this, !value);
                     }
+                    else if (type.IsPrimitive || type == typeof(decimal))
+                    {
+                        var promptType = typeof(TextPrompt<>).MakeGenericType(type);
+                        var prompt = Activator.CreateInstance(promptType, $"{property.Name}: {description}", null);
+                        var method = typeof(AnsiConsole).GetMethod("Prompt")!.MakeGenericMethod(type);
+                        var value = method.Invoke(null, [prompt]);
+                        property.SetValue(this, value);
+                    }
+                    else if (type == typeof(string))
+                    {
+                        var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}").AllowEmpty());
+                        property.SetValue(this, str);
+                    }
+                    PluginSettingsManager.SaveSettings(this);
                 }
                 AnsiConsole.Clear();
             } while (selection != Localization.Config.Return);
         }
         Task UpdatePlugin(ProgressContext ctx);
+    }
+
+    public static class UraEvents
+    {
+        /// <summary>
+        /// 在内置HTTP服务器启动完成后触发
+        /// </summary>
+        public static event Func<Task>? OnStarted;
+
+        internal static async Task TriggerStartedAsync()
+        {
+            if (OnStarted != null)
+            {
+                foreach (var handler in OnStarted.GetInvocationList().Cast<Func<Task>>())
+                {
+                    try
+                    {
+                        await handler();
+                    }
+                    catch (Exception ex)
+                    {
+                        AnsiConsole.MarkupLine($"[red]插件事件处理错误: {ex.Message.EscapeMarkup()}[/]");
+                    }
+                }
+            }
+        }
     }
 }
