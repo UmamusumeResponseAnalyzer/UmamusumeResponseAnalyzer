@@ -126,29 +126,11 @@
   <data name="I18N_LaunchFail" xml:space="preserve">
     <value>URA启动失败，按回车键退出程序</value>
   </data>
-  <data name="I18N_LocalizationData_FileCorrupt" xml:space="preserve">
-    <value>未找到目标文件或目标文件不符合格式</value>
-  </data>
-  <data name="I18N_LocalizationData_FormatRequirement" xml:space="preserve">
-    <value>本地化仅支持格式为Dictionary&lt;textdata.category,Dictionary&lt;textdata.index,string&gt;&gt;的JSON</value>
-  </data>
-  <data name="I18N_LocalizationData_InputPathPrompt" xml:space="preserve">
-    <value>请输入完整的文件路径(如G:\Umamusume\localized_data\text_data.json)</value>
-  </data>
-  <data name="I18N_ManageDMMService" xml:space="preserve">
-    <value>管理DMM服务信息</value>
-  </data>
   <data name="I18N_Options" xml:space="preserve">
     <value>选项</value>
   </data>
   <data name="I18N_Options_BackToMenuInstruction" xml:space="preserve">
     <value>按任意键返回主菜单</value>
-  </data>
-  <data name="I18N_Options_Instruction" xml:space="preserve">
-    <value>[grey](用[blue]&lt;空格&gt;[/]切换选项,按下[green]&lt;回车&gt;[/]保存并返回,[[X]]为选中状态)[/]</value>
-  </data>
-  <data name="I18N_SetLocalizedDataFilePath" xml:space="preserve">
-    <value>设置本地化文件路径</value>
   </data>
   <data name="I18N_Start" xml:space="preserve">
     <value>启动！</value>
@@ -162,23 +144,8 @@
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>发现有效的游戏目录:{0}</value>
   </data>
-  <data name="I18N_UraCoreHelper_FoundPaths" xml:space="preserve">
-    <value>找到了{0}个可能的目录</value>
-  </data>
-  <data name="I18N_UraCoreHelper_InstallPrompt" xml:space="preserve">
-    <value>是否要在此处安装?</value>
-  </data>
   <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
     <value>安装到{0}成功,按任意键返回主菜单</value>
-  </data>
-  <data name="I18N_UraCoreHelper_NoInstalledModuleFound" xml:space="preserve">
-    <value>未找到兼容模块或已安装，请先安装(https://github.com/MinamiChiwa/Trainers-Legend-G or https://github.com/Kimjio/umamusume-localify)</value>
-  </data>
-  <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
-    <value>多种语言同时选择，已恢复至默认，请重新设置</value>
-  </data>
-  <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
-    <value>[yellow]控制台尺寸过小:推荐尺寸为宽{0}、高{1}[/]</value>
   </data>
   <data name="I18N_Start_Started" xml:space="preserve">
     <value>[bold green]已启动[/]</value>

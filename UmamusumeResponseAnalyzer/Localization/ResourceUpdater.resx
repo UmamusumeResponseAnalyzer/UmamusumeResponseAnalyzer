@@ -156,16 +156,10 @@
   <data name="I18N_DownloadingCmder" xml:space="preserve">
     <value>Downloading cmder.zip</value>
   </data>
-  <data name="I18N_DecompressCmder" xml:space="preserve">
-    <value>Extracting cmder.zip</value>
-  </data>
   <data name="I18N_AccessGithubFail" xml:space="preserve">
     <value>{0}: [red]Unable to connect to GitHub, please try using a proxy[/]</value>
   </data>
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}: [red]Unable to connect to the update server, please try enabling "Force use GitHub for updates" in settings and try again[/]</value>
-  </data>
-  <data name="I18N_DownloadingUraCore" xml:space="preserve">
-    <value>Downloading ura-core.dll</value>
   </data>
 </root>

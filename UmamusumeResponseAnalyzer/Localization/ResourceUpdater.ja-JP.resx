@@ -156,16 +156,10 @@
   <data name="I18N_DownloadingCmder" xml:space="preserve">
     <value>cmder.zipをダウンロード中</value>
   </data>
-  <data name="I18N_DecompressCmder" xml:space="preserve">
-    <value>cmder.zipを解凍中</value>
-  </data>
   <data name="I18N_AccessGithubFail" xml:space="preserve">
     <value>{0}:GitHubに接続できませんでした。プロキシを使用してみてください</value>
   </data>
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}:更新サーバーに接続できませんでした。「GitHubを使用した強制アップデート」を設定で有効にしてから再試行してください</value>
-  </data>
-  <data name="I18N_DownloadingUraCore" xml:space="preserve">
-    <value>ura-core.dllをダウンロード中</value>
   </data>
 </root>

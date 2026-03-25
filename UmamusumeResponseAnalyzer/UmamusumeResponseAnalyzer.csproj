@@ -50,11 +50,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Update="Localization\CommandInfo\Cook.zh-CN.Designer.cs">
-		  <DependentUpon>Cook.zh-CN.resx</DependentUpon>
-		  <DesignTime>True</DesignTime>
-		  <AutoGen>True</AutoGen>
-		</Compile>
 		<Compile Update="Localization\CommandInfo\Cook.Designer.cs">
 		  <DependentUpon>Cook.resx</DependentUpon>
 		  <DesignTime>True</DesignTime>

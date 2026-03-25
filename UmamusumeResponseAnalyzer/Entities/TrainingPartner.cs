@@ -62,7 +62,7 @@ namespace UmamusumeResponseAnalyzer.Entities
         {
             Position = partner;
             Friendship = turn.Evaluations[Position].evaluation;
-            IsArcPartner = turn.IsScenario(ScenarioType.LArc, out TurnInfoArc arcTurn) && (partner is > 1000 || (partner is >= 1 and <= 7)) && arcTurn.EvaluationInfoArray.Any(x => x.target_id == partner);
+            IsArcPartner = turn.IsScenario(ScenarioType.LArc, out TurnInfoArc? arcTurn) && (partner is > 1000 || (partner is >= 1 and <= 7)) && arcTurn?.EvaluationInfoArray.Any(x => x.target_id == partner) == true;
             if (!IsNpc) // 自己带的S卡
             {
                 CardId = turn.SupportCards[Position];
@@ -155,7 +155,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             }
 
             // 自己带的支援卡，或理事长、记者、佐岳等
-            if (Position is >= 1 and <= 7 || Position is >= 100 and < 1000)
+            if (Position is >= 1 and <= 7 or >= 100 and < 1000)
             {
                 // 羁绊不满，额外显示
                 if (Friendship < 100)

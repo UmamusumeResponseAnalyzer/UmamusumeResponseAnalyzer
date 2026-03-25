@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="I18N_LoginRequestDetected" xml:space="preserve">
-    <value>[green]ViewerIDが{0}のアカウントのログイン要求を検出しました[/]</value>
-  </data>
   <data name="I18N_WebSocket_CommandNotFound" xml:space="preserve">
     <value>Commandが見つかりませんでした：{0}</value>
   </data>
@@ -135,20 +132,8 @@
   <data name="I18N_WildcardServerStarted" xml:space="preserve">
     <value>サーバーはhttp://*:4693で起動しました</value>
   </data>
-  <data name="I18N_NormalServerStarted" xml:space="preserve">
-    <value>サーバーはhttp://127.0.0.1:4693で起動しました。エミュレーターやスマートフォンから接続する場合は管理者権限で実行してください</value>
-  </data>
-  <data name="I18N_WebSocket_ConstructorNotFound" xml:space="preserve">
-    <value>対応するコンストラクタが見つかりません</value>
-  </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
     <value>http://{0}:{1}から接続を試みることができます</value>
-  </data>
-  <data name="I18N_TrainingFailed" xml:space="preserve">
-    <value>[red]トレーニングに失敗しました[/]</value>
-  </data>
-  <data name="I18N_ServerStartFail" xml:space="preserve">
-    <value>サーバーの起動に失敗しました。別のURAインスタンスが既に実行中でないか確認してください</value>
   </data>
   <data name="I18N_WebSocket_DeserializeRequestFail" xml:space="preserve">
     <value>WSRequestの逆シリアル化に失敗しました</value>

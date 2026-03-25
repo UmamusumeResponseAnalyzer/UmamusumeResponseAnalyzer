@@ -123,20 +123,11 @@
   <data name="I18N_Instruction" xml:space="preserve">
     <value>起動メニュー（↑および↓でオプションを切り替え、Enterで確認）</value>
   </data>
-  <data name="I18N_ManageDMMService" xml:space="preserve">
-    <value>DMMサービス情報を管理</value>
-  </data>
   <data name="I18N_Options" xml:space="preserve">
     <value>オプション</value>
   </data>
   <data name="I18N_Options_BackToMenuInstruction" xml:space="preserve">
     <value>任意のキーを押してメインメニューに戻る</value>
-  </data>
-  <data name="I18N_Options_Instruction" xml:space="preserve">
-    <value>[grey]（[blue]スペース[/]でオプションを切り替え、[green]Enter[/]を押して保存して戻る、[[X]]は選択状態を示します）[/]</value>
-  </data>
-  <data name="I18N_SetLocalizedDataFilePath" xml:space="preserve">
-    <value>ローカライズファイルパスを設定</value>
   </data>
   <data name="I18N_Start" xml:space="preserve">
     <value>スタート！</value>
@@ -150,35 +141,11 @@
   <data name="I18N_LaunchFail" xml:space="preserve">
     <value>URAの起動に失敗し、Enterキーを押してプログラムを終了</value>
   </data>
-  <data name="I18N_UraCoreHelper_FoundPaths" xml:space="preserve">
-    <value>{0}個の可能性のあるディレクトリを見つけました</value>
-  </data>
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>有効なゲームディレクトリが見つかりました：{0}</value>
   </data>
-  <data name="I18N_UraCoreHelper_NoInstalledModuleFound" xml:space="preserve">
-    <value>互換性のあるモジュールが見つからないか、すでにインストールされています。最初にインストールしてください (https://github.com/MinamiChiwa/Trainers-Legend-G または https://github.com/Kimjio/umamusume-localify)</value>
-  </data>
-  <data name="I18N_UraCoreHelper_InstallPrompt" xml:space="preserve">
-    <value>ここにインストールしますか？</value>
-  </data>
   <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
     <value>{0}に成功してインストールされました。任意のキーを押してメインメニューに戻ってください</value>
-  </data>
-  <data name="I18N_LocalizationData_FormatRequirement" xml:space="preserve">
-    <value>ローカライズはDictionary&lt;textdata.category, Dictionary&lt;textdata.index, string&gt;&gt;形式のJSONのみをサポートしています</value>
-  </data>
-  <data name="I18N_LocalizationData_InputPathPrompt" xml:space="preserve">
-    <value>完全なファイルパスを入力してください（例：G:\Umamusume\localized_data\text_data.json）</value>
-  </data>
-  <data name="I18N_LocalizationData_FileCorrupt" xml:space="preserve">
-    <value>目的のファイルが見つからないか、フォーマットに合っていません</value>
-  </data>
-  <data name="I18N_Options_MultipleLanguagesSelected" xml:space="preserve">
-    <value>複数の言語が同時に選択されました。デフォルトに戻して、再設定してください</value>
-  </data>
-  <data name="I18N_ConsoleSizeSmall" xml:space="preserve">
-    <value>[yellow]コンソールサイズが小さすぎる：推奨サイズは幅{0}、高さ{1}[/]</value>
   </data>
   <data name="I18N_Start_Started" xml:space="preserve">
     <value>[bold green]起動しました[/]</value>
