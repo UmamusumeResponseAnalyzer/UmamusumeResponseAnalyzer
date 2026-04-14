@@ -17,6 +17,10 @@ namespace UmamusumeResponseAnalyzer.Plugin
             Directory.CreateDirectory(DataDirectory);
         }
         void Dispose() { }
+        async Task ConfigPromptAsync()
+        {
+            ConfigPrompt();
+        }
         void ConfigPrompt()
         {
             var properties = GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != null);

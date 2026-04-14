@@ -1,15 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Spectre.Console;
-using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.Plugin;
 using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 
@@ -24,10 +21,6 @@ namespace UmamusumeResponseAnalyzer
         public readonly static string WORKING_DIRECTORY = Directory.Exists(PORTABLE_WORKING_DIRECTORY) ? PORTABLE_WORKING_DIRECTORY : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
         public static async Task Main(string[] args)
         {
-            var handlerRoutine = new ConsoleHelper.HandlerRoutine(ConsoleHelper.ConsoleCtrlCheck);
-            GC.KeepAlive(handlerRoutine);
-            ConsoleHelper.SetConsoleCtrlHandler(handlerRoutine, true);
-            ConsoleHelper.DisableQuickEditMode();
             Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
@@ -53,8 +46,8 @@ namespace UmamusumeResponseAnalyzer
 
             _database_initialize_task = Database.Initialize();
             Task.WaitAll(_database_initialize_task, _plugin_initialize_task); //等待数据库初始化完成
+            Parallel.Invoke([.. PluginManager.LoadedPlugins.Select(x => new Action(x.Initialize))]);
             Server.Start(); //启动HTTP服务器
-            Task.WaitAll([.. PluginManager.LoadedPlugins.Select(x => Task.Run(x.Initialize))]);
 
             foreach (var plugin in PluginManager.LoadedPlugins)
             {
@@ -91,21 +84,10 @@ namespace UmamusumeResponseAnalyzer
             }
 
             AnsiConsole.MarkupLine(I18N_Start_Started);
-            
+
             await UraEvents.TriggerStartedAsync();
-            
-            var _closingEvent = new AutoResetEvent(false);
-            Console.CancelKeyPress += (_, _) =>
-            {
-                Server.Stop();
-                foreach (var plugin in PluginManager.LoadedPlugins)
-                {
-                    plugin.Dispose();
-                }
-                ResourceUpdater.HttpClient.Dispose();
-                _closingEvent.Set();
-            };
-            _closingEvent.WaitOne();
+
+            await KeyboardManager.RunAsync(CancellationToken.None);
         }
         static void ShowFirstLaunchPrompt()
         {
@@ -410,90 +392,5 @@ namespace UmamusumeResponseAnalyzer
             });
             Environment.Exit(0);
         }
-    }
-
-    internal static partial class ConsoleHelper
-    {
-        /// <summary>
-        ///     Adapted from
-        ///     http://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
-        /// </summary>
-        #region Disable Quick Edit Mode
-        private const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
-        private const uint ENABLE_MOUSE_INPUT = 0x0010;
-
-        // STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
-        private const int StdInputHandle = -10;
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        private static partial IntPtr GetStdHandle(int nStdHandle);
-
-        [LibraryImport("kernel32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
-
-        [LibraryImport("kernel32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
-
-        internal static bool DisableQuickEditMode()
-        {
-            var consoleHandle = GetStdHandle(StdInputHandle);
-
-            // get current console mode
-            if (!GetConsoleMode(consoleHandle, out var consoleMode))
-                // ERROR: Unable to get console mode.
-                return false;
-
-            // Clear the quick edit bit in the mode flags
-            consoleMode &= ~ENABLE_QUICK_EDIT_MODE;
-            consoleMode &= ~ENABLE_MOUSE_INPUT;
-
-            // set the new mode
-            if (!SetConsoleMode(consoleHandle, consoleMode))
-                // ERROR: Unable to set console mode
-                return false;
-
-            return true;
-        }
-        #endregion
-
-        /// <summary>
-        /// https://danielkaes.wordpress.com/2009/06/30/how-to-catch-%E2%80%9Ckill%E2%80%9D-events-in-a-c-console-application/
-        /// </summary>
-        #region Dispose When Click X
-        /// <summary>
-        /// This function sets the handler for kill events.
-        /// </summary>
-        /// <param name="Handler"></param>
-        /// <param name="Add"></param>
-        /// <returns></returns>
-        [LibraryImport("Kernel32")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool SetConsoleCtrlHandler(HandlerRoutine Handler, [MarshalAs(UnmanagedType.Bool)] bool Add);
-
-        //delegate type to be used of the handler routine
-        internal delegate bool HandlerRoutine(CtrlTypes CtrlType);
-
-        // control messages
-        internal enum CtrlTypes
-        {
-            CTRL_C_EVENT = 0,
-            CTRL_BREAK_EVENT,
-            CTRL_CLOSE_EVENT,
-            CTRL_LOGOFF_EVENT = 5,
-            CTRL_SHUTDOWN_EVENT
-        }
-        internal static bool ConsoleCtrlCheck(CtrlTypes _)
-        {
-            Server.Stop();
-            foreach (var plugin in PluginManager.LoadedPlugins)
-            {
-                plugin.Dispose();
-            }
-            ResourceUpdater.HttpClient.Dispose();
-            return true;
-        }
-        #endregion
     }
 }

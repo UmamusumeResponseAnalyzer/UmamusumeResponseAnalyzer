@@ -215,7 +215,7 @@ namespace UmamusumeResponseAnalyzer
 
     public class PluginConfig
     {
-        public void Prompt()
+        public async Task Prompt()
         {
             UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
             var selected = string.Empty;
@@ -232,7 +232,7 @@ namespace UmamusumeResponseAnalyzer
                 if (selected != i18n.Return)
                 {
                     var plugin = plugins[selected];
-                    plugin.ConfigPrompt();
+                    await plugin.ConfigPromptAsync();
                 }
             } while (selected != i18n.Return);
         }

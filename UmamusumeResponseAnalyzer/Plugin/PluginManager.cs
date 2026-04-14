@@ -288,7 +288,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
                             if (satelliteStream != null) return LoadFromStream(satelliteStream);
                         }
                     }
-                    return null;
                 }
 
                 if (name.Name == null || !Metadatas.TryGetValue(name.Name, out var dep)) return null;
