@@ -87,6 +87,23 @@ namespace UmamusumeResponseAnalyzer
 
             await UraEvents.TriggerStartedAsync();
 
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                KeyboardManager.Register(
+                    ConsoleKey.C, ConsoleModifiers.Control,
+                    "退出程序",
+                    () => { KeyboardManager.Stop(); return Task.CompletedTask; },
+                    instant: true);
+                KeyboardManager.Register(ConsoleKey.P, "插件列表", async ctx =>
+                {
+                    foreach (var i in PluginManager.LoadedPlugins)
+                        ctx.WriteLine($"{i.Name} v{i.Version}  by {i.Author}", ConsoleColor.White);
+                    if (!PluginManager.LoadedPlugins.Any())
+                        ctx.WriteLine("（没有加载任何插件）", ConsoleColor.DarkGray);
+                });
+            });
+
             await KeyboardManager.RunAsync(CancellationToken.None);
         }
         static void ShowFirstLaunchPrompt()
