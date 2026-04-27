@@ -45,7 +45,12 @@ namespace UmamusumeResponseAnalyzer
 
         /// <summary>注册带修饰键的快捷键（如 Ctrl+K）。重复注册同一组合会覆盖先前的入口。</summary>
         public static void Register(ConsoleKey key, ConsoleModifiers modifiers, string description, Func<Task> handler, bool instant = false)
-            => _hotkeys[(key, modifiers)] = new HotkeyEntry(description, handler, instant);
+        {
+            if (modifiers.HasFlag(ConsoleModifiers.Control) && key is ConsoleKey.S or ConsoleKey.Q or ConsoleKey.Z)
+                throw new InvalidOperationException($"快捷键 {FormatKeyCombo(key, modifiers)} 被操作系统终端保留（XOFF/XON/Suspend），无法注册。请使用其他组合键。");
+
+            _hotkeys[(key, modifiers)] = new HotkeyEntry(description, handler, instant);
+        }
 
         /// <summary>注册无修饰键的快捷键。</summary>
         public static void Register(ConsoleKey key, string description, Func<Task> handler, bool instant = false)

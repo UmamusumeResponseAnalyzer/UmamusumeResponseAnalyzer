@@ -74,7 +74,11 @@ namespace UmamusumeResponseAnalyzer
                 prompt = AnsiConsole.Prompt(selection);
                 if (prompt == i18n.Return) break;
                 var config = typeof(Config).GetProperty(translatedTabs[prompt])?.GetValue(null);
-                config?.GetType()?.GetMethod("Prompt")?.Invoke(config, null);
+                var result = config?.GetType()?.GetMethod("Prompt")?.Invoke(config, null);
+                if (result is Task task)
+                {
+                    task.GetAwaiter().GetResult();
+                }
             }
         }
     }
