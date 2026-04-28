@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
+using Spectre.Console;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -455,16 +456,9 @@ namespace UmamusumeResponseAnalyzer
         }
 
         /// <summary>
-        /// 估算字符串在终端中的显示列宽（宽字符按 2 列计，ASCII 按 1 列计）。
-        /// 用于在写入前预算右对齐位置。
+        /// 计算字符串在终端中的显示列宽
         /// </summary>
-        internal static int EstimateDisplayWidth(string s)
-        {
-            var width = 0;
-            foreach (var c in s)
-                width += c >= 0x1100 ? 2 : 1;
-            return width;
-        }
+        internal static int EstimateDisplayWidth(string s) => s.GetCellWidth();
 
         // ── 辅助 ─────────────────────────────────────────────────────────────
 
@@ -499,13 +493,23 @@ namespace UmamusumeResponseAnalyzer
     /// </summary>
     public sealed class KeyboardHandlerContext
     {
-        readonly record struct Line(string Text, ConsoleColor Color);
+        readonly record struct Line(string Text, ConsoleColor Color, bool IsMarkup);
         readonly List<Line> _lines = [];
 
         /// <summary>向 popup 追加一行文字。</summary>
         public KeyboardHandlerContext WriteLine(string text = "", ConsoleColor color = ConsoleColor.White)
         {
-            _lines.Add(new Line(text, color));
+            _lines.Add(new Line(text, color, IsMarkup: false));
+            return this;
+        }
+
+        /// <summary>
+        /// 向 popup 追加一行 Spectre.Console 标记文本（如 "[red]错误[/] 详情"）。
+        /// 内部需要转义的字面 [ / ] 由调用方通过 <c>EscapeMarkup()</c> 自行处理。
+        /// </summary>
+        public KeyboardHandlerContext MarkupLine(string markup = "")
+        {
+            _lines.Add(new Line(markup, ConsoleColor.White, IsMarkup: true));
             return this;
         }
 
@@ -542,15 +546,25 @@ namespace UmamusumeResponseAnalyzer
                     var row = topRow + 1 + i;
                     if (row < 0 || row >= Console.BufferHeight) continue;
                     Console.SetCursorPosition(0, row);
+                    var line = _lines[i];
 
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.Write('│');
-
-                    Console.ForegroundColor = _lines[i].Color;
                     Console.Write(' ');
-                    Console.Write(_lines[i].Text);
 
-                    var textDisplayW = 1 + KeyboardManager.EstimateDisplayWidth(_lines[i].Text);
+                    int textDisplayW;
+                    if (line.IsMarkup)
+                    {
+                        AnsiConsole.Markup(line.Text);
+                        textDisplayW = 1 + KeyboardManager.EstimateDisplayWidth(Markup.Remove(line.Text));
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = line.Color;
+                        Console.Write(line.Text);
+                        textDisplayW = 1 + KeyboardManager.EstimateDisplayWidth(line.Text);
+                    }
+
                     var pad = contentW - textDisplayW;
                     if (pad > 0) Console.Write(new string(' ', pad));
 
