@@ -255,7 +255,21 @@ namespace UmamusumeResponseAnalyzer
                 {
                     await InvokeSafely(instantEntry.Handler);
                     await InvokeRefreshAsync();
+                    return;
                 }
+                // 滚动 popup：未注册为 Instant 时由 KeyboardManager 接管，滚动后重置倒计时
+                var scrolled = keyInfo.Key switch
+                {
+                    ConsoleKey.UpArrow => _session?.ScrollBy(-1) ?? false,
+                    ConsoleKey.DownArrow => _session?.ScrollBy(1) ?? false,
+                    ConsoleKey.PageUp => _session?.ScrollByPage(-1) ?? false,
+                    ConsoleKey.PageDown => _session?.ScrollByPage(1) ?? false,
+                    ConsoleKey.Home => _session?.ScrollToEnd(toBottom: false) ?? false,
+                    ConsoleKey.End => _session?.ScrollToEnd(toBottom: true) ?? false,
+                    _ => false,
+                };
+                if (scrolled)
+                    StartPauseCountdown();
                 return;
             }
 
@@ -496,6 +510,9 @@ namespace UmamusumeResponseAnalyzer
         readonly record struct Line(string Text, ConsoleColor Color, bool IsMarkup);
         readonly List<Line> _lines = [];
 
+        /// <summary>popup 行数。</summary>
+        public int LineCount => _lines.Count;
+
         /// <summary>向 popup 追加一行文字。</summary>
         public KeyboardHandlerContext WriteLine(string text = "", ConsoleColor color = ConsoleColor.White)
         {
@@ -514,12 +531,26 @@ namespace UmamusumeResponseAnalyzer
         }
 
         /// <summary>
-        /// 在 commandRow 正上方渲染 popup 方框。
-        /// 调用前 Live 应已暂停，调用后不移动光标。
+        /// 计算给定 commandRow 下 popup 最多可显示多少行内容（不含上下边框）。
+        /// 至少返回 1，避免 popup 完全消失。
         /// </summary>
-        internal void Render(int commandRow)
+        internal static int ComputeMaxVisibleLines(int commandRow)
         {
-            if (_lines.Count == 0) return;
+            var available = commandRow - Console.WindowTop - 2; // 减去上下边框
+            return Math.Max(1, available);
+        }
+
+        /// <summary>
+        /// 在 commandRow 正上方渲染 popup 方框。<paramref name="visibleLines"/> 决定 popup 实际占用多少行内容，
+        /// <paramref name="scrollOffset"/> 决定从第几行开始渲染。调用前 Live 应已暂停，调用后不移动光标。
+        /// </summary>
+        internal void Render(int commandRow, int scrollOffset, int visibleLines)
+        {
+            if (_lines.Count == 0 || visibleLines <= 0) return;
+            visibleLines = Math.Min(visibleLines, _lines.Count);
+            var maxOffset = Math.Max(0, _lines.Count - visibleLines);
+            scrollOffset = Math.Clamp(scrollOffset, 0, maxOffset);
+
             try
             {
                 var w = Console.WindowWidth - 1;        // 可用宽度（留最后一列防换行）
@@ -529,24 +560,56 @@ namespace UmamusumeResponseAnalyzer
                 var savedTop = Console.CursorTop;
                 Console.CursorVisible = false;
 
-                var topRow    = commandRow - _lines.Count - 2; // ┌─┐
+                var topRow = commandRow - visibleLines - 2; // ┌─┐
                 var bottomRow = commandRow - 1;                // └─┘
+
+                var hasMoreAbove = scrollOffset > 0;
+                var hasMoreBelow = scrollOffset + visibleLines < _lines.Count;
+                var scrollable = hasMoreAbove || hasMoreBelow;
 
                 if (topRow >= 0)
                 {
                     Console.SetCursorPosition(0, topRow);
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write('┌');
-                    Console.Write(new string('─', w - 2));
-                    Console.Write('┐');
+                    if (scrollable)
+                    {
+                        var label = $" ↑ {scrollOffset + 1}-{scrollOffset + visibleLines}/{_lines.Count} ↓ ";
+                        var labelW = KeyboardManager.EstimateDisplayWidth(label);
+                        var dashTotal = w - 2 - labelW;
+                        if (dashTotal < 2)
+                        {
+                            // 终端太窄，退化为普通边框
+                            Console.Write('┌');
+                            Console.Write(new string('─', w - 2));
+                            Console.Write('┐');
+                        }
+                        else
+                        {
+                            var leftDash = dashTotal / 2;
+                            var rightDash = dashTotal - leftDash;
+                            Console.Write('┌');
+                            Console.Write(new string('─', leftDash));
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.Write(label);
+                            Console.ForegroundColor = ConsoleColor.DarkGray;
+                            Console.Write(new string('─', rightDash));
+                            Console.Write('┐');
+                        }
+                    }
+                    else
+                    {
+                        Console.Write('┌');
+                        Console.Write(new string('─', w - 2));
+                        Console.Write('┐');
+                    }
                 }
 
-                for (var i = 0; i < _lines.Count; i++)
+                for (var i = 0; i < visibleLines; i++)
                 {
                     var row = topRow + 1 + i;
                     if (row < 0 || row >= Console.BufferHeight) continue;
                     Console.SetCursorPosition(0, row);
-                    var line = _lines[i];
+                    var line = _lines[scrollOffset + i];
 
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.Write('│');
@@ -590,13 +653,14 @@ namespace UmamusumeResponseAnalyzer
         }
 
         /// <summary>擦除 popup 占用的所有行（用空格覆盖）。不管理光标可见性，由调用方负责。</summary>
-        internal void Erase(int commandRow)
+        internal void Erase(int commandRow, int visibleLines)
         {
-            if (_lines.Count == 0) return;
+            if (_lines.Count == 0 || visibleLines <= 0) return;
+            visibleLines = Math.Min(visibleLines, _lines.Count);
             try
             {
                 var w = Console.WindowWidth - 1;
-                var topRow    = commandRow - _lines.Count - 2;
+                var topRow = commandRow - visibleLines - 2;
                 var bottomRow = commandRow - 1;
                 for (var row = topRow; row <= bottomRow; row++)
                 {
@@ -619,6 +683,8 @@ namespace UmamusumeResponseAnalyzer
         int _preCursorLeft;
         int _preCursorTop;
         int _commandRow = -1;
+        int _scrollOffset;
+        int _visibleLines;
         KeyboardHandlerContext? _context;
         ConsoleSnapshot? _snapshot;
 
@@ -635,8 +701,8 @@ namespace UmamusumeResponseAnalyzer
             };
         }
 
-        public void SetContext(KeyboardHandlerContext ctx) => _context = ctx;
-        public void DiscardContext() => _context = null;
+        public void SetContext(KeyboardHandlerContext ctx) { _context = ctx; _scrollOffset = 0; }
+        public void DiscardContext() { _context = null; _scrollOffset = 0; _visibleLines = 0; }
         public void SetCommandRow(int row) => _commandRow = row;
 
         /// <summary>handler 执行后光标位置作为 popup 结束时的"回到点"（退化路径用）。</summary>
@@ -649,7 +715,49 @@ namespace UmamusumeResponseAnalyzer
         public void RenderPopup(int commandRow)
         {
             _commandRow = commandRow;
-            _context?.Render(commandRow);
+            if (_context == null || _context.LineCount == 0)
+            {
+                _visibleLines = 0;
+                return;
+            }
+            var maxVisible = KeyboardHandlerContext.ComputeMaxVisibleLines(commandRow);
+            _visibleLines = Math.Min(_context.LineCount, maxVisible);
+            var maxOffset = Math.Max(0, _context.LineCount - _visibleLines);
+            _scrollOffset = Math.Clamp(_scrollOffset, 0, maxOffset);
+            _context.Render(commandRow, _scrollOffset, _visibleLines);
+        }
+
+        /// <summary>滚动 popup。返回 true 表示发生了实际滚动并重绘。</summary>
+        public bool ScrollBy(int delta)
+        {
+            if (_context == null || _commandRow < 0 || _visibleLines <= 0) return false;
+            var maxOffset = _context.LineCount - _visibleLines;
+            if (maxOffset <= 0) return false;
+            var newOffset = Math.Clamp(_scrollOffset + delta, 0, maxOffset);
+            if (newOffset == _scrollOffset) return false;
+            _scrollOffset = newOffset;
+            _context.Render(_commandRow, _scrollOffset, _visibleLines);
+            return true;
+        }
+
+        /// <summary>按页滚动，每页等于当前 popup 可见行数。</summary>
+        public bool ScrollByPage(int pages)
+        {
+            if (_visibleLines <= 0) return false;
+            return ScrollBy(pages * _visibleLines);
+        }
+
+        /// <summary>跳到顶部或底部。</summary>
+        public bool ScrollToEnd(bool toBottom)
+        {
+            if (_context == null || _commandRow < 0 || _visibleLines <= 0) return false;
+            var maxOffset = _context.LineCount - _visibleLines;
+            if (maxOffset <= 0) return false;
+            var newOffset = toBottom ? maxOffset : 0;
+            if (newOffset == _scrollOffset) return false;
+            _scrollOffset = newOffset;
+            _context.Render(_commandRow, _scrollOffset, _visibleLines);
+            return true;
         }
 
         /// <summary>清空当前命令行，但保留 snapshot。命令模式 Enter 后 handler 要输出时使用。</summary>
@@ -686,7 +794,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     try
                     {
-                        _context?.Erase(_commandRow);
+                        _context?.Erase(_commandRow, _visibleLines);
                         Console.SetCursorPosition(0, _commandRow);
                         Console.Write(new string(' ', Console.WindowWidth - 1));
                     }
