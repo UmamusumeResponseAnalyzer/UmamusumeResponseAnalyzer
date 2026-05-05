@@ -60,16 +60,19 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         public TurnInfoBreeders(SingleModeCheckEventResponse.CommonResponse resp) : base(resp)
         {
             var breeders = resp.breeders_data_set;
-            foreach (var command in breeders.command_info_array.Where(x => x.command_type == 1))
+            if (breeders.command_info_array != null)
             {
-                var commandInfo = new CommandInfo(resp, this, command.command_id, ToTrainIndex, ToTrainId);
-                CommandInfoArray.Add(commandInfo);
+                foreach (var command in breeders.command_info_array.Where(x => x.command_type == 1))
+                {
+                    var commandInfo = new CommandInfo(resp, this, command.command_id, ToTrainIndex, ToTrainId);
+                    CommandInfoArray.Add(commandInfo);
+                }
+                CommandTeamMemberInfoDictionary = breeders.command_info_array.ToDictionary(x => x.command_id, x => x.team_member_info_array);
             }
             SpecialTrainingStock = breeders.team_sp_training_info.stock_num;
             SpecialTrainingMax = breeders.team_sp_training_info.stock_max;
             SpecialTrainingActivated = breeders.team_sp_training_info.activated_state == 1;
             TeamMemberInfoDictionary = breeders.team_member_info_array.ToDictionary(x => x.chara_id, x => x);
-            CommandTeamMemberInfoDictionary = breeders.command_info_array.ToDictionary(x => x.command_id, x => x.team_member_info_array);
         }
     }
 }
