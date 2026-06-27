@@ -117,14 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="I18N_WebSocket_CommandNotFound" xml:space="preserve">
-    <value>Command not found: {0}</value>
-  </data>
   <data name="I18N_ResponseAnalyzeFail" xml:space="preserve">
     <value>[red]Error parsing Response: (If the program runs normally, this can be ignored)[/]</value>
-  </data>
-  <data name="I18N_WebSocket_CommandTypeNone" xml:space="preserve">
-    <value>[WS]{0}: CommandType must not be None</value>
   </data>
   <data name="I18N_PingReceived" xml:space="preserve">
     <value>[green]Detected a request from the game, configuration is correct[/]</value>
@@ -134,8 +128,5 @@
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
     <value>You may try connecting via http://{0}:4693</value>
-  </data>
-  <data name="I18N_WebSocket_DeserializeRequestFail" xml:space="preserve">
-    <value>Failed to deserialize WSRequest</value>
   </data>
 </root>

@@ -117,14 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="I18N_WebSocket_CommandNotFound" xml:space="preserve">
-    <value>Commandが見つかりませんでした：{0}</value>
-  </data>
   <data name="I18N_ResponseAnalyzeFail" xml:space="preserve">
     <value>[red]Responseの解析時にエラーが発生しました（プログラムが正常に動作している場合は無視してかまいません）[/]</value>
-  </data>
-  <data name="I18N_WebSocket_CommandTypeNone" xml:space="preserve">
-    <value>コマンドタイプはNoneにできません：{0}</value>
   </data>
   <data name="I18N_PingReceived" xml:space="preserve">
     <value>[green]ゲームからのリクエストを検出しました、設定が正しいです[/]</value>
@@ -134,8 +128,5 @@
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
     <value>http://{0}:{1}から接続を試みることができます</value>
-  </data>
-  <data name="I18N_WebSocket_DeserializeRequestFail" xml:space="preserve">
-    <value>WSRequestの逆シリアル化に失敗しました</value>
   </data>
 </root>

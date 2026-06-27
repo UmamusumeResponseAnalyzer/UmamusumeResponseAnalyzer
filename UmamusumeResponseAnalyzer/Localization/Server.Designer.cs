@@ -124,42 +124,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Command not found: {0} 的本地化字符串。
-        /// </summary>
-        internal static string I18N_WebSocket_CommandNotFound {
-            get {
-                return ResourceManager.GetString("I18N_WebSocket_CommandNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 [WS]{0}: CommandType must not be None 的本地化字符串。
-        /// </summary>
-        internal static string I18N_WebSocket_CommandTypeNone {
-            get {
-                return ResourceManager.GetString("I18N_WebSocket_CommandTypeNone", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Constructor not found 的本地化字符串。
-        /// </summary>
-        internal static string I18N_WebSocket_ConstructorNotFound {
-            get {
-                return ResourceManager.GetString("I18N_WebSocket_ConstructorNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Failed to deserialize WSRequest 的本地化字符串。
-        /// </summary>
-        internal static string I18N_WebSocket_DeserializeRequestFail {
-            get {
-                return ResourceManager.GetString("I18N_WebSocket_DeserializeRequestFail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Server started at http://*:4693 的本地化字符串。
         /// </summary>
         internal static string I18N_WildcardServerStarted {

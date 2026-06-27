@@ -160,11 +160,10 @@ namespace UmamusumeResponseAnalyzer
     public class RepositoryConfig
     {
         public List<string> Targets { get; set; } = [];
-        public Dictionary<string, string> AdditionalPluginRepositories { get; set; } = [];
 
         public void Prompt()
         {
-            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => x.Name != "AdditionalPluginRepositories");
+            var _properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var translated = _properties.Select(x => x.Name).ToDictionary(x => x, x => i18n.ResourceManager.GetString($"Tabs_Repository_{x}", i18n.Culture)!);
             var selected = string.Empty;
             do
@@ -173,8 +172,7 @@ namespace UmamusumeResponseAnalyzer
                     .Title(i18n.Tabs_Repository_Title)
                     .WrapAround(true)
                     .AddChoices(_properties.Select(x => x.AppendValue(this, translated)))
-                    .AddChoices(AdditionalPluginRepositories.Select(x => $"{x.Key}: {x.Value}"))
-                    .AddChoices([i18n.Add, i18n.Return]);
+                    .AddChoices(i18n.Return);
                 selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
 
                 if (selected == i18n.Tabs_Repository_Targets)
@@ -184,32 +182,6 @@ namespace UmamusumeResponseAnalyzer
                     var targetsInput = AnsiConsole.Prompt(targetPrompt);
                     Targets = string.IsNullOrEmpty(targetsInput) ? [] : [.. targetsInput.Replace('，', ',').Split(',')];
                     AnsiConsole.Clear();
-                }
-                else if (selected == i18n.Add)
-                {
-                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesPrompt).AllowEmpty();
-                    do
-                    {
-                        var url = AnsiConsole.Prompt(urlPrompt);
-                        if (string.IsNullOrEmpty(url)) break;
-                        if (Uri.TryCreate(url, UriKind.Absolute, out var _))
-                        {
-                            var namePrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesNamePrompt)
-                                .AllowEmpty();
-                            var name = AnsiConsole.Prompt(namePrompt);
-                            if (string.IsNullOrEmpty(name))
-                            {
-                                name = url.GetHashCode().ToString();
-                            }
-                            AdditionalPluginRepositories.Add(name, url);
-                            break;
-                        }
-                    } while (true);
-                    AnsiConsole.Clear();
-                }
-                else
-                {
-                    AdditionalPluginRepositories.Remove(selected);
                 }
 
                 Config.Save();
@@ -279,7 +251,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (selected == nameof(CustomDatabaseRepository))
                 {
-                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Repository_AdditionalPluginRepositoriesPrompt).AllowEmpty();
+                    var urlPrompt = new TextPrompt<string>(i18n.Tabs_Updater_CustomDatabaseRepositoryPrompt).AllowEmpty();
                     do
                     {
                         var url = AnsiConsole.Prompt(urlPrompt);

@@ -20,12 +20,6 @@ namespace UmamusumeResponseAnalyzer
                 UserAgent = { new System.Net.Http.Headers.ProductInfoHeaderValue("UmamusumeResponseAnalyzer", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown Version") }
             }
         };
-        public static async Task<IEnumerable<PluginInformation>> GetPluginsFromRepository(string repositoryUrl)
-        {
-            var jsonText = await HttpClient.GetStringAsync(repositoryUrl);
-            var plugins = JsonConvert.DeserializeObject<IEnumerable<PluginInformation>>(jsonText);
-            return plugins ?? [];
-        }
         public static async Task<bool> NeedUpdate()
         {
             var json = JObject.Parse(await HttpClient.GetStringAsync("https://api.github.com/repos/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest"));

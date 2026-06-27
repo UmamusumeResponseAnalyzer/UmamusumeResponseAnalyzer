@@ -61,15 +61,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 添加 的本地化字符串。
-        /// </summary>
-        internal static string Add {
-            get {
-                return ResourceManager.GetString("Add", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 返回 的本地化字符串。
         /// </summary>
         internal static string Return {
@@ -259,24 +250,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 请输入额外仓库的备注:  的本地化字符串。
-        /// </summary>
-        internal static string Tabs_Repository_AdditionalPluginRepositoriesNamePrompt {
-            get {
-                return ResourceManager.GetString("Tabs_Repository_AdditionalPluginRepositoriesNamePrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 请输入额外仓库的URL:  的本地化字符串。
-        /// </summary>
-        internal static string Tabs_Repository_AdditionalPluginRepositoriesPrompt {
-            get {
-                return ResourceManager.GetString("Tabs_Repository_AdditionalPluginRepositoriesPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 目标服务器 的本地化字符串。
         /// </summary>
         internal static string Tabs_Repository_Targets {
@@ -300,6 +273,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string Tabs_Repository_Title {
             get {
                 return ResourceManager.GetString("Tabs_Repository_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请输入自定义数据库仓库的URL:  的本地化字符串。
+        /// </summary>
+        internal static string Tabs_Updater_CustomDatabaseRepositoryPrompt {
+            get {
+                return ResourceManager.GetString("Tabs_Updater_CustomDatabaseRepositoryPrompt", resourceCulture);
             }
         }
         

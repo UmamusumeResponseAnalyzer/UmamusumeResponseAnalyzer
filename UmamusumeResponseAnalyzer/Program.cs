@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Spectre.Console;
+﻿using Spectre.Console;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
@@ -86,6 +85,12 @@ namespace UmamusumeResponseAnalyzer
             AnsiConsole.MarkupLine(I18N_Start_Started);
 
             await UraEvents.TriggerStartedAsync();
+
+            _ = Task.Run(async () =>
+            {
+                try { await PluginRepository.CheckForUpdatesAsync(); }
+                catch (Exception ex) { AnsiConsole.MarkupLine($"[red]插件更新检查失败:[/] {ex.Message.EscapeMarkup()}"); }
+            });
 
             _ = Task.Run(async () =>
             {
@@ -188,90 +193,7 @@ namespace UmamusumeResponseAnalyzer
             }
             else if (prompt == "插件仓库")
             {
-                var defaultRepository = "https://raw.githubusercontent.com/URA-Plugins/PluginMaster/refs/heads/master/PluginMaster/manifests.json".AllowMirror();
-                var repositories = new Dictionary<string, string>
-                {
-                    ["默认仓库"] = defaultRepository
-                };
-                foreach (var (repositoryName, repository) in Config.Repository.AdditionalPluginRepositories)
-                {
-                    repositories.Add(repositoryName, repository);
-                }
-
-                var plugins = new Dictionary<string, (string Description, PluginInformation PluginInfo)>();
-                foreach (var (repositoryName, repository) in repositories)
-                {
-                    AnsiConsole.WriteLine($"正在从{repositoryName}获取插件信息");
-                    var jsonText = await ResourceUpdater.HttpClient.GetStringAsync(repository);
-                    var jsonObj = JsonConvert.DeserializeObject<List<PluginInformation>>(jsonText);
-                    if (jsonObj != default)
-                    {
-                        foreach (var plugin in jsonObj.Where(x => x.Targets.Length == 0 || x.Targets.Intersect(Config.Repository.Targets).Any()))
-                        {
-                            if (repositoryName == "默认仓库" && Uri.TryCreate(plugin.DownloadUrl, UriKind.Absolute, out var uri) && uri.Host.EndsWith("github.com"))
-                            {
-                                plugin.DownloadUrl = plugin.DownloadUrl.AllowMirror();
-                            }
-                            if (plugins.ContainsKey(plugin.Name))
-                            {
-                                plugins.Add($"{plugin.Name}({repositoryName})", (plugin.Description, plugin));
-                            }
-                            plugins.Add(plugin.Name, (plugin.Description, plugin));
-                        }
-                    }
-                }
-                AnsiConsole.Clear();
-
-                var pluginSelection = new MultiSelectionPrompt<string>()
-                    .Title("选择要安装的插件")
-                    .WrapAround(true)
-                    .AddChoices(plugins.Select(x => $"{x.Key}: {x.Value.Description}"))
-                    .PageSize(30)
-                    .NotRequired();
-                var selectedPlugins = AnsiConsole.Prompt(pluginSelection)
-                    .Select(x => plugins[x.Split(':')[0]].PluginInfo)
-                    .ToList();
-                if (selectedPlugins.Count == 0)
-                {
-                    AnsiConsole.Clear();
-                    return prompt;
-                }
-
-#warning TODO: 如果依赖套依赖，需要再处理，偷个懒先
-                var dependencies = selectedPlugins.SelectMany(x => x.Dependencies).Distinct().ToArray();
-                foreach (var dependency in dependencies)
-                {
-                    if (!selectedPlugins.Any(x => x.InternalName == dependency))
-                    {
-                        var dependencyPluginInfo = plugins.FirstOrDefault(x => x.Value.PluginInfo.InternalName == dependency);
-                        if (dependencyPluginInfo.Key == default || dependencyPluginInfo.Value == default)
-                        {
-                            AnsiConsole.WriteLine($"没有在任何插件仓库中找到依赖项{dependency}");
-                        }
-                        else
-                        {
-                            selectedPlugins.Add(dependencyPluginInfo.Value.PluginInfo);
-                        }
-                    }
-                }
-
-                foreach (var plugin in selectedPlugins)
-                {
-                    AnsiConsole.WriteLine($"[{plugin.Name}] 正在下载");
-                    using var stream = await ResourceUpdater.HttpClient.GetStreamAsync(plugin.DownloadUrl);
-                    using var archive = new ZipArchive(stream);
-                    AnsiConsole.WriteLine($"[{plugin.Name}] 正在解压");
-                    archive.ExtractToDirectory("./", true);
-                    AnsiConsole.WriteLine($"[{plugin.Name}] 安装完成");
-                }
-
-                if (selectedPlugins.Count > 0)
-                {
-                    AnsiConsole.WriteLine("插件安装已全部完成，按任意键重新启动。");
-                    Console.ReadKey();
-                    Restart();
-                }
-                Console.ReadKey();
+                await PluginRepository.ShowMenuAsync();
             }
             else if (prompt == I18N_UpdateAssets)
             {

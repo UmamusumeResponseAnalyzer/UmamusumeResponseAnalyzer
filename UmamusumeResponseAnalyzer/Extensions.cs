@@ -117,10 +117,6 @@ namespace UmamusumeResponseAnalyzer
             {
                 valueString = string.Join(",", enumerable.Select(x => x.Replace("[", "[[").Replace("]", "]]")));
             }
-            else if (value is IDictionary<string, string> dictionary)
-            {
-                valueString = string.Join(',', dictionary.Keys);
-            }
             else
             {
                 valueString = value?.ToString()?.Replace("[", "[[").Replace("]", "]]") ?? string.Empty;

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11620.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UmamusumeResponseAnalyzer", "UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj", "{1DAB5AA1-916A-4EBA-B3FB-92CA61ACC772}"
 EndProject
@@ -20,11 +20,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = True
 		RESX_SaveFilesImmediatelyUponChange = True
 		SolutionGuid = {60F98C58-0C19-4F88-A3C0-42E7762E8082}
-		RESX_Rules = {"EnabledRules":["WhiteSpaceLead","WhiteSpaceTail","PunctuationTail"]}
-		RESX_NeutralResourcesLanguage = zh-Hans
 		RESX_ConfirmAddLanguageFile = True
 	EndGlobalSection
 EndGlobal

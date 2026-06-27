@@ -1,0 +1,55 @@
+<Project>
+  <!--
+    URA.Plugin.props — 默认插件属性。和 URA.Plugin.targets 配对使用。
+    插件作者在 csproj 顶部 import 这个 props 文件即可获得：
+      - 默认 net10.0
+      - 默认开启 Nullable + ImplicitUsings
+      - 一组 <Plugin*> 元数据属性的默认值
+
+    具体的 build/publish 行为（manifest.json 生成、打 zip、上传到 URACloud）由
+    URA.Plugin.targets 实现，会在导入 props 之后由插件 csproj 自行引入。
+  -->
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net10.0</TargetFramework>
+    <ImplicitUsings Condition="'$(ImplicitUsings)' == ''">enable</ImplicitUsings>
+    <Nullable Condition="'$(Nullable)' == ''">enable</Nullable>
+    <GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">true</GenerateAssemblyInfo>
+
+    <!--
+      插件作者可覆盖的元数据属性，可在 csproj 的 <PropertyGroup> 里设置：
+        <PluginInternalName>          assembly 名（默认使用 $(AssemblyName)）
+        <PluginDisplayName>           中文显示名（默认使用 $(AssemblyName)）
+        <PluginAuthor>                作者，多人用 "&amp;" 分隔（默认使用 $(Authors)）
+        <PluginDescription>           简短描述
+        <PluginCategory>              分类字符串。空字符串等价于 "未分类"，由 URACloud 统一管理
+        <PluginChangelog>             本次发布的 changelog（默认空）
+        <PluginRepositoryUrl>         源码仓库 URL（默认空）
+        <PluginHomepage>              主页 URL（默认空）
+        <PluginTargets>               目标游戏版本，逗号分隔（如 "Cygames,Komoe"，默认空=两个都支持）
+        <PluginDependencies>          依赖插件 InternalName，逗号分隔（默认空）
+
+      构建产物（manifest.json + zip）会自动放在 OutDir 旁边，管理员手动收走并通过
+      URACloud 的 POST /Plugins/{name}/versions 上传——这里不再提供自动 publish 目标。
+    -->
+    <PluginInternalName Condition="'$(PluginInternalName)' == ''">$(AssemblyName)</PluginInternalName>
+    <PluginDisplayName Condition="'$(PluginDisplayName)' == ''">$(AssemblyName)</PluginDisplayName>
+    <PluginAuthor Condition="'$(PluginAuthor)' == '' and '$(Authors)' != ''">$(Authors)</PluginAuthor>
+    <PluginAuthor Condition="'$(PluginAuthor)' == ''">unknown</PluginAuthor>
+    <PluginDescription Condition="'$(PluginDescription)' == ''">$(Description)</PluginDescription>
+    <PluginCategory Condition="'$(PluginCategory)' == ''"></PluginCategory>
+    <PluginChangelog Condition="'$(PluginChangelog)' == ''"></PluginChangelog>
+    <PluginRepositoryUrl Condition="'$(PluginRepositoryUrl)' == ''"></PluginRepositoryUrl>
+    <PluginHomepage Condition="'$(PluginHomepage)' == ''"></PluginHomepage>
+    <PluginTargets Condition="'$(PluginTargets)' == ''"></PluginTargets>
+    <PluginDependencies Condition="'$(PluginDependencies)' == ''"></PluginDependencies>
+
+    <!-- 让 GenerateUraPluginManifest 默认随 Build 一起跑；可设为 false 关闭 -->
+    <GenerateUraPluginManifestOnBuild Condition="'$(GenerateUraPluginManifestOnBuild)' == ''">true</GenerateUraPluginManifestOnBuild>
+    <PackageUraPluginOnBuild Condition="'$(PackageUraPluginOnBuild)' == ''">true</PackageUraPluginOnBuild>
+    <!--
+      $(UraPluginManifestPath) / $(UraPluginPackagePath) 的默认值依赖 $(OutDir)，
+      该变量直到 SDK 的 Microsoft.NET.Sdk.Common.props 之后才被设置，所以默认值
+      放在 URA.Plugin.targets 里（属于 SDK 之后的导入阶段）做。
+    -->
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,195 @@
+<Project>
+  <!--
+    URA.Plugin.targets — 插件构建期 hook：
+      - GenerateUraPluginManifest：在 Build 之后写 $(UraPluginManifestPath)
+      - PackageUraPlugin：把 $(OutDir) 整个目录打成 $(UraPluginPackagePath)（zip）
+      - PublishUraPlugin：用 multipart 上传到 URACloud 的 /Plugins/{name}/versions 端点
+
+    使用方式：在插件 csproj 引入 props + targets：
+
+      <Import Project="..\..\..\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\build\URA.Plugin.props" />
+      ... (PropertyGroup / ItemGroup / ProjectReference) ...
+      <Import Project="..\..\..\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer\build\URA.Plugin.targets" />
+
+    手动发布：
+      dotnet build -c Release /p:PluginUploadEndpoint=http://localhost:4694 /t:PublishUraPlugin
+  -->
+
+  <!--
+    内联任务：把简单的属性写成合法 manifest.json。
+    RoslynCodeTaskFactory 在 MSBuild 进程里运行，不能假定 System.Text.Json 已加载；
+    这里手动拼 JSON 并严格 escape 字符串。
+  -->
+  <UsingTask TaskName="WriteUraPluginManifestTask"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <OutputPath ParameterType="System.String" Required="true" />
+      <Author ParameterType="System.String" Required="true" />
+      <InternalName ParameterType="System.String" Required="true" />
+      <DisplayName ParameterType="System.String" Required="true" />
+      <Description ParameterType="System.String" Required="false" />
+      <Category ParameterType="System.String" Required="false" />
+      <Changelog ParameterType="System.String" Required="false" />
+      <RepositoryUrl ParameterType="System.String" Required="false" />
+      <Homepage ParameterType="System.String" Required="false" />
+      <AssemblyPath ParameterType="System.String" Required="true" />
+      <Dependencies ParameterType="System.String" Required="false" />
+      <Targets ParameterType="System.String" Required="false" />
+      <Version ParameterType="System.String" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Reflection" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        string EscapeJson(string s)
+        {
+            if (s == null) return string.Empty;
+            var sb = new StringBuilder(s.Length + 8);
+            foreach (var c in s)
+            {
+                switch (c)
+                {
+                    case '\\': sb.Append("\\\\"); break;
+                    case '"': sb.Append("\\\""); break;
+                    case '\b': sb.Append("\\b"); break;
+                    case '\f': sb.Append("\\f"); break;
+                    case '\n': sb.Append("\\n"); break;
+                    case '\r': sb.Append("\\r"); break;
+                    case '\t': sb.Append("\\t"); break;
+                    default:
+                        if (c < 0x20) sb.AppendFormat("\\u{0:x4}", (int)c);
+                        else sb.Append(c);
+                        break;
+                }
+            }
+            return sb.ToString();
+        }
+        string Quote(string s) => "\"" + EscapeJson(s ?? string.Empty) + "\"";
+        string JsonArray(string csv)
+        {
+            if (string.IsNullOrWhiteSpace(csv)) return "[]";
+            var parts = csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var sb = new StringBuilder("[");
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (i > 0) sb.Append(", ");
+                sb.Append(Quote(parts[i].Trim()));
+            }
+            sb.Append("]");
+            return sb.ToString();
+        }
+
+        string version = Version;
+        if (string.IsNullOrWhiteSpace(version) && File.Exists(AssemblyPath))
+        {
+            try
+            {
+                var name = AssemblyName.GetAssemblyName(AssemblyPath);
+                version = (name.Version ?? new Version(0,0,0)).ToString();
+            }
+            catch
+            {
+                version = "0.0.0";
+            }
+        }
+        if (string.IsNullOrWhiteSpace(version)) version = "0.0.0";
+
+        long lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        var json = new StringBuilder();
+        json.Append("{\n");
+        json.Append("  \"Author\": ").Append(Quote(Author)).Append(",\n");
+        json.Append("  \"InternalName\": ").Append(Quote(InternalName)).Append(",\n");
+        json.Append("  \"DisplayName\": ").Append(Quote(DisplayName)).Append(",\n");
+        json.Append("  \"Description\": ").Append(Quote(Description)).Append(",\n");
+        json.Append("  \"Changelog\": ").Append(Quote(Changelog)).Append(",\n");
+        json.Append("  \"Version\": ").Append(Quote(version)).Append(",\n");
+        json.Append("  \"Dependencies\": ").Append(JsonArray(Dependencies)).Append(",\n");
+        json.Append("  \"Targets\": ").Append(JsonArray(Targets)).Append(",\n");
+        json.Append("  \"RepositoryUrl\": ").Append(Quote(RepositoryUrl)).Append(",\n");
+        json.Append("  \"LastUpdate\": ").Append(lastUpdate).Append(",\n");
+        json.Append("  \"Category\": ").Append(Quote(Category)).Append(",\n");
+        json.Append("  \"Homepage\": ").Append(Quote(Homepage)).Append("\n");
+        json.Append("}\n");
+
+        var dir = Path.GetDirectoryName(OutputPath);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+        File.WriteAllText(OutputPath, json.ToString(), new UTF8Encoding(false));
+        Log.LogMessage(MessageImportance.High, $"[URA.Plugin] wrote manifest -> {OutputPath} (v{version})");
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!--
+    SDK 在 Microsoft.NET.Sdk.targets 里才把 $(OutDir) / $(TargetDir) 设成正确路径，
+    我们的 .targets 在 SDK 之后被 Import，但顶层 <PropertyGroup> 的属性赋值仍然
+    在 import 阶段触发——也就是 SDK 已经求值完之后。所以这里的默认值必须放在文件级
+    PropertyGroup 里、并使用 SDK 设置好的 $(TargetDir)；放进 Target 里会延迟到运行
+    时，反而拿不到外部覆盖的机会。
+  -->
+  <PropertyGroup>
+    <UraPluginManifestPath Condition="'$(UraPluginManifestPath)' == ''">$(TargetDir)manifest.json</UraPluginManifestPath>
+    <UraPluginPackagePath Condition="'$(UraPluginPackagePath)' == ''">$(TargetDir)..\$(AssemblyName).zip</UraPluginPackagePath>
+  </PropertyGroup>
+
+  <Target Name="GenerateUraPluginManifest"
+          AfterTargets="Build"
+          Condition="'$(GenerateUraPluginManifestOnBuild)' == 'true' and '$(IsCrossTargetingBuild)' != 'true'">
+    <PropertyGroup>
+      <!-- 当 .targets 文件被 SDK 之前的某个机制 import 时，$(TargetDir) 也可能为空；
+           这里在运行时再兜底一遍。 -->
+      <_UraPluginEffectiveManifest Condition="'$(UraPluginManifestPath)' == '' or '$(UraPluginManifestPath)' == 'manifest.json'">$(TargetDir)manifest.json</_UraPluginEffectiveManifest>
+      <_UraPluginEffectiveManifest Condition="'$(_UraPluginEffectiveManifest)' == ''">$(UraPluginManifestPath)</_UraPluginEffectiveManifest>
+    </PropertyGroup>
+    <WriteUraPluginManifestTask
+        OutputPath="$(_UraPluginEffectiveManifest)"
+        Author="$(PluginAuthor)"
+        InternalName="$(PluginInternalName)"
+        DisplayName="$(PluginDisplayName)"
+        Description="$(PluginDescription)"
+        Category="$(PluginCategory)"
+        Changelog="$(PluginChangelog)"
+        RepositoryUrl="$(PluginRepositoryUrl)"
+        Homepage="$(PluginHomepage)"
+        AssemblyPath="$(TargetPath)"
+        Dependencies="$(PluginDependencies)"
+        Targets="$(PluginTargets)"
+        Version="$(Version)" />
+  </Target>
+
+  <Target Name="PackageUraPlugin"
+          AfterTargets="GenerateUraPluginManifest"
+          Condition="'$(PackageUraPluginOnBuild)' == 'true' and '$(IsCrossTargetingBuild)' != 'true'">
+    <PropertyGroup>
+      <_UraPluginEffectivePackage Condition="'$(UraPluginPackagePath)' == '' or '$(UraPluginPackagePath)' == '..\$(AssemblyName).zip'">$(TargetDir)..\$(AssemblyName).zip</_UraPluginEffectivePackage>
+      <_UraPluginEffectivePackage Condition="'$(_UraPluginEffectivePackage)' == ''">$(UraPluginPackagePath)</_UraPluginEffectivePackage>
+    </PropertyGroup>
+    <Delete Files="$(_UraPluginEffectivePackage)" Condition="Exists('$(_UraPluginEffectivePackage)')" />
+    <!-- 把整个 OutDir 打成 zip，方便给宿主直接解压到 Plugins/ -->
+    <ZipDirectory SourceDirectory="$(TargetDir)"
+                  DestinationFile="$(_UraPluginEffectivePackage)"
+                  Overwrite="true" />
+    <Message Importance="high" Text="[URA.Plugin] packaged -> $(_UraPluginEffectivePackage)" />
+  </Target>
+
+  <Target Name="DeployUraPluginToLocalAppData"
+          AfterTargets="PackageUraPlugin"
+          Condition="'$(PackageUraPluginOnBuild)' == 'true' and '$(IsCrossTargetingBuild)' != 'true' and '$(LOCALAPPDATA)' != ''">
+    <PropertyGroup>
+      <_UraPluginEffectivePackage Condition="'$(UraPluginPackagePath)' == '' or '$(UraPluginPackagePath)' == '..\$(AssemblyName).zip'">$(TargetDir)..\$(AssemblyName).zip</_UraPluginEffectivePackage>
+      <_UraPluginEffectivePackage Condition="'$(_UraPluginEffectivePackage)' == ''">$(UraPluginPackagePath)</_UraPluginEffectivePackage>
+      <_UraLocalPluginsDir>$(LOCALAPPDATA)\UmamusumeResponseAnalyzer\Plugins\</_UraLocalPluginsDir>
+    </PropertyGroup>
+    <!-- 若宿主已安装在 %LOCALAPPDATA%，把刚打好的 zip 覆盖到它的 Plugins 目录，便于本地迭代 -->
+    <Copy SourceFiles="$(_UraPluginEffectivePackage)"
+          DestinationFolder="$(_UraLocalPluginsDir)"
+          OverwriteReadOnlyFiles="true"
+          Condition="Exists('$(_UraLocalPluginsDir)') and Exists('$(_UraPluginEffectivePackage)')" />
+    <Message Importance="high"
+             Text="[URA.Plugin] deployed -> $(_UraLocalPluginsDir)"
+             Condition="Exists('$(_UraLocalPluginsDir)') and Exists('$(_UraPluginEffectivePackage)')" />
+  </Target>
+</Project>
