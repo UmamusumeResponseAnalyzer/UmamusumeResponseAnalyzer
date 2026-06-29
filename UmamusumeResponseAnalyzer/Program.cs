@@ -51,8 +51,9 @@ namespace UmamusumeResponseAnalyzer
             var uiHost = new UiHost();
             LiveDisplayConsole.Bind(uiHost);
             KeyboardManager.OverlaySink = uiHost;
+            PluginManager.BindLiveDisplay(plugin => uiHost.ForPlugin(plugin.Name));
 
-            Parallel.Invoke([.. PluginManager.LoadedPlugins.Select(plugin => new Action(() => InitializePlugin(plugin, uiHost)))]);
+            Parallel.Invoke([.. PluginManager.LoadedPlugins.Select(plugin => new Action(() => PluginManager.InitializePlugin(plugin)))]);
             Server.Start(); //启动HTTP服务器
 
             var loadedPluginCount = PluginManager.LoadedPlugins.Count;
@@ -110,22 +111,18 @@ namespace UmamusumeResponseAnalyzer
                     KeyboardManager.Stop();
                     uiHost.RequestShutdown();
                     return Task.CompletedTask;
-                });
+            });
             KeyboardManager.Register(ConsoleKey.P, "插件列表", ctx =>
             {
-                foreach (var i in PluginManager.LoadedPlugins)
+                var plugins = PluginManager.SnapshotLoadedPlugins();
+                foreach (var i in plugins)
                     ctx.WriteLine($"{i.Name} v{i.Version}  by {i.Author}");
-                if (PluginManager.LoadedPlugins.Count == 0)
+                if (plugins.Count == 0)
                     ctx.WriteLine("（没有加载任何插件）", ConsoleColor.DarkGray);
                 return Task.CompletedTask;
             });
 
             await RunLiveDisplayApplicationAsync(uiHost);
-        }
-
-        static void InitializePlugin(IPlugin plugin, UiHost uiHost)
-        {
-            plugin.Initialize(uiHost.ForPlugin(plugin.Name));
         }
 
         static async Task CheckPluginUpdatesAsync(UiHost uiHost)

@@ -206,7 +206,7 @@ namespace UmamusumeResponseAnalyzer
         {
             UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
             var selected = string.Empty;
-            var plugins = PluginManager.LoadedPlugins.ToDictionary(x => x.GetType().GetProperty("Name")?.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? x.Name, x => x);
+            var plugins = PluginManager.SnapshotLoadedPlugins().ToDictionary(x => x.GetType().GetProperty("Name")?.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? x.Name, x => x);
             do
             {
                 var selectionPrompt = new SelectionPrompt<string>()

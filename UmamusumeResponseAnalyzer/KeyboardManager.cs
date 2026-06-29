@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using UmamusumeResponseAnalyzer.LiveDisplay;
 
 namespace UmamusumeResponseAnalyzer
@@ -7,7 +8,9 @@ namespace UmamusumeResponseAnalyzer
     {
         public record HotkeyEntry(
             string Description,
-            Func<Task> Handler);
+            Func<Task> Handler,
+            object? Owner = null,
+            Assembly? DeclaringAssembly = null);
 
         const int PollIntervalMs = 50;
 
@@ -19,6 +22,7 @@ namespace UmamusumeResponseAnalyzer
         static CancellationTokenSource? popupAutoCloseCts;
         static int inputSuspensionCount;
         static int popupGeneration;
+        static readonly AsyncLocal<object?> registrationOwner = new();
 
         public static TimeSpan PopupAutoCloseDelay { get; set; } = TimeSpan.FromSeconds(3);
         internal static IKeyboardOverlaySink? OverlaySink { get; set; }
@@ -38,6 +42,7 @@ namespace UmamusumeResponseAnalyzer
             string description,
             Func<KeyboardHandlerContext, Task> handler)
         {
+            var declaringAssembly = AssemblyOf(handler);
             RegisterCore(
                 key,
                 modifiers,
@@ -47,7 +52,8 @@ namespace UmamusumeResponseAnalyzer
                     var context = new KeyboardHandlerContext();
                     await handler(context);
                     ShowPopup(context.ToPopup());
-                });
+                },
+                declaringAssembly);
         }
 
         public static void Register(ConsoleKey key, string description, Func<Task> handler)
@@ -64,7 +70,8 @@ namespace UmamusumeResponseAnalyzer
             ConsoleKey key,
             ConsoleModifiers modifiers,
             string description,
-            Func<Task> handler)
+            Func<Task> handler,
+            Assembly? declaringAssembly = null)
         {
             if (modifiers.HasFlag(ConsoleModifiers.Control) &&
                 key is ConsoleKey.S or ConsoleKey.Q or ConsoleKey.Z)
@@ -74,7 +81,9 @@ namespace UmamusumeResponseAnalyzer
 
             hotkeys[(key, modifiers)] = new(
                 description,
-                handler);
+                handler,
+                registrationOwner.Value,
+                declaringAssembly ?? AssemblyOf(handler));
         }
 
         public static bool Unregister(ConsoleKey key, ConsoleModifiers modifiers = 0)
@@ -85,6 +94,46 @@ namespace UmamusumeResponseAnalyzer
         public static void UnregisterAll()
         {
             hotkeys.Clear();
+        }
+
+        public static IDisposable RegisterScope(object owner)
+        {
+            var previous = registrationOwner.Value;
+            registrationOwner.Value = owner;
+            return new RegistrationScope(previous);
+        }
+
+        public static int UnregisterByOwner(object owner)
+        {
+            var count = 0;
+            foreach (var (combo, entry) in hotkeys)
+            {
+                if (ReferenceEquals(entry.Owner, owner) && hotkeys.TryRemove(combo, out _))
+                    count++;
+            }
+            return count;
+        }
+
+        sealed class RegistrationScope(object? previous) : IDisposable
+        {
+            public void Dispose()
+            {
+                registrationOwner.Value = previous;
+            }
+        }
+
+        static Assembly? AssemblyOf(Delegate handler)
+        {
+            return handler.Target?.GetType().Assembly ?? handler.Method.DeclaringType?.Assembly;
+        }
+
+        public static void ClearHandlersByAssembly(IReadOnlySet<Assembly> assemblies)
+        {
+            foreach (var (combo, entry) in hotkeys.ToList())
+            {
+                if (entry.DeclaringAssembly != null && assemblies.Contains(entry.DeclaringAssembly))
+                    hotkeys.TryRemove(combo, out _);
+            }
         }
 
         public static IReadOnlyDictionary<(ConsoleKey Key, ConsoleModifiers Modifiers), HotkeyEntry> Hotkeys => hotkeys;

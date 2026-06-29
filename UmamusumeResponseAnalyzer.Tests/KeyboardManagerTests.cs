@@ -153,6 +153,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             var entry = KeyboardManager.Hotkeys[(ConsoleKey.F1, ConsoleModifiers.Control)];
             Assert.Equal("帮助", entry.Description);
             Assert.Same(NoopHandler, entry.Handler);
+            Assert.Null(entry.Owner);
         }
 
         [Fact]
@@ -356,6 +357,81 @@ namespace UmamusumeResponseAnalyzer.Tests
             KeyboardManager.UnregisterAll();
             Assert.Empty(KeyboardManager.Hotkeys);
         }
+
+        [Fact]
+        public void RegisterScope_StampsOwnerOnEntriesRegisteredInside()
+        {
+            var owner = new object();
+            using (KeyboardManager.RegisterScope(owner))
+            {
+                KeyboardManager.Register(ConsoleKey.A, "a", NoopHandler);
+            }
+
+            Assert.Same(owner, KeyboardManager.Hotkeys[(ConsoleKey.A, 0)].Owner);
+        }
+
+        [Fact]
+        public void RegisterScope_RestoresPreviousOwnerOnDispose()
+        {
+            var owner = new object();
+            using (KeyboardManager.RegisterScope(owner))
+            {
+            }
+
+            KeyboardManager.Register(ConsoleKey.B, "b", NoopHandler);
+
+            Assert.Null(KeyboardManager.Hotkeys[(ConsoleKey.B, 0)].Owner);
+        }
+
+        [Fact]
+        public void UnregisterByOwner_RemovesOnlyMatchingOwner_AndReturnsCount()
+        {
+            var ownerA = new object();
+            var ownerB = new object();
+
+            using (KeyboardManager.RegisterScope(ownerA))
+            {
+                KeyboardManager.Register(ConsoleKey.A, "a1", NoopHandler);
+                KeyboardManager.Register(ConsoleKey.B, "a2", NoopHandler);
+            }
+            using (KeyboardManager.RegisterScope(ownerB))
+            {
+                KeyboardManager.Register(ConsoleKey.C, "b1", NoopHandler);
+            }
+            KeyboardManager.Register(ConsoleKey.D, "host", NoopHandler);
+
+            Assert.Equal(2, KeyboardManager.UnregisterByOwner(ownerA));
+            Assert.False(KeyboardManager.Hotkeys.ContainsKey((ConsoleKey.A, 0)));
+            Assert.False(KeyboardManager.Hotkeys.ContainsKey((ConsoleKey.B, 0)));
+            Assert.True(KeyboardManager.Hotkeys.ContainsKey((ConsoleKey.C, 0)));
+            Assert.True(KeyboardManager.Hotkeys.ContainsKey((ConsoleKey.D, 0)));
+        }
+
+        [Fact]
+        public void UnregisterByOwner_NoMatch_ReturnsZero()
+        {
+            KeyboardManager.Register(ConsoleKey.A, "host", NoopHandler);
+
+            Assert.Equal(0, KeyboardManager.UnregisterByOwner(new object()));
+            Assert.Single(KeyboardManager.Hotkeys);
+        }
+
+        [Fact]
+        public void UnregisterByOwner_UsesReferenceEquality_NotValueEquality()
+        {
+            var ownerA = new OwnerKey(1);
+            var ownerB = new OwnerKey(1);
+            using (KeyboardManager.RegisterScope(ownerA))
+            {
+                KeyboardManager.Register(ConsoleKey.A, "a", NoopHandler);
+            }
+
+            Assert.Equal(0, KeyboardManager.UnregisterByOwner(ownerB));
+            Assert.True(KeyboardManager.Hotkeys.ContainsKey((ConsoleKey.A, 0)));
+            Assert.Equal(1, KeyboardManager.UnregisterByOwner(ownerA));
+        }
+
+        sealed record OwnerKey(int Id);
 
         static Task PressAsync(ConsoleKey key, ConsoleModifiers modifiers = 0)
         {

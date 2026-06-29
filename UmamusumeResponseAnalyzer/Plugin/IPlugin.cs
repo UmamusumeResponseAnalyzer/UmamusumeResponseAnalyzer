@@ -113,20 +113,44 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
         internal static async Task TriggerStartedAsync()
         {
-            if (OnStarted != null)
+            if (OnStarted == null) return;
+            foreach (var handler in OnStarted.GetInvocationList().Cast<Func<Task>>())
+                await InvokeStartedHandlerAsync(handler);
+        }
+
+        internal static async Task TriggerStartedForAsync(IReadOnlySet<Assembly> assemblies)
+        {
+            if (OnStarted == null) return;
+            foreach (var handler in OnStarted.GetInvocationList().Cast<Func<Task>>())
             {
-                foreach (var handler in OnStarted.GetInvocationList().Cast<Func<Task>>())
-                {
-                    try
-                    {
-                        await handler();
-                    }
-                    catch (Exception ex)
-                    {
-                        LiveDisplayConsole.Notify("Plugin", $"插件事件处理错误: {ex.Message}", LiveDisplaySeverity.Error);
-                        LiveDisplayConsole.Log("Plugin", ex.ToString(), LiveDisplaySeverity.Error);
-                    }
-                }
+                var owner = handler.Target?.GetType().Assembly ?? handler.Method.DeclaringType?.Assembly;
+                if (owner != null && assemblies.Contains(owner))
+                    await InvokeStartedHandlerAsync(handler);
+            }
+        }
+
+        static async Task InvokeStartedHandlerAsync(Func<Task> handler)
+        {
+            try
+            {
+                using var scope = handler.Target is IPlugin owner ? KeyboardManager.RegisterScope(owner) : null;
+                await handler();
+            }
+            catch (Exception ex)
+            {
+                LiveDisplayConsole.Notify("Plugin", $"插件事件处理错误: {ex.Message}", LiveDisplaySeverity.Error);
+                LiveDisplayConsole.Log("Plugin", ex.ToString(), LiveDisplaySeverity.Error);
+            }
+        }
+
+        internal static void UnsubscribeStarted(IReadOnlySet<Assembly> assemblies)
+        {
+            if (OnStarted == null) return;
+            foreach (var handler in OnStarted.GetInvocationList().Cast<Func<Task>>())
+            {
+                var owner = handler.Target?.GetType().Assembly ?? handler.Method.DeclaringType?.Assembly;
+                if (owner != null && assemblies.Contains(owner))
+                    OnStarted -= handler;
             }
         }
     }

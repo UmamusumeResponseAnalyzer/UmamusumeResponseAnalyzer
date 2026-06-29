@@ -56,6 +56,8 @@ namespace UmamusumeResponseAnalyzer
                 LiveDisplayConsole.Log("Server", I18N_PingReceived, LiveDisplaySeverity.Trace);
                 return ctx.Response.Send("pong");
             });
+            // URACloud 网页集成端点(/uracloud/*):探测 + 网页触发安装并热重载。安全模型见 WebInstallApi。
+            WebInstallApi.Register(Instance);
             Instance.Start();
         }
         internal static void Stop() => Instance.Dispose();
@@ -71,20 +73,29 @@ namespace UmamusumeResponseAnalyzer
 #endif
                 if (obj == default) return;
 
-                foreach (var (k, v) in PluginManager.RequestAnalyzerMethods)
+                // 持分发读锁，确保热重载（写锁）不会在分发途中拆毁插件
+                PluginManager.EnterDispatch();
+                try
                 {
-                    foreach (var (self, method) in v)
+                    foreach (var (k, v) in PluginManager.RequestAnalyzerMethods)
                     {
-                        try
+                        foreach (var (self, method) in v)
                         {
-                            method.Invoke(self, [obj]);
-                        }
-                        catch (Exception e)
-                        {
-                            LiveDisplayConsole.Notify("Plugin", $"请求分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
-                            LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
+                            try
+                            {
+                                method.Invoke(self, [obj]);
+                            }
+                            catch (Exception e)
+                            {
+                                LiveDisplayConsole.Notify("Plugin", $"请求分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
+                                LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
+                            }
                         }
                     }
+                }
+                finally
+                {
+                    PluginManager.ExitDispatch();
                 }
             }
             catch
@@ -157,20 +168,29 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
 
-                foreach (var (k, v) in PluginManager.ResponseAnalyzerMethods)
+                // 持分发读锁，确保热重载（写锁）不会在分发途中拆毁插件
+                PluginManager.EnterDispatch();
+                try
                 {
-                    foreach (var (self, method) in v)
+                    foreach (var (k, v) in PluginManager.ResponseAnalyzerMethods)
                     {
-                        try
+                        foreach (var (self, method) in v)
                         {
-                            method.Invoke(self, [obj]);
-                        }
-                        catch (Exception e)
-                        {
-                            LiveDisplayConsole.Notify("Plugin", $"响应分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
-                            LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
+                            try
+                            {
+                                method.Invoke(self, [obj]);
+                            }
+                            catch (Exception e)
+                            {
+                                LiveDisplayConsole.Notify("Plugin", $"响应分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
+                                LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
+                            }
                         }
                     }
+                }
+                finally
+                {
+                    PluginManager.ExitDispatch();
                 }
             }
             catch (Exception e)
