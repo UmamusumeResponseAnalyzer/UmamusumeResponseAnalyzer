@@ -1,29 +1,35 @@
 using Newtonsoft.Json;
 using Spectre.Console;
 using System.IO.Compression;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 
 namespace UmamusumeResponseAnalyzer.Plugin
 {
+    public sealed record PluginUpdateInfo(
+        string InternalName,
+        string DisplayName,
+        Version CurrentVersion,
+        Version LatestVersion);
+
     public static class PluginRepository
     {
-        // URACloud 插件 API——唯一的插件源，不可由用户配置。
-#if DEBUG
-        const string PluginApiBase = "http://localhost:4694/Plugins";
-#else
-        // TODO: 正式部署后替换为生产 URL
-        const string PluginApiBase = "https://uracloud.example.com/Plugins";
-#endif
+        const string PluginApiBase = "https://ura.shuise.net/Plugins";
         static readonly Version ZeroVersion = new(0, 0, 0);
 
         public static async Task ShowMenuAsync()
         {
+            await LiveDisplayConsole.RunAsync(ShowMenuCoreAsync);
+        }
+
+        static async Task ShowMenuCoreAsync()
+        {
             var plugins = await FetchAllPluginsAsync();
-            AnsiConsole.Clear();
+            LiveDisplayConsole.Clear();
             if (plugins.Count == 0)
             {
-                AnsiConsole.MarkupLine("[yellow]没有从插件仓库拉到插件信息。[/]");
-                AnsiConsole.MarkupLine("按任意键返回");
-                Console.ReadKey(intercept: true);
+                LiveDisplayConsole.MarkupLine("[yellow]没有从插件仓库拉到插件信息。[/]");
+                LiveDisplayConsole.MarkupLine("按任意键返回");
+                LiveDisplayConsole.ReadKey(intercept: true);
                 return;
             }
 
@@ -50,14 +56,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 pluginSelection.AddChoiceGroup($"[blue]{group.Key.EscapeMarkup()}[/]", leafLabels);
             }
 
-            var selected = AnsiConsole.Prompt(pluginSelection);
+            var selected = LiveDisplayConsole.Prompt(pluginSelection);
             var selectedPlugins = selected
                 .Where(labelToInfo.ContainsKey)
                 .Select(label => labelToInfo[label])
                 .ToList();
             if (selectedPlugins.Count == 0)
             {
-                AnsiConsole.Clear();
+                LiveDisplayConsole.Clear();
                 return;
             }
 
@@ -66,20 +72,19 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             if (installed > 0)
             {
-                AnsiConsole.WriteLine("插件安装已全部完成，按任意键重新启动。");
-                Console.ReadKey();
+                LiveDisplayConsole.WriteLine("插件安装已全部完成，按任意键重新启动。");
+                LiveDisplayConsole.ReadKey();
                 global::UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.Restart();
             }
         }
 
-        /// <summary>仅打印提示，不自动下载。</summary>
-        public static async Task CheckForUpdatesAsync(CancellationToken cancellationToken = default)
+        public static async Task<IReadOnlyList<PluginUpdateInfo>> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
         {
-            if (PluginManager.LoadedPlugins.Count == 0) return;
-            var remote = await FetchAllPluginsAsync(silent: true, cancellationToken);
-            if (remote.Count == 0) return;
+            if (PluginManager.LoadedPlugins.Count == 0) return [];
+            var remote = await FetchAllPluginsAsync(silent: true, cancellationToken: cancellationToken, throwOnError: true);
+            if (remote.Count == 0) return [];
 
-            var updates = 0;
+            var updates = new List<PluginUpdateInfo>();
             foreach (var plugin in PluginManager.LoadedPlugins)
             {
                 var assemblyName = plugin.GetType().Assembly.GetName().Name;
@@ -87,21 +92,21 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (!remote.TryGetValue(assemblyName, out var remoteInfo)) continue;
                 if (remoteInfo.Version > plugin.Version)
                 {
-                    AnsiConsole.MarkupLine($"[green]插件 {DisplayLabel(remoteInfo).EscapeMarkup()} 有新版本可用:[/] {plugin.Version} -> {remoteInfo.Version}");
-                    updates++;
+                    updates.Add(new PluginUpdateInfo(
+                        assemblyName,
+                        DisplayLabel(remoteInfo),
+                        plugin.Version,
+                        remoteInfo.Version));
                 }
             }
 
-            if (updates > 0)
-            {
-                AnsiConsole.MarkupLine($"[yellow]共有 {updates} 个插件可更新，到「插件仓库」菜单里手动安装。[/]");
-            }
+            return updates;
         }
 
-        static async Task<Dictionary<string, PluginInformation>> FetchAllPluginsAsync(bool silent = false, CancellationToken cancellationToken = default)
+        static async Task<Dictionary<string, PluginInformation>> FetchAllPluginsAsync(bool silent = false, CancellationToken cancellationToken = default, bool throwOnError = false)
         {
-            if (!silent) AnsiConsole.WriteLine("正在从插件仓库获取插件信息");
-            var list = await FetchAsync(PluginApiBase, cancellationToken);
+            if (!silent) LiveDisplayConsole.WriteLine("正在从插件仓库获取插件信息");
+            var list = await FetchAsync(PluginApiBase, cancellationToken, silent, throwOnError);
 
             var plugins = new Dictionary<string, PluginInformation>(StringComparer.OrdinalIgnoreCase);
             var noTargetFilter = Config.Repository.Targets.Count == 0;
@@ -115,7 +120,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             return plugins;
         }
 
-        static async Task<List<PluginInformation>> FetchAsync(string url, CancellationToken cancellationToken)
+        static async Task<List<PluginInformation>> FetchAsync(string url, CancellationToken cancellationToken, bool silent = false, bool throwOnError = false)
         {
             try
             {
@@ -127,7 +132,11 @@ namespace UmamusumeResponseAnalyzer.Plugin
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[red]从 {url.EscapeMarkup()} 拉取仓库失败:[/] {ex.Message.EscapeMarkup()}");
+                if (throwOnError)
+                    throw;
+
+                if (!silent)
+                    LiveDisplayConsole.MarkupLine($"[red]从 {url.EscapeMarkup()} 拉取仓库失败:[/] {ex.Message.EscapeMarkup()}");
                 return [];
             }
         }
@@ -159,7 +168,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
                 else
                 {
-                    AnsiConsole.WriteLine($"没有在插件仓库中找到依赖项{dependency}");
+                    LiveDisplayConsole.WriteLine($"没有在插件仓库中找到依赖项{dependency}");
                 }
             }
         }
@@ -196,7 +205,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 labelToVersion[$"{v.Version}{tag}{changelog}"] = v;
             }
 
-            var selection = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            var selection = LiveDisplayConsole.Prompt(new SelectionPrompt<string>()
                 .Title($"选择 [green]{DisplayLabel(plugin).EscapeMarkup()}[/] 要安装的版本")
                 .WrapAround(true)
                 .PageSize(15)
@@ -214,30 +223,30 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 var versionToInstall = await PromptVersionAsync(plugin, cancellationToken);
                 if (versionToInstall is null)
                 {
-                    AnsiConsole.MarkupLine($"[yellow][{DisplayLabel(plugin).EscapeMarkup()}] 跳过[/]");
+                    LiveDisplayConsole.MarkupLine($"[yellow][{DisplayLabel(plugin).EscapeMarkup()}] 跳过[/]");
                     continue;
                 }
                 if (string.IsNullOrEmpty(versionToInstall.DownloadUrl))
                 {
-                    AnsiConsole.MarkupLine($"[yellow][{DisplayLabel(plugin).EscapeMarkup()}] 缺少 DownloadUrl，跳过[/]");
+                    LiveDisplayConsole.MarkupLine($"[yellow][{DisplayLabel(plugin).EscapeMarkup()}] 缺少 DownloadUrl，跳过[/]");
                     continue;
                 }
                 try
                 {
-                    AnsiConsole.WriteLine($"[{DisplayLabel(plugin)} v{versionToInstall.Version}] 正在下载");
+                    LiveDisplayConsole.WriteLine($"[{DisplayLabel(plugin)} v{versionToInstall.Version}] 正在下载");
                     using var response = await ResourceUpdater.HttpClient.GetAsync(versionToInstall.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                     response.EnsureSuccessStatusCode();
                     using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
                     using var archive = new ZipArchive(stream);
-                    AnsiConsole.WriteLine($"[{DisplayLabel(plugin)}] 正在解压");
+                    LiveDisplayConsole.WriteLine($"[{DisplayLabel(plugin)}] 正在解压");
                     archive.ExtractToDirectory("./", true);
-                    AnsiConsole.WriteLine($"[{DisplayLabel(plugin)}] 安装完成");
+                    LiveDisplayConsole.WriteLine($"[{DisplayLabel(plugin)}] 安装完成");
                     installed++;
                 }
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex)
                 {
-                    AnsiConsole.MarkupLine($"[red][{DisplayLabel(plugin).EscapeMarkup()}] 安装失败:[/] {ex.Message.EscapeMarkup()}");
+                    LiveDisplayConsole.MarkupLine($"[red][{DisplayLabel(plugin).EscapeMarkup()}] 安装失败:[/] {ex.Message.EscapeMarkup()}");
                 }
             }
             return installed;

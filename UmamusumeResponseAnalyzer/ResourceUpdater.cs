@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Diagnostics;
@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 using UmamusumeResponseAnalyzer.Plugin;
 using static UmamusumeResponseAnalyzer.Localization.ResourceUpdater;
 
@@ -20,6 +21,7 @@ namespace UmamusumeResponseAnalyzer
                 UserAgent = { new System.Net.Http.Headers.ProductInfoHeaderValue("UmamusumeResponseAnalyzer", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown Version") }
             }
         };
+        static Func<Task> UpdateAssetsAfterProgramUpdateAsync = UpdateAssets;
         public static async Task<bool> NeedUpdate()
         {
             var json = JObject.Parse(await HttpClient.GetStringAsync("https://api.github.com/repos/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest"));
@@ -30,32 +32,42 @@ namespace UmamusumeResponseAnalyzer
         {
             if (!await NeedUpdate())
             {
-                Console.WriteLine(I18N_AlreadyLatestInstruction);
-                Console.WriteLine(Localization.LaunchMenu.I18N_Options_BackToMenuInstruction);
-                Console.ReadKey();
+                LiveDisplayConsole.WriteLine(I18N_AlreadyLatestInstruction);
+                LiveDisplayConsole.WriteLine(Localization.LaunchMenu.I18N_Options_BackToMenuInstruction);
+                LiveDisplayConsole.ReadKey();
                 return;
             }
             var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
-            await AnsiConsole.Progress()
-                .Columns(
-                [
-                    new TaskDescriptionColumn(),
-                    new ProgressBarColumn(),
-                    new PercentageColumn(),
-                    new RemainingTimeColumn(),
-                    new SpinnerColumn()
-                ])
-                .StartAsync(async ctx =>
-                {
-                    var tasks = new List<Task>();
+            try
+            {
+                await LiveDisplayConsole.RunProgressAsync(p =>
+                    p.Columns(
+                    [
+                        new TaskDescriptionColumn(),
+                        new ProgressBarColumn(),
+                        new PercentageColumn(),
+                        new RemainingTimeColumn(),
+                        new SpinnerColumn()
+                    ])
+                    .StartAsync(async ctx =>
+                    {
+                        var tasks = new List<Task>();
 
-                    var programTask = Download(ctx, I18N_DownloadProgramInstruction, path);
-                    tasks.Add(programTask);
+                        var programTask = Download(ctx, I18N_DownloadProgramInstruction, path);
+                        tasks.Add(programTask);
 
-                    await Task.WhenAll(tasks);
-                });
-            Console.WriteLine(I18N_BeginUpdateProgramInstruction);
-            Console.ReadKey();
+                        await Task.WhenAll(tasks);
+                    }));
+            }
+            catch (Exception ex)
+            {
+                LiveDisplayConsole.WriteException(ex);
+                LiveDisplayConsole.ReadKey();
+                return;
+            }
+
+            LiveDisplayConsole.WriteLine(I18N_BeginUpdateProgramInstruction);
+            LiveDisplayConsole.ReadKey();
             CloseToUpdate();
         }
         public static void CloseToUpdate()
@@ -84,7 +96,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 if (string.IsNullOrEmpty(output))
                 {
-                    AnsiConsole.MarkupLine(I18N_UpdatedFileCorrupted);
+                    LiveDisplayConsole.MarkupLine(I18N_UpdatedFileCorrupted);
                     File.Delete(Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe"));
                     return;
                 }
@@ -120,8 +132,9 @@ namespace UmamusumeResponseAnalyzer
                 };
                 Proc.Start(); //把新程序复制到原来的目录后就启动
                 Environment.Exit(0);
+                return;
             }
-            else if (exist && !SHA256.HashData(File.ReadAllBytes(Environment.ProcessPath!)).SequenceEqual(SHA256.HashData(File.ReadAllBytes(path)))) //临时目录与当前目录的不一致则认为未更新
+            else if (exist && !FilesHaveSameHash(Environment.ProcessPath!, path)) //临时目录与当前目录的不一致则认为未更新
             {
                 CloseToUpdate();
                 exist = false; //能执行到这就代表更新文件受损，已经被删掉了
@@ -130,56 +143,72 @@ namespace UmamusumeResponseAnalyzer
             if (exist) //删除临时文件
             {
                 File.Delete(path);
-                await UpdateAssets(); //既然有临时文件，那必然是刚更新过的，再执行一次更新保证数据即时
-                AnsiConsole.Clear();
+                await UpdateAssetsAfterProgramUpdateAsync();
+                LiveDisplayConsole.Clear();
             }
+        }
+        static bool FilesHaveSameHash(string leftPath, string rightPath)
+        {
+            using var left = File.OpenRead(leftPath);
+            using var right = File.OpenRead(rightPath);
+            return SHA256.HashData(left).SequenceEqual(SHA256.HashData(right));
         }
         public static async Task UpdateAssets()
         {
-            await AnsiConsole.Progress()
-                .Columns(
-                [
-                    new TaskDescriptionColumn(),
-                    new ProgressBarColumn(),
-                    new PercentageColumn(),
-                    new RemainingTimeColumn(),
-                    new SpinnerColumn()
-                ])
-                .StartAsync(async ctx =>
-                {
-                    var tasks = new List<Task>();
+            try
+            {
+                await LiveDisplayConsole.RunProgressAsync(p =>
+                    p.Columns(
+                    [
+                        new TaskDescriptionColumn(),
+                        new ProgressBarColumn(),
+                        new PercentageColumn(),
+                        new RemainingTimeColumn(),
+                        new SpinnerColumn()
+                    ])
+                    .StartAsync(async ctx =>
+                    {
+                        var tasks = new List<Task>();
 
-                    var eventTask = Download(ctx, I18N_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
-                    tasks.Add(eventTask);
+                        var eventTask = Download(ctx, I18N_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
+                        tasks.Add(eventTask);
 
-                    var successEventTask = Download(ctx, I18N_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
-                    tasks.Add(successEventTask);
+                        var successEventTask = Download(ctx, I18N_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
+                        tasks.Add(successEventTask);
 
-                    var namesTask = Download(ctx, I18N_DownloadNamesInstruction, Database.NAMES_FILEPATH);
-                    tasks.Add(namesTask);
+                        var namesTask = Download(ctx, I18N_DownloadNamesInstruction, Database.NAMES_FILEPATH);
+                        tasks.Add(namesTask);
 
-                    var skillTask = Download(ctx, I18N_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
-                    tasks.Add(skillTask);
+                        var skillTask = Download(ctx, I18N_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH);
+                        tasks.Add(skillTask);
 
-                    var talentSkillTask = Download(ctx, I18N_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
-                    tasks.Add(talentSkillTask);
+                        var talentSkillTask = Download(ctx, I18N_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH);
+                        tasks.Add(talentSkillTask);
 
-                    var factorIdTask = Download(ctx, I18N_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH);
-                    tasks.Add(factorIdTask);
+                        var factorIdTask = Download(ctx, I18N_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH);
+                        tasks.Add(factorIdTask);
 
-                    var skillUpgradeSpecialityTask = Download(ctx, I18N_DownloadSkillUpgradeSpecialityInstruction, Database.SKILL_UPGRADE_SPECIALITY_FILEPATH);
-                    tasks.Add(skillUpgradeSpecialityTask);
+                        var skillUpgradeSpecialityTask = Download(ctx, I18N_DownloadSkillUpgradeSpecialityInstruction, Database.SKILL_UPGRADE_SPECIALITY_FILEPATH);
+                        tasks.Add(skillUpgradeSpecialityTask);
 
-                    var winSaddleTask = Download(ctx, Database.SADDLE_IDS_FILEPATH, Database.SADDLE_IDS_FILEPATH);
-                    tasks.Add(winSaddleTask);
+                        var winSaddleTask = Download(ctx, Database.SADDLE_IDS_FILEPATH, Database.SADDLE_IDS_FILEPATH);
+                        tasks.Add(winSaddleTask);
 
-                    var successionRelationTask = Download(ctx, Database.SUCCESSION_RELATION_FILEPATH, Database.SUCCESSION_RELATION_FILEPATH);
-                    tasks.Add(successionRelationTask);
+                        var successionRelationTask = Download(ctx, Database.SUCCESSION_RELATION_FILEPATH, Database.SUCCESSION_RELATION_FILEPATH);
+                        tasks.Add(successionRelationTask);
 
-                    await Task.WhenAll(tasks);
-                });
-            AnsiConsole.MarkupLine(I18N_DownloadedInstruction);
-            Console.ReadKey();
+                        await Task.WhenAll(tasks);
+                    }));
+            }
+            catch (Exception ex)
+            {
+                LiveDisplayConsole.WriteException(ex);
+                LiveDisplayConsole.ReadKey();
+                return;
+            }
+
+            LiveDisplayConsole.MarkupLine(I18N_DownloadedInstruction);
+            LiveDisplayConsole.ReadKey();
         }
         static string GetDownloadUrl(string filepath)
         {
@@ -195,41 +224,59 @@ namespace UmamusumeResponseAnalyzer
         }
         public static async Task Download(ProgressContext ctx = null!, string instruction = null!, string path = null!)
         {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("下载目标路径不能为空。", nameof(path));
+
             var downloadURL = GetDownloadUrl(path);
-            #region 检测更新服务器是否可用
+            var fullPath = Path.GetFullPath(path);
+            var directory = Path.GetDirectoryName(fullPath)!;
+            var tempPath = Path.Combine(directory, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
+            ProgressTask? task = null;
             try
             {
-                await HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, downloadURL));
+                using var response = await HttpClient.GetAsync(downloadURL, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+                task = ctx?.AddTask(instruction, false);
+                task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
+                task?.StartTask();
+
+                using (var contentStream = await response.Content.ReadAsStreamAsync())
+                using (var fileStream = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 8192, true))
+                {
+                    var buffer = new byte[8192];
+                    while (true)
+                    {
+                        var read = await contentStream.ReadAsync(buffer);
+                        if (read == 0)
+                            break;
+                        task?.Increment(read);
+                        await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                    }
+                }
+
+                File.Move(tempPath, fullPath, overwrite: true);
+            }
+            catch (Exception) when (new Uri(downloadURL).Host == "raw.githubusercontent.com")
+            {
+                LiveDisplayConsole.MarkupLine(I18N_AccessGithubFail, downloadURL.EscapeMarkup());
+                throw;
             }
             catch
             {
-                if (new Uri(downloadURL).Host == "raw.githubusercontent.com")
-                {
-                    AnsiConsole.MarkupLine(I18N_AccessGithubFail, downloadURL.EscapeMarkup());
-                }
-                else
-                {
-                    AnsiConsole.MarkupLine(I18N_AccessMirrorFail, downloadURL.EscapeMarkup());
-                }
-                return;
+                LiveDisplayConsole.MarkupLine(I18N_AccessMirrorFail, downloadURL.EscapeMarkup());
+                throw;
             }
-            #endregion
-
-            var response = await HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, downloadURL), HttpCompletionOption.ResponseHeadersRead);
-            var task = ctx?.AddTask(instruction, false);
-            task?.MaxValue(response.Content.Headers.ContentLength ?? 0);
-            task?.StartTask();
-
-            using var contentStream = await response.Content.ReadAsStreamAsync();
-            using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-            var buffer = new byte[8192];
-            while (true)
+            finally
             {
-                var read = await contentStream.ReadAsync(buffer);
-                if (read == 0)
-                    break;
-                task?.Increment(read);
-                await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                // 下载失败也必须结束 task，否则 Spectre Progress 会一直渲染卡住的进度条
+                if (task is { IsFinished: false })
+                    task.StopTask();
+                if (File.Exists(tempPath))
+                {
+                    try { File.Delete(tempPath); }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
+                }
             }
         }
     }

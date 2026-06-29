@@ -1,5 +1,6 @@
 using Spectre.Console;
 using System.Reflection;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 
 namespace UmamusumeResponseAnalyzer.Plugin
 {
@@ -16,14 +17,30 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             Directory.CreateDirectory(DataDirectory);
         }
+        void Initialize(ILiveDisplayOutput liveDisplay)
+        {
+            Initialize();
+        }
         void Dispose() { }
-        async Task ConfigPromptAsync()
+        Task ConfigPromptAsync()
         {
             ConfigPrompt();
+            return Task.CompletedTask;
         }
         void ConfigPrompt()
         {
-            var properties = GetType().GetProperties().Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != null);
+            RunDefaultConfigPromptAsync().GetAwaiter().GetResult();
+        }
+        private Task RunDefaultConfigPromptAsync()
+        {
+            return LiveDisplayConsole.RunAsync(ConfigPromptCore);
+        }
+        private async Task ConfigPromptCore()
+        {
+            var properties = GetType()
+                .GetProperties()
+                .Where(x => x.GetCustomAttribute<PluginSettingAttribute>() != null)
+                .ToArray();
             var propDic = new Dictionary<string, PropertyInfo>();
 
             var selection = string.Empty;
@@ -48,14 +65,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     .Title(GetType().GetProperty("Name")?.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? Name)
                     .WrapAround(true)
                     .AddChoices(choices);
-                selection = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
+                selection = LiveDisplayConsole.Prompt(selectionPrompt).Split(':')[0];
                 if (selection == "Reload")
                 {
                     PluginSettingsManager.LoadSettings(this);
                 }
                 else if (selection == Localization.LaunchMenu.I18N_UpdateProgram)
                 {
-                    AnsiConsole.Progress().Start(UpdatePlugin);
+                    await LiveDisplayConsole.RunProgressAsync(p => p.StartAsync(UpdatePlugin));
                 }
                 else if (selection != Localization.Config.Return && propDic.TryGetValue(selection, out var property))
                 {
@@ -70,18 +87,18 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     {
                         var promptType = typeof(TextPrompt<>).MakeGenericType(type);
                         var prompt = Activator.CreateInstance(promptType, $"{property.Name}: {description}", null);
-                        var method = typeof(AnsiConsole).GetMethod("Prompt")!.MakeGenericMethod(type);
+                        var method = typeof(LiveDisplayConsole).GetMethod(nameof(LiveDisplayConsole.Prompt))!.MakeGenericMethod(type);
                         var value = method.Invoke(null, [prompt]);
                         property.SetValue(this, value);
                     }
                     else if (type == typeof(string))
                     {
-                        var str = AnsiConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}").AllowEmpty());
+                        var str = LiveDisplayConsole.Prompt(new TextPrompt<string>($"{property.Name}: {description}").AllowEmpty());
                         property.SetValue(this, str);
                     }
                     PluginSettingsManager.SaveSettings(this);
                 }
-                AnsiConsole.Clear();
+                LiveDisplayConsole.Clear();
             } while (selection != Localization.Config.Return);
         }
         Task UpdatePlugin(ProgressContext ctx);
@@ -106,7 +123,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                     catch (Exception ex)
                     {
-                        AnsiConsole.MarkupLine($"[red]插件事件处理错误: {ex.Message.EscapeMarkup()}[/]");
+                        LiveDisplayConsole.Notify("Plugin", $"插件事件处理错误: {ex.Message}", LiveDisplaySeverity.Error);
+                        LiveDisplayConsole.Log("Plugin", ex.ToString(), LiveDisplaySeverity.Error);
                     }
                 }
             }

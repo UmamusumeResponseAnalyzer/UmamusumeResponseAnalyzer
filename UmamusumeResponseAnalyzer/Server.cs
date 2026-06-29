@@ -1,7 +1,7 @@
 ﻿using MessagePack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Spectre.Console;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 using UmamusumeResponseAnalyzer.Plugin;
 using WatsonWebserver.Core;
 using WatsonWebserver.Lite;
@@ -53,7 +53,7 @@ namespace UmamusumeResponseAnalyzer
             });
             Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
             {
-                AnsiConsole.MarkupLine(I18N_PingReceived);
+                LiveDisplayConsole.Log("Server", I18N_PingReceived, LiveDisplaySeverity.Trace);
                 return ctx.Response.Send("pong");
             });
             Instance.Start();
@@ -81,7 +81,8 @@ namespace UmamusumeResponseAnalyzer
                         }
                         catch (Exception e)
                         {
-                            AnsiConsole.WriteException(e);
+                            LiveDisplayConsole.Notify("Plugin", $"请求分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
+                            LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
                         }
                     }
                 }
@@ -166,15 +167,16 @@ namespace UmamusumeResponseAnalyzer
                         }
                         catch (Exception e)
                         {
-                            AnsiConsole.WriteException(e);
+                            LiveDisplayConsole.Notify("Plugin", $"响应分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
+                            LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                AnsiConsole.MarkupLine(I18N_ResponseAnalyzeFail);
-                AnsiConsole.WriteException(e);
+                LiveDisplayConsole.Notify("Server", I18N_ResponseAnalyzeFail, LiveDisplaySeverity.Error);
+                LiveDisplayConsole.Log("Server", e.ToString(), LiveDisplaySeverity.Error);
 #if DEBUG
                 throw;
 #endif

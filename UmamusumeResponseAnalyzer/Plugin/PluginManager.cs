@@ -2,6 +2,7 @@ using Spectre.Console;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.Loader;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 using WatsonWebserver.Core;
 
 namespace UmamusumeResponseAnalyzer.Plugin
@@ -90,7 +91,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.WriteException(ex);
+                    LiveDisplayConsole.WriteException(ex);
                 }
             }
         }
@@ -207,7 +208,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
             catch (Exception ex)
             {
-                AnsiConsole.WriteException(ex);
+                LiveDisplayConsole.WriteException(ex);
                 FailedPlugins.Add(m.FilePath);
             }
         }
@@ -253,7 +254,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"{plugin.Name.EscapeMarkup()}注册Route{route.Path.EscapeMarkup()}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", ps.Select(x => x.ParameterType.Name)).EscapeMarkup()}");
+                        LiveDisplayConsole.MarkupLine($"{plugin.Name.EscapeMarkup()}注册Route{route.Path.EscapeMarkup()}失败:参数有且只能有一个HttpContextBase，实际为{string.Join(", ", ps.Select(x => x.ParameterType.Name)).EscapeMarkup()}");
                     }
                 }
             }

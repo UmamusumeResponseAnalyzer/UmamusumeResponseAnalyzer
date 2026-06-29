@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Reflection;
 using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 using UmamusumeResponseAnalyzer.Plugin;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -60,6 +61,11 @@ namespace UmamusumeResponseAnalyzer
 
         public static void Prompt()
         {
+            LiveDisplayConsole.Run(PromptCore);
+        }
+
+        static void PromptCore()
+        {
             while (true)
             {
                 var prompt = string.Empty;
@@ -71,7 +77,7 @@ namespace UmamusumeResponseAnalyzer
                     .AddChoices(translatedTabs.Keys)
                     .AddChoices(i18n.Return)
                     .PageSize(30);
-                prompt = AnsiConsole.Prompt(selection);
+                prompt = LiveDisplayConsole.Prompt(selection);
                 if (prompt == i18n.Return) break;
                 var config = typeof(Config).GetProperty(translatedTabs[prompt])?.GetValue(null);
                 var result = config?.GetType()?.GetMethod("Prompt")?.Invoke(config, null);
@@ -112,17 +118,17 @@ namespace UmamusumeResponseAnalyzer
                     .WrapAround(true)
                     .AddChoices(_properties.Select(x => x.AppendValue(this, translated)))
                     .AddChoices(i18n.Return);
-                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
+                selected = LiveDisplayConsole.Prompt(selectionPrompt).Split(':')[0];
                 if (selected == i18n.Tabs_Core_ListenAddress)
                 {
                     var address = string.Empty;
                     do
                     {
-                        address = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_Core_ListenAddressPrompt));
+                        address = LiveDisplayConsole.Prompt(new TextPrompt<string>(i18n.Tabs_Core_ListenAddressPrompt));
                         if (IPAddress.TryParse(address, out _))
                         {
                             ListenAddress = address;
-                            AnsiConsole.Clear();
+                            LiveDisplayConsole.Clear();
                             Config.Save();
                             break;
                         }
@@ -133,11 +139,11 @@ namespace UmamusumeResponseAnalyzer
                     var port = string.Empty;
                     do
                     {
-                        port = AnsiConsole.Prompt(new TextPrompt<string>(i18n.Tabs_Core_ListenPortPrompt));
+                        port = LiveDisplayConsole.Prompt(new TextPrompt<string>(i18n.Tabs_Core_ListenPortPrompt));
                         if (int.TryParse(port, out var portInt))
                         {
                             ListenPort = portInt;
-                            AnsiConsole.Clear();
+                            LiveDisplayConsole.Clear();
                             Config.Save();
                             break;
                         }
@@ -173,15 +179,15 @@ namespace UmamusumeResponseAnalyzer
                     .WrapAround(true)
                     .AddChoices(_properties.Select(x => x.AppendValue(this, translated)))
                     .AddChoices(i18n.Return);
-                selected = AnsiConsole.Prompt(selectionPrompt).Split(':')[0];
+                selected = LiveDisplayConsole.Prompt(selectionPrompt).Split(':')[0];
 
                 if (selected == i18n.Tabs_Repository_Targets)
                 {
                     var targetPrompt = new TextPrompt<string>(i18n.Tabs_Repository_TargetsPrompt)
                         .AllowEmpty();
-                    var targetsInput = AnsiConsole.Prompt(targetPrompt);
+                    var targetsInput = LiveDisplayConsole.Prompt(targetPrompt);
                     Targets = string.IsNullOrEmpty(targetsInput) ? [] : [.. targetsInput.Replace('，', ',').Split(',')];
-                    AnsiConsole.Clear();
+                    LiveDisplayConsole.Clear();
                 }
 
                 Config.Save();
@@ -192,6 +198,11 @@ namespace UmamusumeResponseAnalyzer
     public class PluginConfig
     {
         public async Task Prompt()
+        {
+            await LiveDisplayConsole.RunAsync(PromptCore);
+        }
+
+        async Task PromptCore()
         {
             UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
             var selected = string.Empty;
@@ -204,7 +215,7 @@ namespace UmamusumeResponseAnalyzer
                     .AddChoices(plugins.Keys)
                     .AddChoices(i18n.Return)
                     .PageSize(30);
-                selected = AnsiConsole.Prompt(selectionPrompt);
+                selected = LiveDisplayConsole.Prompt(selectionPrompt);
                 if (selected != i18n.Return)
                 {
                     var plugin = plugins[selected];
@@ -234,7 +245,7 @@ namespace UmamusumeResponseAnalyzer
                     .WrapAround(true)
                     .AddChoices(_properties.Select(x => x.AppendValue(this, translated)))
                     .AddChoices(i18n.Return);
-                selected = AnsiConsole.Prompt(l3Prompt).Split(':')[0];
+                selected = LiveDisplayConsole.Prompt(l3Prompt).Split(':')[0];
                 if (selected == nameof(TrainerIsMale))
                 {
                     TrainerIsMale = !TrainerIsMale;
@@ -245,16 +256,16 @@ namespace UmamusumeResponseAnalyzer
                         .Title(nameof(DatabaseLanguage))
                         .WrapAround(true)
                         .AddChoices(["ja-JP", "zh-TW", "zh-CN"]);
-                    var dbLang = AnsiConsole.Prompt(dbLangPrompt);
+                    var dbLang = LiveDisplayConsole.Prompt(dbLangPrompt);
                     DatabaseLanguage = dbLang;
-                    AnsiConsole.Clear();
+                    LiveDisplayConsole.Clear();
                 }
                 else if (selected == nameof(CustomDatabaseRepository))
                 {
                     var urlPrompt = new TextPrompt<string>(i18n.Tabs_Updater_CustomDatabaseRepositoryPrompt).AllowEmpty();
                     do
                     {
-                        var url = AnsiConsole.Prompt(urlPrompt);
+                        var url = LiveDisplayConsole.Prompt(urlPrompt);
                         if (string.IsNullOrEmpty(url))
                         {
                             CustomDatabaseRepository = string.Empty;
@@ -266,7 +277,7 @@ namespace UmamusumeResponseAnalyzer
                             break;
                         }
                     } while (true);
-                    AnsiConsole.Clear();
+                    LiveDisplayConsole.Clear();
                 }
                 else if (selected == i18n.Tabs_Updater_ForceUseGithubToUpdate)
                 {
@@ -289,7 +300,7 @@ namespace UmamusumeResponseAnalyzer
                 .Title(i18n.Tabs_Language_Title)
                 .AddChoices(translated.Keys);
 
-            var selected = AnsiConsole.Prompt(languagePrompt);
+            var selected = LiveDisplayConsole.Prompt(languagePrompt);
             if (translated.TryGetValue(selected, out var languageName) && Enum.TryParse<Language>(languageName, out var langEnum))
             {
                 Selected = langEnum;
@@ -337,7 +348,7 @@ namespace UmamusumeResponseAnalyzer
                     l3Prompt.Select(translated[i.Name]);
                 }
             }
-            var l3 = AnsiConsole.Prompt(l3Prompt);
+            var l3 = LiveDisplayConsole.Prompt(l3Prompt);
             foreach (var i in _properties)
             {
                 i.SetValue(this, l3.Contains(translated[i.Name]));

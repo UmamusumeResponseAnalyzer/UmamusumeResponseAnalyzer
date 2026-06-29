@@ -1,6 +1,7 @@
 using Spectre.Console;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
@@ -61,13 +62,13 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                     catch (Exception ex)
                     {
-                        AnsiConsole.MarkupLine($"[yellow]加载设置 '{property.Name.EscapeMarkup()}' 失败: {ex.Message.EscapeMarkup()}[/]");
+                        LiveDisplayConsole.MarkupLine($"[yellow]加载设置 '{property.Name.EscapeMarkup()}' 失败: {ex.Message.EscapeMarkup()}[/]");
                     }
                 }
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[yellow]加载插件设置失败: {ex.Message.EscapeMarkup()}[/]");
+                LiveDisplayConsole.MarkupLine($"[yellow]加载插件设置失败: {ex.Message.EscapeMarkup()}[/]");
                 SaveSettings(plugin);
             }
         }

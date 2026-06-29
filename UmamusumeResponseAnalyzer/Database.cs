@@ -4,6 +4,7 @@ using System.Collections.Frozen;
 using System.Text;
 using System.Text.RegularExpressions;
 using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.LiveDisplay;
 using static UmamusumeResponseAnalyzer.Localization.Database;
 
 namespace UmamusumeResponseAnalyzer
@@ -115,21 +116,21 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
+                        LiveDisplayConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
                     }
                 }
                 catch (InvalidDataException)
                 {
-                    AnsiConsole.MarkupLine(I18N_DecompressError, Path.GetFileName(filepath).EscapeMarkup());
+                    LiveDisplayConsole.MarkupLine(I18N_DecompressError, Path.GetFileName(filepath).EscapeMarkup());
                 }
                 catch (Exception)
                 {
-                    AnsiConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
+                    LiveDisplayConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
                 }
             }
             else
             {
-                AnsiConsole.MarkupLine(I18N_NotExist, Path.GetFileName(filepath).EscapeMarkup());
+                LiveDisplayConsole.MarkupLine(I18N_NotExist, Path.GetFileName(filepath).EscapeMarkup());
             }
             return default!;
         }
