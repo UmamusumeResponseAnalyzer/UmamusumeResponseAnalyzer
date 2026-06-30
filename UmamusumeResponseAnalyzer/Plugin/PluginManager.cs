@@ -120,10 +120,10 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static Dictionary<string, Assembly> AssemblyMap { get; } = [];
         internal static List<Assembly> Assemblies { get; } = [];
         static Dictionary<string, Assembly> SharedAssemblies { get; } = new(StringComparer.Ordinal);
+        static readonly string HostAssemblyName = typeof(PluginManager).Assembly.GetName().Name ?? "UmamusumeResponseAnalyzer";
         static readonly FrozenSet<string> SharedAssemblyNames = new[]
         {
-            "UmamusumeResponseAnalyzer.Plugin.Abstractions",
-            "Gallop",
+            HostAssemblyName,
             "Spectre.Console",
             "Spectre.Console.Ansi",
             "Watson.Lite",
@@ -530,14 +530,33 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                 }
 
-                var actual = shared.GetName();
-                if (requested.Version is not null && actual.Version != requested.Version)
-                    throw new FileLoadException(
-                        $"shared ABI assembly 版本不一致: 插件请求 {requested.FullName}，宿主 Default ALC 已加载 {actual.FullName}。",
-                        requested.FullName);
+                ValidateSharedAssemblyVersion(name, requested, shared.GetName());
 
                 return shared;
             }
+        }
+
+        static bool IsHostAssembly(string name) => string.Equals(name, HostAssemblyName, StringComparison.Ordinal);
+
+        static void ValidateSharedAssemblyVersion(string name, AssemblyName requested, AssemblyName actual)
+        {
+            if (requested.Version is null)
+                return;
+
+            if (IsHostAssembly(name))
+            {
+                if (actual.Version is not null && requested.Version > actual.Version)
+                    LiveDisplayConsole.Log(
+                        "Plugin",
+                        $"插件依赖的宿主 ABI 版本更高，请更新 UmamusumeResponseAnalyzer: 插件请求 {requested.FullName}，当前宿主 {actual.FullName}。",
+                        LiveDisplaySeverity.Warning);
+                return;
+            }
+
+            if (actual.Version != requested.Version)
+                throw new FileLoadException(
+                    $"shared ABI assembly 版本不一致: 插件请求 {requested.FullName}，宿主 Default ALC 已加载 {actual.FullName}。",
+                    requested.FullName);
         }
 
         internal static Stream CreateStream(PluginMetadata m)

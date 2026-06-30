@@ -42,7 +42,7 @@ UmamusumeResponseAnalyzer 是本地运行的 TUI 宿主。它接收游戏请求/
 
 # 插件开发 Plugin Development
 
-* 插件 ABI 来自 `UmamusumeResponseAnalyzer.Plugin.Abstractions`，游戏接口 DTO/endpoint catalog 来自 `Gallop`。插件和宿主都应引用这两个程序集，不要在插件或宿主里复制 `IPlugin`、`AnalyzerAttribute`、`LiveDisplay` contract 或 `namespace Gallop` DTO。
+* 插件直接引用宿主程序集。宿主公开 `IPlugin`、`AnalyzerAttribute`、LiveDisplay contract 和 Gallop DTO/endpoint catalog；插件源码使用 `UmamusumeResponseAnalyzer.Plugin`、`UmamusumeResponseAnalyzer.LiveDisplay`、`Gallop`、`Gallop.Endpoints` 命名空间。
 * 插件可以放在 `Plugins/` 下：DLL 会递归扫描，ZIP 只扫描 `Plugins/` 顶层。ZIP 主插件 DLL 放在压缩包根目录；卫星资源 DLL 可放在对应 culture 子目录。
 * 宿主加载插件时按程序集名作为 internal name。插件 `Targets` 为空、命中配置的 repository targets，或配置未设置 targets 时，才会注册 analyzer 和路由。
 * 宿主提供基础 `TurnInfo` / `CommandInfo` 领域视图。UAF、L'Arc、Cook、Mecha、Legend、Pioneer、Onsen、Breeders 等场景专用聚合模型由场景插件基于 Gallop DTO 派生。

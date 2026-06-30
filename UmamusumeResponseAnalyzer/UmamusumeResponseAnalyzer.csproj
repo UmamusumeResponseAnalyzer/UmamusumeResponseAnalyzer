@@ -46,14 +46,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Gallop" Version="2026.6.30" />
 		<PackageReference Include="MessagePack" Version="3.1.7" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Spectre.Console" Version="0.57.1" />
-		<PackageReference Include="UmamusumeResponseAnalyzer.Plugin.Abstractions" Version="2026.7.1" />
 		<PackageReference Include="Watson.Lite" Version="6.6.0" />
 		<PackageReference Include="YamlDotNet" Version="18.1.0" />
 	</ItemGroup>
+
+	<Target Name="DisableMessagePackSourceGenerator" BeforeTargets="CoreCompile">
+		<ItemGroup>
+			<Analyzer Remove="@(Analyzer)" Condition="'%(FileName)%(Extension)' == 'MessagePack.SourceGenerator.dll'" />
+		</ItemGroup>
+	</Target>
 
 	<ItemGroup>
 		<Compile Update="Localization\CommandInfo\Cook.Designer.cs">

@@ -22,7 +22,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             foreach (var p in tpa.Split(Path.PathSeparator))
                 if (!string.IsNullOrEmpty(p) && File.Exists(p))
                     refs[p] = MetadataReference.CreateFromFile(p);
-            // 插件源码会用到的 ABI 依赖：IPlugin/Analyzer(Abstractions)、Gallop endpoint marker、ProgressContext(Spectre)
+            // 插件源码会用到的 ABI 依赖：宿主公开面(IPlugin/Gallop endpoint marker)、ProgressContext(Spectre)
             foreach (var asm in new[] { typeof(IPlugin).Assembly, typeof(IGameEndpoint).Assembly, typeof(ProgressContext).Assembly })
                 if (!string.IsNullOrEmpty(asm.Location))
                     refs[asm.Location] = MetadataReference.CreateFromFile(asm.Location);

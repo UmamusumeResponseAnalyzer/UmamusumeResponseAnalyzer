@@ -330,20 +330,37 @@ namespace UmamusumeResponseAnalyzer.Tests
         public void PluginLoadContext_ResolvesSharedAbiAssemblyFromDefaultContext()
         {
             var ctx = new PluginManager.PluginLoadContext("shared-abi-test");
+            var recording = new StringWriter();
+            var originalConsole = AnsiConsole.Console;
+            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Out = new AnsiConsoleOutput(recording) });
             try
             {
-                var gallop = ctx.LoadFromAssemblyName(typeof(IGameEndpoint).Assembly.GetName());
+                var host = ctx.LoadFromAssemblyName(typeof(IPlugin).Assembly.GetName());
 
-                Assert.Same(typeof(IGameEndpoint).Assembly, gallop);
+                Assert.Same(typeof(Server).Assembly, host);
 
-                var wrongVersion = new AssemblyName(typeof(IGameEndpoint).Assembly.GetName().Name!)
+                var oldHostVersion = new AssemblyName(typeof(Server).Assembly.GetName().Name!)
                 {
                     Version = new Version(0, 0, 0, 0),
                 };
-                Assert.Throws<FileLoadException>(() => ctx.LoadFromAssemblyName(wrongVersion));
+                Assert.Same(typeof(Server).Assembly, ctx.LoadFromAssemblyName(oldHostVersion));
+
+                var futureHostVersion = new AssemblyName(typeof(Server).Assembly.GetName().Name!)
+                {
+                    Version = new Version(99, 0, 0, 0),
+                };
+                Assert.Same(typeof(Server).Assembly, ctx.LoadFromAssemblyName(futureHostVersion));
+                Assert.Contains("插件依赖的宿主 ABI 版本更高", recording.ToString());
+
+                var wrongSpectreVersion = new AssemblyName(typeof(ProgressContext).Assembly.GetName().Name!)
+                {
+                    Version = new Version(99, 0, 0, 0),
+                };
+                Assert.Throws<FileLoadException>(() => ctx.LoadFromAssemblyName(wrongSpectreVersion));
             }
             finally
             {
+                AnsiConsole.Console = originalConsole;
                 ctx.Unload();
             }
         }
