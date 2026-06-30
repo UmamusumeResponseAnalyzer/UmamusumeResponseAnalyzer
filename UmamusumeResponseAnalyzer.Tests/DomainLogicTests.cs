@@ -1,4 +1,5 @@
 using Gallop;
+using MessagePack;
 using UmamusumeResponseAnalyzer.Game.TurnInfo;
 using Xunit;
 
@@ -6,18 +7,18 @@ namespace UmamusumeResponseAnalyzer.Tests
 {
     /// <summary>
     /// Tier 3：从真实响应构造 <see cref="TurnInfo"/> 领域视图，断言跨整局都成立的不变量。
-    /// 这是最贴近实际消费方式的回归——协议字段一旦错位（如 stat 不再映射），这里会立刻暴露。
+    /// 场景专用数据由插件直接消费 Gallop DTO，宿主只验证基础回合视图。
     /// </summary>
     public class DomainLogicTests
     {
         static TurnInfo Build(string path) =>
-            new(PacketCorpus.LoadJObject(path).ToObject<SingleModeCheckEventResponse>()!.data);
+            new(MessagePackSerializer.Deserialize<SingleModeCheckEventResponse>(PacketCorpus.LoadBytes(path))!.data);
 
         [Theory]
-        [MemberData(nameof(PacketCorpus.SingleModeCases), MemberType = typeof(PacketCorpus))]
+        [MemberData(nameof(PacketCorpus.SingleModeTurnCases), MemberType = typeof(PacketCorpus))]
         public void TurnInfo_InvariantsHold(string? path)
         {
-            Assert.SkipWhen(path is null, "无单人模式语料");
+            Assert.SkipWhen(path is null, "无完整单人模式回合语料");
 
             var turn = Build(path!);
 
@@ -31,23 +32,12 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.True(turn.MaxVital >= 0);
         }
 
-        [Theory]
-        [MemberData(nameof(PacketCorpus.SingleModeCases), MemberType = typeof(PacketCorpus))]
-        public void TurnInfo_ScenarioDetectionRoundTrips(string? path)
-        {
-            Assert.SkipWhen(path is null, "无单人模式语料");
-
-            var turn = Build(path!);
-            // IsScenario 会按当前场景反射构造对应 TurnInfo——应不抛且与 Scenario 自洽
-            Assert.True(turn.IsScenario(turn.Scenario));
-        }
-
         [Fact]
         public void SingleModeRun_CoversMultipleTurnsWithRealStats()
         {
-            Assert.SkipUnless(PacketCorpus.SingleModeResponseFiles.Count > 0, "无单人模式语料");
+            Assert.SkipUnless(PacketCorpus.SingleModeTurnResponseFiles.Count > 0, "无完整单人模式回合语料");
 
-            var turns = PacketCorpus.SingleModeResponseFiles.Select(Build).ToList();
+            var turns = PacketCorpus.SingleModeTurnResponseFiles.Select(Build).ToList();
 
             // 一整局应跨越多个回合，且至少出现过非零五维总和——证明 stat 字段端到端被正确解析
             Assert.True(turns.Max(t => t.Turn) > turns.Min(t => t.Turn), "应覆盖多个回合");

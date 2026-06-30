@@ -1,4 +1,5 @@
 using MessagePack;
+using UmamusumeResponseAnalyzer.Plugin;
 using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests
@@ -17,6 +18,21 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Equal(PacketCorpus.RequestFiles.Count, PacketCorpus.ResponseFiles.Count);
         }
 
+        [Fact]
+        public void PacketCorpus_ParsesCurrentDebugPacketFileName()
+        {
+            var canonicalUrl = "https://example.test/account/index?viewer_id=1#fragment";
+            var path = Path.Combine(
+                Path.GetTempPath(),
+                $"26-06-30 12-00-00-000R-{Uri.EscapeDataString(canonicalUrl)}.msgpack");
+
+            var parsed = PacketCorpus.TryGetCanonicalUrl(path, out var kind, out var url);
+
+            Assert.True(parsed);
+            Assert.Equal(AnalyzerKind.Response, kind);
+            Assert.Equal(canonicalUrl, url);
+        }
+
         [Theory]
         [MemberData(nameof(PacketCorpus.AllCases), MemberType = typeof(PacketCorpus))]
         public void EveryPacket_ConvertsToJson(string? path)
@@ -29,10 +45,9 @@ namespace UmamusumeResponseAnalyzer.Tests
 
         [Theory]
         [MemberData(nameof(PacketCorpus.ResponseCases), MemberType = typeof(PacketCorpus))]
-        public void EveryResponse_ParsesAndNormalizes(string? path)
+        public void EveryResponse_ParsesToJsonObject(string? path)
         {
             Assert.SkipWhen(path is null, "无语料");
-            // LoadJObject 内含 JObject.Parse + ResponseNormalizer.Normalize；任一步抛异常即失败
             var obj = PacketCorpus.LoadJObject(path!);
             Assert.NotNull(obj);
         }

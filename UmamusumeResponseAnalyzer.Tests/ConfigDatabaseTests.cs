@@ -33,7 +33,6 @@ namespace UmamusumeResponseAnalyzer.Tests
                 {
                     ListenAddress = "0.0.0.0",
                     ListenPort = 5000,
-                    RequestAdditionalHeader = true,
                     ShowFirstRunPrompt = false
                 },
                 Repository = new RepositoryConfig { Targets = ["a", "b", "c"] },
@@ -52,10 +51,11 @@ namespace UmamusumeResponseAnalyzer.Tests
             var yaml = Serializer.Serialize(original);
             var restored = Deserializer.Deserialize<YamlConfig>(yaml);
 
+            Assert.DoesNotContain("request-additional-header", yaml);
+
             // Core
             Assert.Equal("0.0.0.0", restored.Core.ListenAddress);
             Assert.Equal(5000, restored.Core.ListenPort);
-            Assert.True(restored.Core.RequestAdditionalHeader);
             Assert.False(restored.Core.ShowFirstRunPrompt);
             // Repository（List<string> 往返保序）
             Assert.Equal(["a", "b", "c"], restored.Repository.Targets);
@@ -71,12 +71,11 @@ namespace UmamusumeResponseAnalyzer.Tests
         [Fact]
         public void HyphenatedNamingConvention_EmitsKebabCaseKeys()
         {
-            // ListenPort / RequestAdditionalHeader 等多词属性应被序列化成 listen-port / request-additional-header
+            // ListenPort / ListenAddress 等多词属性应被序列化成 listen-port / listen-address
             var yaml = Serializer.Serialize(new YamlConfig { Core = new CoreConfig() });
 
             Assert.Contains("listen-port", yaml);
             Assert.Contains("listen-address", yaml);
-            Assert.Contains("request-additional-header", yaml);
             // 不应出现原始 PascalCase
             Assert.DoesNotContain("ListenPort", yaml);
         }
@@ -87,7 +86,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             var core = new CoreConfig();
             Assert.Equal("127.0.0.1", core.ListenAddress);
             Assert.Equal(4693, core.ListenPort);
-            Assert.False(core.RequestAdditionalHeader);
             Assert.True(core.ShowFirstRunPrompt);
         }
 

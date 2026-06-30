@@ -1,6 +1,8 @@
 ﻿using MessagePack;
-using Newtonsoft.Json;
+using Gallop.Endpoints;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using UmamusumeResponseAnalyzer.LiveDisplay;
 using UmamusumeResponseAnalyzer.Plugin;
 using WatsonWebserver.Core;
@@ -11,45 +13,24 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class Server
     {
+        internal const string CanonicalUrlHeaderName = "X-Hachimi-Game-Url";
         internal static WebserverLite Instance = new(new WebserverSettings(Config.Core.ListenAddress, Config.Core.ListenPort), (ctx) => { return ctx.Response.Send(string.Empty); });
         public static bool IsRunning => Instance.IsListening;
         internal static void Start()
         {
-            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/response", (ctx) =>
+            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/response", async (ctx) =>
             {
                 var buffer = ctx.Request.DataAsBytes;
-#if DEBUG
-                Directory.CreateDirectory("packets");
-                File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}R.json", JObject.Parse(MessagePackSerializer.ConvertToJson(buffer)).ToString());
-#endif
-                if (Config.Misc.SaveResponseForDebug)
-                {
-                    if (Directory.Exists("packets"))
-                    {
-                        foreach (var i in Directory.GetFiles("packets"))
-                        {
-                            var fileInfo = new FileInfo(i);
-                            if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
-                                fileInfo.Delete();
-                        }
-                    }
-                    else
-                    {
-                        Directory.CreateDirectory("packets");
-                    }
-                    File.WriteAllBytes($"packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}R.msgpack", buffer);
-                }
-                _ = Task.Run(() => ParseResponse(buffer));
-                return ctx.Response.Send(string.Empty);
+                var canonicalUrl = ReadCanonicalUrl(ctx);
+                DispatchResponse(canonicalUrl, buffer);
+                await ctx.Response.Send(string.Empty);
             });
-            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/request", (ctx) =>
+            Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/request", async (ctx) =>
             {
                 var buffer = ctx.Request.DataAsBytes;
-                if (Config.Core.RequestAdditionalHeader)
-                    _ = Task.Run(() => ParseRequest(buffer[170..]));
-                else
-                    _ = Task.Run(() => ParseRequest(buffer));
-                return ctx.Response.Send(string.Empty);
+                var canonicalUrl = ReadCanonicalUrl(ctx);
+                DispatchRequest(canonicalUrl, buffer);
+                await ctx.Response.Send(string.Empty);
             });
             Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
             {
@@ -61,95 +42,59 @@ namespace UmamusumeResponseAnalyzer
             Instance.Start();
         }
         internal static void Stop() => Instance.Dispose();
-        static void ParseRequest(byte[] buffer)
+        internal static string ReadCanonicalUrl(HttpContextBase ctx)
         {
-            try
-            {
-                var str = MessagePackSerializer.ConvertToJson(buffer);
-                var obj = JsonConvert.DeserializeObject<JObject>(str);
-#if DEBUG
-                Directory.CreateDirectory("packets");
-                File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
-#endif
-                if (Config.Misc.SaveResponseForDebug)
-                {
-                    if (Directory.Exists("packets"))
-                    {
-                        foreach (var i in Directory.GetFiles("packets"))
-                        {
-                            var fileInfo = new FileInfo(i);
-                            if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
-                                fileInfo.Delete();
-                        }
-                    }
-                    else
-                    {
-                        Directory.CreateDirectory("packets");
-                    }
-                    File.WriteAllBytes($"packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.msgpack", buffer);
-                }
-                if (obj == default) return;
-
-                // 持分发读锁，确保热重载（写锁）不会在分发途中拆毁插件
-                PluginManager.EnterDispatch();
-                try
-                {
-                    foreach (var (k, v) in PluginManager.RequestAnalyzerMethods)
-                    {
-                        foreach (var (self, method) in v)
-                        {
-                            try
-                            {
-                                method.Invoke(self, [obj]);
-                            }
-                            catch (Exception e)
-                            {
-                                LiveDisplayConsole.Notify("Plugin", $"请求分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
-                                LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    PluginManager.ExitDispatch();
-                }
-            }
-            catch
-            {
-                if (!Config.Core.RequestAdditionalHeader) buffer = buffer[170..];
-                Config.Core.RequestAdditionalHeader = !Config.Core.RequestAdditionalHeader;
-                Config.Save();
-            }
+            var canonicalUrl = ctx.Request.Headers[CanonicalUrlHeaderName];
+            if (string.IsNullOrWhiteSpace(canonicalUrl))
+                throw new InvalidOperationException($"缺少 canonical URL header: {CanonicalUrlHeaderName}");
+            return canonicalUrl;
         }
-        static void ParseResponse(byte[] buffer)
+
+        internal static GameEndpointDescriptor ResolveEndpoint(string canonicalUrl)
+        {
+            var path = ExtractEndpointPath(canonicalUrl);
+            if (GameEndpointCatalog.ByPath.TryGetValue(path, out var descriptor))
+                return descriptor;
+
+            throw new KeyNotFoundException($"未识别 Gallop endpoint: url={canonicalUrl}, path={path}");
+        }
+
+        static string ExtractEndpointPath(string canonicalUrl)
+        {
+            var value = canonicalUrl.Trim();
+            if (Uri.TryCreate(value, UriKind.Absolute, out var uri))
+                value = uri.AbsolutePath;
+            else
+            {
+                var queryStart = value.IndexOfAny(['?', '#']);
+                if (queryStart >= 0)
+                    value = value[..queryStart];
+            }
+
+            if (!value.StartsWith('/'))
+                throw new FormatException($"canonical URL 必须包含绝对 path: {canonicalUrl}");
+
+            return value;
+        }
+
+        internal static void DispatchRequest(string canonicalUrl, byte[] buffer)
+            => DispatchPacket(AnalyzerKind.Request, canonicalUrl, buffer);
+
+        internal static void DispatchResponse(string canonicalUrl, byte[] buffer)
+            => DispatchPacket(AnalyzerKind.Response, canonicalUrl, buffer);
+
+        static void DispatchPacket(AnalyzerKind kind, string canonicalUrl, byte[] buffer)
         {
             try
             {
-                var jsonstr = MessagePackSerializer.ConvertToJson(buffer);
-                var obj = JsonConvert.DeserializeObject<JObject>(jsonstr);
-                if (obj == default) return;
-                ResponseNormalizer.Normalize(obj);
+                SaveDebugPacket(kind, canonicalUrl, buffer);
+                var descriptor = ResolveEndpoint(canonicalUrl);
 
                 // 持分发读锁，确保热重载（写锁）不会在分发途中拆毁插件
                 PluginManager.EnterDispatch();
                 try
                 {
-                    foreach (var (k, v) in PluginManager.ResponseAnalyzerMethods)
-                    {
-                        foreach (var (self, method) in v)
-                        {
-                            try
-                            {
-                                method.Invoke(self, [obj]);
-                            }
-                            catch (Exception e)
-                            {
-                                LiveDisplayConsole.Notify("Plugin", $"响应分析插件处理失败: {e.Message}", LiveDisplaySeverity.Error);
-                                LiveDisplayConsole.Log(method.DeclaringType?.Name ?? "Plugin", e.ToString(), LiveDisplaySeverity.Error);
-                            }
-                        }
-                    }
+                    DispatchPacketLocked(kind, descriptor, buffer);
                 }
                 finally
                 {
@@ -158,86 +103,110 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception e)
             {
-                LiveDisplayConsole.Notify("Server", I18N_ResponseAnalyzeFail, LiveDisplaySeverity.Error);
-                LiveDisplayConsole.Log("Server", e.ToString(), LiveDisplaySeverity.Error);
-#if DEBUG
+                ReportDispatchError(kind, e);
                 throw;
-#endif
             }
         }
-    }
 
-    /// <summary>
-    /// 单人模式响应的就地归一化。纯函数、无状态:既供 <see cref="Server"/> 的分发管线调用,
-    /// 也便于直接用真实响应包做回归测试。
-    /// 与 Server 同处 Server.cs,但刻意保持为<b>独立顶层类</b>而非 Server 的嵌套类/成员方法——
-    /// 顶层类型有独立的静态初始化,测试访问 <see cref="Normalize"/> 不会连带触发 Server 的 Instance 字段
-    /// 初始化器(那会拉起 Config 静态初始化、甚至首启交互配置),从而保住"纯函数可独立测试"这一承重不变量。
-    /// </summary>
-    public static class ResponseNormalizer
-    {
-        /// <summary>
-        /// 就地改写并返回同一个 <paramref name="obj"/>:
-        /// ① 剥离重进游戏时多套的 single_mode_load_common 层;
-        /// ② 把 venus/cook/legend/pioneer 数据集内若干"应是对象却来成空数组"的字段置 null,避免反序列化为强类型模型时报错。
-        /// </summary>
-        public static JObject Normalize(JObject obj)
+        static void SaveDebugPacket(AnalyzerKind kind, string canonicalUrl, byte[] buffer)
         {
-            if (obj["data"] is not JObject data) return obj;
+            if (!Config.Misc.SaveResponseForDebug)
+                return;
 
-            // 如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
-            if (data["single_mode_load_common"] is JObject common)
+            if (Directory.Exists("packets"))
             {
-                var key = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set"))?.Name;
-                if (key != default)
+                foreach (var i in Directory.GetFiles("packets"))
                 {
-                    common[key] = data[key];
+                    var fileInfo = new FileInfo(i);
+                    if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
+                        fileInfo.Delete();
                 }
-                var keyLoad = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set_load"))?.Name;
-                if (keyLoad != default)
-                {
-                    common[keyLoad] = data[keyLoad];
-                }
-                obj.Remove("data");
-                obj.Add("data", common);
-                data = common; // 这一行是给下面用的，不然data还是最初的那个
             }
+            else
+            {
+                Directory.CreateDirectory("packets");
+            }
+            var suffix = kind == AnalyzerKind.Request ? "Q" : "R";
+            var fileBase = $"{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{suffix}-{Uri.EscapeDataString(canonicalUrl)}";
+            File.WriteAllBytes($"packets/{fileBase}.msgpack", buffer);
+#if DEBUG
+            var debugJson = new JObject
+            {
+                ["url"] = canonicalUrl,
+                ["payload"] = JToken.Parse(MessagePackSerializer.ConvertToJson(buffer)),
+            };
+            File.WriteAllText($"packets/{fileBase}.json", debugJson.ToString(Newtonsoft.Json.Formatting.None));
+#endif
+        }
 
-            if (data.TryGetValue("venus_data_set", out var ds))
+        static void DispatchPacketLocked(AnalyzerKind kind, GameEndpointDescriptor descriptor, byte[] buffer)
+        {
+            var registrations = RegistrationsFor(kind)
+                .SelectMany(x => x.Value)
+                .Where(x => x.EndpointType == descriptor.EndpointType)
+                .ToList();
+            if (registrations.Count == 0)
+                return;
+
+            var dto = registrations.Any(x => x.PayloadKind == AnalyzerPayloadKind.Dto)
+                ? DeserializeDto(kind, descriptor, buffer)
+                : null;
+
+            foreach (var registration in registrations)
             {
-                if (ds["race_start_info"] is JArray)
-                    ds["race_start_info"] = null;
-                if (ds["venus_race_condition"] is JArray)
-                    ds["venus_race_condition"] = null;
-                obj["data"]!["venus_data_set"] = ds;
+                var payload = registration.PayloadKind == AnalyzerPayloadKind.RawMessagePack
+                    ? buffer
+                    : dto!;
+                InvokeAnalyzer(kind, registration, payload);
             }
-            if (data.TryGetValue("cook_data_set", out ds))
+        }
+
+        static object DeserializeDto(AnalyzerKind kind, GameEndpointDescriptor descriptor, byte[] buffer)
+        {
+            var dtoType = kind == AnalyzerKind.Request ? descriptor.RequestType : descriptor.ResponseType;
+            try
             {
-                if (ds["dish_skill_info"] is JArray)
-                    ds["dish_skill_info"] = null;
-                if (ds["gain_material_info"] is JArray)
-                    ds["gain_material_info"] = null;
-                if (ds["last_command_info"] is JArray)
-                    ds["last_command_info"] = null;
-                obj["data"]!["cook_data_set"] = ds;
+                return MessagePackSerializer.Deserialize(dtoType, buffer)
+                    ?? throw new InvalidOperationException(
+                        $"Gallop DTO 反序列化返回 null: endpoint={descriptor.EndpointType.FullName}, path={descriptor.Path}");
             }
-            if (data.TryGetValue("legend_data_set", out ds))
+            catch (Exception ex)
             {
-                if (ds["cm_info"] is JObject cm_info && cm_info["race_result_info"] is JArray)
-                    cm_info["race_result_info"] = null;
-                if (ds["popularity_info"] is JArray)
-                    ds["popularity_info"] = null;
-                else if (ds["popularity_info"] is JObject popularity_info && popularity_info["poster_race_result_info"] is JArray)
-                    popularity_info["poster_race_result_info"] = null;
-                obj["data"]!["legend_data_set"] = ds;
+                throw new InvalidOperationException(
+                    $"Gallop DTO 反序列化失败: endpoint={descriptor.EndpointType.FullName}, path={descriptor.Path}, dto={dtoType.FullName}",
+                    ex);
             }
-            if (data.TryGetValue("pioneer_data_set", out ds))
+        }
+
+        static SortedDictionary<int, List<AnalyzerRegistration>> RegistrationsFor(AnalyzerKind kind)
+            => kind == AnalyzerKind.Request
+                ? PluginManager.RequestAnalyzerMethods
+                : PluginManager.ResponseAnalyzerMethods;
+
+        static void InvokeAnalyzer(AnalyzerKind kind, AnalyzerRegistration registration, object payload)
+        {
+            try
             {
-                if (ds["shima_training_info"] is JArray)
-                    ds["shima_training_info"] = null;
-                obj["data"]!["pioneer_data_set"] = ds;
+                using var callback = PluginManager.EnterPluginCallbackScope();
+                registration.Method.Invoke(registration.Plugin, [payload]);
             }
-            return obj;
+            catch (Exception e)
+            {
+                var root = e is TargetInvocationException { InnerException: { } inner } ? inner : e;
+                var label = kind == AnalyzerKind.Request ? "请求" : "响应";
+                LiveDisplayConsole.Notify("Plugin", $"{label}分析插件处理失败: {root.Message}", LiveDisplaySeverity.Error);
+                LiveDisplayConsole.Log(registration.Method.DeclaringType?.Name ?? "Plugin", root.ToString(), LiveDisplaySeverity.Error);
+                ExceptionDispatchInfo.Capture(root).Throw();
+                throw;
+            }
+        }
+
+        static void ReportDispatchError(AnalyzerKind kind, Exception ex)
+        {
+            var label = kind == AnalyzerKind.Request ? "请求分析失败" : I18N_ResponseAnalyzeFail;
+            LiveDisplayConsole.Notify("Server", $"{label}: {ex.Message}", LiveDisplaySeverity.Error);
+            LiveDisplayConsole.Log("Server", ex.ToString(), LiveDisplaySeverity.Error);
         }
     }
+
 }

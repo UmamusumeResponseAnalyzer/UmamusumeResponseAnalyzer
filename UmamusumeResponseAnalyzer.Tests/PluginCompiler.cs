@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Newtonsoft.Json.Linq;
+using Gallop.Endpoints;
 using Spectre.Console;
 using UmamusumeResponseAnalyzer.Plugin;
 
@@ -22,8 +22,8 @@ namespace UmamusumeResponseAnalyzer.Tests
             foreach (var p in tpa.Split(Path.PathSeparator))
                 if (!string.IsNullOrEmpty(p) && File.Exists(p))
                     refs[p] = MetadataReference.CreateFromFile(p);
-            // 宿主 + 插件源码会用到的 app 依赖：IPlugin/Analyzer(host)、JObject(Newtonsoft)、ProgressContext(Spectre)
-            foreach (var asm in new[] { typeof(IPlugin).Assembly, typeof(JObject).Assembly, typeof(ProgressContext).Assembly })
+            // 插件源码会用到的 ABI 依赖：IPlugin/Analyzer(Abstractions)、Gallop endpoint marker、ProgressContext(Spectre)
+            foreach (var asm in new[] { typeof(IPlugin).Assembly, typeof(IGameEndpoint).Assembly, typeof(ProgressContext).Assembly })
                 if (!string.IsNullOrEmpty(asm.Location))
                     refs[asm.Location] = MetadataReference.CreateFromFile(asm.Location);
             return [.. refs.Values];

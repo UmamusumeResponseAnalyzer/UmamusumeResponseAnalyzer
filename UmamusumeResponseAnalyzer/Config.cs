@@ -106,7 +106,6 @@ namespace UmamusumeResponseAnalyzer
     {
         public string ListenAddress { get; set; } = "127.0.0.1";
         public int ListenPort { get; set; } = 4693;
-        public bool RequestAdditionalHeader { get; set; } = false;
         public bool ShowFirstRunPrompt { get; set; } = true;
         public void Prompt()
         {
@@ -150,10 +149,6 @@ namespace UmamusumeResponseAnalyzer
                             break;
                         }
                     } while (true);
-                }
-                else if (selected == i18n.Tabs_Core_RequestAdditionalHeader)
-                {
-                    RequestAdditionalHeader = !RequestAdditionalHeader;
                 }
                 else if (selected == nameof(ShowFirstRunPrompt))
                 {
@@ -204,11 +199,36 @@ namespace UmamusumeResponseAnalyzer
             await LiveDisplayConsole.RunAsync(PromptCore);
         }
 
+        internal static SortedDictionary<string, IPlugin> BuildPluginChoices(IEnumerable<IPlugin> plugins)
+        {
+            var list = plugins.ToList();
+            var duplicateNames = list
+                .GroupBy(x => x.Name, StringComparer.Ordinal)
+                .Where(x => x.Count() > 1)
+                .Select(x => x.Key)
+                .ToHashSet(StringComparer.Ordinal);
+
+            var choices = new SortedDictionary<string, IPlugin>(StringComparer.Ordinal);
+            foreach (var plugin in list)
+            {
+                var baseLabel = duplicateNames.Contains(plugin.Name)
+                    ? $"{plugin.Name} ({plugin.Author}/{PluginManager.InternalName(plugin)})"
+                    : plugin.Name;
+
+                var label = baseLabel;
+                for (var suffix = 2; choices.ContainsKey(label); suffix++)
+                    label = $"{baseLabel} #{suffix}";
+
+                choices.Add(label, plugin);
+            }
+            return choices;
+        }
+
         async Task PromptCore()
         {
             UmamusumeResponseAnalyzer._plugin_initialize_task.Wait();
             var selected = string.Empty;
-            var plugins = PluginManager.SnapshotLoadedPlugins().ToDictionary(x => x.GetType().GetProperty("Name")?.GetCustomAttribute<PluginDescriptionAttribute>()?.Description ?? x.Name, x => x);
+            var plugins = BuildPluginChoices(PluginManager.SnapshotLoadedPlugins());
             do
             {
                 var selectionPrompt = new SelectionPrompt<string>()
@@ -221,7 +241,7 @@ namespace UmamusumeResponseAnalyzer
                 if (selected != i18n.Return)
                 {
                     var plugin = plugins[selected];
-                    await plugin.ConfigPromptAsync();
+                    await PluginConfigPrompt.RunAsync(plugin);
                 }
             } while (selected != i18n.Return);
         }

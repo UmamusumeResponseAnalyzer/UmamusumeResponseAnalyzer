@@ -99,7 +99,7 @@ namespace UmamusumeResponseAnalyzer
             var startedMessage = I18N_Start_Started.RemoveMarkup();
             LiveDisplayConsole.Log("URA", startedMessage, LiveDisplaySeverity.Success);
 
-            await UraEvents.TriggerStartedAsync();
+            await PluginManager.TriggerStartedAsync();
 
             _ = Task.Run(() => CheckPluginUpdatesAsync(uiHost));
 

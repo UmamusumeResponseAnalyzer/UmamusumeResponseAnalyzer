@@ -1,7 +1,7 @@
-﻿using Gallop;
-using Spectre.Console;
+using Gallop;
 using System.Collections.Frozen;
 using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.Game.TurnInfo;
 
 namespace UmamusumeResponseAnalyzer.Game
 {

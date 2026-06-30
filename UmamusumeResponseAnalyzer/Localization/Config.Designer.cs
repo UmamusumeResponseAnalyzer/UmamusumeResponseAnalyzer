@@ -115,15 +115,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 请求含有额外内容 的本地化字符串。
-        /// </summary>
-        internal static string Tabs_Core_RequestAdditionalHeader {
-            get {
-                return ResourceManager.GetString("Tabs_Core_RequestAdditionalHeader", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 核心 的本地化字符串。
         /// </summary>
         internal static string Tabs_Core_Title {

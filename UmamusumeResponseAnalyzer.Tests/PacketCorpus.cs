@@ -1,6 +1,9 @@
+using Gallop;
+using Gallop.Endpoints;
 using MessagePack;
 using Newtonsoft.Json.Linq;
 using UmamusumeResponseAnalyzer;
+using UmamusumeResponseAnalyzer.Plugin;
 
 namespace UmamusumeResponseAnalyzer.Tests
 {
@@ -13,6 +16,9 @@ namespace UmamusumeResponseAnalyzer.Tests
     /// </summary>
     public static class PacketCorpus
     {
+        public sealed record EndpointPacket(string Path, GameEndpointDescriptor Endpoint);
+        public sealed record UnresolvedEndpointPacket(string Path, string CanonicalUrl, Exception Error);
+
         public static string? Directory { get; } = Resolve();
         public static bool Available => Directory is not null;
 
@@ -26,31 +32,48 @@ namespace UmamusumeResponseAnalyzer.Tests
             return System.IO.Directory.Exists(def) ? def : null;
         }
 
-        static IReadOnlyList<string> Files(string suffix) =>
+        static IReadOnlyList<string> Files(AnalyzerKind kind) =>
             Available
-                ? [.. System.IO.Directory.GetFiles(Directory!, $"*{suffix}.msgpack").OrderBy(x => x, StringComparer.Ordinal)]
+                ? [.. System.IO.Directory.GetFiles(Directory!, "*.msgpack")
+                    .Where(x => TryGetPacketKind(x, out var actual) && actual == kind)
+                    .OrderBy(x => x, StringComparer.Ordinal)]
                 : [];
 
-        public static IReadOnlyList<string> ResponseFiles { get; } = Files("R");
-        public static IReadOnlyList<string> RequestFiles { get; } = Files("Q");
+        public static IReadOnlyList<string> ResponseFiles { get; } = Files(AnalyzerKind.Response);
+        public static IReadOnlyList<string> RequestFiles { get; } = Files(AnalyzerKind.Request);
         public static IReadOnlyList<string> AllFiles { get; } = [.. RequestFiles, .. ResponseFiles];
 
-        // 单人模式回合响应（含 data.chara_info）。解析一次并缓存，供 Tier 2/3 复用。
+        static readonly Lazy<IReadOnlyList<EndpointPacket>> _responseEndpointPackets = new(() =>
+            [.. ResponseFiles.Select(TryCreateResponseEndpointPacket).OfType<EndpointPacket>()]);
+        public static IReadOnlyList<EndpointPacket> ResponseEndpointPackets => _responseEndpointPackets.Value;
+
+        static readonly Lazy<IReadOnlyList<UnresolvedEndpointPacket>> _unresolvedResponseEndpointPackets = new(() =>
+            [.. ResponseFiles.Select(TryCreateUnresolvedResponseEndpointPacket).OfType<UnresolvedEndpointPacket>()]);
+        public static IReadOnlyList<UnresolvedEndpointPacket> UnresolvedResponseEndpointPackets => _unresolvedResponseEndpointPackets.Value;
+
+        // 领域层只消费 SingleModeCheckEventResponse；其它单人模式 DTO 由 catalog descriptor 测试覆盖。
         static readonly Lazy<IReadOnlyList<string>> _singleMode = new(() =>
-            [.. ResponseFiles.Where(f =>
-            {
-                try { return LoadJObject(f).HasCharaInfo(); }
-                catch { return false; }
-            })]);
+            [.. ResponseEndpointPackets
+                .Where(x => x.Endpoint.ResponseType == typeof(SingleModeCheckEventResponse))
+                .Select(x => x.Path)]);
         public static IReadOnlyList<string> SingleModeResponseFiles => _singleMode.Value;
 
-        /// <summary>读取 msgpack → JSON → JObject，并做与生产一致的归一化（<see cref="ResponseNormalizer.Normalize"/>）。</summary>
+        static readonly Lazy<IReadOnlyList<string>> _singleModeTurns = new(() =>
+            [.. SingleModeResponseFiles.Where(f =>
+            {
+                try { return HasTurnInfo(LoadJObject(f)); }
+                catch { return false; }
+            })]);
+        public static IReadOnlyList<string> SingleModeTurnResponseFiles => _singleModeTurns.Value;
+
+        /// <summary>读取原始 msgpack bytes。DTO materialization 测试必须走这条路径。</summary>
+        public static byte[] LoadBytes(string path) => File.ReadAllBytes(path);
+
+        /// <summary>读取 msgpack → JSON → JObject，仅用于语料筛选 / inspection。</summary>
         public static JObject LoadJObject(string path)
         {
-            var json = MessagePackSerializer.ConvertToJson(File.ReadAllBytes(path));
-            var obj = JObject.Parse(json);
-            ResponseNormalizer.Normalize(obj);
-            return obj;
+            var json = MessagePackSerializer.ConvertToJson(LoadBytes(path));
+            return JObject.Parse(json);
         }
 
         // ── MemberData 源：每行一个文件路径；语料缺失时回退到单个 [null] 占位行，让 Theory 走 Assert.Skip ──
@@ -58,8 +81,98 @@ namespace UmamusumeResponseAnalyzer.Tests
         public static IEnumerable<object?[]> ResponseCases() => Wrap(ResponseFiles);
         public static IEnumerable<object?[]> RequestCases() => Wrap(RequestFiles);
         public static IEnumerable<object?[]> SingleModeCases() => Wrap(SingleModeResponseFiles);
+        public static IEnumerable<object?[]> SingleModeTurnCases() => Wrap(SingleModeTurnResponseFiles);
+        public static IEnumerable<object?[]> ResponseDescriptorCases()
+            => ResponseEndpointPackets.Count == 0
+                ? [[null, null]]
+                : ResponseEndpointPackets.Select(x => new object?[] { x.Path, x.Endpoint.ResponseType });
 
         static IEnumerable<object?[]> Wrap(IReadOnlyList<string> files) =>
             files.Count == 0 ? [[null]] : files.Select(f => new object?[] { f });
+
+        static bool HasTurnInfo(JObject jo) =>
+            jo["data"] is JObject data &&
+            data.ContainsKey("chara_info") &&
+            data["home_info"] is JObject &&
+            data["unchecked_event_array"] is JArray &&
+            data["race_condition_array"] is JArray &&
+            data["race_start_info"] is JObject;
+
+        static EndpointPacket? TryCreateResponseEndpointPacket(string path)
+        {
+            if (!TryGetCanonicalUrl(path, out var kind, out var canonicalUrl) || kind != AnalyzerKind.Response)
+                return null;
+
+            try
+            {
+                return new(path, Server.ResolveEndpoint(canonicalUrl));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        static UnresolvedEndpointPacket? TryCreateUnresolvedResponseEndpointPacket(string path)
+        {
+            if (!TryGetCanonicalUrl(path, out var kind, out var canonicalUrl) || kind != AnalyzerKind.Response)
+                return null;
+
+            try
+            {
+                Server.ResolveEndpoint(canonicalUrl);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return new(path, canonicalUrl, ex);
+            }
+        }
+
+        static bool TryGetPacketKind(string path, out AnalyzerKind kind)
+        {
+            if (TryGetCanonicalUrl(path, out kind, out _))
+                return true;
+
+            var stem = Path.GetFileNameWithoutExtension(path);
+            if (stem.EndsWith("Q", StringComparison.Ordinal))
+            {
+                kind = AnalyzerKind.Request;
+                return true;
+            }
+
+            if (stem.EndsWith("R", StringComparison.Ordinal))
+            {
+                kind = AnalyzerKind.Response;
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetCanonicalUrl(string path, out AnalyzerKind kind, out string canonicalUrl)
+        {
+            var stem = Path.GetFileNameWithoutExtension(path);
+            var requestMarker = stem.IndexOf("Q-", StringComparison.Ordinal);
+            var responseMarker = stem.IndexOf("R-", StringComparison.Ordinal);
+
+            if (requestMarker >= 0 && (responseMarker < 0 || requestMarker < responseMarker))
+            {
+                kind = AnalyzerKind.Request;
+                canonicalUrl = Uri.UnescapeDataString(stem[(requestMarker + 2)..]);
+                return canonicalUrl.Length > 0;
+            }
+
+            if (responseMarker >= 0)
+            {
+                kind = AnalyzerKind.Response;
+                canonicalUrl = Uri.UnescapeDataString(stem[(responseMarker + 2)..]);
+                return canonicalUrl.Length > 0;
+            }
+
+            canonicalUrl = string.Empty;
+            kind = default;
+            return false;
+        }
     }
 }

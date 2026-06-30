@@ -40,17 +40,6 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
         }
     }
 
-    public interface ILiveDisplayOutput
-    {
-        LiveDisplayWorkspace CreateWorkspace(string id, string title);
-        void SwitchWorkspace(LiveDisplayWorkspace workspace);
-        void BindWorkspaceHotkey(LiveDisplayWorkspace workspace, ConsoleKey key, ConsoleModifiers modifiers = 0, string? description = null);
-        void SetPanel(LiveDisplayWorkspace workspace, string key, string title, IRenderable content, bool fullBleed = false);
-        void Log(LiveDisplayWorkspace workspace, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info);
-        void MarkupLog(LiveDisplayWorkspace workspace, string markup, LiveDisplaySeverity severity = LiveDisplaySeverity.Info);
-        void Notify(LiveDisplayWorkspace workspace, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info, TimeSpan? ttl = null);
-    }
-
     public sealed class PluginLiveDisplayOutput : ILiveDisplayOutput
     {
         readonly string pluginId;

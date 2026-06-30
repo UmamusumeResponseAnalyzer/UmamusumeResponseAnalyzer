@@ -1,8 +1,5 @@
-﻿using Gallop;
-using Newtonsoft.Json.Linq;
+using Gallop;
 using Spectre.Console;
-using System;
-using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace UmamusumeResponseAnalyzer
@@ -79,27 +76,6 @@ namespace UmamusumeResponseAnalyzer
             }
             return false;
         }
-        public static bool IsScenario(this SingleModeCheckEventResponse @event, ScenarioType type)
-        {
-            var data = @event.data;
-            return type switch
-            {
-                ScenarioType.Ura => data.chara_info.scenario_id == 1,
-                ScenarioType.Aoharu => data.chara_info.scenario_id == 2,
-                ScenarioType.GrandLive => data.chara_info.scenario_id == 3,
-                ScenarioType.MakeANewTrack => data.chara_info.scenario_id == 4 && data.free_data_set.pick_up_item_info_array != null,
-                ScenarioType.GrandMasters => data.chara_info.scenario_id == 5 && data.venus_data_set != null,
-                ScenarioType.LArc => data.chara_info.scenario_id == 6 && data.arc_data_set != null,
-                ScenarioType.UAF => data.chara_info.scenario_id == 7 && data.sport_data_set != null,
-                ScenarioType.Cook => data.chara_info.scenario_id == 8 && data.cook_data_set != null,
-                ScenarioType.Mecha => data.chara_info.scenario_id == 9 && data.mecha_data_set != null,
-                ScenarioType.Legend => data.chara_info.scenario_id == 10 && data.legend_data_set != null,
-                ScenarioType.Pioneer => data.chara_info.scenario_id == 11 && data.pioneer_data_set != null,
-                ScenarioType.Onsen => data.chara_info.scenario_id == 12 && data.onsen_data_set != null,
-                ScenarioType.Unknown => true,
-                _ => false
-            };
-        }
         public static string AllowMirror(this string? url)
         {
             if (url == null) return string.Empty;
@@ -125,19 +101,6 @@ namespace UmamusumeResponseAnalyzer
 
             translatedDic.TryGetValue(property.Name, out var translated);
             return $"{translated ?? property.Name}: {valueString}";
-        }
-        public static bool HasCharaInfo(this JObject? jo)
-        {
-            return jo != null && jo.ContainsKey("data") && jo["data"].ContainsKey("chara_info");
-        }
-        public static bool ContainsKey(this JToken? jt, string key)
-        {
-            return jt != null && jt is JObject jo && jo.ContainsKey(key);
-        }
-        public static int ToInt(this JToken? jt) => jt?.ToObject<int>() ?? 0;
-        public static bool IsNull(this JToken? jt)
-        {
-            return jt == null || jt.Type == JTokenType.Null;
         }
     }
     public static class TableExtension
@@ -184,19 +147,22 @@ namespace UmamusumeResponseAnalyzer
     public static class GallopExtensions
     {
         public static int GetCommandInfoStage(this SingleModeCheckEventResponse @event)
+            => @event.data.GetCommandInfoStage();
+
+        public static int GetCommandInfoStage(this SingleModeCheckEventResponse.CommonResponse data)
         {
             // unchecked_event_array 可能为 null（playing_state==1 时已知会缺），统一兜底为空数组，
             // 让所有分支都以「null 视为无事件」的一致语义处理，避免 ==5 分支裸调 .Any() 抛 NRE。
-            var events = @event.data.unchecked_event_array ?? [];
-            if (@event.data.chara_info.playing_state == 1 && events.Length == 0)
+            var events = data.unchecked_event_array ?? [];
+            if (data.chara_info.playing_state == 1 && events.Length == 0)
             {
                 return 2;
             } //常规训练
-            else if (@event.data.chara_info.playing_state == 5 && events.Any(x => x.story_id == 400010112)) //选buff
+            else if (data.chara_info.playing_state == 5 && events.Any(x => x.story_id == 400010112)) //选buff
             {
                 return 5;
             }
-            else if (@event.data.chara_info.playing_state == 5 &&
+            else if (data.chara_info.playing_state == 5 &&
                 events.Any(x => x.story_id == 830241003)) //选团卡事件
             {
                 return 3;

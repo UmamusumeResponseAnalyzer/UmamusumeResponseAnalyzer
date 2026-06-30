@@ -1,4 +1,5 @@
-﻿using UmamusumeResponseAnalyzer.Entities;
+using UmamusumeResponseAnalyzer.Entities;
+using SingleModeChara = Gallop.SingleModeChara;
 
 namespace UmamusumeResponseAnalyzer
 {
@@ -13,7 +14,7 @@ namespace UmamusumeResponseAnalyzer
         /// <param name="chara_info">@event.data.chara_info</param>
         /// <param name="level">该技能的折扣等级</param>
         /// <returns></returns>
-        private static void ApplyHint(SkillData skill, Gallop.SingleModeChara chara_info, int level)
+        private static void ApplyHint(SkillData skill, SingleModeChara chara_info, int level)
         {
             var cutted = chara_info.chara_effect_id_array.Contains(7) ? 10 : 0; //切者
             var off = level switch //打折等级
@@ -41,7 +42,7 @@ namespace UmamusumeResponseAnalyzer
         /// 根据马的属性应用相性加成，改变技能的分数
         /// </summary>
         /// <param name="chara_info">@event.data.chara_info</param>
-        internal static void ApplyProper(SkillData skill, Gallop.SingleModeChara chara_info)
+        internal static void ApplyProper(SkillData skill, SingleModeChara chara_info)
         {
             // 仅在技能有触发条件时应用，假设通用技能分数固定不变
             if (skill.Propers.Length != 0)
@@ -102,7 +103,7 @@ namespace UmamusumeResponseAnalyzer
                 };
             }
         }
-        public SkillManager Apply(Gallop.SingleModeChara chara_info)
+        public SkillManager Apply(SingleModeChara chara_info)
         {
             var tips = chara_info.skill_tips_array.SelectMany(x => Default[(x.group_id, x.rarity)])
                 .Select(x => x.Clone())
@@ -224,7 +225,7 @@ namespace UmamusumeResponseAnalyzer
         public SkillData[] GetAllByGroupId(int groupId) => [.. list.Where(x => x.GroupId == groupId)];
         public SkillData? GetSkillByName(string name) => list.FirstOrDefault(x => x.Name == name);
 
-        public void Evolve(Gallop.SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
+        public void Evolve(SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
         {
             list.ForEach(x => x.Upgrades.Clear());
             if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))
@@ -264,7 +265,7 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
         }
-        public void RemoveLearned(Gallop.SingleModeChara chara_info)
+        public void RemoveLearned(SingleModeChara chara_info)
         {
             list.RemoveAll(x => chara_info.skill_array.Any(y => y.skill_id == x.Id));
         }

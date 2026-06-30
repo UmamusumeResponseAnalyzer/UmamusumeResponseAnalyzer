@@ -31,7 +31,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         static SingleModeChara MakeChara(
             int talentLevel = 5,
             int scenarioId = 1,
-            SkillUpgradeInfo[]? upgradeInfo = null) =>
+            SingleModeSkillUpgrade[]? upgradeInfo = null) =>
             new()
             {
                 talent_level = talentLevel,
@@ -39,7 +39,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 skill_upgrade_info_array = upgradeInfo ?? [],
             };
 
-        static SkillUpgradeInfo Info(int conditionId, int current, int total) =>
+        static SingleModeSkillUpgrade Info(int conditionId, int current, int total) =>
             new() { condition_id = conditionId, current_count = current, total_count = total };
 
         // =========================================================================

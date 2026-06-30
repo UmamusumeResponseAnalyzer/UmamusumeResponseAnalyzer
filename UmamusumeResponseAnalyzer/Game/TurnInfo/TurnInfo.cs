@@ -1,4 +1,4 @@
-﻿using Gallop;
+using Gallop;
 using System.Collections.Frozen;
 using UmamusumeResponseAnalyzer.Entities;
 
@@ -43,17 +43,6 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         public bool IsFreeContinueAvailable => resp.home_info.free_continue_time < DateTimeOffset.Now.ToUnixTimeSeconds();
         public bool IsGoldenSuccession => resp.unchecked_event_array.Any(x => x.succession_event_info.effect_type == 2);
 
-        public bool IsScenario<T>(ScenarioType type, out T? turnInfo) where T : TurnInfo
-        {
-            var ret = (type == Scenario);
-            turnInfo = null;
-            if (ret)
-            {
-                turnInfo = (T)typeof(T).GetConstructor([resp.GetType()])?.Invoke([resp])!;
-            }
-            return ret;
-        }
-        public bool IsScenario(ScenarioType type) => IsScenario<TurnInfo>(type, out _);
         public SingleModeCheckEventResponse.CommonResponse GetCommonResponse() => resp;
 
         private static int ReviseOver1200(int x)

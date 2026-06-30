@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using UmamusumeResponseAnalyzer;
 using UmamusumeResponseAnalyzer.Plugin;
@@ -164,14 +163,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.DoesNotContain("internal-v1:", internalNameLog);
             Assert.Contains("internal-v2:", internalNameLog);
 
-            // 回归:插件 analyzer 在分发期间调用 SnapshotLoadedPlugins 不应因分发锁非递归而崩。
-            PluginCompiler.Compile(PluginSource("SnapshotAnalyzer", "snapshot", callSnapshot: true), "SnapshotAnalyzer", Path.Combine(pluginsDir, "SnapshotAnalyzer.dll"));
-            Assert.Empty(PluginManager.ReloadPlugins("SnapshotAnalyzer"));
-            File.Delete(_logPath);
-            var snapshotEx = Record.Exception(Dispatch);
-            Assert.Null(snapshotEx);
-            Assert.Contains("snapshot:", File.ReadAllText(_logPath));
-
             // 回归:旧共享组拆开后,被整组卸载的其它旧成员也必须按新拓扑重载回来。
             PluginCompiler.Compile(PluginSource("TopologyAnchor", "topology-anchor"), "TopologyAnchor", Path.Combine(pluginsDir, "TopologyAnchor.dll"));
             PluginCompiler.Compile(PluginSource("TopologyMember", "topology-member-v1", sharedWith: "TopologyAnchor"), "TopologyMember", Path.Combine(pluginsDir, "TopologyMember.dll"));
@@ -180,6 +171,23 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Empty(PluginManager.ReloadPlugins("TopologyMember"));
             Assert.Contains(PluginManager.LoadedPlugins, p => p.Name == "TopologyAnchor");
             Assert.Contains(PluginManager.LoadedPlugins, p => p.Name == "TopologyMember");
+
+            // 回归:共享组中一个成员被删除时,应卸掉该成员并把仍存在的成员重建回来。
+            PluginCompiler.Compile(PluginSource("DeleteAnchor", "delete-anchor"), "DeleteAnchor", Path.Combine(pluginsDir, "DeleteAnchor.dll"));
+            PluginCompiler.Compile(PluginSource("DeleteMember", "delete-member", sharedWith: "DeleteAnchor"), "DeleteMember", Path.Combine(pluginsDir, "DeleteMember.dll"));
+            Assert.Empty(PluginManager.ReloadPlugins("DeleteMember"));
+            Assert.Contains(PluginManager.LoadedPlugins, p => p.Name == "DeleteAnchor");
+            Assert.Contains(PluginManager.LoadedPlugins, p => p.Name == "DeleteMember");
+
+            File.Delete(Path.Combine(pluginsDir, "DeleteMember.dll"));
+            Assert.Empty(PluginManager.ReloadPlugins("DeleteMember"));
+            Assert.Contains(PluginManager.LoadedPlugins, p => p.Name == "DeleteAnchor");
+            Assert.DoesNotContain(PluginManager.LoadedPlugins, p => p.Name == "DeleteMember");
+            File.Delete(_logPath);
+            Dispatch();
+            var deleteMemberLog = File.ReadAllText(_logPath);
+            Assert.Contains("delete-anchor:", deleteMemberLog);
+            Assert.DoesNotContain("delete-member:", deleteMemberLog);
 
             // 回归:新版本切到 LoadInHost 时不能先卸载旧 collectible 插件,否则“需重启”期间旧功能直接掉线。
             PluginCompiler.Compile(PluginSource("HostSwitch", "host-switch-v1"), "HostSwitch", Path.Combine(pluginsDir, "HostSwitch.dll"));
@@ -248,21 +256,10 @@ namespace UmamusumeResponseAnalyzer.Tests
             return (weakStandalone, weakGroup);
         }
 
-        /// <summary>复刻 <c>Server.ParseResponse</c> 的分析器分发：构造最小响应对象 → 遍历已注册 analyzer 调用。</summary>
+        /// <summary>经真实 typed/raw analyzer 分发路径调用已注册插件。</summary>
         static void Dispatch()
         {
-            var obj = JObject.Parse("""{"data":{"chara_info":{}}}""");
-            PluginManager.EnterDispatch();
-            try
-            {
-                foreach (var (_, list) in PluginManager.ResponseAnalyzerMethods)
-                    foreach (var (self, method) in list)
-                        method.Invoke(self, [obj]);
-            }
-            finally
-            {
-                PluginManager.ExitDispatch();
-            }
+            Server.DispatchResponse("/account/index", [0xC0]);
         }
 
         /// <summary>生成一个最小 IPlugin 插件源码；analyzer 把 <paramref name="marker"/> 写进日志文件；可选 SharedContextWith。</summary>
@@ -271,8 +268,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             string marker,
             string? sharedWith = null,
             string? displayName = null,
-            bool loadInHost = false,
-            bool callSnapshot = false)
+            bool loadInHost = false)
         {
             var attributes = new List<string>();
             if (sharedWith is not null)
@@ -281,11 +277,10 @@ namespace UmamusumeResponseAnalyzer.Tests
                 attributes.Add("[assembly: LoadInHostContext]");
             var assemblyAttributes = string.Join("\n", attributes);
             var pluginDisplayName = displayName ?? pluginName;
-            var snapshotCall = callSnapshot ? "PluginManager.SnapshotLoadedPlugins();" : string.Empty;
             return $$"""
                 using System.IO;
                 using System.Threading.Tasks;
-                using Newtonsoft.Json.Linq;
+                using Gallop.Endpoints;
                 using Spectre.Console;
                 using UmamusumeResponseAnalyzer.Plugin;
 
@@ -300,13 +295,12 @@ namespace UmamusumeResponseAnalyzer.Tests
                         public Task UpdatePlugin(ProgressContext ctx) => Task.CompletedTask;
 
                         // 记录 Initialize 被调用——测 High#2 门控:Server 未启动时,重载不应触发 Initialize。
-                        public void Initialize() => File.AppendAllText(@"{{_initLog}}", "{{pluginName}}\n");
+                        public void Initialize(IPluginContext context) => File.AppendAllText(@"{{_initLog}}", "{{pluginName}}\n");
 
-                        [Analyzer(true)]
-                        public void Analyze(JObject jo)
+                        [RawResponseAnalyzer<GameApi.Account.Index>]
+                        public void Analyze(byte[] payload)
                         {
-                            {{snapshotCall}}
-                            File.AppendAllText(@"{{_logPath}}", "{{marker}}:" + (jo["data"]?["chara_info"] != null) + "\n");
+                            File.AppendAllText(@"{{_logPath}}", "{{marker}}:" + payload.Length + "\n");
                         }
                     }
                 }
