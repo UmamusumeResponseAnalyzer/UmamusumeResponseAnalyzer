@@ -27,6 +27,7 @@ namespace UmamusumeResponseAnalyzer.Entities
 
         public static implicit operator int(Motivation m) => m.motivation;
         public static implicit operator string(Motivation m) => m.enumString;
+        public override string ToString() => enumString;
         public string ToColoredString()
         {
             return motivation switch

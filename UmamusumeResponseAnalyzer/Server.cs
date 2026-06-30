@@ -71,6 +71,23 @@ namespace UmamusumeResponseAnalyzer
                 Directory.CreateDirectory("packets");
                 File.WriteAllText($@"./packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}{Random.Shared.Next(000, 999)}Q.json", obj?.ToString() ?? string.Empty);
 #endif
+                if (Config.Misc.SaveResponseForDebug)
+                {
+                    if (Directory.Exists("packets"))
+                    {
+                        foreach (var i in Directory.GetFiles("packets"))
+                        {
+                            var fileInfo = new FileInfo(i);
+                            if (fileInfo.CreationTime.AddDays(1) < DateTime.Now)
+                                fileInfo.Delete();
+                        }
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory("packets");
+                    }
+                    File.WriteAllBytes($"packets/{DateTime.Now:yy-MM-dd HH-mm-ss-fff}Q.msgpack", buffer);
+                }
                 if (obj == default) return;
 
                 // 持分发读锁，确保热重载（写锁）不会在分发途中拆毁插件
@@ -112,61 +129,7 @@ namespace UmamusumeResponseAnalyzer
                 var jsonstr = MessagePackSerializer.ConvertToJson(buffer);
                 var obj = JsonConvert.DeserializeObject<JObject>(jsonstr);
                 if (obj == default) return;
-                if (obj["data"] is JObject data)
-                {
-                    // 如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
-                    if (data["single_mode_load_common"] is JObject common)
-                    {
-                        var key = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set"))?.Name;
-                        if (key != default)
-                        {
-                            common[key] = data[key];
-                        }
-                        var keyLoad = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set_load"))?.Name;
-                        if (keyLoad != default)
-                        {
-                            common[keyLoad] = data[keyLoad];
-                        }
-                        obj.Remove("data");
-                        obj.Add("data", common);
-                        data = common; // 这一行是给下面用的，不然data还是最初的那个
-                    }
-
-                    if (data.TryGetValue("venus_data_set", out var ds))
-                    {
-                        if (ds["race_start_info"] is JArray)
-                            ds["race_start_info"] = null;
-                        if (ds["venus_race_condition"] is JArray)
-                            ds["venus_race_condition"] = null;
-                        obj["data"]!["venus_data_set"] = ds;
-                    }
-                    if (data.TryGetValue("cook_data_set", out ds))
-                    {
-                        if (ds["dish_skill_info"] is JArray)
-                            ds["dish_skill_info"] = null;
-                        if (ds["gain_material_info"] is JArray)
-                            ds["gain_material_info"] = null;
-                        if (ds["last_command_info"] is JArray)
-                            ds["last_command_info"] = null;
-                        obj["data"]!["cook_data_set"] = ds;
-                    }
-                    if (data.TryGetValue("legend_data_set", out ds))
-                    {
-                        if (ds["cm_info"] is JObject cm_info && cm_info["race_result_info"] is JArray)
-                            cm_info["race_result_info"] = null;
-                        if (ds["popularity_info"] is JArray)
-                            ds["popularity_info"] = null;
-                        else if (ds["popularity_info"] is JObject popularity_info && popularity_info["poster_race_result_info"] is JArray)
-                            popularity_info["poster_race_result_info"] = null;
-                        obj["data"]!["legend_data_set"] = ds;
-                    }
-                    if (data.TryGetValue("pioneer_data_set", out ds))
-                    {
-                        if (ds["shima_training_info"] is JArray)
-                            ds["shima_training_info"] = null;
-                        obj["data"]!["pioneer_data_set"] = ds;
-                    }
-                }
+                ResponseNormalizer.Normalize(obj);
 
                 // 持分发读锁，确保热重载（写锁）不会在分发途中拆毁插件
                 PluginManager.EnterDispatch();
@@ -201,6 +164,80 @@ namespace UmamusumeResponseAnalyzer
                 throw;
 #endif
             }
+        }
+    }
+
+    /// <summary>
+    /// 单人模式响应的就地归一化。纯函数、无状态:既供 <see cref="Server"/> 的分发管线调用,
+    /// 也便于直接用真实响应包做回归测试。
+    /// 与 Server 同处 Server.cs,但刻意保持为<b>独立顶层类</b>而非 Server 的嵌套类/成员方法——
+    /// 顶层类型有独立的静态初始化,测试访问 <see cref="Normalize"/> 不会连带触发 Server 的 Instance 字段
+    /// 初始化器(那会拉起 Config 静态初始化、甚至首启交互配置),从而保住"纯函数可独立测试"这一承重不变量。
+    /// </summary>
+    public static class ResponseNormalizer
+    {
+        /// <summary>
+        /// 就地改写并返回同一个 <paramref name="obj"/>:
+        /// ① 剥离重进游戏时多套的 single_mode_load_common 层;
+        /// ② 把 venus/cook/legend/pioneer 数据集内若干"应是对象却来成空数组"的字段置 null,避免反序列化为强类型模型时报错。
+        /// </summary>
+        public static JObject Normalize(JObject obj)
+        {
+            if (obj["data"] is not JObject data) return obj;
+
+            // 如果在选技能时退出游戏重新进入，会套一层“single_mode_load_common”，在这里去掉这层
+            if (data["single_mode_load_common"] is JObject common)
+            {
+                var key = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set"))?.Name;
+                if (key != default)
+                {
+                    common[key] = data[key];
+                }
+                var keyLoad = data.Properties().FirstOrDefault(x => x.Name.EndsWith("_data_set_load"))?.Name;
+                if (keyLoad != default)
+                {
+                    common[keyLoad] = data[keyLoad];
+                }
+                obj.Remove("data");
+                obj.Add("data", common);
+                data = common; // 这一行是给下面用的，不然data还是最初的那个
+            }
+
+            if (data.TryGetValue("venus_data_set", out var ds))
+            {
+                if (ds["race_start_info"] is JArray)
+                    ds["race_start_info"] = null;
+                if (ds["venus_race_condition"] is JArray)
+                    ds["venus_race_condition"] = null;
+                obj["data"]!["venus_data_set"] = ds;
+            }
+            if (data.TryGetValue("cook_data_set", out ds))
+            {
+                if (ds["dish_skill_info"] is JArray)
+                    ds["dish_skill_info"] = null;
+                if (ds["gain_material_info"] is JArray)
+                    ds["gain_material_info"] = null;
+                if (ds["last_command_info"] is JArray)
+                    ds["last_command_info"] = null;
+                obj["data"]!["cook_data_set"] = ds;
+            }
+            if (data.TryGetValue("legend_data_set", out ds))
+            {
+                if (ds["cm_info"] is JObject cm_info && cm_info["race_result_info"] is JArray)
+                    cm_info["race_result_info"] = null;
+                if (ds["popularity_info"] is JArray)
+                    ds["popularity_info"] = null;
+                else if (ds["popularity_info"] is JObject popularity_info && popularity_info["poster_race_result_info"] is JArray)
+                    popularity_info["poster_race_result_info"] = null;
+                obj["data"]!["legend_data_set"] = ds;
+            }
+            if (data.TryGetValue("pioneer_data_set", out ds))
+            {
+                if (ds["shima_training_info"] is JArray)
+                    ds["shima_training_info"] = null;
+                obj["data"]!["pioneer_data_set"] = ds;
+            }
+            return obj;
         }
     }
 }

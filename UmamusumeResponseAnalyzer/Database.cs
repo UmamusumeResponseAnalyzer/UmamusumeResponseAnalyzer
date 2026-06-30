@@ -36,7 +36,7 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 剧本限定进化技能&lt;(基础技能id,剧本id),升级后&gt;
         /// </summary>
-        public static FrozenDictionary<(int, int), SkillUpgradeSpeciality> SkillUpgradeSpeciality { get; private set; }
+        public static FrozenDictionary<(int, int), SkillUpgradeSpeciality> SkillUpgradeSpeciality { get; private set; } = FrozenDictionary<(int, int), SkillUpgradeSpeciality>.Empty;
         /// <summary>
         /// 育成事件
         /// </summary>
@@ -60,12 +60,12 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 
         /// </summary>
-        public static NullableIntStringDictionary FactorIds { get; set; }
+        public static NullableIntStringDictionary FactorIds { get; set; } = new();
         /// <summary>
         /// 可获得胜鞍的Id
         /// </summary>
         public static int[] SaddleIds { get; set; } = [];
-        public static SuccessionRelationTable SuccessionRelation { get; set; }
+        public static SuccessionRelationTable SuccessionRelation { get; set; } = new();
         #endregion
         public static async Task Initialize()
         {
@@ -81,17 +81,21 @@ namespace UmamusumeResponseAnalyzer
 
             await Task.WhenAll(eventsTask, namesTask, skillsTask, skillUpgradeTask, talentSkillTask, factorIdsTask, saddleIdsTask, successionTask);
 
-            Events = eventsTask.Result.ToDictionary(y => y.Id, y => y);
-            var names = namesTask.Result;
-            if (names != null) Names = new(names);
-            var skills = skillsTask.Result;
-            Skills = new();
-            SkillManagerGenerator.Default = new(skills);
-            SkillUpgradeSpeciality = skillUpgradeTask.Result.ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
-            TalentSkill = talentSkillTask.Result;
-            FactorIds = factorIdsTask.Result;
-            SaddleIds = saddleIdsTask.Result;
-            SuccessionRelation = successionTask.Result;
+            // 数据文件缺失/损坏时 DeserializeAsync 返回 null(并已打印"请更新"提示)。
+            // 逐个判空赋值:缺哪个就保留该属性的安全默认(空集合),不再对 null 调 .ToDictionary 而崩溃。
+            // 这样全新用户(还没下数据)选"启动"也能进入主菜单去"更新数据文件",而不是首启即崩。
+            if (eventsTask.Result is { } events) Events = events.ToDictionary(y => y.Id, y => y);
+            if (namesTask.Result is { } names) Names = new(names);
+            if (skillsTask.Result is { } skills)
+            {
+                Skills = new();
+                SkillManagerGenerator.Default = new(skills);
+            }
+            if (skillUpgradeTask.Result is { } skillUpgrade) SkillUpgradeSpeciality = skillUpgrade.ToDictionary(x => (x.BaseSkillId, x.ScenarioId), x => x).ToFrozenDictionary();
+            if (talentSkillTask.Result is { } talentSkill) TalentSkill = talentSkill;
+            if (factorIdsTask.Result is { } factorIds) FactorIds = factorIds;
+            if (saddleIdsTask.Result is { } saddleIds) SaddleIds = saddleIds;
+            if (successionTask.Result is { } succession) SuccessionRelation = succession;
             Initialized = true;
         }
         private static readonly JsonSerializer _serializer = new JsonSerializer();

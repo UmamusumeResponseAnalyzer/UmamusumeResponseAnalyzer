@@ -8,6 +8,8 @@
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- xUnit1051: 同步抓包回放无需 CancellationToken 传播，关掉这条 style 提示 -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -46,11 +46,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MessagePack" Version="3.1.4" />
+		<PackageReference Include="MessagePack" Version="3.1.7" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-		<PackageReference Include="Spectre.Console" Version="0.54.0" />
-		<PackageReference Include="Watson.Lite" Version="6.5.6" />
-		<PackageReference Include="YamlDotNet" Version="16.3.0" />
+		<PackageReference Include="Spectre.Console" Version="0.57.1" />
+		<PackageReference Include="Watson.Lite" Version="6.6.0" />
+		<PackageReference Include="YamlDotNet" Version="18.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>

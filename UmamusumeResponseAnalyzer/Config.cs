@@ -53,6 +53,8 @@ namespace UmamusumeResponseAnalyzer
                     Misc = new()
                 };
                 Save();
+                // 首次运行也要应用 culture,否则首启菜单会用 OS 区域(如繁中系统→无对应资源→回退英文)。
+                UmamusumeResponseAnalyzer.ApplyCultureInfo();
             }
         }
 
@@ -316,9 +318,22 @@ namespace UmamusumeResponseAnalyzer
                 Language.SimplifiedChinese => "zh-CN",
                 Language.Japanese => "ja-JP",
                 Language.English => "en-US",
-                _ => Thread.CurrentThread.CurrentCulture.Name,
+                _ => AutoDetectCulture(Thread.CurrentThread.CurrentCulture.Name),
             };
         }
+
+        // AutoDetect:把 OS 区域映射到最接近的「已提供 UI 资源」的语言。
+        // 只有 zh-CN/ja-JP/en-US(+invariant 英文)有 .resx;繁中(zh-TW)/zh-HK 等没有对应资源,
+        // 旧逻辑直接用 OS 区域名 → ResourceManager 找不到 → 回退 invariant 英文,导致繁中系统下整个 UI 变英文。
+        // 这里把所有 zh-* 归到 zh-CN(目前唯一的中文 UI 资源),其余按语言主标签归类,未知归 en-US。
+        internal static string AutoDetectCulture(string osCultureName) =>
+            osCultureName.Split('-')[0] switch
+            {
+                "zh" => "zh-CN",
+                "ja" => "ja-JP",
+                "en" => "en-US",
+                _ => "en-US",
+            };
 
         public enum Language
         {

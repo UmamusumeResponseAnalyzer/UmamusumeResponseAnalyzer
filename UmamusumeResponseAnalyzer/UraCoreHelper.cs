@@ -17,6 +17,16 @@ namespace UmamusumeResponseAnalyzer
             set => _overrideGamePaths = value;
         }
 
+        /// <summary>
+        /// 从一个可能内嵌 umamusume.exe 全路径的字符串（注册表 value name 或 MatchedExeFullPath）里提取游戏安装目录前缀；
+        /// 不含 exe 名则返回 null。纯函数，从注册表读取逻辑里抽出以便单测。
+        /// </summary>
+        public static string? ExtractGamePathPrefix(string candidate)
+        {
+            var idx = candidate.IndexOf(GameExeName, StringComparison.OrdinalIgnoreCase);
+            return idx >= 0 ? candidate[..idx] : null;
+        }
+
         private static List<string> LoadGamePaths()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -60,9 +70,8 @@ namespace UmamusumeResponseAnalyzer
 
                 foreach (var name in key.GetValueNames())
                 {
-                    var idx = name.IndexOf(GameExeName, StringComparison.OrdinalIgnoreCase);
-                    if (idx >= 0)
-                        results.Add(name[..idx]);
+                    if (ExtractGamePathPrefix(name) is { } prefix)
+                        results.Add(prefix);
                 }
             }
             catch { }
@@ -80,11 +89,10 @@ namespace UmamusumeResponseAnalyzer
                     try
                     {
                         using var child = storeKey.OpenSubKey(subkeyName);
-                        if (child?.GetValue("MatchedExeFullPath") is string path)
+                        if (child?.GetValue("MatchedExeFullPath") is string path
+                            && ExtractGamePathPrefix(path) is { } prefix)
                         {
-                            var idx = path.IndexOf(GameExeName, StringComparison.OrdinalIgnoreCase);
-                            if (idx >= 0)
-                                results.Add(path[..idx]);
+                            results.Add(prefix);
                         }
                     }
                     catch { }

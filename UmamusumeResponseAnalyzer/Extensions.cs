@@ -185,17 +185,19 @@ namespace UmamusumeResponseAnalyzer
     {
         public static int GetCommandInfoStage(this SingleModeCheckEventResponse @event)
         {
-            //if ((@event.data.unchecked_event_array != null && @event.data.unchecked_event_array.Length > 0)) return;
-            if (@event.data.chara_info.playing_state == 1 && (@event.data.unchecked_event_array == null || @event.data.unchecked_event_array.Length == 0))
+            // unchecked_event_array 可能为 null（playing_state==1 时已知会缺），统一兜底为空数组，
+            // 让所有分支都以「null 视为无事件」的一致语义处理，避免 ==5 分支裸调 .Any() 抛 NRE。
+            var events = @event.data.unchecked_event_array ?? [];
+            if (@event.data.chara_info.playing_state == 1 && events.Length == 0)
             {
                 return 2;
             } //常规训练
-            else if (@event.data.chara_info.playing_state == 5 && @event.data.unchecked_event_array.Any(x => x.story_id == 400010112)) //选buff
+            else if (@event.data.chara_info.playing_state == 5 && events.Any(x => x.story_id == 400010112)) //选buff
             {
                 return 5;
             }
             else if (@event.data.chara_info.playing_state == 5 &&
-                (@event.data.unchecked_event_array.Any(x => x.story_id == 830241003))) //选团卡事件
+                events.Any(x => x.story_id == 830241003)) //选团卡事件
             {
                 return 3;
             }

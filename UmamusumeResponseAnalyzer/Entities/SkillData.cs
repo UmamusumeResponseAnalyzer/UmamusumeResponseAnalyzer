@@ -167,7 +167,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                 // 满足的剧本特殊条件
                 var scenarioUpgradeInfo = chara_info.skill_upgrade_info_array.Where(x => currentScenarioConditions.Any(y => y.ConditionId == x.condition_id));
                 // 如果满足全部的剧本特殊条件则技能同样可进化，返回第一个进化技能ID
-                if (scenarioUpgradeInfo.All(x => x.current_count == x.total_count))
+                if (scenarioUpgradeInfo?.All(x => x.current_count == x.total_count) ?? false)
                 {
                     upgradedSkillId = UpgradeSkills.Keys.First();
                     return true;
@@ -214,7 +214,9 @@ namespace UmamusumeResponseAnalyzer.Entities
 
             public bool IsArchived(Gallop.SingleModeChara chara_info, IEnumerable<SkillData> skills)
             {
-                // 由服务器保存的条件详情
+                // 由服务器保存的条件详情。不变量:服务器对每个进化条件都会下发记录(见上方类注释
+                // "大部分条件达成情况服务器都会下发"),故 serverCondition 在此恒非空——按约定保证,下面 ?. 取值的
+                // null==null 短路不可达,不加 is not null 守卫(用约定保证不变量,不写防御代码)。
                 var serverCondition = chara_info.skill_upgrade_info_array.FirstOrDefault(x => x.condition_id == ConditionId);
                 // 由服务器确定该条件已满足
                 if (serverCondition?.current_count == serverCondition?.total_count) return true;

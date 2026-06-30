@@ -4,7 +4,9 @@ namespace UmamusumeResponseAnalyzer
 {
     public class SkillManagerGenerator()
     {
-        public static SkillManager Default;
+        // 默认空 SkillManager:数据未加载(如全新用户还没下技能数据)时,Default[...] 返回空/null 而非 NPE。
+        // 正常加载会在 Database.Initialize 用真实技能列表覆盖它。
+        public static SkillManager Default = new([]);
         /// <summary>
         /// 根据马的属性应用折扣，改变技能的价格
         /// </summary>
