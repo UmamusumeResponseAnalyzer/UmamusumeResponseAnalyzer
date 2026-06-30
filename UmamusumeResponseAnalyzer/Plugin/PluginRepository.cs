@@ -78,7 +78,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
                 else
                 {
-                    // 极少数无法热重载的情形（如 [LoadInHostContext] 插件）回退到重启，绝不比旧行为差
+                    // 无法热重载的情形（如 [LoadInHostContext] 插件）通过重启完成应用。
                     LiveDisplayConsole.MarkupLine($"[yellow]{string.Join("、", needRestart).EscapeMarkup()} 需重启才能生效，按任意键重启。[/]");
                     LiveDisplayConsole.ReadKey();
                     global::UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.Restart();
@@ -100,7 +100,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             foreach (var plugin in loaded)
             {
                 var assemblyName = PluginManager.InternalName(plugin);
-                // 同名 fork 用作者消歧：只有一个匹配时直接用（与旧行为一致、不退化）；多个 fork 时
+                // 同名 fork 用作者消歧：只有一个匹配时直接使用；多个 fork 时
                 // 按已加载插件的 Author 选对应那个，选不出就跳过（宁可不提示，也不对错误的 fork 误报更新）。
                 if (!remoteByInternalName.TryGetValue(assemblyName, out var matches)) continue;
                 var remoteInfo = matches.Count switch
@@ -230,7 +230,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     if (selectedByName.ContainsKey(dependency)) continue;
 
                     // 依赖只按 InternalName 声明（数据模型里不含作者），同名 fork 无法区分——取第一个
-                    // 提供该 InternalName 的即可，符合既有“依赖单一来源”的假设。
+                    // 依赖模型按 InternalName 识别，取第一个提供该 InternalName 的插件。
                     if (catalogByName.TryGetValue(dependency, out var dependencyPluginInfo))
                     {
                         selectedPlugins.Add(dependencyPluginInfo);

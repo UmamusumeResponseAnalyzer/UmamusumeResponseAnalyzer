@@ -14,7 +14,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         [JsonProperty("version")]
         public string RawVersion { get; set; } = "0.0.0";
 
-        // 比较/排序用的强类型版本(从 RawVersion 解析)。setter 兼容直接赋 Version 的旧用法(如测试 Info 助手)。
+        // 比较/排序用的强类型版本(从 RawVersion 解析)。setter 保留直接赋 Version 的调用路径(如测试 Info 助手)。
         [JsonIgnore]
         public Version Version
         {

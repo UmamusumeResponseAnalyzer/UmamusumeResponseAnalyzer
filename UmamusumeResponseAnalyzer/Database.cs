@@ -82,7 +82,7 @@ namespace UmamusumeResponseAnalyzer
             await Task.WhenAll(eventsTask, namesTask, skillsTask, skillUpgradeTask, talentSkillTask, factorIdsTask, saddleIdsTask, successionTask);
 
             // 数据文件缺失/损坏时 DeserializeAsync 返回 null(并已打印"请更新"提示)。
-            // 逐个判空赋值:缺哪个就保留该属性的安全默认(空集合),不再对 null 调 .ToDictionary 而崩溃。
+            // 逐个判空赋值:缺哪个就保留该属性的安全默认(空集合),避免对 null 调 .ToDictionary。
             // 这样全新用户(还没下数据)选"启动"也能进入主菜单去"更新数据文件",而不是首启即崩。
             if (eventsTask.Result is { } events) Events = events.ToDictionary(y => y.Id, y => y);
             if (namesTask.Result is { } names) Names = new(names);

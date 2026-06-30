@@ -907,7 +907,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
 
             // 已加载的上下文组 → 先按整组卸载（含约束检查，如组内有注册了不可移除资源的插件则拒绝），失败则中止。
-            // 整组成员都记入结果：组内其它插件若也在本批次，命中上面的复用短路，不再重复卸载/重载。
+            // 整组成员都记入结果：组内其它插件若也在本批次，命中上面的复用短路后跳过重复卸载/重载。
             if (group != null)
             {
                 if (Contexts.ContainsKey(GroupKey(group)) && !TryUnloadGroup(group, pendingUnloads))
