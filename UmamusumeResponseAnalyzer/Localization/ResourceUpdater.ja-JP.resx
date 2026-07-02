@@ -147,9 +147,6 @@
   <data name="I18N_DownloadSkillUpgradeSpecialityInstruction" xml:space="preserve">
     <value>GitHubから最新のskill_upgrade_speciality.brをダウンロード中</value>
   </data>
-  <data name="I18N_DownloadSuccessEventsInstruction" xml:space="preserve">
-    <value>GitHubから最新のsuccessevents.brをダウンロード中</value>
-  </data>
   <data name="I18N_UpdatedFileCorrupted" xml:space="preserve">
     <value>[red]更新ファイルが損傷しており、メインプログラムの更新に失敗しました[/]</value>
   </data>

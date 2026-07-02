@@ -50,34 +50,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.NotSame(input, result);
         }
 
-        [Fact]
-        public void Contains_NullSource_ReturnsFalse()
-        {
-            IEnumerable<int> list = null!;
-
-            Assert.False(list.Contains(_ => true));
-        }
-
-        [Fact]
-        public void Contains_EmptySource_ReturnsFalse()
-        {
-            Assert.False(Array.Empty<int>().Contains(_ => true));
-        }
-
-        [Fact]
-        public void Contains_MatchingElement_ReturnsTrue()
-        {
-            Assert.True(new[] { 1, 2, 3 }.Contains(x => x == 2));
-        }
-
-        [Fact]
-        public void Contains_SkipsDefaultElements_BeforePredicate()
-        {
-            var list = new string?[] { null, "hit" };
-
-            Assert.True(list.Contains(x => x!.Length == 3));
-        }
-
         sealed class Probe
         {
             public string Name { get; set; } = "abc";

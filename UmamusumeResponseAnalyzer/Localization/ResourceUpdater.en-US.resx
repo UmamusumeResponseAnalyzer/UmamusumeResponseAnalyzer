@@ -147,9 +147,6 @@
   <data name="I18N_DownloadSkillUpgradeSpecialityInstruction" xml:space="preserve">
     <value>Downloading the latest skill_upgrade_speciality.br from GitHub</value>
   </data>
-  <data name="I18N_DownloadSuccessEventsInstruction" xml:space="preserve">
-    <value>Downloading the latest successevents.br from GitHub</value>
-  </data>
   <data name="I18N_UpdatedFileCorrupted" xml:space="preserve">
     <value>[red]Update file corrupted, main program update failed[/]</value>
   </data>

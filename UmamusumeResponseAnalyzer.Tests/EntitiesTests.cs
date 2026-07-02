@@ -7,7 +7,7 @@ namespace UmamusumeResponseAnalyzer.Tests
 {
     /// <summary>
     /// Entities/ 里的纯逻辑：UmaName.CharaId 切片、SupportCardName.TypeName 映射、
-    /// Motivation 的隐式转换 / 着色，以及 SuccessChoiceArrayExtension 的 LINQ 过滤。
+    /// 以及 Motivation 的隐式转换 / 着色。
     /// 这些都不触碰 <see cref="Database.Names"/>，故无需 [Collection("Database")]。
     /// </summary>
     public class EntitiesTests
@@ -116,96 +116,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Equal(expected, new Motivation(value).ToColoredString());
         }
 
-        // ---------- SuccessChoiceArrayExtension ----------
-        static SuccessChoice Choice(int selectIndex, int scenario) =>
-            new() { SelectIndex = selectIndex, Scenario = scenario };
-
-        [Fact]
-        public void WithSelectIndex_FiltersBySelectIndex()
-        {
-            SuccessChoice[] arr = [Choice(1, 0), Choice(2, 0), Choice(1, 5)];
-            var result = arr.WithSelectIndex(1).ToList();
-            Assert.Equal(2, result.Count);
-            Assert.All(result, x => Assert.Equal(1, x.SelectIndex));
-        }
-
-        [Fact]
-        public void WithSelectIndex_EmptyInput_ReturnsEmpty()
-        {
-            Assert.Empty(Array.Empty<SuccessChoice>().WithSelectIndex(1));
-        }
-
-        [Fact]
-        public void WithScenarioId_ExactMatch_ReturnsMatching()
-        {
-            SuccessChoice[] arr = [Choice(1, 5), Choice(2, 5), Choice(3, 0)];
-            var result = arr.WithScenarioId(5).ToList();
-            Assert.Equal(2, result.Count);
-            Assert.All(result, x => Assert.Equal(5, x.Scenario));
-        }
-
-        [Fact]
-        public void WithScenarioId_NoExactMatch_FallsBackToScenarioZero()
-        {
-            // 无 scenario==7 的项 → 回退到 scenario==0 的通用项
-            SuccessChoice[] arr = [Choice(1, 0), Choice(2, 5), Choice(3, 0)];
-            var result = arr.WithScenarioId(7).ToList();
-            Assert.Equal(2, result.Count);
-            Assert.All(result, x => Assert.Equal(0, x.Scenario));
-        }
-
-        [Fact]
-        public void WithScenarioId_NoMatchAndNoZero_ReturnsEmpty()
-        {
-            // 既无目标场景也无通用(0) → 空
-            SuccessChoice[] arr = [Choice(1, 5), Choice(2, 6)];
-            Assert.Empty(arr.WithScenarioId(7));
-        }
-
-        [Fact]
-        public void WithScenarioId_EmptyInput_ReturnsEmpty()
-        {
-            Assert.Empty(Array.Empty<SuccessChoice>().WithScenarioId(5));
-        }
-
-        [Fact]
-        public void TryGet_SingleElement_ReturnsTrueAndOutputs()
-        {
-            var only = Choice(1, 0);
-            SuccessChoice[] arr = [only];
-            Assert.True(arr.TryGet(out var got));
-            Assert.Same(only, got);
-        }
-
-        [Fact]
-        public void TryGet_Empty_ReturnsFalse()
-        {
-            Assert.False(Array.Empty<SuccessChoice>().TryGet(out var got));
-            Assert.Null(got);
-        }
-
-        [Fact]
-        public void TryGet_MultipleElements_Throws()
-        {
-            SuccessChoice[] arr = [Choice(1, 0), Choice(2, 0)];
-            Assert.Throws<Exception>(() => arr.TryGet(out _));
-        }
-
-        // 组合链路：典型用法 WithSelectIndex(...).WithScenarioId(...).TryGet(...) 收敛到唯一项
-        [Fact]
-        public void Chained_FiltersConvergeToSingle()
-        {
-            SuccessChoice[] arr =
-            [
-                Choice(1, 5),  // 命中
-                Choice(1, 0),  // selectIndex 命中但被精确场景挤掉
-                Choice(2, 5),  // selectIndex 不符
-            ];
-            var filtered = arr.WithSelectIndex(1).WithScenarioId(5);
-            Assert.True(filtered.TryGet(out var got));
-            Assert.Equal(1, got.SelectIndex);
-            Assert.Equal(5, got.Scenario);
-        }
     }
 
     /// <summary>

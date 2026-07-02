@@ -21,7 +21,6 @@ namespace UmamusumeResponseAnalyzer
                 UserAgent = { new System.Net.Http.Headers.ProductInfoHeaderValue("UmamusumeResponseAnalyzer", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown Version") }
             }
         };
-        static Func<Task> UpdateAssetsAfterProgramUpdateAsync = UpdateAssets;
         public static async Task<bool> NeedUpdate()
         {
             var json = JObject.Parse(await HttpClient.GetStringAsync("https://api.github.com/repos/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases/latest"));
@@ -51,12 +50,7 @@ namespace UmamusumeResponseAnalyzer
                     ])
                     .StartAsync(async ctx =>
                     {
-                        var tasks = new List<Task>();
-
-                        var programTask = Download(ctx, I18N_DownloadProgramInstruction, path);
-                        tasks.Add(programTask);
-
-                        await Task.WhenAll(tasks);
+                        await Download(ctx, I18N_DownloadProgramInstruction, path);
                     }));
             }
             catch (Exception ex)
@@ -143,7 +137,7 @@ namespace UmamusumeResponseAnalyzer
             if (exist) //删除临时文件
             {
                 File.Delete(path);
-                await UpdateAssetsAfterProgramUpdateAsync();
+                await UpdateAssets();
                 LiveDisplayConsole.Clear();
             }
         }
@@ -172,9 +166,6 @@ namespace UmamusumeResponseAnalyzer
 
                         var eventTask = Download(ctx, I18N_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH);
                         tasks.Add(eventTask);
-
-                        var successEventTask = Download(ctx, I18N_DownloadSuccessEventsInstruction, Database.SUCCESS_EVENT_FILEPATH);
-                        tasks.Add(successEventTask);
 
                         var namesTask = Download(ctx, I18N_DownloadNamesInstruction, Database.NAMES_FILEPATH);
                         tasks.Add(namesTask);

@@ -1,5 +1,4 @@
 using Gallop;
-using Spectre.Console;
 using System.Reflection;
 
 namespace UmamusumeResponseAnalyzer
@@ -64,18 +63,6 @@ namespace UmamusumeResponseAnalyzer
 
             return [.. result];
         }
-        public static bool Contains<T>(this IEnumerable<T> list, Predicate<T> predicate)
-        {
-            if (list == default || !list.Any()) return false;
-            foreach (var i in list)
-            {
-                if (EqualityComparer<T>.Default.Equals(i, default))
-                    continue;
-                if (predicate(i))
-                    return true;
-            }
-            return false;
-        }
         public static string AllowMirror(this string? url)
         {
             if (url == null) return string.Empty;
@@ -101,47 +88,6 @@ namespace UmamusumeResponseAnalyzer
 
             translatedDic.TryGetValue(property.Name, out var translated);
             return $"{translated ?? property.Name}: {valueString}";
-        }
-    }
-    public static class TableExtension
-    {
-        static readonly Dictionary<Table, Dictionary<(int, int), string>> saved = [];
-        private static void Prepare(this Table table)
-        {
-            if (!saved.ContainsKey(table))
-            {
-                saved.Add(table, []);
-            }
-        }
-        public static bool Edit(this Table? table, int column, int row, string content)
-        {
-            if (table is null) return false;
-            table.Prepare();
-            if (saved[table].ContainsKey((column, row)))
-                saved[table][(column, row)] = content;
-            else
-                saved[table].Add((column, row), content);
-            return true;
-        }
-        public static bool AddToRows(this Table? table, int rowIndex, params string[] contents)
-        {
-            if (table is null) return false;
-            table.Prepare();
-            for (var index = 0; index < contents.Length; index++)
-            {
-                saved[table].Add((index, rowIndex), contents[index]);
-            }
-            return true;
-        }
-        public static bool Finish(this Table? table)
-        {
-            if (table is null) return false;
-            foreach (var i in saved[table].GroupBy(x => x.Key.Item2))
-            {
-                table.AddRow(i.Select(x => x.Value).ToArray());
-            }
-            saved.Clear();
-            return true;
         }
     }
     public static class GallopExtensions

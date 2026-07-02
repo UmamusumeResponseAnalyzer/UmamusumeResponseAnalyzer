@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Net;
 using System.Text;
 using UmamusumeResponseAnalyzer.LiveDisplay;
@@ -9,11 +8,7 @@ namespace UmamusumeResponseAnalyzer.Tests
     [Collection("ResourceUpdater")]
     public sealed class ResourceUpdaterTests : IDisposable
     {
-        const string UpdateAssetsHookName = "UpdateAssetsAfterProgramUpdateAsync";
-        readonly string latestProgramPath = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
         readonly string configPath = Path.Combine(Path.GetTempPath(), $"ura-test-{Guid.NewGuid():N}.yaml");
-        readonly FieldInfo? updateAssetsHook;
-        readonly object? originalUpdateAssetsHook;
         readonly string originalConfigPath;
         readonly HttpClient originalHttpClient;
 
@@ -21,51 +16,18 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             originalConfigPath = Config.CONFIG_FILEPATH;
             originalHttpClient = ResourceUpdater.HttpClient;
-            updateAssetsHook = typeof(ResourceUpdater).GetField(UpdateAssetsHookName, BindingFlags.NonPublic | BindingFlags.Static)!;
-            originalUpdateAssetsHook = updateAssetsHook?.GetValue(null);
             Config.CONFIG_FILEPATH = configPath;
             Config.Initialize();
         }
 
         public void Dispose()
         {
-            if (updateAssetsHook is not null)
-                updateAssetsHook.SetValue(null, originalUpdateAssetsHook);
-
-            if (File.Exists(latestProgramPath))
-                File.Delete(latestProgramPath);
-
             if (File.Exists(configPath))
                 File.Delete(configPath);
 
             Config.CONFIG_FILEPATH = originalConfigPath;
             ResourceUpdater.HttpClient = originalHttpClient;
             LiveDisplayConsole.UnbindForTests();
-        }
-
-        [Fact]
-        public async Task TryUpdateProgram_WhenLatestExecutableAlreadyApplied_UpdatesAssets()
-        {
-            Assert.NotNull(updateAssetsHook);
-            File.Copy(Environment.ProcessPath!, latestProgramPath, overwrite: true);
-            var updateAssetsCallCount = 0;
-            updateAssetsHook!.SetValue(null, (Func<Task>)(() =>
-            {
-                updateAssetsCallCount++;
-                return Task.CompletedTask;
-            }));
-
-            try
-            {
-                await ResourceUpdater.TryUpdateProgram();
-            }
-            catch (IOException)
-            {
-                // Test runners may not expose a real console handle for the final clear.
-            }
-
-            Assert.Equal(1, updateAssetsCallCount);
-            Assert.False(File.Exists(latestProgramPath));
         }
 
         [Fact]

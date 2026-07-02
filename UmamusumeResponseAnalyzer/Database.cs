@@ -14,7 +14,6 @@ namespace UmamusumeResponseAnalyzer
         public static bool Initialized { get; private set; } = false;
         #region Paths
         internal static string EVENT_NAME_FILEPATH = $"events_{(Config.Updater.TrainerIsMale ? "male" : "female")}.br";
-        internal static string SUCCESS_EVENT_FILEPATH = "success_events.br";
         internal static string NAMES_FILEPATH = "names.br";
         internal static string SKILLS_FILEPATH = "skill_data.br";
         internal static string TALENT_SKILLS_FILEPATH = "talent_skill_sets.br";
@@ -41,10 +40,6 @@ namespace UmamusumeResponseAnalyzer
         /// 育成事件
         /// </summary>
         public static Dictionary<int, Story> Events { get; set; } = [];
-        /// <summary>
-        /// 需要手动记录的成功育成事件
-        /// </summary>
-        //public static Dictionary<int, SuccessStory> SuccessEvent { get; set; } = [];
         /// <summary>
         /// 马娘ID到马娘全名（包括前缀）的Dictionary
         /// </summary>
@@ -120,21 +115,21 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else
                     {
-                        LiveDisplayConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
+                        LiveDisplayConsole.MarkupLog("Database", I18N_LoadFail, LiveDisplaySeverity.Warning, Path.GetFileName(filepath).EscapeMarkup());
                     }
                 }
                 catch (InvalidDataException)
                 {
-                    LiveDisplayConsole.MarkupLine(I18N_DecompressError, Path.GetFileName(filepath).EscapeMarkup());
+                    LiveDisplayConsole.MarkupLog("Database", I18N_DecompressError, LiveDisplaySeverity.Warning, Path.GetFileName(filepath).EscapeMarkup());
                 }
                 catch (Exception)
                 {
-                    LiveDisplayConsole.MarkupLine(I18N_LoadFail, Path.GetFileName(filepath).EscapeMarkup());
+                    LiveDisplayConsole.MarkupLog("Database", I18N_LoadFail, LiveDisplaySeverity.Warning, Path.GetFileName(filepath).EscapeMarkup());
                 }
             }
             else
             {
-                LiveDisplayConsole.MarkupLine(I18N_NotExist, Path.GetFileName(filepath).EscapeMarkup());
+                LiveDisplayConsole.MarkupLog("Database", I18N_NotExist, LiveDisplaySeverity.Warning, Path.GetFileName(filepath).EscapeMarkup());
             }
             return default!;
         }

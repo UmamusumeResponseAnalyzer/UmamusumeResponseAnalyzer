@@ -187,15 +187,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Downloading the latest successevents.br from GitHub 的本地化字符串。
-        /// </summary>
-        internal static string I18N_DownloadSuccessEventsInstruction {
-            get {
-                return ResourceManager.GetString("I18N_DownloadSuccessEventsInstruction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Downloading the latest talentskillsets.br from GitHub 的本地化字符串。
         /// </summary>
         internal static string I18N_DownloadTalentSkillInstruction {
