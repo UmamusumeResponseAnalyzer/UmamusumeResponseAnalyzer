@@ -16,14 +16,14 @@ UmamusumeResponseAnalyzer 是本地运行的 TUI 宿主。它接收游戏请求/
 * 首次运行按向导选择运行设备、服务器目标(日服 Cygames / 繁中服 Komoe)、事件数据语言和训练员性别。
 * 返回主菜单后先选择 `更新数据文件`。数据文件用于事件、技能、名称等本地解析；缺失或损坏时程序会保留空集合并提示更新。
 * 进入 `插件仓库`，安装需要的功能插件。没有插件时宿主仍会启动，但只提供日志、通知和基础分发能力。
-* 选择 `启动！` 后程序会启动内置 HTTP server，并进入 LiveDisplay 界面。
+* 选择 `启动！` 后程序会启动内置 HTTP server，并进入 LiveDisplay 界面；启动 workspace 显示配置摘要、数据加载、插件扫描/初始化和监听状态。
 
 # 运行与文件位置
 
 * 默认工作目录为 `%LocalAppData%\UmamusumeResponseAnalyzer`。启动时如果当前目录存在 `.portable` 文件夹，工作目录会改为 `./.portable`。
 * `config.yaml`、数据文件、`Plugins/` 和 debug `packets/` 都写在工作目录下。
 * 默认监听 `http://127.0.0.1:4693`。`/notify/ping` 返回 `pong`，可作为 smoke test。
-* 启动后按 `P` 查看已加载插件列表，按 `Ctrl+C` 退出程序。
+* 启动后按 `/` 或 `Enter` 打开命令输入栏，按 `Ctrl+B` 查看启动信息，按 `P` 查看已加载插件列表，按 `Ctrl+C` 退出程序。
 * 程序启动后会检查已加载插件是否有新版本；发现更新时只通知，不自动安装。更新插件需要进入 `插件仓库` 手动选择。
 * 更新数据文件时会先写入临时文件，下载成功后替换目标文件；失败时清理临时文件并保留已有文件。
 * 开启 debug packet 保存后，请求写为 `Q`、响应写为 `R` 的 `.msgpack` 文件，文件名包含 canonical URL；`DEBUG` 构建额外写 `.json`。`packets/` 中超过一天的旧文件会在下次保存时清理。
@@ -43,14 +43,15 @@ UmamusumeResponseAnalyzer 是本地运行的 TUI 宿主。它接收游戏请求/
 # 插件开发 Plugin Development
 
 * 插件直接引用宿主程序集。宿主公开 `IPlugin`、`AnalyzerAttribute`、LiveDisplay contract 和 Gallop DTO/endpoint catalog；插件源码使用 `UmamusumeResponseAnalyzer.Plugin`、`UmamusumeResponseAnalyzer.LiveDisplay`、`Gallop`、`Gallop.Endpoints` 命名空间。
-* 插件可以放在 `Plugins/` 下：DLL 会递归扫描，ZIP 只扫描 `Plugins/` 顶层。ZIP 主插件 DLL 放在压缩包根目录；卫星资源 DLL 可放在对应 culture 子目录。
+* 插件可以放在 `Plugins/` 下：DLL 会递归扫描，ZIP 只扫描 `Plugins/` 顶层。ZIP 主插件 DLL 放在压缩包根目录，程序集名等于 ZIP 文件名；同级其它 DLL 作为依赖加载；卫星资源 DLL 可放在对应 culture 子目录。
 * 宿主加载插件时按程序集名作为 internal name。插件 `Targets` 为空、命中配置的 repository targets，或配置未设置 targets 时，才会注册 analyzer 和路由。
 * 宿主提供基础 `TurnInfo` / `CommandInfo` 领域视图。UAF、L'Arc、Cook、Mecha、Legend、Pioneer、Onsen、Breeders 等场景专用聚合模型由场景插件基于 Gallop DTO 派生。
-* 请求/响应 analyzer 使用 typed endpoint attribute，例如 `[ResponseAnalyzer<GameApi.Account.Index>] void Analyze(DataLinkIndexResponse response)`；raw analyzer 使用 `[RawResponseAnalyzer<GameApi.Account.Index>] void Analyze(byte[] payload)`。同一个方法可以挂多个 analyzer attribute，但这些 attribute 必须要求同一个 payload 参数类型。
-* analyzer 方法必须只有一个参数、返回 `void`，且不能是 async 方法。typed 参数类型来自 Gallop descriptor；raw 参数类型为 `byte[]`。
+* 请求/响应 analyzer 使用 endpoint attribute，例如 `[ResponseAnalyzer<GameApi.Account.Index>] ValueTask Analyze(DataLinkIndexResponse response)`；唯一参数为 `byte[]` 时收到原始 MessagePack payload，其他参数类型必须精确匹配 Gallop descriptor 的 request/response DTO。同一个方法可以挂多个 analyzer attribute，但这些 attribute 必须要求同一个 payload 参数类型。
+* 插件也可以在 `Initialize(IPluginContext context)` 中通过 `context.Analyzers.RegisterRequest(...)` / `context.Analyzers.RegisterResponse(...)` 程序化注册 analyzer；raw handler 使用单泛型 overload，DTO handler 使用双泛型 overload。
+* analyzer handler 返回 `ValueTask`。动态注册返回的 `IDisposable` 可注销对应 analyzer；注销只影响后续分发。
 * 宿主按 `X-Hachimi-Game-Url` header 中的 canonical game URL 解析 path，并要求 path 精确命中 `GameEndpointCatalog.ByPath`。raw analyzer 收到的是原始 MessagePack payload bytes。
-* 同一 endpoint/kind 存在 typed analyzer 时，宿主会先按 Gallop descriptor 反序列化一次 DTO；失败会 fast-fail，不会 fallback 到 raw analyzer。成功后 raw analyzer 和 typed analyzer 都按 priority 顺序执行。
+* 分发以 raw payload 为基础；DTO analyzer 在执行点按 Gallop descriptor 反序列化，同一分发中的 DTO analyzer 共享反序列化结果。raw analyzer 和 DTO analyzer 都按 priority 顺序执行。
 * 插件 HTTP route 使用 `[Route]` attribute。方法签名必须是 `Task Handler(HttpContextBase ctx)`，最终路径为 `/<PluginName>/<RoutePath>`。
-* 插件必须实现 `Initialize(IPluginContext context)`。`context.LiveDisplay` 提供 LiveDisplay 输出，`context.Events.OnStarted(...)` 用于订阅宿主启动事件；宿主按当前 ABI 调用初始化入口，热重载或卸载插件时会清理 analyzer、route、事件订阅和快捷键归属。
+* 插件必须实现 `Initialize(IPluginContext context)`。`context.LiveDisplay` 提供 LiveDisplay 输出，`context.Events.OnStarted(...)` 用于订阅宿主启动事件；宿主按当前 ABI 调用初始化入口。`Initialize` 抛异常时，宿主记录插件失败并清理该插件的 analyzer、route、事件订阅和快捷键归属；热重载或卸载插件时也会做同样清理。
 * 热重载按 internal name 应用；共享上下文插件会按上下文组一起重载。进入宿主上下文的插件不能卸载，只能通过重启应用新版本。
-* 插件配置由插件自行维护。宿主不扫描 `[PluginSetting]`，不预创建 `PluginData/<PluginName>`，不自动读写 `settings.yaml`，也不提供通用属性编辑器；菜单入口只调用插件自己的 `ConfigPromptAsync()`。插件需要配置或数据目录时，应在插件代码中创建目录、读取/校验/迁移自己的文件，错误直接抛出明确异常。
+* 插件配置由插件自行维护。宿主不预创建插件数据目录，不自动读写配置文件，也不提供通用属性编辑器；菜单入口只调用插件自己的 `ConfigPromptAsync()`。插件需要配置或数据目录时，应在插件代码中创建目录、读取/校验/迁移自己的文件，错误直接抛出明确异常。

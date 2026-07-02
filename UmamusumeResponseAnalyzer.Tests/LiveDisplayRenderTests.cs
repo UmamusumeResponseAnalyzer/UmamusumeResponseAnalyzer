@@ -303,6 +303,190 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
+        public void LiveDisplayConsole_LogException_RendersMessagesWithoutStackTrace()
+        {
+            var uiHost = new UiHost();
+            LiveDisplayConsole.Bind(uiHost);
+            try
+            {
+                LiveDisplayConsole.LogException("Plugin", BuildNestedLogException());
+
+                var output = Render(uiHost, width: 120, height: 35);
+
+                Assert.Contains("outer failure", output);
+                Assert.Contains("phase=初始化", output);
+                Assert.Contains("inner failure", output);
+                Assert.DoesNotContain("path=", output);
+                Assert.DoesNotContain(@"C:\secret", output);
+                Assert.DoesNotContain("One or more errors occurred", output);
+                Assert.DoesNotContain("System.InvalidOperationException", output);
+                Assert.DoesNotContain(nameof(ThrowLogExceptionInner), output);
+                Assert.DoesNotContain("   at ", output);
+            }
+            finally
+            {
+                LiveDisplayConsole.Unbind(uiHost);
+            }
+        }
+
+        [Fact]
+        public void LiveDisplayConsole_LogException_SimplifiesPluginInitializationFailure()
+        {
+            var uiHost = new UiHost();
+            LiveDisplayConsole.Bind(uiHost);
+            try
+            {
+                var exception = BuildPluginInitializationException();
+                var message = LiveDisplayConsole.FormatExceptionLogMessage(exception);
+                Assert.Equal(
+                    "WinSaddleAnalyzer初始化失败：SkillEffectPlugin 尚未配置 Race/RunningStyle，无法为 WinSaddleAnalyzer 计算技能期望收益。",
+                    message);
+
+                LiveDisplayConsole.LogException("Plugin", exception);
+                var output = Render(uiHost, width: 120, height: 35);
+
+                Assert.Contains("WinSaddleAnalyzer初始化失败：SkillEffectPlugin 尚未配置", output);
+                Assert.Contains("Race/RunningStyle", output);
+                Assert.Contains("无法为", output);
+                Assert.Contains("计算", output);
+                Assert.Contains("收益", output);
+                Assert.DoesNotContain("插件初始化失败:", output);
+                Assert.DoesNotContain("plugin=", output);
+                Assert.DoesNotContain("配置文件", output);
+                Assert.DoesNotContain("settings.json", output);
+            }
+            finally
+            {
+                LiveDisplayConsole.Unbind(uiHost);
+            }
+        }
+
+        [Fact]
+        public void RenderSnapshot_LogRowsOmitTimestamp()
+        {
+            var uiHost = new UiHost();
+            var workspace = Workspace();
+            uiHost.SetPanel(new LiveDisplayPanel(
+                workspace,
+                "ScenarioAnalyzer",
+                "workspace",
+                "整页布局",
+                new Panel("WorkspaceBody").Expand(),
+                new DateTimeOffset(2026, 7, 2, 20, 9, 22, TimeSpan.Zero),
+                FullBleed: false));
+            uiHost.Log(new LiveDisplayLogLine(
+                workspace,
+                "Plugin",
+                "FixedLog",
+                LiveDisplaySeverity.Warning,
+                IsMarkup: false,
+                new DateTimeOffset(2026, 7, 2, 20, 9, 22, TimeSpan.Zero)));
+
+            var output = Render(uiHost, width: 120, height: 35);
+
+            Assert.Contains("WARN [Plugin] FixedLog", output);
+            Assert.DoesNotContain("20:09:22", output);
+        }
+
+        [Fact]
+        public void RenderSnapshot_LogRowsKeepPrefixWithMessageStartOnSameLine()
+        {
+            var uiHost = new UiHost();
+            var workspace = Workspace();
+            uiHost.SetPanel(new LiveDisplayPanel(
+                workspace,
+                "ScenarioAnalyzer",
+                "workspace",
+                "整页布局",
+                new Panel("WorkspaceBody").Expand(),
+                DateTimeOffset.Now,
+                FullBleed: false));
+            uiHost.Log(new LiveDisplayLogLine(
+                workspace,
+                "Plugin",
+                "WinSaddleAnalyzer初始化失败：SkillEffectPlugin 尚未配置 Race/RunningStyle，无法为 WinSaddleAnalyzer 计算技能期望收益。",
+                LiveDisplaySeverity.Error,
+                IsMarkup: false,
+                DateTimeOffset.Now));
+
+            var output = Render(uiHost, width: 120, height: 35);
+            var normalizedOutput = output.Replace('\u00A0', ' ');
+            var lines = normalizedOutput.Split(["\r\n", "\n"], StringSplitOptions.None)
+                .Select(StripAnsi)
+                .ToArray();
+
+            Assert.Contains("ERR [Plugin] WinSaddleAnalyzer初始化失败", normalizedOutput);
+            Assert.DoesNotContain(lines, x => Regex.IsMatch(x, @"ERR \[Plugin\]\s*│"));
+            Assert.DoesNotContain(lines, x => Regex.IsMatch(x, @"\s{10,}illEffectPlugin"));
+        }
+
+        [Fact]
+        public void BootstrapWorkspace_RendersSettingsPhasesAndDiagnostics()
+        {
+            var uiHost = new UiHost();
+            var bootstrap = new BootstrapWorkspace(uiHost);
+            LiveDisplayConsole.Bind(uiHost);
+            LiveDisplayConsole.DefaultLogWorkspace = bootstrap.Workspace;
+            try
+            {
+                bootstrap.SetSettings(
+                [
+                    ("工作目录", @"K:\ura"),
+                    ("监听", "http://127.0.0.1:4693"),
+                    ("服务器目标", "Cygames")
+                ]);
+                bootstrap.SetPhase("config", "配置", LiveDisplaySeverity.Success, "已读取 config.yaml");
+                LiveDisplayConsole.MarkupLog("Database", "[yellow]names.br 不存在，请更新数据文件。[/]", LiveDisplaySeverity.Warning);
+
+                var output = Render(uiHost, width: 120, height: 35);
+
+                Assert.Contains("启动状态", output);
+                Assert.Contains("工作目录", output);
+                Assert.Contains(@"K:\ura", output);
+                Assert.Contains("配置", output);
+                Assert.Contains("已读取 config.yaml", output);
+                Assert.Contains("names.br", output);
+            }
+            finally
+            {
+                LiveDisplayConsole.DefaultLogWorkspace = null;
+                LiveDisplayConsole.Unbind(uiHost);
+            }
+        }
+
+        [Fact]
+        public async Task LiveDisplayConsole_RunAsync_BeforeUiHostRuns_KeepsConsoleInteractionOutput()
+        {
+            var uiHost = new UiHost();
+            var bootstrap = new BootstrapWorkspace(uiHost);
+            var recording = new StringWriter();
+            var originalConsole = AnsiConsole.Console;
+            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Out = new FixedSizeConsoleOutput(recording, 120, 35) });
+            LiveDisplayConsole.Bind(uiHost);
+            LiveDisplayConsole.DefaultLogWorkspace = bootstrap.Workspace;
+            try
+            {
+                await LiveDisplayConsole.RunAsync(() =>
+                {
+                    LiveDisplayConsole.MarkupLog("Plugin", "[yellow]MENU_DIRECT[/]", LiveDisplaySeverity.Warning);
+                    return Task.CompletedTask;
+                });
+
+                var consoleOutput = recording.ToString();
+                var liveOutput = Render(uiHost, width: 120, height: 35);
+
+                Assert.Contains("MENU_DIRECT", consoleOutput);
+                Assert.DoesNotContain("MENU_DIRECT", liveOutput);
+            }
+            finally
+            {
+                AnsiConsole.Console = originalConsole;
+                LiveDisplayConsole.DefaultLogWorkspace = null;
+                LiveDisplayConsole.Unbind(uiHost);
+            }
+        }
+
+        [Fact]
         public void LiveDisplayNotification_DefaultTtl_KeepsErrorsVisibleLonger()
         {
             Assert.Equal(TimeSpan.FromSeconds(5), LiveDisplayNotification.DefaultTtl(LiveDisplaySeverity.Info));
@@ -457,6 +641,27 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
+        public void UiHost_RendersKeyboardCommandInput()
+        {
+            var uiHost = new UiHost();
+            uiHost.SetPanel(new LiveDisplayPanel(
+                Workspace(),
+                "ScenarioAnalyzer",
+                "workspace",
+                "整页布局",
+                new Panel("CommandInputBody").Expand(),
+                DateTimeOffset.Now,
+                FullBleed: true));
+            ((IKeyboardOverlaySink)uiHost).ShowCommandInput(new KeyboardCommandInput("/status"));
+
+            var output = Render(uiHost, width: 80, height: 16);
+
+            Assert.Contains("CommandInputBody", output);
+            Assert.Contains("> /status", output);
+            Assert.Contains("ESC 取消", output);
+        }
+
+        [Fact]
         public async Task LiveDisplayConsole_RunAsync_ExecutesThroughRunningUiHost()
         {
             var uiHost = new UiHost();
@@ -592,6 +797,34 @@ namespace UmamusumeResponseAnalyzer.Tests
             });
             console.Write(renderable);
             return recording.ToString();
+        }
+
+        static Exception BuildNestedLogException()
+        {
+            try
+            {
+                ThrowLogExceptionInner();
+                throw new InvalidOperationException("unreachable");
+            }
+            catch (Exception ex)
+            {
+                return new InvalidOperationException(
+                    @"outer failure, path=C:\secret\Broken.zip|Broken.dll, phase=初始化",
+                    new AggregateException(ex));
+            }
+        }
+
+        static Exception BuildPluginInitializationException()
+        {
+            return new InvalidOperationException(
+                "插件初始化失败: plugin=WinSaddleAnalyzer (WinSaddleAnalyzer)",
+                new AggregateException(new InvalidOperationException(
+                    "SkillEffectPlugin 尚未配置 Race/RunningStyle，无法为 WinSaddleAnalyzer 计算技能期望收益。配置文件: PluginData\\SkillEffectPlugin\\settings.json")));
+        }
+
+        static void ThrowLogExceptionInner()
+        {
+            throw new InvalidOperationException("inner failure");
         }
 
         static IReadOnlyList<Segment> RenderSegments(IRenderable renderable, int width, int height)

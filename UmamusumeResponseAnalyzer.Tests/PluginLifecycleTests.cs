@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Reflection;
 using Gallop;
 using Gallop.Endpoints;
@@ -17,6 +18,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             SeedConfig();
             ResetPluginState();
+            PluginManager.BindLiveDisplay(_ => new FakeLiveDisplayOutput());
         }
 
         public void Dispose()
@@ -61,35 +63,38 @@ namespace UmamusumeResponseAnalyzer.Tests
         public void InitializePlugin_CallsContextInitializeEntrypoint()
         {
             var context = new ContextInitializePlugin();
-            PluginManager.BindLiveDisplay(_ => NullLiveDisplayOutput.Instance);
+            var liveDisplay = new FakeLiveDisplayOutput();
+            PluginManager.BindLiveDisplay(_ => liveDisplay);
 
             PluginManager.InitializePlugin(context);
 
             Assert.True(context.Initialized);
             Assert.NotNull(context.Context);
-            Assert.Same(NullLiveDisplayOutput.Instance, context.Context.LiveDisplay);
+            Assert.Same(liveDisplay, context.Context.LiveDisplay);
         }
 
         [Fact]
-        public void InitializePlugin_RequiresContextInitializeEntrypoint()
+        public async Task InitializeLoadedPlugins_QuarantinesFailingPluginAndContinues()
         {
-            var plugin = new LegacyInitializePlugin();
+            var failing = new FailingInitializePlugin();
+            var healthy = new ContextInitializePlugin();
+            PluginManager.RegisterMethods(failing);
+            PluginManager.LoadedPlugins.Add(failing);
+            PluginManager.LoadedPlugins.Add(healthy);
 
-            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(plugin));
+            PluginManager.InitializeLoadedPlugins();
 
-            Assert.Contains("Initialize(IPluginContext context)", ex.Message, StringComparison.Ordinal);
-            Assert.False(plugin.LegacyInitialized);
-        }
+            Assert.DoesNotContain(PluginManager.LoadedPlugins, x => ReferenceEquals(x, failing));
+            Assert.Contains(PluginManager.LoadedPlugins, x => ReferenceEquals(x, healthy));
+            Assert.True(healthy.Initialized);
+            Assert.Contains(failing.Name, PluginManager.FailedPlugins);
+            Assert.False(RouteExists(failing, "boom"));
+            Assert.DoesNotContain(
+                PluginManager.ResponseAnalyzerMethods.Values.SelectMany(x => x),
+                x => ReferenceEquals(x.Plugin, failing));
 
-        [Fact]
-        public void InitializePlugin_DoesNotCallLegacyLiveDisplayInitializeEntrypoint()
-        {
-            var plugin = new LegacyLiveDisplayInitializePlugin();
-
-            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(plugin));
-
-            Assert.Contains("Initialize(IPluginContext context)", ex.Message, StringComparison.Ordinal);
-            Assert.False(plugin.LegacyInitialized);
+            await PluginManager.TriggerStartedForPluginsAsync([failing]);
+            Assert.Equal(0, failing.StartedCalls);
         }
 
         [Fact]
@@ -116,19 +121,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             await PluginManager.TriggerStartedForPluginsAsync([plugin]);
 
             Assert.Equal(0, plugin.StartedCalls);
-        }
-
-        [Fact]
-        public void DisposeHostEventSubscriptions_PreventsResubscribeFromCapturedContext()
-        {
-            var plugin = new StartedResubscribePlugin();
-            PluginManager.InitializePlugin(plugin);
-
-            PluginManager.DisposeHostEventSubscriptions(plugin);
-
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-                plugin.Events!.OnStarted(_ => ValueTask.CompletedTask));
-            Assert.Contains("事件订阅已关闭", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -245,6 +237,67 @@ namespace UmamusumeResponseAnalyzer.Tests
             ctx.Unload();
         }
 
+        [Fact]
+        public void LoadMetadatas_ZipPackage_RegistersOnlyPackageNamedRootDllAsPlugin()
+        {
+            var originalCwd = Directory.GetCurrentDirectory();
+            var tempDir = Path.Combine(Path.GetTempPath(), "ura-plugin-zip-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var pluginsDir = Path.Combine(tempDir, "Plugins");
+                Directory.CreateDirectory(pluginsDir);
+
+                var pluginDll = Path.Combine(tempDir, "Notifications.dll");
+                var dependencyDll = Path.Combine(tempDir, "Newtonsoft.Json.dll");
+                PluginCompiler.Compile(
+                    """
+                    using System.Threading.Tasks;
+                    using Spectre.Console;
+                    using UmamusumeResponseAnalyzer.Plugin;
+
+                    public sealed class NotificationsPlugin : IPlugin
+                    {
+                        public string Name => "Notifications";
+                        public string Author => "Test";
+                        public string[] Targets => System.Array.Empty<string>();
+
+                        public void Initialize(IPluginContext context) { }
+                        public Task UpdatePlugin(ProgressContext ctx) => Task.CompletedTask;
+                    }
+                    """,
+                    "Notifications",
+                    pluginDll);
+                PluginCompiler.Compile(
+                    "public sealed class DependencyType { }",
+                    "Newtonsoft.Json",
+                    dependencyDll);
+
+                using (var zip = ZipFile.Open(Path.Combine(pluginsDir, "Notifications.zip"), ZipArchiveMode.Create))
+                {
+                    zip.CreateEntryFromFile(pluginDll, "Notifications.dll");
+                    zip.CreateEntryFromFile(dependencyDll, "Newtonsoft.Json.dll");
+                }
+
+                Directory.SetCurrentDirectory(tempDir);
+
+                PluginManager.LoadMetadatas();
+                PluginManager.BuildGroups();
+                PluginManager.LoadPlugins();
+
+                Assert.True(PluginManager.Metadatas.ContainsKey("Notifications"));
+                Assert.False(PluginManager.Metadatas.ContainsKey("Newtonsoft.Json"));
+                Assert.True(PluginManager.AssemblyMetadatas.ContainsKey("Newtonsoft.Json"));
+                Assert.DoesNotContain(PluginManager.FailedPlugins, x => x.Contains("Newtonsoft.Json", StringComparison.Ordinal));
+                Assert.Contains(PluginManager.LoadedPlugins, x => x.Name == "Notifications");
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCwd);
+                try { Directory.Delete(tempDir, recursive: true); } catch { }
+                ResetPluginState();
+            }
+        }
+
         static bool RouteExists(IPlugin plugin, string route)
             => Server.Instance.Routes.PreAuthentication.Static.Exists(WatsonHttpMethod.GET, $"/{plugin.Name}/{route}");
 
@@ -254,8 +307,11 @@ namespace UmamusumeResponseAnalyzer.Tests
             PluginManager.ResponseAnalyzerMethods.Clear();
             PluginManager.ClearHostEventSubscriptions();
             PluginManager.Metadatas.Clear();
+            PluginManager.AssemblyMetadatas.Clear();
             PluginManager.FailedPlugins.Clear();
             PluginManager.ContextGroups.Clear();
+            foreach (var context in PluginManager.Contexts.Values)
+                context.Unload();
             PluginManager.Contexts.Clear();
             PluginManager.AssemblyMap.Clear();
             PluginManager.Assemblies.Clear();
@@ -267,6 +323,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             RemoveRouteIfExists("/PartiallyInvalidPlugin/valid");
             RemoveRouteIfExists("/RoutePlugin/ok");
             RemoveRouteIfExists("/InvalidRoutePlugin/bad");
+            RemoveRouteIfExists("/FailingInitializePlugin/boom");
         }
 
         static void RemoveRouteIfExists(string path)
@@ -296,6 +353,10 @@ namespace UmamusumeResponseAnalyzer.Tests
             public string Author => "Test";
             public string[] Targets => [];
 
+            public virtual void Initialize(IPluginContext context)
+            {
+            }
+
             public Task UpdatePlugin(ProgressContext ctx)
                 => Task.CompletedTask;
         }
@@ -322,9 +383,9 @@ namespace UmamusumeResponseAnalyzer.Tests
                         public string Author => "Test";
                         public string[] Targets => System.Array.Empty<string>();
 
-                        [PluginSetting]
                         public int Value { get; set; } = 1;
 
+                        public void Initialize(IPluginContext context) { }
                         public Task UpdatePlugin(ProgressContext ctx) => Task.CompletedTask;
                     }
                     """,
@@ -358,13 +419,14 @@ namespace UmamusumeResponseAnalyzer.Tests
             public Task ValidRoute(HttpContextBase ctx)
                 => Task.CompletedTask;
 
-            [RawResponseAnalyzer<GameApi.Account.Index>]
-            public void Valid(byte[] payload)
+            [ResponseAnalyzer<GameApi.Account.Index>]
+            public ValueTask Valid(byte[] payload)
             {
+                return ValueTask.CompletedTask;
             }
 
             [ResponseAnalyzer<GameApi.Account.Index>]
-            public void Invalid(byte[] payload)
+            public void Invalid(DataLinkIndexResponse response)
             {
             }
         }
@@ -400,38 +462,38 @@ namespace UmamusumeResponseAnalyzer.Tests
             public bool Initialized { get; private set; }
             public IPluginContext? Context { get; private set; }
 
-            public void Initialize(IPluginContext context)
+            public override void Initialize(IPluginContext context)
             {
                 Initialized = true;
                 Context = context;
             }
         }
 
-        sealed class LegacyInitializePlugin : TestPlugin
+        sealed class FailingInitializePlugin : TestPlugin
         {
-            public LegacyInitializePlugin() : base("LegacyInitializePlugin")
+            public FailingInitializePlugin() : base("FailingInitializePlugin")
             {
             }
 
-            public bool LegacyInitialized { get; private set; }
+            public int StartedCalls { get; private set; }
 
-            public void Initialize()
+            [Route(WatsonHttpMethod.GET, "boom")]
+            public Task Boom(HttpContextBase ctx)
+                => Task.CompletedTask;
+
+            [ResponseAnalyzer<GameApi.Account.Index>]
+            public ValueTask Analyze(byte[] payload)
+                => ValueTask.CompletedTask;
+
+            public override void Initialize(IPluginContext context)
             {
-                LegacyInitialized = true;
-            }
-        }
-
-        sealed class LegacyLiveDisplayInitializePlugin : TestPlugin
-        {
-            public LegacyLiveDisplayInitializePlugin() : base("LegacyLiveDisplayInitializePlugin")
-            {
-            }
-
-            public bool LegacyInitialized { get; private set; }
-
-            public void Initialize(ILiveDisplayOutput liveDisplay)
-            {
-                LegacyInitialized = true;
+                context.Events.OnStarted(_ =>
+                {
+                    StartedCalls++;
+                    return ValueTask.CompletedTask;
+                });
+                context.Analyzers.RegisterResponse<GameApi.Account.Index>(_ => ValueTask.CompletedTask);
+                throw new InvalidOperationException("plugin initialize failed");
             }
         }
 
@@ -441,7 +503,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             {
             }
 
-            public void Initialize(IPluginContext context)
+            public override void Initialize(IPluginContext context)
             {
                 context.Events.OnStarted(_ => throw new InvalidOperationException("started failed"));
             }
@@ -455,27 +517,13 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             public int StartedCalls { get; private set; }
 
-            public void Initialize(IPluginContext context)
+            public override void Initialize(IPluginContext context)
             {
                 context.Events.OnStarted(_ =>
                 {
                     StartedCalls++;
                     return ValueTask.CompletedTask;
                 });
-            }
-        }
-
-        sealed class StartedResubscribePlugin : TestPlugin
-        {
-            public StartedResubscribePlugin() : base("StartedResubscribePlugin")
-            {
-            }
-
-            public IPluginHostEvents? Events { get; private set; }
-
-            public void Initialize(IPluginContext context)
-            {
-                Events = context.Events;
             }
         }
 
@@ -543,7 +591,19 @@ namespace UmamusumeResponseAnalyzer.Tests
             public string Name => "Same Display Name";
             public string Author => author;
             public string[] Targets => [];
+            public void Initialize(IPluginContext context) { }
             public Task UpdatePlugin(ProgressContext ctx) => Task.CompletedTask;
+        }
+
+        sealed class FakeLiveDisplayOutput : ILiveDisplayOutput
+        {
+            public LiveDisplayWorkspace CreateWorkspace(string id, string title) => LiveDisplayWorkspace.Create(id, title);
+            public void SwitchWorkspace(LiveDisplayWorkspace workspace) { }
+            public void BindWorkspaceHotkey(LiveDisplayWorkspace workspace, ConsoleKey key, ConsoleModifiers modifiers = 0, string? description = null) { }
+            public void SetPanel(LiveDisplayWorkspace workspace, string key, string title, Spectre.Console.Rendering.IRenderable content, bool fullBleed = false) { }
+            public void Log(LiveDisplayWorkspace workspace, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info) { }
+            public void MarkupLog(LiveDisplayWorkspace workspace, string markup, LiveDisplaySeverity severity = LiveDisplaySeverity.Info) { }
+            public void Notify(LiveDisplayWorkspace workspace, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info, TimeSpan? ttl = null) { }
         }
 
     }

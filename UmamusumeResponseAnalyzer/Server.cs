@@ -11,6 +11,44 @@ using static UmamusumeResponseAnalyzer.Localization.Server;
 
 namespace UmamusumeResponseAnalyzer
 {
+    internal sealed class AnalyzerDispatchContext(
+        AnalyzerKind kind,
+        GameEndpointDescriptor descriptor,
+        byte[] payload)
+    {
+        object? dto;
+        bool dtoInitialized;
+
+        public byte[] Payload { get; } = payload;
+
+        public object GetDto()
+        {
+            if (dtoInitialized)
+                return dto!;
+
+            dto = DeserializeDto();
+            dtoInitialized = true;
+            return dto;
+        }
+
+        object DeserializeDto()
+        {
+            var dtoType = kind == AnalyzerKind.Request ? descriptor.RequestType : descriptor.ResponseType;
+            try
+            {
+                return MessagePackSerializer.Deserialize(dtoType, Payload)
+                    ?? throw new InvalidOperationException(
+                        $"Gallop DTO 反序列化返回 null: endpoint={descriptor.EndpointType.FullName}, path={descriptor.Path}");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Gallop DTO 反序列化失败: endpoint={descriptor.EndpointType.FullName}, path={descriptor.Path}, dto={dtoType.FullName}",
+                    ex);
+            }
+        }
+    }
+
     public static class Server
     {
         internal const string CanonicalUrlHeaderName = "X-Hachimi-Game-Url";
@@ -22,14 +60,14 @@ namespace UmamusumeResponseAnalyzer
             {
                 var buffer = ctx.Request.DataAsBytes;
                 var canonicalUrl = ReadCanonicalUrl(ctx);
-                DispatchResponse(canonicalUrl, buffer);
+                await DispatchResponse(canonicalUrl, buffer);
                 await ctx.Response.Send(string.Empty);
             });
             Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.POST, "/notify/request", async (ctx) =>
             {
                 var buffer = ctx.Request.DataAsBytes;
                 var canonicalUrl = ReadCanonicalUrl(ctx);
-                DispatchRequest(canonicalUrl, buffer);
+                await DispatchRequest(canonicalUrl, buffer);
                 await ctx.Response.Send(string.Empty);
             });
             Instance.Routes.PreAuthentication.Static.Add(WatsonWebserver.Core.HttpMethod.GET, "/notify/ping", (ctx) =>
@@ -77,13 +115,13 @@ namespace UmamusumeResponseAnalyzer
             return value;
         }
 
-        internal static void DispatchRequest(string canonicalUrl, byte[] buffer)
+        internal static ValueTask DispatchRequest(string canonicalUrl, byte[] buffer)
             => DispatchPacket(AnalyzerKind.Request, canonicalUrl, buffer);
 
-        internal static void DispatchResponse(string canonicalUrl, byte[] buffer)
+        internal static ValueTask DispatchResponse(string canonicalUrl, byte[] buffer)
             => DispatchPacket(AnalyzerKind.Response, canonicalUrl, buffer);
 
-        static void DispatchPacket(AnalyzerKind kind, string canonicalUrl, byte[] buffer)
+        static async ValueTask DispatchPacket(AnalyzerKind kind, string canonicalUrl, byte[] buffer)
         {
             try
             {
@@ -94,7 +132,7 @@ namespace UmamusumeResponseAnalyzer
                 PluginManager.EnterDispatch();
                 try
                 {
-                    DispatchPacketLocked(kind, descriptor, buffer);
+                    await DispatchPacketLocked(kind, descriptor, buffer);
                 }
                 finally
                 {
@@ -139,63 +177,30 @@ namespace UmamusumeResponseAnalyzer
 #endif
         }
 
-        static void DispatchPacketLocked(AnalyzerKind kind, GameEndpointDescriptor descriptor, byte[] buffer)
+        static async ValueTask DispatchPacketLocked(AnalyzerKind kind, GameEndpointDescriptor descriptor, byte[] buffer)
         {
-            var registrations = RegistrationsFor(kind)
-                .SelectMany(x => x.Value)
-                .Where(x => x.EndpointType == descriptor.EndpointType)
-                .ToList();
+            var registrations = PluginManager.SnapshotAnalyzerRegistrations(kind, descriptor.EndpointType);
             if (registrations.Count == 0)
                 return;
 
-            var dto = registrations.Any(x => x.PayloadKind == AnalyzerPayloadKind.Dto)
-                ? DeserializeDto(kind, descriptor, buffer)
-                : null;
-
+            var context = new AnalyzerDispatchContext(kind, descriptor, buffer);
             foreach (var registration in registrations)
-            {
-                var payload = registration.PayloadKind == AnalyzerPayloadKind.RawMessagePack
-                    ? buffer
-                    : dto!;
-                InvokeAnalyzer(kind, registration, payload);
-            }
+                await InvokeAnalyzer(kind, registration, context);
         }
 
-        static object DeserializeDto(AnalyzerKind kind, GameEndpointDescriptor descriptor, byte[] buffer)
-        {
-            var dtoType = kind == AnalyzerKind.Request ? descriptor.RequestType : descriptor.ResponseType;
-            try
-            {
-                return MessagePackSerializer.Deserialize(dtoType, buffer)
-                    ?? throw new InvalidOperationException(
-                        $"Gallop DTO 反序列化返回 null: endpoint={descriptor.EndpointType.FullName}, path={descriptor.Path}");
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"Gallop DTO 反序列化失败: endpoint={descriptor.EndpointType.FullName}, path={descriptor.Path}, dto={dtoType.FullName}",
-                    ex);
-            }
-        }
-
-        static SortedDictionary<int, List<AnalyzerRegistration>> RegistrationsFor(AnalyzerKind kind)
-            => kind == AnalyzerKind.Request
-                ? PluginManager.RequestAnalyzerMethods
-                : PluginManager.ResponseAnalyzerMethods;
-
-        static void InvokeAnalyzer(AnalyzerKind kind, AnalyzerRegistration registration, object payload)
+        static async ValueTask InvokeAnalyzer(AnalyzerKind kind, AnalyzerRegistration registration, AnalyzerDispatchContext context)
         {
             try
             {
                 using var callback = PluginManager.EnterPluginCallbackScope();
-                registration.Method.Invoke(registration.Plugin, [payload]);
+                await registration.Handler(context);
             }
             catch (Exception e)
             {
                 var root = e is TargetInvocationException { InnerException: { } inner } ? inner : e;
                 var label = kind == AnalyzerKind.Request ? "请求" : "响应";
                 LiveDisplayConsole.Notify("Plugin", $"{label}分析插件处理失败: {root.Message}", LiveDisplaySeverity.Error);
-                LiveDisplayConsole.Log(registration.Method.DeclaringType?.Name ?? "Plugin", root.ToString(), LiveDisplaySeverity.Error);
+                LiveDisplayConsole.LogException(registration.Method?.DeclaringType?.Name ?? registration.Source, root);
                 ExceptionDispatchInfo.Capture(root).Throw();
                 throw;
             }
@@ -205,7 +210,7 @@ namespace UmamusumeResponseAnalyzer
         {
             var label = kind == AnalyzerKind.Request ? "请求分析失败" : I18N_ResponseAnalyzeFail;
             LiveDisplayConsole.Notify("Server", $"{label}: {ex.Message}", LiveDisplaySeverity.Error);
-            LiveDisplayConsole.Log("Server", ex.ToString(), LiveDisplaySeverity.Error);
+            LiveDisplayConsole.LogException("Server", ex);
         }
     }
 

@@ -8,6 +8,8 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
         static readonly AsyncLocal<bool> consoleInteractionActive = new();
         static UiHost? uiHost;
 
+        internal static LiveDisplayWorkspace? DefaultLogWorkspace { get; set; }
+
         public static void Bind(UiHost host)
         {
             uiHost = host;
@@ -16,7 +18,10 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
         public static void Unbind(UiHost host)
         {
             if (ReferenceEquals(uiHost, host))
+            {
                 uiHost = null;
+                DefaultLogWorkspace = null;
+            }
         }
 
         public static void Run(Action action)
@@ -39,7 +44,12 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
                 return action();
 
             var host = uiHost;
-            return host is null ? action() : host.RunConsoleInteractionAsync(action);
+            if (host is null)
+                return action();
+
+            return host.IsRunning
+                ? host.RunConsoleInteractionAsync(action)
+                : RunDirectConsoleInteractionAsync(action);
         }
 
         public static async Task<T> RunAsync<T>(Func<Task<T>> action)
@@ -51,9 +61,21 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
             if (host is null)
                 return await action();
 
+            if (!host.IsRunning)
+            {
+                using var directInteraction = EnterConsoleInteraction();
+                return await action();
+            }
+
             T result = default!;
             await host.RunConsoleInteractionAsync(async () => result = await action());
             return result;
+        }
+
+        static async Task RunDirectConsoleInteractionAsync(Func<Task> action)
+        {
+            using var directInteraction = EnterConsoleInteraction();
+            await action();
         }
 
         public static T Prompt<T>(IPrompt<T> prompt)
@@ -128,6 +150,148 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
             Run(() => AnsiConsole.WriteException(ex));
         }
 
+        internal static void MarkupLog(string source, string markup, LiveDisplaySeverity severity = LiveDisplaySeverity.Info)
+        {
+            var host = uiHost;
+            if (consoleInteractionActive.Value || host is null)
+            {
+                Run(() => AnsiConsole.MarkupLine(markup));
+                return;
+            }
+
+            host.Log(new LiveDisplayLogLine(DefaultLogWorkspace, source, markup, severity, IsMarkup: true, DateTimeOffset.Now));
+        }
+
+        internal static void MarkupLog(string source, string format, LiveDisplaySeverity severity, params object[] args)
+        {
+            MarkupLog(source, string.Format(format, args), severity);
+        }
+
+        internal static void LogException(string source, Exception ex, LiveDisplaySeverity severity = LiveDisplaySeverity.Error)
+        {
+            var host = uiHost;
+            if (consoleInteractionActive.Value || host is null)
+            {
+                WriteException(ex);
+                return;
+            }
+
+            host.Log(new LiveDisplayLogLine(DefaultLogWorkspace, source, FormatExceptionLogMessage(ex), severity, IsMarkup: false, DateTimeOffset.Now));
+        }
+
+        internal static string FormatExceptionLogMessage(Exception ex)
+        {
+            if (TryFormatPluginInitializationFailure(ex, out var pluginInitializationMessage))
+                return pluginInitializationMessage;
+
+            var messages = new List<string>();
+            AppendMessages(ex, messages);
+            return messages.Count == 0 ? ex.GetType().Name : string.Join(Environment.NewLine, messages);
+        }
+
+        static bool TryFormatPluginInitializationFailure(Exception ex, out string message)
+        {
+            const string prefix = "插件初始化失败: plugin=";
+
+            var outerMessage = NormalizeExceptionMessage(ex.Message);
+            if (!outerMessage.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                message = string.Empty;
+                return false;
+            }
+
+            var plugin = ParsePluginName(outerMessage[prefix.Length..]);
+            var rootMessages = new List<string>();
+            AppendMessages(ex.InnerException, rootMessages);
+            if (plugin.Length == 0 || rootMessages.Count == 0)
+            {
+                message = string.Empty;
+                return false;
+            }
+
+            message = $"{plugin}初始化失败：{rootMessages[0]}";
+            if (rootMessages.Count > 1)
+                message += Environment.NewLine + string.Join(Environment.NewLine, rootMessages.Skip(1));
+
+            return true;
+        }
+
+        static void AppendMessages(Exception? exception, List<string> messages)
+        {
+            if (exception is null)
+                return;
+
+            if (exception is AggregateException { InnerExceptions.Count: > 0 } aggregate)
+            {
+                foreach (var inner in aggregate.Flatten().InnerExceptions)
+                    AppendMessages(inner, messages);
+                return;
+            }
+
+            var message = NormalizeExceptionMessage(exception.Message);
+            if (message.Length > 0 && !messages.Contains(message, StringComparer.Ordinal))
+                messages.Add(message);
+
+            AppendMessages(exception.InnerException, messages);
+        }
+
+        static string ParsePluginName(string message)
+        {
+            var plugin = message;
+            var displayNameMarker = plugin.IndexOf(" (", StringComparison.Ordinal);
+            if (displayNameMarker >= 0)
+                plugin = plugin[..displayNameMarker];
+
+            var fieldMarker = plugin.IndexOf(',', StringComparison.Ordinal);
+            if (fieldMarker >= 0)
+                plugin = plugin[..fieldMarker];
+
+            return plugin.Trim();
+        }
+
+        static string NormalizeExceptionMessage(string message)
+        {
+            return RemoveConfigFileField(RemovePathField(message.Trim())).Trim();
+        }
+
+        static string RemoveConfigFileField(string message)
+        {
+            foreach (var marker in new[] { "配置文件:", "配置文件：" })
+            {
+                var index = message.IndexOf(marker, StringComparison.Ordinal);
+                if (index > 0)
+                    return message[..index];
+            }
+
+            return message;
+        }
+
+        static string RemovePathField(string message)
+        {
+            var marker = message.IndexOf(", path=", StringComparison.OrdinalIgnoreCase);
+            if (marker < 0)
+                return message;
+
+            var valueStart = marker + ", path=".Length;
+            var nextField = NextFieldIndex(message, valueStart);
+            return nextField < 0
+                ? message[..marker]
+                : message[..marker] + message[nextField..];
+
+            static int NextFieldIndex(string value, int start)
+            {
+                var next = -1;
+                foreach (var field in new[] { ", phase=", ", type=" })
+                {
+                    var index = value.IndexOf(field, start, StringComparison.OrdinalIgnoreCase);
+                    if (index >= 0 && (next < 0 || index < next))
+                        next = index;
+                }
+
+                return next;
+            }
+        }
+
         public static void Log(string source, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info)
         {
             var host = uiHost;
@@ -162,6 +326,7 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
         internal static void UnbindForTests()
         {
             uiHost = null;
+            DefaultLogWorkspace = null;
         }
 
         sealed class ConsoleInteractionScope(bool previous) : IDisposable

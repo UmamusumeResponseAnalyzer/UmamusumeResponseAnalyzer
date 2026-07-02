@@ -1,4 +1,3 @@
-using Spectre.Console.Rendering;
 using UmamusumeResponseAnalyzer.LiveDisplay;
 
 namespace UmamusumeResponseAnalyzer.Plugin
@@ -10,37 +9,30 @@ namespace UmamusumeResponseAnalyzer.Plugin
     {
         public ILiveDisplayOutput LiveDisplay { get; } = liveDisplay;
         public IPluginHostEvents Events { get; } = events.ForPlugin(plugin);
+        public IPluginAnalyzerRegistry Analyzers { get; } = PluginManager.AnalyzersFor(plugin);
     }
 
     internal sealed class PluginHostEvents
     {
         readonly object gate = new();
-        readonly Dictionary<IPlugin, PluginEventOwner> owners = new(ReferenceEqualityComparer.Instance);
+        readonly Dictionary<IPlugin, List<StartedSubscription>> subscriptionsByPlugin = new(ReferenceEqualityComparer.Instance);
 
         public IPluginHostEvents ForPlugin(IPlugin plugin)
-        {
-            lock (gate)
-            {
-                if (!owners.TryGetValue(plugin, out var owner))
-                {
-                    owner = new(plugin);
-                    owners[plugin] = owner;
-                }
-                return new PluginScopedHostEvents(this, owner);
-            }
-        }
+            => new PluginScopedHostEvents(this, plugin);
 
-        IDisposable SubscribeStarted(PluginEventOwner owner, Func<CancellationToken, ValueTask> handler)
+        IDisposable SubscribeStarted(IPlugin plugin, Func<CancellationToken, ValueTask> handler)
         {
             ArgumentNullException.ThrowIfNull(handler);
 
-            var subscription = new StartedSubscription(this, owner, handler);
+            var subscription = new StartedSubscription(this, plugin, handler);
             lock (gate)
             {
-                if (owner.IsClosed || !owners.TryGetValue(owner.Plugin, out var current) || !ReferenceEquals(current, owner))
-                    throw new InvalidOperationException($"插件事件订阅已关闭: plugin={owner.Plugin.Name}");
-
-                owner.Subscriptions.Add(subscription);
+                if (!subscriptionsByPlugin.TryGetValue(plugin, out var subscriptions))
+                {
+                    subscriptions = [];
+                    subscriptionsByPlugin[plugin] = subscriptions;
+                }
+                subscriptions.Add(subscription);
             }
             return subscription;
         }
@@ -60,12 +52,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
             List<StartedSubscription> subscriptions = [];
             lock (gate)
             {
-                if (owners.Remove(plugin, out var owner))
-                {
-                    owner.MarkClosed();
-                    subscriptions = [.. owner.Subscriptions];
-                    owner.Subscriptions.Clear();
-                }
+                if (subscriptionsByPlugin.Remove(plugin, out var pluginSubscriptions))
+                    subscriptions = [.. pluginSubscriptions];
             }
 
             foreach (var subscription in subscriptions)
@@ -83,10 +71,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
             List<StartedSubscription> subscriptions;
             lock (gate)
             {
-                subscriptions = owners.Values.SelectMany(x => x.Subscriptions).ToList();
-                foreach (var owner in owners.Values)
-                    owner.MarkClosed();
-                owners.Clear();
+                subscriptions = subscriptionsByPlugin.Values.SelectMany(x => x).ToList();
+                subscriptionsByPlugin.Clear();
             }
 
             foreach (var subscription in subscriptions)
@@ -101,11 +87,11 @@ namespace UmamusumeResponseAnalyzer.Plugin
             lock (gate)
             {
                 if (plugins is null)
-                    return owners.Values.SelectMany(x => x.Subscriptions).Where(x => !x.IsDisposed).ToList();
+                    return subscriptionsByPlugin.Values.SelectMany(x => x).Where(x => !x.IsDisposed).ToList();
 
                 var set = plugins.ToHashSet<IPlugin>(ReferenceEqualityComparer.Instance);
                 return set
-                    .SelectMany(plugin => owners.TryGetValue(plugin, out var owner) ? owner.Subscriptions : [])
+                    .SelectMany(plugin => subscriptionsByPlugin.TryGetValue(plugin, out var subscriptions) ? subscriptions : [])
                     .Where(x => !x.IsDisposed)
                     .ToList();
             }
@@ -115,45 +101,31 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             lock (gate)
             {
-                if (!owners.TryGetValue(subscription.Plugin, out var owner))
+                if (!subscriptionsByPlugin.TryGetValue(subscription.Plugin, out var subscriptions))
                     return;
 
-                owner.Subscriptions.Remove(subscription);
-                if (owner.Subscriptions.Count == 0 && owner.IsClosed)
-                    owners.Remove(subscription.Plugin);
+                subscriptions.Remove(subscription);
+                if (subscriptions.Count == 0)
+                    subscriptionsByPlugin.Remove(subscription.Plugin);
             }
         }
 
-        sealed class PluginScopedHostEvents(PluginHostEvents source, PluginEventOwner owner) : IPluginHostEvents
+        sealed class PluginScopedHostEvents(PluginHostEvents source, IPlugin plugin) : IPluginHostEvents
         {
             public IDisposable OnStarted(Func<CancellationToken, ValueTask> handler)
-                => source.SubscribeStarted(owner, handler);
-        }
-
-        sealed class PluginEventOwner(IPlugin plugin)
-        {
-            int closed;
-
-            public IPlugin Plugin { get; } = plugin;
-            public List<StartedSubscription> Subscriptions { get; } = [];
-            public bool IsClosed => Volatile.Read(ref closed) != 0;
-
-            public void MarkClosed()
-            {
-                Interlocked.Exchange(ref closed, 1);
-            }
+                => source.SubscribeStarted(plugin, handler);
         }
 
         sealed class StartedSubscription(
             PluginHostEvents owner,
-            PluginEventOwner eventOwner,
+            IPlugin plugin,
             Func<CancellationToken, ValueTask> handler) : IDisposable
         {
             int disposed;
             int inFlight;
             readonly ManualResetEventSlim idle = new(initialState: true);
 
-            public IPlugin Plugin => eventOwner.Plugin;
+            public IPlugin Plugin { get; } = plugin;
             public bool IsDisposed => Volatile.Read(ref disposed) != 0;
 
             public void Dispose()
@@ -188,7 +160,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception ex)
                 {
                     LiveDisplayConsole.Notify("Plugin", $"插件事件处理错误: {ex.Message}", LiveDisplaySeverity.Error);
-                    LiveDisplayConsole.Log("Plugin", ex.ToString(), LiveDisplaySeverity.Error);
+                    LiveDisplayConsole.LogException("Plugin", ex);
                 }
                 finally
                 {
@@ -198,13 +170,13 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             bool TryEnter()
             {
-                if (IsDisposed || eventOwner.IsClosed)
+                if (IsDisposed)
                     return false;
 
                 if (Interlocked.Increment(ref inFlight) == 1)
                     idle.Reset();
 
-                if (!IsDisposed && !eventOwner.IsClosed)
+                if (!IsDisposed)
                     return true;
 
                 Exit();
@@ -219,39 +191,4 @@ namespace UmamusumeResponseAnalyzer.Plugin
         }
     }
 
-    internal sealed class NullLiveDisplayOutput : ILiveDisplayOutput
-    {
-        public static readonly NullLiveDisplayOutput Instance = new();
-
-        NullLiveDisplayOutput()
-        {
-        }
-
-        public LiveDisplayWorkspace CreateWorkspace(string id, string title)
-            => LiveDisplayWorkspace.Create(id, title);
-
-        public void SwitchWorkspace(LiveDisplayWorkspace workspace)
-        {
-        }
-
-        public void BindWorkspaceHotkey(LiveDisplayWorkspace workspace, ConsoleKey key, ConsoleModifiers modifiers = 0, string? description = null)
-        {
-        }
-
-        public void SetPanel(LiveDisplayWorkspace workspace, string key, string title, IRenderable content, bool fullBleed = false)
-        {
-        }
-
-        public void Log(LiveDisplayWorkspace workspace, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info)
-        {
-        }
-
-        public void MarkupLog(LiveDisplayWorkspace workspace, string markup, LiveDisplaySeverity severity = LiveDisplaySeverity.Info)
-        {
-        }
-
-        public void Notify(LiveDisplayWorkspace workspace, string text, LiveDisplaySeverity severity = LiveDisplaySeverity.Info, TimeSpan? ttl = null)
-        {
-        }
-    }
 }

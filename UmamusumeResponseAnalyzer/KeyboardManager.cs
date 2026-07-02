@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text;
 using UmamusumeResponseAnalyzer.LiveDisplay;
 
 namespace UmamusumeResponseAnalyzer
@@ -16,6 +17,7 @@ namespace UmamusumeResponseAnalyzer
 
         static readonly ConcurrentDictionary<(ConsoleKey Key, ConsoleModifiers Modifiers), HotkeyEntry> hotkeys = [];
         static readonly object popupSync = new();
+        static readonly object commandInputSync = new();
 
         static KeyboardPopup? activePopup;
         static CancellationTokenSource? runCts;
@@ -23,6 +25,9 @@ namespace UmamusumeResponseAnalyzer
         static int inputSuspensionCount;
         static int popupGeneration;
         static readonly AsyncLocal<object?> registrationOwner = new();
+        static readonly StringBuilder commandBuffer = new();
+        static bool inCommandInput;
+        static Func<string, Task>? commandHandler;
 
         public static TimeSpan PopupAutoCloseDelay { get; set; } = TimeSpan.FromSeconds(3);
         internal static IKeyboardOverlaySink? OverlaySink { get; set; }
@@ -91,6 +96,13 @@ namespace UmamusumeResponseAnalyzer
             return hotkeys.TryRemove((key, modifiers), out _);
         }
 
+        public static void SetCommandHandler(Func<string, Task>? handler)
+        {
+            commandHandler = handler;
+            if (handler is null)
+                CancelCommandInput();
+        }
+
         public static void UnregisterAll()
         {
             hotkeys.Clear();
@@ -134,6 +146,11 @@ namespace UmamusumeResponseAnalyzer
                 if (entry.DeclaringAssembly != null && assemblies.Contains(entry.DeclaringAssembly))
                     hotkeys.TryRemove(combo, out _);
             }
+
+            var handler = commandHandler;
+            var handlerAssembly = handler is null ? null : AssemblyOf(handler);
+            if (handlerAssembly is not null && assemblies.Contains(handlerAssembly))
+                SetCommandHandler(null);
         }
 
         public static IReadOnlyDictionary<(ConsoleKey Key, ConsoleModifiers Modifiers), HotkeyEntry> Hotkeys => hotkeys;
@@ -153,6 +170,7 @@ namespace UmamusumeResponseAnalyzer
         {
             Interlocked.Increment(ref inputSuspensionCount);
             HidePopup();
+            CancelCommandInput();
             return new InputSuspension();
         }
 
@@ -260,11 +278,151 @@ namespace UmamusumeResponseAnalyzer
 
         internal static async Task HandleKeyAsync(ConsoleKeyInfo keyInfo)
         {
+            if (IsInCommandInput())
+            {
+                await HandleCommandInputKeyAsync(keyInfo);
+                return;
+            }
+
             if (await TryHandleHotkeyAsync(keyInfo))
                 return;
 
             if (HasActivePopup())
+            {
                 HandlePopupKey(keyInfo);
+                return;
+            }
+
+            TryBeginCommandInput(keyInfo);
+        }
+
+        static async Task HandleCommandInputKeyAsync(ConsoleKeyInfo keyInfo)
+        {
+            switch (keyInfo.Key)
+            {
+                case ConsoleKey.Enter:
+                    var (command, handler) = EndCommandInputForSubmit();
+                    if (handler is not null && !string.IsNullOrWhiteSpace(command))
+                        await InvokeSafely(() => handler(command));
+                    break;
+
+                case ConsoleKey.Escape:
+                    CancelCommandInput();
+                    break;
+
+                case ConsoleKey.Backspace:
+                    if (!RemoveLastCommandInputChar())
+                        CancelCommandInput();
+                    break;
+
+                default:
+                    if (keyInfo.Modifiers == 0 && !char.IsControl(keyInfo.KeyChar))
+                        AppendCommandInput(keyInfo.KeyChar);
+                    break;
+            }
+        }
+
+        static bool TryBeginCommandInput(ConsoleKeyInfo keyInfo)
+        {
+            if (keyInfo.Modifiers != 0)
+                return false;
+
+            if (keyInfo.Key == ConsoleKey.Enter)
+            {
+                BeginCommandInput(string.Empty);
+                return true;
+            }
+
+            if (keyInfo.Key is ConsoleKey.Oem2 or ConsoleKey.Divide && keyInfo.KeyChar == '/')
+            {
+                BeginCommandInput("/");
+                return true;
+            }
+
+            return false;
+        }
+
+        static bool IsInCommandInput()
+        {
+            lock (commandInputSync)
+                return inCommandInput;
+        }
+
+        static void BeginCommandInput(string initialText)
+        {
+            HidePopup();
+            lock (commandInputSync)
+            {
+                inCommandInput = true;
+                commandBuffer.Clear();
+                commandBuffer.Append(initialText);
+                initialText = commandBuffer.ToString();
+            }
+
+            OverlaySink?.ShowCommandInput(new KeyboardCommandInput(initialText));
+        }
+
+        static void AppendCommandInput(char keyChar)
+        {
+            string text;
+            lock (commandInputSync)
+            {
+                if (!inCommandInput)
+                    return;
+
+                commandBuffer.Append(keyChar);
+                text = commandBuffer.ToString();
+            }
+
+            OverlaySink?.ShowCommandInput(new KeyboardCommandInput(text));
+        }
+
+        static bool RemoveLastCommandInputChar()
+        {
+            string text;
+            lock (commandInputSync)
+            {
+                if (!inCommandInput || commandBuffer.Length == 0)
+                    return false;
+
+                commandBuffer.Remove(commandBuffer.Length - 1, 1);
+                text = commandBuffer.ToString();
+            }
+
+            OverlaySink?.ShowCommandInput(new KeyboardCommandInput(text));
+            return true;
+        }
+
+        static (string Command, Func<string, Task>? Handler) EndCommandInputForSubmit()
+        {
+            string command;
+            Func<string, Task>? handler;
+            lock (commandInputSync)
+            {
+                command = commandBuffer.ToString();
+                commandBuffer.Clear();
+                inCommandInput = false;
+                handler = commandHandler;
+            }
+
+            OverlaySink?.HideCommandInput();
+            return (command, handler);
+        }
+
+        static void CancelCommandInput()
+        {
+            var shouldHide = false;
+            lock (commandInputSync)
+            {
+                if (inCommandInput || commandBuffer.Length > 0)
+                    shouldHide = true;
+
+                inCommandInput = false;
+                commandBuffer.Clear();
+            }
+
+            if (shouldHide)
+                OverlaySink?.HideCommandInput();
         }
 
         static async Task<bool> TryHandleHotkeyAsync(ConsoleKeyInfo keyInfo)
@@ -515,7 +673,7 @@ namespace UmamusumeResponseAnalyzer
             catch (Exception ex)
             {
                 LiveDisplayConsole.Notify("Keyboard", $"热键处理失败: {ex.Message}", LiveDisplaySeverity.Error);
-                LiveDisplayConsole.Log("Keyboard", ex.ToString(), LiveDisplaySeverity.Error);
+                LiveDisplayConsole.LogException("Keyboard", ex);
             }
         }
 

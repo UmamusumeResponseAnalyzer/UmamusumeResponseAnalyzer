@@ -37,7 +37,17 @@ namespace UmamusumeResponseAnalyzer
                 Config.Save();
             }
 
-            _plugin_initialize_task = Task.Run(PluginManager.Init);
+            var uiHost = new UiHost();
+            var bootstrap = new BootstrapWorkspace(uiHost);
+            LiveDisplayConsole.Bind(uiHost);
+            LiveDisplayConsole.DefaultLogWorkspace = bootstrap.Workspace;
+            KeyboardManager.OverlaySink = uiHost;
+            PluginManager.BindLiveDisplay(plugin => uiHost.ForPlugin(plugin.Name));
+
+            bootstrap.SetSettings(BuildBootstrapSettings());
+            bootstrap.SetPhase("config", "配置", LiveDisplaySeverity.Success, "已读取 config.yaml");
+
+            _plugin_initialize_task = StartPluginInitializationAsync(bootstrap);
             var prompt = string.Empty;
             do
             {
@@ -45,19 +55,36 @@ namespace UmamusumeResponseAnalyzer
             }
             while (prompt != I18N_Start); //如果不是启动则重新显示主菜单
 
+            bootstrap.SetPhase("database", "数据文件", LiveDisplaySeverity.Info, "正在加载事件、技能、名称等数据。");
             _database_initialize_task = Database.Initialize();
             Task.WaitAll(_database_initialize_task, _plugin_initialize_task); //等待数据库初始化完成
+            bootstrap.SetPhase("database", "数据文件", LiveDisplaySeverity.Success, "加载完成；缺失或损坏项见日志。");
 
-            var uiHost = new UiHost();
-            LiveDisplayConsole.Bind(uiHost);
-            KeyboardManager.OverlaySink = uiHost;
-            PluginManager.BindLiveDisplay(plugin => uiHost.ForPlugin(plugin.Name));
-
-            Parallel.Invoke([.. PluginManager.LoadedPlugins.Select(plugin => new Action(() => PluginManager.InitializePlugin(plugin)))]);
-            Server.Start(); //启动HTTP服务器
-
+            bootstrap.SetPhase("plugin-init", "插件初始化", LiveDisplaySeverity.Info, "正在调用插件 Initialize。");
+            PluginManager.InitializeLoadedPlugins();
             var loadedPluginCount = PluginManager.LoadedPlugins.Count;
-            LiveDisplayConsole.Log(
+            var failedPluginCount = PluginManager.FailedPlugins.Count;
+            bootstrap.SetPhase(
+                "plugin-init",
+                "插件初始化",
+                failedPluginCount == 0 ? LiveDisplaySeverity.Success : LiveDisplaySeverity.Warning,
+                failedPluginCount == 0
+                    ? $"已初始化 {loadedPluginCount} 个插件。"
+                    : $"已初始化 {loadedPluginCount} 个插件，{failedPluginCount} 个插件失败。");
+
+            bootstrap.SetPhase("server", "HTTP server", LiveDisplaySeverity.Info, "正在启动监听。");
+            try
+            {
+                Server.Start(); //启动HTTP服务器
+                bootstrap.SetPhase("server", "HTTP server", LiveDisplaySeverity.Success, $"监听 http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}");
+            }
+            catch (Exception ex)
+            {
+                bootstrap.SetPhase("server", "HTTP server", LiveDisplaySeverity.Error, ex.Message);
+                throw;
+            }
+
+            bootstrap.Log(
                 "Plugin",
                 loadedPluginCount == 0
                     ? "没有加载任何插件。可从插件仓库安装插件。"
@@ -65,11 +92,11 @@ namespace UmamusumeResponseAnalyzer
                 loadedPluginCount == 0 ? LiveDisplaySeverity.Warning : LiveDisplaySeverity.Success);
             foreach (var plugin in PluginManager.FailedPlugins)
             {
-                var message = $"插件 {Path.GetFileName(plugin)} 加载失败 ({plugin})";
-                LiveDisplayConsole.Log("Plugin", message, LiveDisplaySeverity.Warning);
+                var message = $"插件 {Path.GetFileName(plugin)} 加载失败";
+                bootstrap.Log("Plugin", message, LiveDisplaySeverity.Warning);
             }
 
-            LiveDisplayConsole.Log("Server", $"监听 http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}", LiveDisplaySeverity.Success);
+            bootstrap.Log("Server", $"监听 http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}", LiveDisplaySeverity.Success);
             if (Config.Core.ListenAddress == "0.0.0.0")
             {
                 var interfaces = NetworkInterface.GetAllNetworkInterfaces()
@@ -80,7 +107,7 @@ namespace UmamusumeResponseAnalyzer
                        .ToList();
                 foreach (var i in interfaces)
                 {
-                    LiveDisplayConsole.Log("Server", string.Format(Localization.Server.I18N_AvailableEndpointTip, i, Config.Core.ListenPort));
+                    bootstrap.Log("Server", string.Format(Localization.Server.I18N_AvailableEndpointTip, i, Config.Core.ListenPort));
                 }
             }
 
@@ -91,13 +118,15 @@ namespace UmamusumeResponseAnalyzer
             }
             if (!Server.IsRunning)
             {
+                bootstrap.SetPhase("server", "HTTP server", LiveDisplaySeverity.Error, I18N_LaunchFail.RemoveMarkup());
                 LiveDisplayConsole.WriteLine(I18N_LaunchFail);
                 LiveDisplayConsole.ReadLine();
                 Environment.Exit(1);
             }
 
             var startedMessage = I18N_Start_Started.RemoveMarkup();
-            LiveDisplayConsole.Log("URA", startedMessage, LiveDisplaySeverity.Success);
+            bootstrap.Log("URA", startedMessage, LiveDisplaySeverity.Success);
+            bootstrap.SetPhase("started", "宿主", LiveDisplaySeverity.Success, startedMessage);
 
             await PluginManager.TriggerStartedAsync();
 
@@ -123,6 +152,47 @@ namespace UmamusumeResponseAnalyzer
             });
 
             await RunLiveDisplayApplicationAsync(uiHost);
+        }
+
+        static Task StartPluginInitializationAsync(BootstrapWorkspace bootstrap)
+        {
+            return Task.Run(() =>
+            {
+                bootstrap.SetPhase("plugin-scan", "插件扫描", LiveDisplaySeverity.Info, "正在扫描 Plugins/。");
+                try
+                {
+                    PluginManager.Init();
+                }
+                catch (Exception ex)
+                {
+                    bootstrap.SetPhase("plugin-scan", "插件扫描", LiveDisplaySeverity.Error, ex.Message);
+                    LiveDisplayConsole.LogException("Plugin", ex);
+                    throw;
+                }
+
+                var loadedPluginCount = PluginManager.LoadedPlugins.Count;
+                var failedPluginCount = PluginManager.FailedPlugins.Count;
+                bootstrap.SetPhase(
+                    "plugin-scan",
+                    "插件扫描",
+                    failedPluginCount == 0 ? LiveDisplaySeverity.Success : LiveDisplaySeverity.Warning,
+                    failedPluginCount == 0
+                        ? $"发现 {loadedPluginCount} 个可用插件。"
+                        : $"发现 {loadedPluginCount} 个可用插件，{failedPluginCount} 个插件失败。");
+            });
+        }
+
+        static IReadOnlyList<(string Label, string Value)> BuildBootstrapSettings()
+        {
+            return
+            [
+                ("版本", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"),
+                ("工作目录", Directory.GetCurrentDirectory()),
+                ("监听", $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
+                ("服务器目标", Config.Repository.Targets.Count == 0 ? "未限制" : string.Join(", ", Config.Repository.Targets)),
+                ("数据语言", Config.Updater.DatabaseLanguage),
+                ("训练员性别", Config.Updater.TrainerIsMale ? "男" : "女")
+            ];
         }
 
         static async Task CheckPluginUpdatesAsync(UiHost uiHost)

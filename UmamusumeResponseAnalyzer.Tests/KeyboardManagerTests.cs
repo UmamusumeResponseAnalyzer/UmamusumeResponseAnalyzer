@@ -36,6 +36,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             }
 
             KeyboardManager.UnregisterAll();
+            KeyboardManager.SetCommandHandler(null);
             KeyboardManager.OverlaySink = null;
             KeyboardManager.PopupAutoCloseDelay = TimeSpan.FromSeconds(3);
             LiveDisplayConsole.UnbindForTests();
@@ -273,6 +274,42 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
+        public async Task HandleKey_EnterCommandInput_SubmitsTypedCommand()
+        {
+            var sink = new RecordingOverlaySink();
+            KeyboardManager.OverlaySink = sink;
+            string? submitted = null;
+            KeyboardManager.SetCommandHandler(command =>
+            {
+                submitted = command;
+                return Task.CompletedTask;
+            });
+
+            await PressAsync(ConsoleKey.Enter);
+            await TypeAsync('s', ConsoleKey.S);
+            await TypeAsync('t', ConsoleKey.T);
+            await PressAsync(ConsoleKey.Backspace);
+            await TypeAsync('a', ConsoleKey.A);
+            await PressAsync(ConsoleKey.Enter);
+
+            Assert.Equal("sa", submitted);
+            Assert.Null(sink.CommandInput);
+        }
+
+        [Fact]
+        public async Task HandleKey_SlashCommandInput_StartsWithSlashAndCancelsWithEscape()
+        {
+            var sink = new RecordingOverlaySink();
+            KeyboardManager.OverlaySink = sink;
+
+            await TypeAsync('/', ConsoleKey.Oem2);
+            Assert.Equal("/", sink.CommandInput?.Text);
+
+            await PressAsync(ConsoleKey.Escape);
+            Assert.Null(sink.CommandInput);
+        }
+
+        [Fact]
         public async Task Register_ContextHandler_OldAutoCloseDoesNotCloseNewPopup()
         {
             var sink = new RecordingOverlaySink();
@@ -443,11 +480,22 @@ namespace UmamusumeResponseAnalyzer.Tests
                 modifiers.HasFlag(ConsoleModifiers.Control)));
         }
 
+        static Task TypeAsync(char keyChar, ConsoleKey key, ConsoleModifiers modifiers = 0)
+        {
+            return KeyboardManager.HandleKeyAsync(new ConsoleKeyInfo(
+                keyChar,
+                key,
+                modifiers.HasFlag(ConsoleModifiers.Shift),
+                modifiers.HasFlag(ConsoleModifiers.Alt),
+                modifiers.HasFlag(ConsoleModifiers.Control)));
+        }
+
         sealed class RecordingOverlaySink : IKeyboardOverlaySink
         {
             readonly object sync = new();
             TaskCompletionSource hidden = new(TaskCreationOptions.RunContinuationsAsynchronously);
             KeyboardPopup? popup;
+            KeyboardCommandInput? commandInput;
 
             public KeyboardPopup? Popup
             {
@@ -455,6 +503,15 @@ namespace UmamusumeResponseAnalyzer.Tests
                 {
                     lock (sync)
                         return popup;
+                }
+            }
+
+            public KeyboardCommandInput? CommandInput
+            {
+                get
+                {
+                    lock (sync)
+                        return commandInput;
                 }
             }
 
@@ -477,6 +534,18 @@ namespace UmamusumeResponseAnalyzer.Tests
                 }
 
                 toComplete.TrySetResult();
+            }
+
+            public void ShowCommandInput(KeyboardCommandInput input)
+            {
+                lock (sync)
+                    commandInput = input;
+            }
+
+            public void HideCommandInput()
+            {
+                lock (sync)
+                    commandInput = null;
             }
 
             public Task WaitForHiddenAsync()

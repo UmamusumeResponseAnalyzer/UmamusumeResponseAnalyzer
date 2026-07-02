@@ -21,7 +21,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         [Fact]
         public void PacketCorpus_ParsesCurrentDebugPacketFileName()
         {
-            var canonicalUrl = "https://example.test/account/index?viewer_id=1#fragment";
+            var canonicalUrl = "https://example.test/umamusume/account/index?viewer_id=1#fragment";
             var path = Path.Combine(
                 Path.GetTempPath(),
                 $"26-06-30 12-00-00-000R-{Uri.EscapeDataString(canonicalUrl)}.msgpack");

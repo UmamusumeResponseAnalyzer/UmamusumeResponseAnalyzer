@@ -9,6 +9,7 @@ public interface IPluginContext
 {
     ILiveDisplayOutput LiveDisplay { get; }
     IPluginHostEvents Events { get; }
+    IPluginAnalyzerRegistry Analyzers { get; }
 }
 
 public interface IPluginHostEvents
@@ -26,30 +27,11 @@ public interface IPlugin
     Version Version => GetType().Assembly.GetName().Version ?? new(0, 0, 0);
     string[] Targets { get; }
 
-    string DataDirectory => Path.Combine("PluginData", Name);
-    string SettingsFilePath => Path.Combine(DataDirectory, "settings.yaml");
-
-    void Initialize() { }
-
-    void Initialize(ILiveDisplayOutput liveDisplay)
-    {
-        Initialize();
-    }
-
-    void Initialize(IPluginContext context)
-    {
-        Initialize(context.LiveDisplay);
-    }
+    void Initialize(IPluginContext context);
 
     void Dispose() { }
 
-    void ConfigPrompt() { }
-
-    Task ConfigPromptAsync()
-    {
-        ConfigPrompt();
-        return Task.CompletedTask;
-    }
+    Task ConfigPromptAsync() => Task.CompletedTask;
 
     Task UpdatePlugin(ProgressContext ctx);
 }
@@ -60,43 +42,52 @@ public enum AnalyzerKind
     Response,
 }
 
-public enum AnalyzerPayloadKind
+public interface IPluginAnalyzerRegistry
 {
-    Dto,
-    RawMessagePack,
+    IDisposable RegisterRequest<TEndpoint>(
+        Func<byte[], ValueTask> handler,
+        int priority = 0)
+        where TEndpoint : IGameEndpoint;
+
+    IDisposable RegisterResponse<TEndpoint>(
+        Func<byte[], ValueTask> handler,
+        int priority = 0)
+        where TEndpoint : IGameEndpoint;
+
+    IDisposable RegisterRequest<TEndpoint, TRequest>(
+        Func<TRequest, ValueTask> handler,
+        int priority = 0)
+        where TEndpoint : IGameEndpoint;
+
+    IDisposable RegisterResponse<TEndpoint, TResponse>(
+        Func<TResponse, ValueTask> handler,
+        int priority = 0)
+        where TEndpoint : IGameEndpoint;
 }
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-public abstract class AnalyzerAttribute(
-    Type endpointType,
-    AnalyzerKind kind,
-    AnalyzerPayloadKind payloadKind,
-    int priority = 0) : Attribute
+public abstract class AnalyzerAttribute : Attribute
 {
-    public Type EndpointType { get; } = endpointType;
-    public AnalyzerKind Kind { get; } = kind;
-    public AnalyzerPayloadKind PayloadKind { get; } = payloadKind;
-    public int Priority { get; } = priority;
+    protected AnalyzerAttribute(Type endpointType, AnalyzerKind kind, int priority = 0)
+    {
+        EndpointType = endpointType;
+        Kind = kind;
+        Priority = priority;
+    }
+
+    public Type EndpointType { get; }
+    public AnalyzerKind Kind { get; }
+    public int Priority { get; }
 }
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
 public sealed class RequestAnalyzerAttribute<TEndpoint>(int priority = 0)
-    : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Request, AnalyzerPayloadKind.Dto, priority)
+    : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Request, priority)
     where TEndpoint : IGameEndpoint;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
 public sealed class ResponseAnalyzerAttribute<TEndpoint>(int priority = 0)
-    : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Response, AnalyzerPayloadKind.Dto, priority)
-    where TEndpoint : IGameEndpoint;
-
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-public sealed class RawRequestAnalyzerAttribute<TEndpoint>(int priority = 0)
-    : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Request, AnalyzerPayloadKind.RawMessagePack, priority)
-    where TEndpoint : IGameEndpoint;
-
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-public sealed class RawResponseAnalyzerAttribute<TEndpoint>(int priority = 0)
-    : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Response, AnalyzerPayloadKind.RawMessagePack, priority)
+    : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Response, priority)
     where TEndpoint : IGameEndpoint;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
@@ -104,15 +95,6 @@ public sealed class RouteAttribute(HttpMethod method, string path) : Attribute
 {
     public HttpMethod Method { get; } = method;
     public string Path { get; } = path;
-}
-
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Field, Inherited = false)]
-public sealed class PluginSettingAttribute : Attribute;
-
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, Inherited = false)]
-public sealed class PluginDescriptionAttribute(string description) : Attribute
-{
-    public string Description { get; } = description;
 }
 
 [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]

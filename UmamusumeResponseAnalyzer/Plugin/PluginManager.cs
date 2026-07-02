@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.Loader;
+using UmamusumeResponseAnalyzer;
 using UmamusumeResponseAnalyzer.LiveDisplay;
 using WatsonWebserver.Core;
 
@@ -13,12 +14,90 @@ namespace UmamusumeResponseAnalyzer.Plugin
 {
     internal sealed record AnalyzerRegistration(
         IPlugin Plugin,
-        MethodInfo Method,
+        MethodInfo? Method,
         Type EndpointType,
-        GameEndpointDescriptor Endpoint,
         AnalyzerKind Kind,
-        AnalyzerPayloadKind PayloadKind,
-        int Priority);
+        int Priority,
+        Func<AnalyzerDispatchContext, ValueTask> Handler,
+        string Source);
+
+    sealed class PluginScopedAnalyzerRegistry(IPlugin plugin) : IPluginAnalyzerRegistry
+    {
+        public IDisposable RegisterRequest<TEndpoint>(
+            Func<byte[], ValueTask> handler,
+            int priority = 0)
+            where TEndpoint : IGameEndpoint
+            => RegisterRaw(AnalyzerKind.Request, typeof(TEndpoint), handler, priority);
+
+        public IDisposable RegisterResponse<TEndpoint>(
+            Func<byte[], ValueTask> handler,
+            int priority = 0)
+            where TEndpoint : IGameEndpoint
+            => RegisterRaw(AnalyzerKind.Response, typeof(TEndpoint), handler, priority);
+
+        public IDisposable RegisterRequest<TEndpoint, TRequest>(
+            Func<TRequest, ValueTask> handler,
+            int priority = 0)
+            where TEndpoint : IGameEndpoint
+            => RegisterDto(AnalyzerKind.Request, typeof(TEndpoint), typeof(TRequest), handler, priority);
+
+        public IDisposable RegisterResponse<TEndpoint, TResponse>(
+            Func<TResponse, ValueTask> handler,
+            int priority = 0)
+            where TEndpoint : IGameEndpoint
+            => RegisterDto(AnalyzerKind.Response, typeof(TEndpoint), typeof(TResponse), handler, priority);
+
+        IDisposable RegisterRaw(
+            AnalyzerKind kind,
+            Type endpointType,
+            Func<byte[], ValueTask> handler,
+            int priority)
+        {
+            ArgumentNullException.ThrowIfNull(handler);
+            return PluginManager.RegisterProgrammaticAnalyzer(
+                plugin,
+                kind,
+                endpointType,
+                typeof(byte[]),
+                priority,
+                context => handler(context.Payload),
+                "programmatic raw analyzer");
+        }
+
+        IDisposable RegisterDto<TPayload>(
+            AnalyzerKind kind,
+            Type endpointType,
+            Type payloadType,
+            Func<TPayload, ValueTask> handler,
+            int priority)
+        {
+            ArgumentNullException.ThrowIfNull(handler);
+            if (payloadType == typeof(byte[]))
+                throw new InvalidOperationException("DTO analyzer 不能使用 byte[]；raw analyzer 请使用单泛型 RegisterRequest/RegisterResponse overload。");
+
+            return PluginManager.RegisterProgrammaticAnalyzer(
+                plugin,
+                kind,
+                endpointType,
+                payloadType,
+                priority,
+                context => handler((TPayload)context.GetDto()),
+                "programmatic DTO analyzer");
+        }
+    }
+
+    sealed class AnalyzerRegistrationHandle(AnalyzerRegistration registration) : IDisposable
+    {
+        int disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            PluginManager.RemoveAnalyzerRegistration(registration);
+        }
+    }
 
     sealed class RouteRegistration(
         IPlugin plugin,
@@ -111,6 +190,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
     public static class PluginManager
     {
         internal static Dictionary<string, PluginMetadata> Metadatas { get; } = [];
+        internal static Dictionary<string, PluginMetadata> AssemblyMetadatas { get; } = [];
         internal static List<string> FailedPlugins { get; } = [];
         public static List<IPlugin> LoadedPlugins { get; } = [];
         internal static SortedDictionary<int, List<AnalyzerRegistration>> RequestAnalyzerMethods { get; } = [];
@@ -135,6 +215,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static readonly PluginHostEvents HostEvents = new();
         static Func<IPlugin, ILiveDisplayOutput>? liveDisplayFactory;
         static readonly AsyncLocal<int> PluginCallbackDepth = new();
+        static readonly object AnalyzerGate = new();
 
         // 每个插件注册的 HTTP 路由，卸载时凭此精确移除（Watson 的 StaticRouteManager 支持 Remove）
         private static Dictionary<IPlugin, List<RouteRegistration>> PluginRoutes { get; } = new(ReferenceEqualityComparer.Instance);
@@ -175,10 +256,15 @@ namespace UmamusumeResponseAnalyzer.Plugin
             LoadPlugins();
         }
 
-        internal static void LoadMetadatas() => ScanAll(Metadatas);
+        internal static void LoadMetadatas()
+        {
+            Dictionary<string, PluginMetadata> assemblies = [];
+            ScanAll(Metadatas, assemblies);
+            ReplaceAssemblyMetadatas(assemblies);
+        }
 
         /// <summary>扫描 Plugins/ 下所有 dll 与 zip，把插件元数据（含卫星资源关联）写入 <paramref name="target"/>。</summary>
-        static void ScanAll(Dictionary<string, PluginMetadata> target)
+        static void ScanAll(Dictionary<string, PluginMetadata> target, Dictionary<string, PluginMetadata> assemblyTarget)
         {
             var culture = LanguageConfig.GetCulture();
             var pluginsDir = new DirectoryInfo("Plugins");
@@ -190,25 +276,32 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 try
                 {
                     var metadata = LoadMetadata(dll.FullName, null, false);
+                    assemblyTarget[metadata.PluginName] = metadata;
                     target[metadata.PluginName] = metadata;
                 }
                 catch (Exception ex)
                 {
-                    LiveDisplayConsole.WriteException(ex);
+                    LiveDisplayConsole.LogException("Plugin", ex);
                     if (!FailedPlugins.Contains(dll.FullName)) FailedPlugins.Add(dll.FullName);
                 }
             }
 
             foreach (var zip in pluginsDir.GetFiles("*.zip", SearchOption.TopDirectoryOnly).Select(x => x.FullName))
-                LoadZipMetadatas(zip, culture, target);
+                LoadZipMetadatas(zip, culture, target, assemblyTarget);
         }
 
         /// <summary>读取单个 zip 内的主插件元数据并关联其卫星资源，写入 <paramref name="target"/>。供初始加载与热重载复用。</summary>
-        static void LoadZipMetadatas(string zip, string culture, Dictionary<string, PluginMetadata> target)
+        static void LoadZipMetadatas(
+            string zip,
+            string culture,
+            Dictionary<string, PluginMetadata> target,
+            Dictionary<string, PluginMetadata> assemblyTarget)
         {
             try
             {
                 using var archive = ZipFile.OpenRead(zip);
+                var pluginName = Path.GetFileNameWithoutExtension(zip);
+                var hasMainPlugin = false;
                 // 收集需要后处理的卫星资源条目
                 List<ZipArchiveEntry> satelliteEntries = [];
 
@@ -228,11 +321,16 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         {
                             var pluginPath = $"{zip}|{entry.FullName}";
                             var metadata = LoadMetadata(pluginPath, ms, true);
-                            target[metadata.PluginName] = metadata;
+                            assemblyTarget[metadata.PluginName] = metadata;
+                            if (string.Equals(metadata.PluginName, pluginName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                target[metadata.PluginName] = metadata;
+                                hasMainPlugin = true;
+                            }
                         }
                         catch (Exception ex)
                         {
-                            LiveDisplayConsole.WriteException(ex);
+                            LiveDisplayConsole.LogException("Plugin", ex);
                             var pluginPath = $"{zip}|{entry.FullName}";
                             if (!FailedPlugins.Contains(pluginPath)) FailedPlugins.Add(pluginPath);
                         }
@@ -245,14 +343,17 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                 }
 
-                // 关联卫星资源到对应的主插件元数据
+                if (!hasMainPlugin)
+                    LiveDisplayConsole.MarkupLog("Plugin", $"[yellow]插件包 {Path.GetFileName(zip).EscapeMarkup()} 未找到主插件 DLL {pluginName.EscapeMarkup()}.dll，已跳过。[/]", LiveDisplaySeverity.Warning);
+
+                // 关联卫星资源到对应的程序集元数据
                 foreach (var entry in satelliteEntries)
                 {
                     var resourceName = Path.GetFileNameWithoutExtension(entry.FullName);
                     if (resourceName.EndsWith(".resources"))
                     {
                         var assemblyName = resourceName[..^".resources".Length];
-                        if (target.TryGetValue(assemblyName, out var metadata))
+                        if (assemblyTarget.TryGetValue(assemblyName, out var metadata))
                         {
                             metadata.SatelliteEntries.Add(entry.FullName);
                         }
@@ -261,7 +362,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
             catch (Exception ex)
             {
-                LiveDisplayConsole.WriteException(ex);
+                LiveDisplayConsole.LogException("Plugin", ex);
                 if (!FailedPlugins.Contains(zip)) FailedPlugins.Add(zip);
             }
         }
@@ -287,6 +388,16 @@ namespace UmamusumeResponseAnalyzer.Plugin
             tempContext.Unload();
             return metadata;
         }
+
+        static void ReplaceAssemblyMetadatas(Dictionary<string, PluginMetadata> assemblies)
+        {
+            AssemblyMetadatas.Clear();
+            foreach (var (name, metadata) in assemblies)
+                AssemblyMetadatas[name] = metadata;
+        }
+
+        static bool TryGetAssemblyMetadata(string name, out PluginMetadata metadata)
+            => AssemblyMetadatas.TryGetValue(name, out metadata!) || Metadatas.TryGetValue(name, out metadata!);
 
         internal static void BuildGroups()
         {
@@ -333,7 +444,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 foreach (var name in group)
                     if (Metadatas.TryGetValue(name, out var present))
                     {
-                        LiveDisplayConsole.MarkupLine($"[red]插件 {name.EscapeMarkup()} 加载失败[/]:依赖的共享上下文插件 {string.Join("、", missing).EscapeMarkup()} 未安装。");
+                        LiveDisplayConsole.MarkupLog("Plugin", $"[red]插件 {name.EscapeMarkup()} 加载失败[/]:依赖的共享上下文插件 {string.Join("、", missing).EscapeMarkup()} 未安装。", LiveDisplaySeverity.Error);
                         if (!FailedPlugins.Contains(present.FilePath)) FailedPlugins.Add(present.FilePath);
                     }
                 return;
@@ -379,20 +490,25 @@ namespace UmamusumeResponseAnalyzer.Plugin
             IPlugin? plugin = null;
             Assembly? assembly = null;
             string? assemblyName = null;
+            var phase = "读取插件程序集";
             try
             {
                 using var stream = CreateStream(m);
                 assembly = ctx.LoadFromStream(stream);
 
+                phase = "读取插件导出类型";
                 var type = assembly.GetExportedTypes().FirstOrDefault(x => typeof(IPlugin).IsAssignableFrom(x));
                 if (type == null)
                 {
+                    LiveDisplayConsole.MarkupLog("Plugin", $"[red]插件 {m.PluginName.EscapeMarkup()} 加载失败[/]: 未找到实现 {nameof(IPlugin)} 的公开类型。", LiveDisplaySeverity.Error);
                     FailedPlugins.Add(m.FilePath);
                     return false;
                 }
 
+                phase = "创建插件实例";
                 if (Activator.CreateInstance(type) is not IPlugin createdPlugin)
                 {
+                    LiveDisplayConsole.MarkupLog("Plugin", $"[red]插件 {m.PluginName.EscapeMarkup()} 加载失败[/]: 无法创建插件实例。type={(type.FullName ?? type.Name).EscapeMarkup()}", LiveDisplaySeverity.Error);
                     FailedPlugins.Add(m.FilePath);
                     return false;
                 }
@@ -400,22 +516,25 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
                 if (plugin.Targets.Length == 0 || plugin.Targets.Intersect(Config.Repository.Targets).Any() || Config.Repository.Targets.Count == 0)
                 {
+                    phase = "注册插件入口";
                     RegisterMethods(plugin);
                     LoadedPlugins.Add(plugin);
                 }
 
+                phase = "登记插件程序集";
                 assemblyName = assembly.GetName().Name;
                 if (assemblyName != null) AssemblyMap[assemblyName] = assembly;
                 Assemblies.Add(assembly);
 
                 if (m.LoadInHost)
                 {
+                    phase = "加载宿主上下文依赖";
                     foreach (var r in assembly.GetReferencedAssemblies())
                     {
                         if (ResolveSharedAssembly(r) is not null)
                             continue;
 
-                        if (r.Name != null && Metadatas.TryGetValue(r.Name, out var dep) &&
+                        if (r.Name != null && TryGetAssemblyMetadata(r.Name, out var dep) &&
                             AssemblyLoadContext.Default.Assemblies.All(a => a.GetName().Name != r.Name))
                         {
                             using var s = CreateStream(dep);
@@ -436,7 +555,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     DisposeHostEventSubscriptions(plugin);
                     KeyboardManager.UnregisterByOwner(plugin);
                     try { plugin.Dispose(); }
-                    catch (Exception disposeEx) { LiveDisplayConsole.WriteException(disposeEx); }
+                    catch (Exception disposeEx) { LiveDisplayConsole.LogException("Plugin", disposeEx); }
                 }
 
                 if (assemblyName is not null)
@@ -444,11 +563,16 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (assembly is not null)
                     Assemblies.Remove(assembly);
 
-                LiveDisplayConsole.WriteException(ex);
+                LiveDisplayConsole.LogException("Plugin", PluginLoadException(m, phase, ex));
                 FailedPlugins.Add(m.FilePath);
                 return false;
             }
         }
+
+        static InvalidOperationException PluginLoadException(PluginMetadata metadata, string phase, Exception inner)
+            => new(
+                $"插件加载失败: plugin={metadata.PluginName}, phase={phase}",
+                inner);
 
         static void RollBackGroupLoad(HashSet<string> group, PluginLoadContext ctx, HashSet<IPlugin> loadedBefore)
         {
@@ -463,7 +587,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 DisposeHostEventSubscriptions(plugin);
                 KeyboardManager.UnregisterByOwner(plugin);
                 try { plugin.Dispose(); }
-                catch (Exception ex) { LiveDisplayConsole.WriteException(ex); }
+                catch (Exception ex) { LiveDisplayConsole.LogException("Plugin", ex); }
             }
 
             foreach (var name in group)
@@ -631,15 +755,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static void CommitRegistrationPlan(PluginRegistrationPlan plan)
         {
             foreach (var registration in plan.Analyzers)
-            {
-                var dict = registration.Kind == AnalyzerKind.Response ? ResponseAnalyzerMethods : RequestAnalyzerMethods;
-                if (!dict.TryGetValue(registration.Priority, out var list))
-                {
-                    list = [];
-                    dict[registration.Priority] = list;
-                }
-                list.Add(registration);
-            }
+                CommitAnalyzerRegistration(registration);
 
             foreach (var route in plan.Routes)
             {
@@ -654,38 +770,105 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
         }
 
+        internal static IPluginAnalyzerRegistry AnalyzersFor(IPlugin plugin)
+            => new PluginScopedAnalyzerRegistry(plugin);
+
+        internal static IDisposable RegisterProgrammaticAnalyzer(
+            IPlugin plugin,
+            AnalyzerKind kind,
+            Type endpointType,
+            Type payloadType,
+            int priority,
+            Func<AnalyzerDispatchContext, ValueTask> handler,
+            string source)
+        {
+            var registration = RegisterAnalyzerCore(plugin, kind, endpointType, payloadType, priority, handler, source, method: null);
+            CommitAnalyzerRegistration(registration);
+            return new AnalyzerRegistrationHandle(registration);
+        }
+
         static AnalyzerRegistration CreateAnalyzerRegistration(IPlugin plugin, MethodInfo method, AnalyzerAttribute analyzer)
         {
-            if (!GameEndpointCatalog.ByEndpointType.TryGetValue(analyzer.EndpointType, out var endpoint))
+            var payloadType = ValidateAttributeAnalyzerSignature(plugin, method, analyzer);
+            var source = $"{method.DeclaringType?.FullName}.{method.Name}";
+            Func<AnalyzerDispatchContext, ValueTask> handler = payloadType == typeof(byte[])
+                ? context => InvokeAttributeAnalyzer(plugin, method, context.Payload)
+                : context => InvokeAttributeAnalyzer(plugin, method, context.GetDto());
+
+            return RegisterAnalyzerCore(
+                plugin,
+                analyzer.Kind,
+                analyzer.EndpointType,
+                payloadType,
+                analyzer.Priority,
+                handler,
+                source,
+                method,
+                attribute: analyzer);
+        }
+
+        static Type ValidateAttributeAnalyzerSignature(IPlugin plugin, MethodInfo method, AnalyzerAttribute analyzer)
+        {
+            var parameters = method.GetParameters();
+            if (parameters.Length != 1 || method.ReturnType != typeof(ValueTask))
                 throw AnalyzerRegistrationException(
                     plugin,
                     method,
-                    analyzer,
+                    analyzer.EndpointType,
+                    analyzer.Kind,
+                    "<signature>",
+                    "ValueTask analyzer(TPayload payload)",
+                    DescribeAnalyzerSignature(method));
+
+            return parameters[0].ParameterType;
+        }
+
+        static AnalyzerRegistration RegisterAnalyzerCore(
+            IPlugin plugin,
+            AnalyzerKind kind,
+            Type endpointType,
+            Type payloadType,
+            int priority,
+            Func<AnalyzerDispatchContext, ValueTask> handler,
+            string source,
+            MethodInfo? method,
+            AnalyzerAttribute? attribute = null)
+        {
+            if (!GameEndpointCatalog.ByEndpointType.TryGetValue(endpointType, out var endpoint))
+                throw AnalyzerRegistrationException(
+                    plugin,
+                    method,
+                    endpointType,
+                    kind,
+                    "<signature>",
                     "catalog endpoint",
                     $"未在 {nameof(GameEndpointCatalog)}.{nameof(GameEndpointCatalog.ByEndpointType)} 注册");
 
-            ValidateAnalyzerSignature(plugin, method, analyzer, endpoint);
-            return new(
-                plugin,
-                method,
-                analyzer.EndpointType,
-                endpoint,
-                analyzer.Kind,
-                analyzer.PayloadKind,
-                analyzer.Priority);
-        }
-
-        static void ValidateAnalyzerSignature(IPlugin plugin, MethodInfo method, AnalyzerAttribute analyzer, GameEndpointDescriptor endpoint)
-        {
-            var parameters = method.GetParameters();
-            var expected = ExpectedAnalyzerParameterType(analyzer, endpoint);
-            if (parameters.Length != 1 || parameters[0].ParameterType != expected || method.ReturnType != typeof(void) || method.GetCustomAttribute<AsyncStateMachineAttribute>() is not null)
+            var expected = payloadType == typeof(byte[])
+                ? typeof(byte[])
+                : kind == AnalyzerKind.Request
+                    ? endpoint.RequestType
+                    : endpoint.ResponseType;
+            if (payloadType != expected)
                 throw AnalyzerRegistrationException(
                     plugin,
                     method,
-                    analyzer,
+                    endpointType,
+                    kind,
+                    payloadType == typeof(byte[]) ? "raw" : "DTO",
                     expected.FullName ?? expected.Name,
-                    DescribeAnalyzerSignature(method));
+                    method is null
+                        ? payloadType.FullName ?? payloadType.Name
+                        : DescribeAnalyzerSignature(method));
+
+            return new(
+                plugin,
+                method,
+                endpointType,
+                kind,
+                priority,
+                handler,
+                attribute is null ? source : $"{source} [{attribute.GetType().Name}]");
         }
 
         static string DescribeAnalyzerSignature(MethodInfo method)
@@ -698,29 +881,71 @@ namespace UmamusumeResponseAnalyzer.Plugin
             return $"return={method.ReturnType.FullName ?? method.ReturnType.Name}, parameters=({parameterText}){asyncVoid}";
         }
 
-        static Type ExpectedAnalyzerParameterType(AnalyzerAttribute analyzer, GameEndpointDescriptor endpoint)
+        static ValueTask InvokeAttributeAnalyzer(IPlugin plugin, MethodInfo method, object payload)
         {
-            return analyzer.PayloadKind switch
+            var target = method.IsStatic ? null : plugin;
+            return (ValueTask)method.Invoke(target, [payload])!;
+        }
+
+        static void CommitAnalyzerRegistration(AnalyzerRegistration registration)
+        {
+            lock (AnalyzerGate)
             {
-                AnalyzerPayloadKind.RawMessagePack => typeof(byte[]),
-                AnalyzerPayloadKind.Dto when analyzer.Kind == AnalyzerKind.Request => endpoint.RequestType,
-                AnalyzerPayloadKind.Dto when analyzer.Kind == AnalyzerKind.Response => endpoint.ResponseType,
-                _ => throw new InvalidOperationException(
-                    $"不支持的 analyzer kind/payload: {analyzer.Kind}/{analyzer.PayloadKind} for {analyzer.EndpointType.FullName}.")
-            };
+                var dict = registration.Kind == AnalyzerKind.Response ? ResponseAnalyzerMethods : RequestAnalyzerMethods;
+                if (!dict.TryGetValue(registration.Priority, out var list))
+                {
+                    list = [];
+                    dict[registration.Priority] = list;
+                }
+
+                list.Add(registration);
+            }
+        }
+
+        internal static void RemoveAnalyzerRegistration(AnalyzerRegistration registration)
+        {
+            lock (AnalyzerGate)
+                RemoveAnalyzerRegistrationLocked(registration);
+        }
+
+        static void RemoveAnalyzerRegistrationLocked(AnalyzerRegistration registration)
+        {
+            var dict = registration.Kind == AnalyzerKind.Response ? ResponseAnalyzerMethods : RequestAnalyzerMethods;
+            if (!dict.TryGetValue(registration.Priority, out var list))
+                return;
+
+            list.Remove(registration);
+            if (list.Count == 0)
+                dict.Remove(registration.Priority);
+        }
+
+        internal static List<AnalyzerRegistration> SnapshotAnalyzerRegistrations(AnalyzerKind kind, Type endpointType)
+        {
+            lock (AnalyzerGate)
+            {
+                var dict = kind == AnalyzerKind.Request ? RequestAnalyzerMethods : ResponseAnalyzerMethods;
+                return dict
+                    .SelectMany(x => x.Value)
+                    .Where(x => x.EndpointType == endpointType)
+                    .ToList();
+            }
         }
 
         static InvalidOperationException AnalyzerRegistrationException(
             IPlugin plugin,
-            MethodInfo method,
-            AnalyzerAttribute analyzer,
+            MethodInfo? method,
+            Type endpointType,
+            AnalyzerKind kind,
+            string payload,
             string expected,
             string actual)
         {
+            var methodName = method is null
+                ? "<programmatic>"
+                : $"{method.DeclaringType?.FullName}.{method.Name}";
             return new InvalidOperationException(
                 $"插件 analyzer 签名无效: plugin={plugin.Name} ({InternalName(plugin)}), " +
-                $"method={method.DeclaringType?.FullName}.{method.Name}, " +
-                $"endpoint={analyzer.EndpointType.FullName}, kind={analyzer.Kind}, payload={analyzer.PayloadKind}, " +
+                $"method={methodName}, endpoint={endpointType.FullName}, kind={kind}, payload={payload}, " +
                 $"expected={expected}, actual={actual}");
         }
 
@@ -732,12 +957,70 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             using (KeyboardManager.RegisterScope(plugin))
             {
-                var liveDisplay = liveDisplayFactory is { } factory
-                    ? factory(plugin)
-                    : NullLiveDisplayOutput.Instance;
+                var factory = GetLiveDisplayFactory();
+                var liveDisplay = factory(plugin);
                 using var callback = EnterPluginCallbackScope();
                 InvokeContextInitialize(plugin, new PluginContext(plugin, liveDisplay, HostEvents));
             }
+        }
+
+        internal static void InitializeLoadedPlugins()
+        {
+            foreach (var plugin in LoadedPlugins.ToList())
+                TryInitializePlugin(plugin, removeFromLoadedPlugins: true, disposeOnFailure: true);
+        }
+
+        static bool TryInitializePlugin(IPlugin plugin, bool removeFromLoadedPlugins, bool disposeOnFailure)
+        {
+            _ = GetLiveDisplayFactory();
+            try
+            {
+                InitializePlugin(plugin);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var failedPlugin = FailedPluginPath(plugin);
+                LiveDisplayConsole.LogException("Plugin", PluginInitializeException(plugin, failedPlugin, ex));
+                if (!FailedPlugins.Contains(failedPlugin))
+                    FailedPlugins.Add(failedPlugin);
+                CleanupPluginAfterInitializationFailure(plugin, removeFromLoadedPlugins, disposeOnFailure);
+                return false;
+            }
+        }
+
+        static Func<IPlugin, ILiveDisplayOutput> GetLiveDisplayFactory()
+            => liveDisplayFactory ?? throw new InvalidOperationException("插件初始化前必须先绑定 LiveDisplay。");
+
+        static string FailedPluginPath(IPlugin plugin)
+        {
+            var internalName = InternalName(plugin);
+            return Metadatas.TryGetValue(internalName, out var metadata)
+                ? metadata.FilePath
+                : plugin.Name;
+        }
+
+        static InvalidOperationException PluginInitializeException(IPlugin plugin, string failedPlugin, Exception inner)
+            => new(
+                $"插件初始化失败: plugin={plugin.Name} ({InternalName(plugin)})",
+                inner);
+
+        static void CleanupPluginAfterInitializationFailure(IPlugin plugin, bool removeFromLoadedPlugins, bool dispose)
+        {
+            if (removeFromLoadedPlugins)
+                LoadedPlugins.Remove(plugin);
+
+            RemoveAnalyzerMethods(plugin);
+            foreach (var route in RemoveRoutes(plugin))
+                route.WaitForIdle();
+            DisposeHostEventSubscriptions(plugin);
+            KeyboardManager.UnregisterByOwner(plugin);
+
+            if (!dispose)
+                return;
+
+            try { plugin.Dispose(); }
+            catch (Exception ex) { LiveDisplayConsole.LogException("Plugin", ex); }
         }
 
         static void InvokeContextInitialize(IPlugin plugin, IPluginContext context)
@@ -809,7 +1092,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                     catch (Exception ex)
                     {
-                        LiveDisplayConsole.WriteException(ex);
+                        LiveDisplayConsole.LogException("Plugin", ex);
 #if DEBUG
                         throw;
 #endif
@@ -869,7 +1152,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static Dictionary<string, PluginMetadata> ScanPluginMetadata()
         {
             Dictionary<string, PluginMetadata> scanned = [];
-            ScanAll(scanned);
+            Dictionary<string, PluginMetadata> assemblies = [];
+            ScanAll(scanned, assemblies);
+            ReplaceAssemblyMetadatas(assemblies);
             return scanned;
         }
 
@@ -909,7 +1194,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             // 约束1：已加载且为 LoadInHost → 进了 Default ALC，永不可卸载
             if (existing is { LoadInHost: true })
             {
-                LiveDisplayConsole.MarkupLine($"[yellow]插件 {pluginName.EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]");
+                LiveDisplayConsole.MarkupLog("Plugin", $"[yellow]插件 {pluginName.EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]", LiveDisplaySeverity.Warning);
                 return outcomes[pluginName] = false;
             }
 
@@ -919,7 +1204,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             if (affectedNames.Any(name => scanned.TryGetValue(name, out var m) && m.LoadInHost))
             {
-                LiveDisplayConsole.MarkupLine($"[yellow]插件 {pluginName.EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]");
+                LiveDisplayConsole.MarkupLog("Plugin", $"[yellow]插件 {pluginName.EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]", LiveDisplaySeverity.Warning);
                 foreach (var name in affectedNames)
                     outcomes[name] = false;
                 return false;
@@ -943,7 +1228,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             if (!Metadatas.ContainsKey(pluginName))
             {
                 // 文件已被删除：卸载即完成
-                LiveDisplayConsole.MarkupLine($"[yellow]插件 {pluginName.EscapeMarkup()} 的文件已不存在，已卸载。[/]");
+                LiveDisplayConsole.MarkupLog("Plugin", $"[yellow]插件 {pluginName.EscapeMarkup()} 的文件已不存在，已卸载。[/]", LiveDisplaySeverity.Warning);
                 BuildGroups();
                 LoadAffectedGroups(affectedNames, outcomes, pendingUnloads);
                 return outcomes[pluginName] = true;
@@ -952,7 +1237,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             // 新元数据若为 LoadInHost（如刚加上该特性），不走热重载路径
             if (Metadatas[pluginName].LoadInHost)
             {
-                LiveDisplayConsole.MarkupLine($"[yellow]插件 {pluginName.EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]");
+                LiveDisplayConsole.MarkupLog("Plugin", $"[yellow]插件 {pluginName.EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]", LiveDisplaySeverity.Warning);
                 return outcomes[pluginName] = false;
             }
 
@@ -961,7 +1246,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             var loaded = IsPluginLoaded(pluginName);
             if (loaded)
-                LiveDisplayConsole.MarkupLine($"[green]插件 {pluginName.EscapeMarkup()} 已重载。[/]");
+                LiveDisplayConsole.MarkupLog("Plugin", $"[green]插件 {pluginName.EscapeMarkup()} 已重载。[/]", LiveDisplaySeverity.Success);
             return outcomes[pluginName] = loaded;
         }
 
@@ -992,16 +1277,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
                 if (Server.IsRunning)
                 {
-                    try
-                    {
-                        RunOutsideReloadWriteLock(() => InitializeStagedPlugins(staged));
-                    }
-                    catch
+                    var initialized = true;
+                    RunOutsideReloadWriteLock(() => initialized = InitializeStagedPlugins(staged));
+                    if (!initialized)
                     {
                         foreach (var name in group.Where(Metadatas.ContainsKey))
                             outcomes[name] = false;
                         RunOutsideReloadWriteLock(() => DisposeStagedGroup(staged));
-                        throw;
+                        continue;
                     }
                 }
 
@@ -1036,7 +1319,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 foreach (var name in group)
                     if (Metadatas.TryGetValue(name, out var present))
                     {
-                        LiveDisplayConsole.MarkupLine($"[red]插件 {name.EscapeMarkup()} 加载失败[/]:依赖的共享上下文插件 {string.Join("、", missing).EscapeMarkup()} 未安装。");
+                        LiveDisplayConsole.MarkupLog("Plugin", $"[red]插件 {name.EscapeMarkup()} 加载失败[/]:依赖的共享上下文插件 {string.Join("、", missing).EscapeMarkup()} 未安装。", LiveDisplaySeverity.Error);
                         if (!FailedPlugins.Contains(present.FilePath)) FailedPlugins.Add(present.FilePath);
                     }
                 return null;
@@ -1061,6 +1344,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static bool StageIntoContext(StagedGroupLoad staged, PluginMetadata metadata)
         {
             IPlugin? plugin = null;
+            var phase = "读取插件程序集";
             try
             {
                 using var stream = CreateStream(metadata);
@@ -1071,15 +1355,19 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     staged.Assemblies.Add(new(assemblyName, assembly));
                 }
 
+                phase = "读取插件导出类型";
                 var type = assembly.GetExportedTypes().FirstOrDefault(x => typeof(IPlugin).IsAssignableFrom(x));
                 if (type is null)
                 {
+                    LiveDisplayConsole.MarkupLog("Plugin", $"[red]插件 {metadata.PluginName.EscapeMarkup()} 加载失败[/]: 未找到实现 {nameof(IPlugin)} 的公开类型。", LiveDisplaySeverity.Error);
                     FailedPlugins.Add(metadata.FilePath);
                     return false;
                 }
 
+                phase = "创建插件实例";
                 if (Activator.CreateInstance(type) is not IPlugin createdPlugin)
                 {
+                    LiveDisplayConsole.MarkupLog("Plugin", $"[red]插件 {metadata.PluginName.EscapeMarkup()} 加载失败[/]: 无法创建插件实例。type={(type.FullName ?? type.Name).EscapeMarkup()}", LiveDisplaySeverity.Error);
                     FailedPlugins.Add(metadata.FilePath);
                     return false;
                 }
@@ -1088,6 +1376,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (plugin.Targets.Length != 0 && !plugin.Targets.Intersect(Config.Repository.Targets).Any() && Config.Repository.Targets.Count != 0)
                     return true;
 
+                phase = "注册插件入口";
                 staged.Plugins.Add(new(plugin, CreateRegistrationPlan(plugin)));
                 return true;
             }
@@ -1095,22 +1384,26 @@ namespace UmamusumeResponseAnalyzer.Plugin
             {
                 if (plugin is not null)
                 {
+                    RemoveAnalyzerMethods(plugin);
                     DisposeHostEventSubscriptions(plugin);
                     KeyboardManager.UnregisterByOwner(plugin);
                     try { plugin.Dispose(); }
-                    catch (Exception disposeEx) { LiveDisplayConsole.WriteException(disposeEx); }
+                    catch (Exception disposeEx) { LiveDisplayConsole.LogException("Plugin", disposeEx); }
                 }
 
-                LiveDisplayConsole.WriteException(ex);
+                LiveDisplayConsole.LogException("Plugin", PluginLoadException(metadata, phase, ex));
                 FailedPlugins.Add(metadata.FilePath);
                 return false;
             }
         }
 
-        static void InitializeStagedPlugins(StagedGroupLoad staged)
+        static bool InitializeStagedPlugins(StagedGroupLoad staged)
         {
             foreach (var plugin in staged.Plugins)
-                InitializePlugin(plugin.Plugin);
+                if (!TryInitializePlugin(plugin.Plugin, removeFromLoadedPlugins: false, disposeOnFailure: false))
+                    return false;
+
+            return true;
         }
 
         static void CommitStagedGroupLoad(StagedGroupLoad staged)
@@ -1160,10 +1453,11 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             foreach (var plugin in staged.Plugins)
             {
+                RemoveAnalyzerMethods(plugin.Plugin);
                 DisposeHostEventSubscriptions(plugin.Plugin);
                 KeyboardManager.UnregisterByOwner(plugin.Plugin);
                 try { plugin.Plugin.Dispose(); }
-                catch (Exception ex) { LiveDisplayConsole.WriteException(ex); }
+                catch (Exception ex) { LiveDisplayConsole.LogException("Plugin", ex); }
             }
 
             staged.Context.Unload();
@@ -1215,7 +1509,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             // 约束1：组内任一插件 LoadInHost → 整组进了 Default ALC，永不可卸载
             if (group.Any(n => Metadatas.TryGetValue(n, out var m) && m.LoadInHost))
             {
-                LiveDisplayConsole.MarkupLine($"[yellow]插件 {string.Join("、", group).EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]");
+                LiveDisplayConsole.MarkupLog("Plugin", $"[yellow]插件 {string.Join("、", group).EscapeMarkup()} 在宿主上下文加载，不支持热重载，请重启。[/]", LiveDisplaySeverity.Warning);
                 return false;
             }
 
@@ -1288,7 +1582,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 foreach (var plugin in unload.Plugins)
                 {
                     try { plugin.Dispose(); }
-                    catch (Exception ex) { LiveDisplayConsole.WriteException(ex); }
+                    catch (Exception ex) { LiveDisplayConsole.LogException("Plugin", ex); }
 
                     KeyboardManager.UnregisterByOwner(plugin);
                 }
@@ -1301,13 +1595,16 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
         static void RemoveAnalyzerMethods(IPlugin plugin)
         {
-            foreach (var dict in (SortedDictionary<int, List<AnalyzerRegistration>>[])[RequestAnalyzerMethods, ResponseAnalyzerMethods])
+            lock (AnalyzerGate)
             {
-                foreach (var priority in dict.Keys.ToList())
+                foreach (var dict in (SortedDictionary<int, List<AnalyzerRegistration>>[])[RequestAnalyzerMethods, ResponseAnalyzerMethods])
                 {
-                    var list = dict[priority];
-                    list.RemoveAll(x => ReferenceEquals(x.Plugin, plugin));
-                    if (list.Count == 0) dict.Remove(priority);
+                    foreach (var priority in dict.Keys.ToList())
+                    {
+                        var list = dict[priority];
+                        list.RemoveAll(x => ReferenceEquals(x.Plugin, plugin));
+                        if (list.Count == 0) dict.Remove(priority);
+                    }
                 }
             }
         }
@@ -1359,7 +1656,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     }
                 }
 
-                if (name.Name == null || !Metadatas.TryGetValue(name.Name, out var dep)) return null;
+                if (name.Name == null || !TryGetAssemblyMetadata(name.Name, out var dep)) return null;
 
                 using var stream = CreateStream(dep);
                 var assembly = LoadFromStream(stream);

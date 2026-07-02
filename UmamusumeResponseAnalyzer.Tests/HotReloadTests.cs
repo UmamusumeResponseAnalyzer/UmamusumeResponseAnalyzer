@@ -259,7 +259,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         /// <summary>经真实 typed/raw analyzer 分发路径调用已注册插件。</summary>
         static void Dispatch()
         {
-            Server.DispatchResponse("/account/index", [0xC0]);
+            Server.DispatchResponse("/umamusume/account/index", [0xC0]).GetAwaiter().GetResult();
         }
 
         /// <summary>生成一个最小 IPlugin 插件源码；analyzer 把 <paramref name="marker"/> 写进日志文件；可选 SharedContextWith。</summary>
@@ -297,10 +297,11 @@ namespace UmamusumeResponseAnalyzer.Tests
                         // 记录 Initialize 被调用——测 High#2 门控:Server 未启动时,重载不应触发 Initialize。
                         public void Initialize(IPluginContext context) => File.AppendAllText(@"{{_initLog}}", "{{pluginName}}\n");
 
-                        [RawResponseAnalyzer<GameApi.Account.Index>]
-                        public void Analyze(byte[] payload)
+                        [ResponseAnalyzer<GameApi.Account.Index>]
+                        public ValueTask Analyze(byte[] payload)
                         {
                             File.AppendAllText(@"{{_logPath}}", "{{marker}}:" + payload.Length + "\n");
+                            return ValueTask.CompletedTask;
                         }
                     }
                 }

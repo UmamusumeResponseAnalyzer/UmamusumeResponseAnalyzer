@@ -4,6 +4,8 @@ namespace UmamusumeResponseAnalyzer
     {
         void ShowPopup(KeyboardPopup popup);
         void HidePopup();
+        void ShowCommandInput(KeyboardCommandInput input);
+        void HideCommandInput();
     }
 
     internal sealed record KeyboardPopup(
@@ -12,6 +14,7 @@ namespace UmamusumeResponseAnalyzer
         DateTimeOffset? ExpiresAt = null);
 
     internal sealed record KeyboardPopupLine(string Text, ConsoleColor Color, bool IsMarkup);
+    internal sealed record KeyboardCommandInput(string Text);
 
     public sealed class KeyboardHandlerContext
     {

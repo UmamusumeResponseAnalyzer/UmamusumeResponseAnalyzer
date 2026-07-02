@@ -21,6 +21,7 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
 
         LiveDisplayWorkspace? activeWorkspace;
         KeyboardPopup? keyboardPopup;
+        KeyboardCommandInput? commandInput;
         bool shutdownRequested;
         int runState;
         int acceptingEvents = 1;
@@ -64,6 +65,8 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
         public void RequestShutdown() => Post(new UiEvent.Shutdown());
         public void HidePopup() => Post(new UiEvent.HidePopup());
         void IKeyboardOverlaySink.ShowPopup(KeyboardPopup popup) => Post(new UiEvent.ShowPopup(popup));
+        void IKeyboardOverlaySink.ShowCommandInput(KeyboardCommandInput input) => Post(new UiEvent.ShowCommandInput(input));
+        void IKeyboardOverlaySink.HideCommandInput() => Post(new UiEvent.HideCommandInput());
         internal bool IsRunning => Volatile.Read(ref runState) != 0;
 
         internal void RenderSnapshot(IAnsiConsole console)
@@ -271,6 +274,13 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
                 case UiEvent.HidePopup:
                     keyboardPopup = null;
                     break;
+                case UiEvent.ShowCommandInput showCommandInput:
+                    keyboardPopup = null;
+                    commandInput = showCommandInput.Input;
+                    break;
+                case UiEvent.HideCommandInput:
+                    commandInput = null;
+                    break;
                 case UiEvent.Shutdown:
                     shutdownRequested = true;
                     break;
@@ -304,6 +314,9 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
 
             if (keyboardPopup is not null)
                 content = new KeyboardPopupOverlayRenderable(content, keyboardPopup, width, height, bottomInset: 0, now: now);
+
+            if (commandInput is not null)
+                content = new KeyboardCommandInputOverlayRenderable(content, commandInput, width, height);
 
             return content;
         }

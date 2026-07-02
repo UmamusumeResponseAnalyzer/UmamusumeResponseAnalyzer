@@ -12,6 +12,8 @@ namespace UmamusumeResponseAnalyzer.LiveDisplay
         public sealed record SwitchWorkspace(LiveDisplayWorkspace Workspace) : UiEvent;
         public sealed record ShowPopup(KeyboardPopup Popup) : UiEvent;
         public sealed record HidePopup : UiEvent;
+        public sealed record ShowCommandInput(KeyboardCommandInput Input) : UiEvent;
+        public sealed record HideCommandInput : UiEvent;
         public sealed record Shutdown : UiEvent;
     }
 }
