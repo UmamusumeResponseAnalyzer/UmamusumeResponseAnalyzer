@@ -5,41 +5,15 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<AssemblyVersion></AssemblyVersion>
-		<FileVersion></FileVersion>
-		<Authors>$(AssemblyName)</Authors>
 		<Version>1.14.4.0</Version>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Platforms>AnyCPU;x64</Platforms>
-		<IsPublishable>True</IsPublishable>
 		<TrimMode>partial</TrimMode>
 		<CETCompat>false</CETCompat>
-	</PropertyGroup>
-	
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<NoWarn>1701;1702;CS8509;CS8618;CA2211</NoWarn>
 		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	  <NoWarn>1701;1702;CS8509;CS8618;CA2211</NoWarn>
-	  <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<NoWarn>1701;1702;CS8509;CS8618;CA2211</NoWarn>
-		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	  <NoWarn>1701;1702;CS8509;CS8618;CA2211</NoWarn>
-	  <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
-
-	<ItemGroup>
-	  <Content Include="icon.ico" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="UmamusumeResponseAnalyzer.Tests" />
