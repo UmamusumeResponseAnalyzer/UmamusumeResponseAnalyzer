@@ -78,17 +78,14 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.True(cond.IsArchived(chara, []));
         }
 
-        /// <summary>
-        /// condition_id 在 server 数组中不存在：serverCondition 为 null，
-        /// <c>null == null</c> 使首个判断成立 → 直接 true（这是被测代码的真实短路行为）。
-        /// </summary>
         [Fact]
-        public void IsArchived_ConditionAbsentFromServer_ReturnsTrueViaNullEquality()
+        public void IsArchived_ConditionAbsentFromServer_Throws()
         {
             var chara = MakeChara(upgradeInfo: [Info(999, 0, 5)]); // 不含 ConditionId=100
             var cond = new UpgradeCondition { ConditionId = 100, Type = UpgradeCondition.ConditionType.Speed, Requirement = 99 };
 
-            Assert.True(cond.IsArchived(chara, []));
+            var ex = Assert.Throws<InvalidOperationException>(() => cond.IsArchived(chara, []));
+            Assert.Contains("conditionId=100", ex.Message, StringComparison.Ordinal);
         }
 
         // =========================================================================
