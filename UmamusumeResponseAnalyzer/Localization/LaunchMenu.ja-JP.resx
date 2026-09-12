@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="I18N_InstallUraCore" xml:space="preserve">
-    <value>ura-coreを自動インストール</value>
+    <value>Hachimi-Edge をインストール</value>
   </data>
   <data name="I18N_Instruction" xml:space="preserve">
     <value>起動メニュー（↑および↓でオプションを切り替え、Enterで確認）</value>
@@ -143,9 +143,6 @@
   </data>
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>有効なゲームディレクトリが見つかりました：{0}</value>
-  </data>
-  <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
-    <value>{0}に成功してインストールされました。任意のキーを押してメインメニューに戻ってください</value>
   </data>
   <data name="I18N_Start_Started" xml:space="preserve">
     <value>起動しました</value>

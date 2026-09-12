@@ -156,12 +156,14 @@ namespace UmamusumeResponseAnalyzer
             IProgress<DownloadProgress>? progress = null,
             string? instruction = null,
             string? path = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? downloadUrl = null,
+            long? expectedLength = null)
         {
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("下载目标路径不能为空。", nameof(path));
 
-            var downloadURL = GetDownloadUrl(path);
+            var downloadURL = downloadUrl ?? GetDownloadUrl(path);
             var fullPath = Path.GetFullPath(path);
             var directory = Path.GetDirectoryName(fullPath)!;
             var tempPath = Path.Combine(directory, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
@@ -172,7 +174,9 @@ namespace UmamusumeResponseAnalyzer
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
                 response.EnsureSuccessStatusCode();
-                var total = response.Content.Headers.ContentLength ?? 0;
+                if (expectedLength is { } expected && response.Content.Headers.ContentLength is { } actual && actual != expected)
+                    throw new InvalidDataException($"Download length mismatch: expected {expected}, received {actual}.");
+                var total = expectedLength ?? response.Content.Headers.ContentLength ?? 0;
                 long completed = 0;
                 progress?.Report(new(
                     fullPath,
@@ -190,6 +194,8 @@ namespace UmamusumeResponseAnalyzer
                         if (read == 0)
                             break;
                         completed += read;
+                        if (expectedLength is { } limit && completed > limit)
+                            throw new InvalidDataException($"Download exceeds the expected {limit} bytes.");
                         progress?.Report(new(
                             fullPath,
                             instruction ?? Path.GetFileName(path),
@@ -199,18 +205,20 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
 
+                if (expectedLength is { } length && completed != length)
+                    throw new InvalidDataException($"Download length mismatch: expected {length}, received {completed}.");
                 File.Move(tempPath, fullPath, overwrite: true);
             }
             catch (OperationCanceledException)
             {
                 throw;
             }
-            catch (Exception) when (new Uri(downloadURL).Host == "raw.githubusercontent.com")
+            catch (Exception) when (downloadUrl is null && new Uri(downloadURL).Host == "raw.githubusercontent.com")
             {
                 TerminalUi.Log("URA", string.Format(I18N_AccessGithubFail, downloadURL));
                 throw;
             }
-            catch
+            catch (Exception) when (downloadUrl is null)
             {
                 TerminalUi.Log("URA", string.Format(I18N_AccessMirrorFail, downloadURL));
                 throw;

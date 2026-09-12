@@ -560,11 +560,12 @@ namespace UmamusumeResponseAnalyzer.Tests
             var unknownCondition = new TalentSkillData.UpgradeCondition
             {
                 ConditionId = conditionId,
-                Type = TalentSkillData.UpgradeCondition.ConditionType.None
+                Type = (TalentSkillData.UpgradeCondition.ConditionType)999
             };
             var upgradeSkills = new Dictionary<int, TalentSkillData.UpgradeCondition[]>
             {
-                [200] = [unknownCondition]
+                [200] = [unknownCondition],
+                [201] = [new() { ConditionId = 41201101, Type = TalentSkillData.UpgradeCondition.ConditionType.None }]
             };
 
             var directory = Path.Combine(Path.GetTempPath(), $"ura-database-unknown-condition-{Guid.NewGuid():N}");
@@ -608,13 +609,144 @@ namespace UmamusumeResponseAnalyzer.Tests
                 await runtime.Host.FlushAsync();
                 await runtime.Terminal.WaitForScreenAsync($"conditionId={conditionId}");
                 var warnings = logs
-                    .Where(x => x.Text.Contains($"conditionId={conditionId}", StringComparison.Ordinal))
+                    .Where(x => x.Text.Contains("conditionId=", StringComparison.Ordinal))
                     .ToArray();
                 var screen = await runtime.Terminal.CaptureScreenAsync();
                 var severity = warnings.Length == 1 ? warnings[0].Severity.ToString() : "n/a";
                 TerminalUiLifecycleChildProcess.WriteResult(
                     $"{ready}|{warnings.Length}|{severity}|" +
                     $"{screen.Contains($"conditionId={conditionId}", StringComparison.Ordinal)}");
+            }
+            finally
+            {
+                runtime.Host.LogAdded -= ObserveLog;
+                Directory.SetCurrentDirectory(previousDirectory);
+                Directory.Delete(directory, true);
+            }
+        }
+
+        [Fact]
+        public async Task Initialize_EvolutionCandidates_RespectServerProgressAndMasterGroups()
+        {
+            const string scenario = "database-skill-evolution-groups";
+            if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
+            {
+                Assert.Equal(
+                    "Ready|12|0",
+                    await TerminalUiLifecycleProcessTests.RunChildAsync(
+                        scenario,
+                        typeof(DatabaseInitializeMissingFilesTests),
+                        nameof(Initialize_EvolutionCandidates_RespectServerProgressAndMasterGroups)));
+                return;
+            }
+
+            var directory = Path.Combine(Path.GetTempPath(), $"ura-evolution-groups-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(directory);
+            var previousDirectory = Directory.GetCurrentDirectory();
+            List<UiLogLine> logs = [];
+            void ObserveLog(UiLogLine line) => logs.Add(line);
+            runtime.Host.LogAdded += ObserveLog;
+            try
+            {
+                Directory.SetCurrentDirectory(directory);
+                await WriteAsync(directory, Database.EVENT_NAME_FILEPATH, Array.Empty<Story>());
+                await WriteAsync(directory, Database.NAMES_FILEPATH, new List<BaseName>(), new() { TypeNameHandling = TypeNameHandling.All });
+                var skillIds = new[] { 201662, 203361, 200511, 412011, 412051, 100101211 };
+                await WriteAsync(directory, Database.SKILLS_FILEPATH, skillIds.Select(id => new SkillData
+                {
+                    Id = id, GroupId = id, Name = $"skill{id}", Rarity = 2, Rate = 2, Cost = 180, Grade = 250, Propers = []
+                }).ToArray());
+                // 主表：412051 的两个跑法条件属于 num=1，汤浴会属于 num=2。
+                await WriteAsync(directory, Database.SKILL_UPGRADE_SPECIALITY_FILEPATH, new[]
+                {
+                    new SkillUpgradeSpeciality
+                    {
+                        ScenarioId = 12, BaseSkillId = 201662, SkillId = 412011,
+                        UpgradeSkills = { [412011] = [new() { ConditionId = 41201101, Group = 1 }] }
+                    },
+                    new SkillUpgradeSpeciality
+                    {
+                        ScenarioId = 12, BaseSkillId = 203361, SkillId = 412051,
+                        UpgradeSkills =
+                        {
+                            [412051] =
+                            [
+                                new() { ConditionId = 41205101, Group = 1, Type = TalentSkillData.UpgradeCondition.ConditionType.Proper, Requirement = 3, AdditionalRequirement = 2 },
+                                new() { ConditionId = 41205102, Group = 1, Type = TalentSkillData.UpgradeCondition.ConditionType.Proper, Requirement = 4, AdditionalRequirement = 2 },
+                                new() { ConditionId = 41205103, Group = 2 }
+                            ]
+                        }
+                    }
+                });
+                // 主表：日本杯/GⅠ胜场属于 num=1，智力属于 num=2。
+                await WriteAsync(directory, Database.TALENT_SKILLS_FILEPATH, new Dictionary<int, TalentSkillData[]>
+                {
+                    [100101] =
+                    [
+                        new()
+                        {
+                            SkillId = 200511, Rank = 5,
+                            UpgradeSkills =
+                            {
+                                [100101211] =
+                                [
+                                    new() { ConditionId = 10010103, Group = 1 },
+                                    new() { ConditionId = 10010104, Group = 1 },
+                                    new() { ConditionId = 10010105, Group = 2 }
+                                ]
+                            }
+                        }
+                    ]
+                });
+                await WriteAsync(directory, Database.FACTOR_IDS_FILEPATH, new Dictionary<int, string>());
+                await WriteAsync(directory, Database.SADDLE_IDS_FILEPATH, Array.Empty<int>());
+                await WriteAsync(directory, Database.SUCCESSION_RELATION_FILEPATH, new SuccessionRelationTable());
+                Assert.Equal(DatabaseAvailability.Ready, await Database.Initialize());
+
+                var chara = new Gallop.SingleModeChara
+                {
+                    card_id = 100101, talent_level = 5, scenario_id = 12,
+                    chara_effect_id_array = [], skill_array = [],
+                    skill_tips_array = [new() { group_id = 201662, rarity = 2 }, new() { group_id = 203361, rarity = 2 }],
+                    skill_upgrade_info_array =
+                    [
+                        new() { condition_id = 41201101, total_count = 3 },
+                        new() { condition_id = 41205101, total_count = 2 },
+                        new() { condition_id = 41205102, total_count = 2 },
+                        new() { condition_id = 41205103, total_count = 1 },
+                        new() { condition_id = 10010103, total_count = 1 },
+                        new() { condition_id = 10010104, total_count = 2 },
+                        new() { condition_id = 10010105, total_count = 800 }
+                    ]
+                };
+                var manager = Database.Skills.Apply(chara);
+                var cases = new (int[] Counts, SkillProper.StyleType Style, int[] Expected)[]
+                {
+                    ([0, 0, 0, 0, 0, 0, 0], default, []),
+                    ([3, 0, 0, 0, 0, 0, 0], default, [412011]),
+                    ([0, 2, 0, 0, 0, 0, 0], default, []),
+                    ([0, 0, 0, 1, 0, 0, 0], default, []),
+                    ([0, 2, 0, 1, 0, 0, 0], default, [412051]),
+                    ([0, 0, 2, 1, 0, 0, 0], default, [412051]),
+                    ([0, 0, 0, 1, 0, 0, 0], SkillProper.StyleType.Sashi, [412051]),
+                    ([0, 0, 0, 0, 0, 0, 0], SkillProper.StyleType.Oikomi, []),
+                    ([0, 0, 0, 0, 1, 0, 0], default, []),
+                    ([0, 0, 0, 0, 0, 0, 800], default, []),
+                    ([0, 0, 0, 0, 1, 0, 800], default, [100101211]),
+                    ([0, 0, 0, 0, 0, 2, 800], default, [100101211])
+                };
+                foreach (var (counts, style, expected) in cases)
+                {
+                    for (var i = 0; i < counts.Length; i++)
+                        chara.skill_upgrade_info_array[i].current_count = counts[i];
+                    var willLearn = style == default ? Array.Empty<SkillData>() : Enumerable.Range(1, 2)
+                        .Select(id => new SkillData { Id = id, Name = $"skill{id}", Propers = [new() { Style = style }] }).ToArray();
+                    manager.Evolve(chara, willLearn);
+                    Assert.Equal(expected, manager.SelectMany(x => x.Upgrades).Select(x => x.Id).Order().ToArray());
+                }
+                await runtime.Host.FlushAsync();
+                var warnings = logs.Count(x => x.Text.Contains("conditionId=", StringComparison.Ordinal));
+                TerminalUiLifecycleChildProcess.WriteResult($"Ready|{cases.Length}|{warnings}");
             }
             finally
             {

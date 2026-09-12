@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="I18N_InstallUraCore" xml:space="preserve">
-    <value>自动安装ura-core</value>
+    <value>安装 Hachimi-Edge</value>
   </data>
   <data name="I18N_Instruction" xml:space="preserve">
     <value>启动菜单(用↑和↓切换选项,回车确认)</value>
@@ -143,9 +143,6 @@
   </data>
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>发现有效的游戏目录:{0}</value>
-  </data>
-  <data name="I18N_UraCoreHelper_InstallSuccess" xml:space="preserve">
-    <value>安装到{0}成功,按任意键返回主菜单</value>
   </data>
   <data name="I18N_Start_Started" xml:space="preserve">
     <value>已启动</value>

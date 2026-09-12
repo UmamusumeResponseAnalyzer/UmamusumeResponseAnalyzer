@@ -78,11 +78,13 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.True(cond.IsArchived(chara, []));
         }
 
-        [Fact]
-        public void IsArchived_ConditionAbsentFromServer_Throws()
+        [Theory]
+        [InlineData(UpgradeCondition.ConditionType.None)]
+        [InlineData(UpgradeCondition.ConditionType.Speed)]
+        public void IsArchived_ConditionAbsentFromServer_Throws(UpgradeCondition.ConditionType type)
         {
             var chara = MakeChara(upgradeInfo: [Info(999, 0, 5)]); // 不含 ConditionId=100
-            var cond = new UpgradeCondition { ConditionId = 100, Type = UpgradeCondition.ConditionType.Speed, Requirement = 99 };
+            var cond = new UpgradeCondition { ConditionId = 100, Type = type, Requirement = 99 };
 
             var ex = Assert.Throws<InvalidOperationException>(() => cond.IsArchived(chara, []));
             Assert.Contains("conditionId=100", ex.Message, StringComparison.Ordinal);
@@ -224,15 +226,26 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Theory]
-        [InlineData((int)UpgradeCondition.ConditionType.None)]
-        [InlineData(999)]
-        public void IsArchived_UnknownConditionType_ReturnsFalseEvenWhenServerSaysComplete(int type)
+        [InlineData(0, 1, false)]
+        [InlineData(1, 1, true)]
+        [InlineData(0, 0, true)]
+        public void IsArchived_ServerOnlyCondition_UsesServerProgress(int current, int total, bool expected)
+        {
+            var chara = MakeChara(upgradeInfo: [Info(41201101, current, total)]);
+            var condition = new UpgradeCondition { ConditionId = 41201101, Type = UpgradeCondition.ConditionType.None };
+
+            Assert.Equal(expected, condition.IsArchived(chara, []));
+            Assert.Equal(expected, condition.IsArchived(chara, [MakeSkill(1, SkillCategory.Speed)]));
+        }
+
+        [Fact]
+        public void IsArchived_UnknownConditionType_ReturnsFalseEvenWhenServerSaysComplete()
         {
             var chara = MakeChara(upgradeInfo: [Info(11320104, 1, 1)]);
             var condition = new UpgradeCondition
             {
                 ConditionId = 11320104,
-                Type = (UpgradeCondition.ConditionType)type
+                Type = (UpgradeCondition.ConditionType)999
             };
 
             Assert.False(condition.IsArchived(chara, []));

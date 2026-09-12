@@ -60,6 +60,9 @@ public static class TerminalUi
         CancellationToken cancellationToken = default)
         => ModalDialogs.Acknowledge(title, cancellationToken);
 
+    internal static string PickExecutable(string title, CancellationToken cancellationToken = default)
+        => ModalDialogs.PickExecutable(title, cancellationToken);
+
     internal static Task RunProgressAsync(
         Func<IProgress<DownloadProgress>, CancellationToken, Task> action,
         CancellationToken cancellationToken = default)

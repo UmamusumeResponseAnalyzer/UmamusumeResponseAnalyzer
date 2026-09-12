@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="SelectGame" xml:space="preserve">
+    <value>Select a game installation</value>
+  </data>
+  <data name="Browse" xml:space="preserve">
+    <value>Browse for a game EXE…</value>
+  </data>
+  <data name="SelectExecutable" xml:space="preserve">
+    <value>Select the game executable</value>
+  </data>
+  <data name="Applying" xml:space="preserve">
+    <value>Applying files; wait for completion</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>Installed in {0}.
+Select Start in URA, then launch the game to check incoming data.</value>
+  </data>
+  <data name="RestartWindows" xml:space="preserve">
+    <value>Restart Windows to activate DLL redirection.</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Hachimi-Edge installation failed</value>
+  </data>
+</root>

@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
@@ -659,19 +658,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                     else if (selected == I18N_InstallUraCore)
                     {
-                        if (UraCoreHelper.GamePaths.Count == 0)
-                        {
-                            TerminalUi.Acknowledge(
-                                "没有找到可安装 Mod 的游戏目录。",
-                                cancellationToken);
-                            continue;
-                        }
-
-                        var target = TerminalUi.Menu(
-                            "请选择想要安装的 Mod",
-                            new[] { "Hachimi", "umamusume-localify" },
-                            cancellationToken: cancellationToken);
-                        await InstallUraCoreAsync(target, cancellationToken);
+                        await HachimiEdgeInstaller.ShowAsync(cancellationToken);
                     }
                     else if (selected == qqGroup)
                     {
@@ -692,62 +679,6 @@ namespace UmamusumeResponseAnalyzer
             }
         }
 
-        static async Task InstallUraCoreAsync(
-            string target,
-            CancellationToken cancellationToken)
-        {
-            if (UraCoreHelper.GamePaths.Count == 0)
-            {
-                TerminalUi.Acknowledge(
-                    "没有找到可安装 Mod 的游戏目录。",
-                    cancellationToken);
-                return;
-            }
-
-            var results = new List<string>();
-            foreach (var path in UraCoreHelper.GamePaths)
-            {
-                var confirm = TerminalUi.Confirm(
-                    $"是否将 {target} 安装到 {path}，并把注册表 " +
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\DevOverrideEnable " +
-                    "设为 1？该操作需要管理员权限并会影响系统 DLL redirection。",
-                    cancellationToken: cancellationToken);
-                if (!confirm)
-                    continue;
-
-                using var proc = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = Environment.ProcessPath,
-                        Arguments = "--enable-dll-redirection --confirmed",
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    }
-                };
-                proc.Start();
-                await proc.WaitForExitAsync(cancellationToken);
-                if (proc.ExitCode != 0)
-                {
-                    results.Add($"{path}: 注册表操作失败（exit {proc.ExitCode}）");
-                    continue;
-                }
-
-                var url = (target == "Hachimi"
-                    ? "https://github.com/UmamusumeResponseAnalyzer/Hachimi/releases/latest/download/Hachimi.zip"
-                    : "https://github.com/UmamusumeResponseAnalyzer/Hachimi/releases/latest/download/UmamusumeLocalify.zip")
-                    .AllowMirror();
-                using var stream = await ResourceUpdater.HttpClient.GetStreamAsync(url, cancellationToken);
-                using var archive = new ZipArchive(stream);
-                archive.ExtractToDirectory(path, true);
-                results.Add(string.Format(I18N_UraCoreHelper_InstallSuccess, path));
-            }
-
-            TerminalUi.Acknowledge(
-                results.Count == 0 ? "未安装 Mod。" : string.Join(Environment.NewLine, results),
-                cancellationToken);
-        }
         static bool TryHandleCliOnlyArguments(string[] args)
         {
             switch (args)
@@ -757,6 +688,13 @@ namespace UmamusumeResponseAnalyzer
                     return true;
                 case ["--update", var savePath]:
                     ResourceUpdater.InstallProgramUpdate(savePath);
+                    return true;
+                case ["--apply-hachimi-edge", var requestPath, "--confirmed"]:
+                    Environment.ExitCode = HachimiEdgeInstallation.RunApplyCommand(requestPath);
+                    return true;
+                case ["--apply-hachimi-edge", ..]:
+                    Console.Error.WriteLine("无效的安装命令或缺少确认参数。 / Invalid installation command or missing confirmation.");
+                    Environment.ExitCode = 1;
                     return true;
                 case ["--enable-dll-redirection", "--confirmed"]:
                     UraCoreHelper.EnableDllRedirection();

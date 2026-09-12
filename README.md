@@ -4,9 +4,9 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 
 # 前置 Prerequisite
 
-* 任意可以把游戏请求/响应 MessagePack payload 发送到宿主 `/notify/request` / `/notify/response` 的 sender。请求必须带 `X-Hachimi-Game-Url` header，值为游戏原始 canonical URL；该 URL 的 path 必须命中 Gallop endpoint catalog，或能在带/不带 `/umamusume` 前缀两种形式之间切换后命中 catalog。推荐 [ura-core](https://github.com/UmamusumeResponseAnalyzer/ura-core)。
+* 任意可以把游戏请求/响应 MessagePack payload 发送到宿主 `/notify/request` / `/notify/response` 的 sender。请求必须带 `X-Hachimi-Game-Url` header，值为游戏原始 canonical URL；该 URL 的 path 必须命中 Gallop endpoint catalog，或能在带/不带 `/umamusume` 前缀两种形式之间切换后命中 catalog。Windows 安装入口使用 [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge) 和 [HTTP 转发插件](https://github.com/UmamusumeResponseAnalyzer/hachimi-httpforward-plugin)。
 * sender 的目标地址默认设置为 `http://127.0.0.1:4693`。如果游戏在手机或其他设备上运行，首次运行向导可把监听地址改为 `0.0.0.0`；启动时按控制台提示放行防火墙。
-* Windows 版主菜单提供 `自动安装ura-core`。该入口会查找本机游戏目录，选择安装 Hachimi 或 umamusume-localify，并在启用 DLL redirection 时请求管理员权限。
+* Windows 版主菜单提供 `安装 Hachimi-Edge`，支持 DMM 日服、Komoe 繁中、Steam 日服及国际服；可选择自动发现的目录或手动选择游戏 EXE。关闭目标游戏后操作，一次安装一个目录。
 * (可选，如果需要脱离 DMM 启动游戏) DMM Game Player β 及 HTTPS proxy，比如 [Fiddler](https://www.telerik.com/fiddler/fiddler-classic) 或 [mitmproxy](https://mitmproxy.org/)。
 
 # 安装 Installation
@@ -15,7 +15,7 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 * 将程序放在任意位置，运行 `UmamusumeResponseAnalyzer.exe`。
 * 普通启动要求 stdin 和 stdout 连接到 interactive terminal；redirected stdin/stdout 会以明确错误退出。`--version`、`--update <savePath>`、`--enable-dll-redirection` 等 CLI-only 路径不启动 TUI。
 * 首次运行按向导选择运行设备、服务器目标(日服 Cygames / 繁中服 Komoe)、事件数据语言和训练员性别。
-* 返回主菜单后先选择 `更新数据文件`。数据文件用于事件、技能、名称等本地解析；不完整或损坏时数据库保持不可用，插件不会初始化，HTTP server 也不会启动，程序会提示更新全部数据文件后重启。未知技能进化条件类型只记录 warning，并按条件未满足处理，不阻断完整数据快照加载。
+* 返回主菜单后先选择 `更新数据文件`。数据文件用于事件、技能、名称等本地解析；不完整或损坏时数据库保持不可用，插件不会初始化，HTTP server 也不会启动，程序会提示更新全部数据文件后重启。技能进化条件 `Type=0/None` 仅使用服务器完成状态，不做本地预测。未定义的技能进化条件类型只记录 warning，并按条件未满足处理，不阻断完整数据快照加载。
 * 进入 `插件仓库`，安装需要的功能插件。没有插件时宿主仍会启动，并提供启动信息、异常记录、通知和基础分发能力。
 * 选择 `启动！` 后会立即进入 Terminal.Gui 的全屏启动 workspace；数据加载、插件初始化和 HTTP server 启动在后台推进。启动 workspace 在整个 Host session 内持续存在，显示运行环境、初始化结果、插件摘要和全局最近日志；最近日志收集宿主/插件日志和 Host 捕获的异常，最多保留 128 条。数据库加载警告、插件扫描/加载/安装诊断、程序更新文件损坏和请求分析异常还会显示 Host overlay notification；写入日志或显示 notification 均不会切换当前 workspace。异常行可右键打开 context menu，`复制完整 backtrace` 会将完整异常链和 stack trace 写入系统 clipboard；普通日志不提供该操作。四个区域的尺寸只随 viewport 变化；超出区域的表格与日志使用 Terminal.Gui 原生滚动条，内容增长不改变 panel 布局。启动状态以紧凑结果行实时更新，不显示额外 header 或 footer。
 
@@ -31,7 +31,24 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 
 # 检查安装 Checking
 
-* 浏览器或命令行访问 `http://127.0.0.1:4693/notify/ping`，返回 `pong` 说明宿主 HTTP server 已启动。
+`安装 Hachimi-Edge` 每次按所选客户端取得 URACloud 当前生效组件，校验长度、SHA-256 和 Windows x64 PE 架构，再覆盖固定文件。安装、更新和同版本重装使用同一动作；该客户端尚无完整生效配置时不能安装。
+
+| 客户端 | Hachimi-Edge 目标 | 额外文件 |
+|---|---|---|
+| DMM 日服 | `umamusume.exe.local/UnityPlayer.dll` | Cellar → `umamusume.exe.local/apphelp.dll` |
+| Komoe 繁中 | `winhttp.dll` | — |
+| Steam 国际服 | `cri_mana_vpx.dll` | — |
+| Steam 日服 | `cri_mana_vpx.dll` | FunnyHoney → `UmamusumePrettyDerby_Jpn.exe` |
+
+所有客户端均安装 `hachimi/hachimi_httpforward_plugin.dll`，将 `hachimi\hachimi_httpforward_plugin.dll` 加入 `hachimi/config.json` 顶层 `load_libraries`，并设置 `hachimi/httpforward.json` 的 `notifier_host`。目标地址自动取自当前 URA 监听设置，通配地址转换为回环地址。已有超时与其他设置保留；首次超时为 100 ms。损坏的 JSON 或字段类型错误会阻止安装。
+
+选择游戏目录后自动准备组件并安装。固定列表之外的文件保留，其他加载器可能与本次组件冲突。只有目录权限或 DMM 的 `DevOverrideEnable` 设置需要时才请求提权；首次启用 DLL redirection 后须重启 Windows。
+
+安装直接覆盖目标文件，不保留备份。单个文件写入完成后再替换目标；安装中途失败时，已覆盖的文件保留，排除错误后重新安装。目标文件的符号链接替换为普通文件，链接指向的文件保持原样；目标路径中的目录链接会阻止安装。
+
+The Windows installer applies the selected client's active URACloud component set to one game directory and preserves unrelated files and settings. It overwrites target files without backups; files already replaced remain in place if installation fails. Fix the error and run the installation again. Installation success and actual game traffic reception are separate checks.
+
+* 在 URA 中选择 `启动！`；浏览器或命令行访问 `http://127.0.0.1:4693/notify/ping`，返回 `pong` 只说明宿主 HTTP server 可达。
 * 启动游戏后，前往殿堂马列表、竞技场选择对手或查看好友信息。若 workspace 中出现插件输出，说明 sender、header 和插件分发配置正确。
 
 # 插件仓库与 URACloud

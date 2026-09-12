@@ -61,16 +61,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似  Console size is too small: recommended sizes are width {0}, height {1}  的本地化字符串。
-        /// </summary>
-        internal static string I18N_ConsoleSizeSmall {
-            get {
-                return ResourceManager.GetString("I18N_ConsoleSizeSmall", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Auto-install ura-core 的本地化字符串。
+        ///   查找类似 Install Hachimi-Edge 的本地化字符串。
         /// </summary>
         internal static string I18N_InstallUraCore {
             get {
@@ -97,42 +88,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Target file not found or does not meet the format 的本地化字符串。
-        /// </summary>
-        internal static string I18N_LocalizationData_FileCorrupt {
-            get {
-                return ResourceManager.GetString("I18N_LocalizationData_FileCorrupt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Localization only supports JSON format Dictionary&lt;textdata.category, Dictionary&lt;textdata.index, string&gt;&gt; 的本地化字符串。
-        /// </summary>
-        internal static string I18N_LocalizationData_FormatRequirement {
-            get {
-                return ResourceManager.GetString("I18N_LocalizationData_FormatRequirement", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Please enter the full file path (e.g., G:\Umamusume\localized_data\text_data.json) 的本地化字符串。
-        /// </summary>
-        internal static string I18N_LocalizationData_InputPathPrompt {
-            get {
-                return ResourceManager.GetString("I18N_LocalizationData_InputPathPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Manage DMM service information 的本地化字符串。
-        /// </summary>
-        internal static string I18N_ManageDMMService {
-            get {
-                return ResourceManager.GetString("I18N_ManageDMMService", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Options 的本地化字符串。
         /// </summary>
         internal static string I18N_Options {
@@ -147,24 +102,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string I18N_Options_BackToMenuInstruction {
             get {
                 return ResourceManager.GetString("I18N_Options_BackToMenuInstruction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Multiple languages selected at the same time, reset to default, please reset 的本地化字符串。
-        /// </summary>
-        internal static string I18N_Options_MultipleLanguagesSelected {
-            get {
-                return ResourceManager.GetString("I18N_Options_MultipleLanguagesSelected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Set localization file path 的本地化字符串。
-        /// </summary>
-        internal static string I18N_SetLocalizedDataFilePath {
-            get {
-                return ResourceManager.GetString("I18N_SetLocalizedDataFilePath", resourceCulture);
             }
         }
         
@@ -210,42 +147,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         internal static string I18N_UraCoreHelper_FoundAvailablePath {
             get {
                 return ResourceManager.GetString("I18N_UraCoreHelper_FoundAvailablePath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Found {0} possible directories 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_FoundPaths {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_FoundPaths", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Would you like to install here? 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_InstallPrompt {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_InstallPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Successfully installed to {0}, press any key to return to the main menu 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_InstallSuccess {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_InstallSuccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 No compatible module found or already installed, please install first (https://github.com/MinamiChiwa/Trainers-Legend-G or https://github.com/Kimjio/umamusume-localify) 的本地化字符串。
-        /// </summary>
-        internal static string I18N_UraCoreHelper_NoInstalledModuleFound {
-            get {
-                return ResourceManager.GetString("I18N_UraCoreHelper_NoInstalledModuleFound", resourceCulture);
             }
         }
     }

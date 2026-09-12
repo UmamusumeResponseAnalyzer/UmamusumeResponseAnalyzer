@@ -220,7 +220,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             /// </summary>
             public int ConditionId;
             /// <summary>
-            /// 组别，即数据库中的num，游戏中的二选一
+            /// 数据库中的num，同组条件取或，不同组取且
             /// </summary>
             public int Group;
             /// <summary>
@@ -236,8 +236,7 @@ namespace UmamusumeResponseAnalyzer.Entities
             /// </summary>
             public int AdditionalRequirement;
 
-            internal bool HasSupportedType =>
-                Type is not ConditionType.None && Enum.IsDefined(Type);
+            internal bool HasSupportedType => Enum.IsDefined(Type);
 
             public bool IsArchived(SingleModeChara chara_info, IEnumerable<SkillData> skills)
             {
@@ -252,6 +251,8 @@ namespace UmamusumeResponseAnalyzer.Entities
 
                 switch (Type)
                 {
+                    case ConditionType.None:
+                        return false;
                     case ConditionType.Proper:
                         {
                             if (Requirement >= 1 && Requirement <= 4)
@@ -300,6 +301,9 @@ namespace UmamusumeResponseAnalyzer.Entities
             }
             public enum ConditionType
             {
+                /// <summary>
+                /// 仅由服务器判定，不做本地预测
+                /// </summary>
                 None,
                 /// <summary>
                 /// 需要学习指定适性(距离、场地、跑法)的技能

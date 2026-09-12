@@ -11,6 +11,21 @@ static class ModalDialogs
 {
     const int PromptHeight = 3;
 
+    internal static string PickExecutable(string title, CancellationToken cancellationToken = default)
+    {
+        var host = TerminalUi.RequireHost();
+        if (Environment.CurrentManagedThreadId != host.Application.MainThreadId)
+            return InvokeOnOwner(host.OwnerContext, () => PickExecutable(title, cancellationToken));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(host.LifetimeToken, cancellationToken);
+        using var picker = new OpenDialog
+        {
+            Title = title, OpenMode = OpenMode.File, MustExist = true, AllowsMultipleSelection = false,
+            AllowedTypes = [new AllowedType("Game executable", [".exe"])]
+        };
+        Run(host.Application, picker, linked.Token);
+        return picker.Canceled ? throw new OperationCanceledException("File selection cancelled.") : picker.Path;
+    }
+
     internal static async Task RunProgressAsync(
         Func<IProgress<DownloadProgress>, CancellationToken, Task> action,
         CancellationToken cancellationToken = default)
