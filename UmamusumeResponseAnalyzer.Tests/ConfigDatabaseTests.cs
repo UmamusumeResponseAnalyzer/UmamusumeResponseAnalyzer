@@ -401,15 +401,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             var currentProp = typeof(Config).GetProperty("Current", BindingFlags.NonPublic | BindingFlags.Static)!;
             if (currentProp.GetValue(null) is null)
-                currentProp.SetValue(null, new YamlConfig
-                {
-                    Core = new(),
-                    Repository = new(),
-                    Plugin = new(),
-                    Updater = new(),
-                    Language = new(),
-                    Misc = new()
-                });
+                currentProp.SetValue(null, new YamlConfig());
         }
 
         [Fact]

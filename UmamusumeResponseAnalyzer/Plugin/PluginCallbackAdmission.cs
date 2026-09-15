@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace UmamusumeResponseAnalyzer.Plugin;
 
 internal sealed class PluginCallbackSnapshot<T>(
@@ -66,7 +64,7 @@ internal sealed class PluginCallbackSnapshot<T>(
 
 internal sealed class PluginGeneration(IPlugin plugin)
 {
-    static readonly AsyncLocal<ImmutableHashSet<PluginGeneration>?> CallbackFlow = new();
+    static readonly AsyncLocal<bool> CallbackFlow = new();
     readonly object gate = new();
     readonly CancellationTokenSource backgroundCancellation = new();
     readonly HashSet<Task> backgroundTasks = [];
@@ -81,7 +79,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
     internal IPlugin Plugin { get; } = plugin;
 
     internal static bool HasActiveCallbackFlow
-        => CallbackFlow.Value is { Count: > 0 };
+        => CallbackFlow.Value;
 
     internal bool IsAccepting
     {
@@ -268,7 +266,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
     internal IDisposable EnterCallbackFlow(IDisposable generationLease)
     {
         var previous = CallbackFlow.Value;
-        CallbackFlow.Value = (previous ?? ImmutableHashSet<PluginGeneration>.Empty).Add(this);
+        CallbackFlow.Value = true;
         return new CallbackFlowLease(generationLease, previous);
     }
 
@@ -313,33 +311,13 @@ internal sealed class PluginGeneration(IPlugin plugin)
 
     internal void RunBackground(IReadOnlyList<Func<CancellationToken, ValueTask>> operations)
     {
-        List<Task> started;
         lock (gate)
         {
             if (closed || !accepting)
                 throw Closed();
-            started = StartBackgroundLocked(operations);
+            foreach (var operation in operations)
+                backgroundTasks.Add(Task.Run(() => InvokeBackgroundAsync(operation, backgroundCancellation.Token)));
         }
-
-        ObserveBackgroundTasks(started);
-    }
-
-    List<Task> StartBackgroundLocked(IReadOnlyList<Func<CancellationToken, ValueTask>> operations)
-    {
-        List<Task> started = [];
-        foreach (var operation in operations)
-        {
-            var task = Task.Run(() => InvokeBackgroundAsync(operation, backgroundCancellation.Token));
-            backgroundTasks.Add(task);
-            started.Add(task);
-        }
-        return started;
-    }
-
-    static void ObserveBackgroundTasks(IEnumerable<Task> tasks)
-    {
-        foreach (var task in tasks)
-            _ = task.Exception;
     }
 
     async Task InvokeBackgroundAsync(
@@ -392,7 +370,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
 
     sealed class CallbackFlowLease(
         IDisposable generationLease,
-        ImmutableHashSet<PluginGeneration>? previous) : IDisposable
+        bool previous) : IDisposable
     {
         IDisposable? generationLease = generationLease;
 

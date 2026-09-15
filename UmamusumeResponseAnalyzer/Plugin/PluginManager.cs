@@ -210,13 +210,10 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             var snapshot = Runtime.ReadSnapshot();
             var loaded = snapshot.LoadedPlugins;
-            var known = snapshot.Metadatas.Values;
+            var knownByName = snapshot.Metadatas;
 
             var loadedByName = loaded
                 .GroupBy(InternalName, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
-            var knownByName = known
-                .GroupBy(metadata => metadata.PluginName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
             var names = scanned.Keys
                 .Concat(knownByName.Keys)

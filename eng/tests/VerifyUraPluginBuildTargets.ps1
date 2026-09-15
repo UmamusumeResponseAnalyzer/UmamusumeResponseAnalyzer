@@ -1,3 +1,5 @@
+param([string]$MSBuildPath = "dotnet")
+
 $ErrorActionPreference = "Stop"
 
 $engRoot = Split-Path -Parent $PSScriptRoot
@@ -71,4 +73,60 @@ if ($errors.Count -gt 0) {
     exit 1
 }
 
-Write-Host "URA plugin build targets are ready for buildTransitive packaging."
+$testDirectory = Join-Path ([IO.Path]::GetTempPath()) ("ura-manifest-test-" + [Guid]::NewGuid().ToString("N"))
+[IO.Directory]::CreateDirectory($testDirectory) | Out-Null
+try {
+    $testProject = @'
+<Project>
+  <Import Project="__TARGETS__" />
+  <Target Name="Verify">
+    <WriteUraPluginManifestTask OutputPath="$(MSBuildProjectDirectory)/full.json"
+        Author="作者 &quot;A&quot;" InternalName="ManifestSmoke" DisplayName="菜单"
+        Description="第一行&#xA;路径 C:\Uma&#x9;结束" Changelog="变更"
+        Dependencies=" A, B;C " Targets=" JP;TW " Version="1.2.3.4"
+        RepositoryUrl="https://example.com/?a=1&amp;b=2" Category="工具" Homepage="https://example.com/" />
+    <WriteUraPluginManifestTask OutputPath="$(MSBuildProjectDirectory)/minimal.json"
+        Author="作者" InternalName="MinimalSmoke" DisplayName="最小插件" Version="1.0.0" />
+  </Target>
+</Project>
+'@
+    $testProjectPath = Join-Path $testDirectory "manifest.proj"
+    [IO.File]::WriteAllText($testProjectPath, $testProject.Replace("__TARGETS__", [Security.SecurityElement]::Escape($targetsPath)))
+    $buildArguments = @($testProjectPath, "-nologo", "-t:Verify", "-v:minimal")
+    if ([IO.Path]::GetFileNameWithoutExtension($MSBuildPath) -eq "dotnet") {
+        $buildArguments = @("msbuild") + $buildArguments
+    }
+    $startedAt = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    & $MSBuildPath @buildArguments
+    if ($LASTEXITCODE -ne 0) { throw "Manifest task failed under $MSBuildPath." }
+
+    $full = Get-Content -LiteralPath (Join-Path $testDirectory "full.json") -Raw | ConvertFrom-Json
+    $expected = @{
+        Author = '作者 "A"'; InternalName = "ManifestSmoke"; DisplayName = "菜单"
+        Description = "第一行`n路径 C:\Uma`t结束"; Changelog = "变更"; Version = "1.2.3.4"
+        RepositoryUrl = "https://example.com/?a=1&b=2"; Category = "工具"; Homepage = "https://example.com/"
+    }
+    foreach ($name in $expected.Keys) {
+        if ($full.$name -cne $expected[$name]) { throw "Manifest field $name did not round-trip." }
+    }
+    if (@($full.PSObject.Properties).Count -ne 12 -or
+        ($full.Dependencies -join "|") -cne "A|B|C" -or ($full.Targets -join "|") -cne "JP|TW" -or
+        $full.LastUpdate -lt $startedAt -or $full.LastUpdate -gt [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) {
+        throw "Manifest schema, list values or timestamp are incorrect."
+    }
+    $minimal = Get-Content -LiteralPath (Join-Path $testDirectory "minimal.json") -Raw | ConvertFrom-Json
+    foreach ($name in @("Description", "Changelog", "RepositoryUrl", "Category", "Homepage")) {
+        if ($minimal.$name -cne "") { throw "Omitted manifest field $name must be an empty string." }
+    }
+    if ($minimal.Dependencies -isnot [Array] -or $minimal.Dependencies.Count -ne 0 -or
+        $minimal.Targets -isnot [Array] -or $minimal.Targets.Count -ne 0) {
+        throw "Omitted manifest lists must be empty arrays."
+    }
+} finally {
+    if ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($testDirectory)) -ne [IO.Path]::GetTempPath().TrimEnd([IO.Path]::DirectorySeparatorChar)) {
+        throw "Manifest test cleanup path left the temporary directory."
+    }
+    Remove-Item -LiteralPath $testDirectory -Recurse -Force
+}
+
+Write-Host "URA plugin build targets and manifest serialization passed."

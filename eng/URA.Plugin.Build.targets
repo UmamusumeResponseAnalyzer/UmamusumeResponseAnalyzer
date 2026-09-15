@@ -34,72 +34,38 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Text" />
       <Code Type="Fragment" Language="cs"><![CDATA[
-        string EscapeJson(string s)
-        {
-            if (s == null) return string.Empty;
-            var sb = new StringBuilder(s.Length + 8);
-            foreach (var c in s)
-            {
-                switch (c)
-                {
-                    case '\\': sb.Append("\\\\"); break;
-                    case '"': sb.Append("\\\""); break;
-                    case '\b': sb.Append("\\b"); break;
-                    case '\f': sb.Append("\\f"); break;
-                    case '\n': sb.Append("\\n"); break;
-                    case '\r': sb.Append("\\r"); break;
-                    case '\t': sb.Append("\\t"); break;
-                    default:
-                        if (c < 0x20) sb.AppendFormat("\\u{0:x4}", (int)c);
-                        else sb.Append(c);
-                        break;
-                }
-            }
-            return sb.ToString();
-        }
-
-        string Quote(string s) => "\"" + EscapeJson(s ?? string.Empty) + "\"";
-
-        string JsonArray(string csv)
-        {
-            if (string.IsNullOrWhiteSpace(csv)) return "[]";
-            var parts = csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var sb = new StringBuilder("[");
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (i > 0) sb.Append(", ");
-                sb.Append(Quote(parts[i].Trim()));
-            }
-            sb.Append("]");
-            return sb.ToString();
-        }
+        string[] Names(string csv) => string.IsNullOrWhiteSpace(csv)
+            ? Array.Empty<string>()
+            : Array.ConvertAll(csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries), part => part.Trim());
 
         if (!System.Version.TryParse(Version, out _))
         {
             throw new InvalidOperationException($"Plugin Version must be a valid System.Version value: '{Version}'.");
         }
 
-        long lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        var json = new StringBuilder();
-        json.Append("{\n");
-        json.Append("  \"Author\": ").Append(Quote(Author)).Append(",\n");
-        json.Append("  \"InternalName\": ").Append(Quote(InternalName)).Append(",\n");
-        json.Append("  \"DisplayName\": ").Append(Quote(DisplayName)).Append(",\n");
-        json.Append("  \"Description\": ").Append(Quote(Description)).Append(",\n");
-        json.Append("  \"Changelog\": ").Append(Quote(Changelog)).Append(",\n");
-        json.Append("  \"Version\": ").Append(Quote(Version)).Append(",\n");
-        json.Append("  \"Dependencies\": ").Append(JsonArray(Dependencies)).Append(",\n");
-        json.Append("  \"Targets\": ").Append(JsonArray(Targets)).Append(",\n");
-        json.Append("  \"RepositoryUrl\": ").Append(Quote(RepositoryUrl)).Append(",\n");
-        json.Append("  \"LastUpdate\": ").Append(lastUpdate).Append(",\n");
-        json.Append("  \"Category\": ").Append(Quote(Category)).Append(",\n");
-        json.Append("  \"Homepage\": ").Append(Quote(Homepage)).Append("\n");
-        json.Append("}\n");
+        // Inline tasks compile against netstandard; load the build host's serializer at runtime.
+        var jsonConvert = System.Reflection.Assembly.LoadFrom(Path.Combine(@"$(MSBuildToolsPath)", "Newtonsoft.Json.dll"))
+            .GetType("Newtonsoft.Json.JsonConvert", throwOnError: true);
+        var serialize = (Func<object, string>)Delegate.CreateDelegate(typeof(Func<object, string>), jsonConvert, "SerializeObject");
+        var json = serialize(new
+        {
+            Author,
+            InternalName,
+            DisplayName,
+            Description = Description ?? string.Empty,
+            Changelog = Changelog ?? string.Empty,
+            Version,
+            Dependencies = Names(Dependencies),
+            Targets = Names(Targets),
+            RepositoryUrl = RepositoryUrl ?? string.Empty,
+            LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            Category = Category ?? string.Empty,
+            Homepage = Homepage ?? string.Empty
+        });
 
         var dir = Path.GetDirectoryName(OutputPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-        File.WriteAllText(OutputPath, json.ToString(), new UTF8Encoding(false));
+        File.WriteAllText(OutputPath, json, new UTF8Encoding(false));
         Log.LogMessage(MessageImportance.High, $"[URA.Plugin] wrote manifest -> {OutputPath} (v{Version})");
       ]]></Code>
     </Task>

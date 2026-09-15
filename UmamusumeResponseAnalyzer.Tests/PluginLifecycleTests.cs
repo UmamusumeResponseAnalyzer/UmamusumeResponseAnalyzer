@@ -68,6 +68,29 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
+        public async Task NestedCallbacksBlockLifecycleAcrossAwaitAndReleaseAfterReturn()
+        {
+            var first = new ContextInitializePlugin();
+            var second = new ContextInitializePlugin();
+            PluginManager.InitializePlugin(first);
+            PluginManager.InitializePlugin(second);
+
+            using (PluginManager.EnterPluginCallback(first))
+            {
+                using (PluginManager.EnterPluginCallback(second))
+                {
+                    await Task.Yield();
+                    Assert.Contains("插件 callback 内禁止启动 lifecycle 操作",
+                        Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins).Message);
+                }
+                Assert.Contains("插件 callback 内禁止启动 lifecycle 操作",
+                    Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins).Message);
+            }
+
+            PluginManager.InitializeLoadedPlugins();
+        }
+
+        [Fact]
         public async Task InitializeLoadedPlugins_QuarantinesFailingPluginAndContinues()
         {
             using var fixture = new QuarantinePackageFixture();
@@ -568,15 +591,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             var current = typeof(Config).GetProperty("Current", BindingFlags.NonPublic | BindingFlags.Static)!;
             if (current.GetValue(null) is null)
-                current.SetValue(null, new YamlConfig
-                {
-                    Core = new(),
-                    Repository = new(),
-                    Plugin = new(),
-                    Updater = new(),
-                    Language = new(),
-                    Misc = new(),
-                });
+                current.SetValue(null, new YamlConfig());
         }
 
         abstract class TestPlugin : IPlugin

@@ -376,15 +376,7 @@ public sealed class PluginCommandLifecycleTests : IDisposable
             BindingFlags.NonPublic | BindingFlags.Static)!;
         if (current.GetValue(null) is null)
         {
-            current.SetValue(null, new YamlConfig
-            {
-                Core = new(),
-                Repository = new(),
-                Plugin = new(),
-                Updater = new(),
-                Language = new(),
-                Misc = new(),
-            });
+            current.SetValue(null, new YamlConfig());
         }
     }
 }

@@ -92,14 +92,6 @@ public sealed class DatabaseFixture : IDisposable
         var current = typeof(Config).GetProperty("Current", BindingFlags.NonPublic | BindingFlags.Static)!;
         if (current.GetValue(null) is not null)
             return;
-        current.SetValue(null, new YamlConfig
-        {
-            Core = new(),
-            Repository = new(),
-            Plugin = new(),
-            Updater = new(),
-            Language = new(),
-            Misc = new()
-        });
+        current.SetValue(null, new YamlConfig());
     }
 }

@@ -6,6 +6,8 @@ Plugin projects use `Version="*" PrivateAssets="all"` to reference the latest st
 
 Plugin-to-plugin source dependencies remain pinned submodules. A Host source checkout is not required to build an individual plugin.
 
+The manifest task uses `Newtonsoft.Json.dll` from `MSBuildToolsPath`. Verify the build contract and manifest serialization with `pwsh -File eng/tests/VerifyUraPluginBuildTargets.ps1`; pass `-MSBuildPath <path-to-MSBuild.exe>` to check Visual Studio Build Tools.
+
 Build the compile-time package without publishing it:
 
 ```powershell
