@@ -1,3 +1,5 @@
+using System.Globalization;
+using Terminal.Gui.ViewBase;
 using System.Collections.Concurrent;
 using Gallop.Endpoints;
 using Terminal.Gui.App;
@@ -547,5 +549,43 @@ sealed class TempCurrentDirectory : IDisposable
     {
         Directory.SetCurrentDirectory(originalCurrentDirectory);
         Directory.Delete(Path, recursive: true);
+    }
+}
+
+static class HistoryConfigDialog
+{
+    internal static void SetHistoryLimit(Dialog dialog, int value)
+    {
+        var views = Descendants(dialog).ToArray();
+        if (views.OfType<NumericUpDown<int>>().FirstOrDefault() is { } numeric)
+        {
+            numeric.Value = value;
+            return;
+        }
+
+        if (views.OfType<TextField>().FirstOrDefault() is { } text)
+        {
+            text.Text = value.ToString(CultureInfo.InvariantCulture);
+            return;
+        }
+
+        throw new InvalidOperationException($"Config dialog {dialog.Title} has no historyLimit editor.");
+    }
+
+    internal static void AcceptButton(IApplication application, Dialog dialog, string text)
+    {
+        var button = dialog.Buttons.SingleOrDefault(
+            candidate => candidate.Text?.ToString().Contains(text, StringComparison.Ordinal) == true)
+            ?? throw new InvalidOperationException($"Config dialog {dialog.Title} has no {text} button.");
+        button.SetFocus();
+        application.Keyboard.RaiseKeyDownEvent(Key.Enter);
+    }
+
+    internal static IEnumerable<View> Descendants(View root)
+    {
+        yield return root;
+        foreach (var child in root.SubViews)
+        foreach (var descendant in Descendants(child))
+            yield return descendant;
     }
 }

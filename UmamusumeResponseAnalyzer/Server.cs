@@ -376,7 +376,6 @@ namespace UmamusumeResponseAnalyzer
 
         static async ValueTask InvokeAnalyzer(AnalyzerKind kind, AnalyzerRegistration registration, AnalyzerDispatchContext context)
         {
-            using var callback = PluginManager.EnterPluginCallbackScope();
             using var owner = HotkeyManager.RegisterScope(registration.Plugin);
             try
             {

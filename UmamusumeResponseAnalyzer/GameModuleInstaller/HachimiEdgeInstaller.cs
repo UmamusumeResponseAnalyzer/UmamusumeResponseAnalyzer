@@ -35,24 +35,24 @@ internal static class HachimiEdgeInstaller
                 .SelectMany(directory => HachimiEdgeGame.ExecutableNames.Select(name => Path.Combine(directory, name)))
                 .Where(File.Exists).Select(path => HachimiEdgeGame.FromExecutable(path)).ToArray();
             foreach (var discoveryWarning in warnings) TerminalUi.Log("Hachimi-Edge", discoveryWarning, UiSeverity.Warning);
-            var choice = TerminalUi.Select(Text("SelectGame"), Enumerable.Range(0, games.Length + 1),
+            var choice = ModalDialogs.Select(Text("SelectGame"), Enumerable.Range(0, games.Length + 1),
                 i => i == games.Length ? Text("Browse") : $"{games[i].Label} · {games[i].Directory}", cancellationToken);
             var game = choice == games.Length
-                ? HachimiEdgeGame.FromExecutable(TerminalUi.PickExecutable(Text("SelectExecutable"), cancellationToken))
+                ? HachimiEdgeGame.FromExecutable(ModalDialogs.PickExecutable(Text("SelectExecutable"), cancellationToken))
                 : games[choice];
             HachimiEdgeInstallation.EnsureGameStopped(game);
             var notifier = DefaultNotifier(Config.Core.ListenAddress, Config.Core.ListenPort);
             staging = Path.Combine(Path.GetTempPath(), "ura-hachimi-edge-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(staging);
             HachimiEdgeRequest? request = null;
-            await TerminalUi.RunProgressAsync(async (progress, token) =>
+            await ModalDialogs.RunProgressAsync(async (progress, token) =>
                 request = await PrepareAsync(game, notifier, staging, progress, token), cancellationToken);
             var elevate = HachimiEdgeInstallation.RequiresElevation(game, request!.DllRedirectionBefore != 1);
 
             var completed = false;
             try
             {
-                await TerminalUi.RunProgressAsync(async (progress, token) =>
+                await ModalDialogs.RunProgressAsync(async (progress, token) =>
                 {
                     token.ThrowIfCancellationRequested();
                     progress.Report(new("apply", Text("Applying"), 0, 1));
@@ -62,14 +62,14 @@ internal static class HachimiEdgeInstaller
             }
             catch (OperationCanceledException) when (completed) { }
             if (!cancellationToken.IsCancellationRequested)
-                TerminalUi.Acknowledge(Text("Installed", game.Directory) +
+                ModalDialogs.Acknowledge(Text("Installed", game.Directory) +
                     (game.Platform == HachimiEdgePlatform.Dmm && request.DllRedirectionBefore != 1 ? "\n" + Text("RestartWindows") : ""), cancellationToken);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             TerminalUi.LogException("Hachimi-Edge", ex);
-            TerminalUi.Acknowledge(Text("Failed") + "\n" + TerminalUi.FormatExceptionLogMessage(ex), cancellationToken);
+            ModalDialogs.Acknowledge(Text("Failed") + "\n" + TerminalUi.FormatExceptionLogMessage(ex), cancellationToken);
         }
         finally
         {

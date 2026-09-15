@@ -109,7 +109,7 @@ public sealed class ModalDialogsTests(PluginRuntimeFixture fixture)
     public async Task Progress_RendersRowsAndPropagatesFaultAndCancellation()
     {
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var rendered = TerminalUi.RunProgressAsync(async (progress, cancellationToken) =>
+        var rendered = ModalDialogs.RunProgressAsync(async (progress, cancellationToken) =>
         {
             progress.Report(new("first", "Download A", 25, 100));
             progress.Report(new("second", "Download B", 75, 100));
@@ -120,14 +120,14 @@ public sealed class ModalDialogsTests(PluginRuntimeFixture fixture)
         release.SetResult();
         await rendered;
 
-        var faulted = TerminalUi.RunProgressAsync(
+        var faulted = ModalDialogs.RunProgressAsync(
             (_, _) => throw new InvalidOperationException("progress failed"),
             TestContext.Current.CancellationToken);
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => faulted);
         Assert.Equal("progress failed", error.Message);
 
         using var cancellation = new CancellationTokenSource();
-        var cancelled = TerminalUi.RunProgressAsync(
+        var cancelled = ModalDialogs.RunProgressAsync(
             (_, token) => Task.Delay(Timeout.InfiniteTimeSpan, token),
             cancellation.Token);
         await terminal.WaitForScreenAsync("正在处理");

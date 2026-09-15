@@ -590,7 +590,7 @@ namespace UmamusumeResponseAnalyzer
 
         static void ShowFirstLaunchPrompt(CancellationToken cancellationToken)
         {
-            var mobileOrPc = TerminalUi.Select(
+            var mobileOrPc = ModalDialogs.Select(
                 "首次设置：请选择运行 UM:PD 的设备。推荐使用 Windows Terminal，并将启动大小设置为 120 列、35 行。",
                 new[] { "手机/模拟器以及此计算机", "此计算机" },
                 cancellationToken: cancellationToken);
@@ -605,7 +605,7 @@ namespace UmamusumeResponseAnalyzer
                 networkNotice = "URA 将仅接受本机请求；模拟器接入时需在「选项 → 核心」改为 0.0.0.0 并放行防火墙。";
             }
 
-            var targets = TerminalUi.MultiSelect(
+            var targets = ModalDialogs.MultiSelect(
                 $"{networkNotice} 请选择所使用的 UM:PD 版本。",
                 new[] { "日服(Cygames)", "繁中服(Komoe)" },
                 cancellationToken: cancellationToken);
@@ -622,19 +622,19 @@ namespace UmamusumeResponseAnalyzer
                 }
             }
 
-            var dbLang = TerminalUi.Select(
+            var dbLang = ModalDialogs.Select(
                 "请选择事件数据语言，选择繁中等将会使用对应客户端已实装的内容翻译。不会影响实际效果及数据库总大小。",
                 new[] { "日文", "繁中" },
                 cancellationToken: cancellationToken);
             Config.Updater.DatabaseLanguage = dbLang == "繁中" ? "zh-TW" : "ja-JP";
 
-            var trainerGender = TerminalUi.Select(
+            var trainerGender = ModalDialogs.Select(
                 "请选择训练员性别，用于精确显示事件选项。",
                 new[] { "男", "女" },
                 cancellationToken: cancellationToken);
             Config.Updater.TrainerIsMale = trainerGender == "男";
 
-            TerminalUi.Acknowledge(
+            ModalDialogs.Acknowledge(
                 "首次设置完成。启动前请更新数据文件，并从「插件仓库」安装所需插件。",
                 cancellationToken);
         }
@@ -694,7 +694,7 @@ namespace UmamusumeResponseAnalyzer
                             FileName = "https://qm.qq.com/q/4z6xHQ908w",
                             UseShellExecute = true
                         });
-                        TerminalUi.Acknowledge(
+                        ModalDialogs.Acknowledge(
                             "已打开 QQ 群链接：https://qm.qq.com/q/4z6xHQ908w",
                             cancellationToken);
                     }

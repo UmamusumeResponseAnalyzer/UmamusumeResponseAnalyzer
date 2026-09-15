@@ -20,54 +20,6 @@ public static class TerminalUi
         return host;
     }
 
-    internal static T Select<T>(
-        string title,
-        IEnumerable<T> choices,
-        Func<T, string>? converter = null,
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.Select(title, choices, converter, cancellationToken);
-
-    internal static T Menu<T>(
-        string title,
-        IEnumerable<T> choices,
-        Func<T, string>? converter = null,
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.Menu(title, choices, converter, cancellationToken);
-
-    internal static IReadOnlyList<T> MultiSelect<T>(
-        string title,
-        IEnumerable<T> choices,
-        IEnumerable<T>? selected = null,
-        Func<T, string>? converter = null,
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.MultiSelect(title, choices, selected, converter, cancellationToken);
-
-    internal static string Ask(
-        string title,
-        string? value = null,
-        bool allowEmpty = false,
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.Ask(title, value, allowEmpty, cancellationToken);
-
-    internal static bool Confirm(
-        string title,
-        bool defaultValue = false,
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.Confirm(title, defaultValue, cancellationToken);
-
-    internal static bool Acknowledge(
-        string title = "按 Enter 返回",
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.Acknowledge(title, cancellationToken);
-
-    internal static string PickExecutable(string title, CancellationToken cancellationToken = default)
-        => ModalDialogs.PickExecutable(title, cancellationToken);
-
-    internal static Task RunProgressAsync(
-        Func<IProgress<DownloadProgress>, CancellationToken, Task> action,
-        CancellationToken cancellationToken = default)
-        => ModalDialogs.RunProgressAsync(action, cancellationToken);
-
     internal static void LogException(
         string source,
         Exception ex,

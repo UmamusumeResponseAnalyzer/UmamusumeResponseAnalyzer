@@ -81,7 +81,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 while (true)
                 {
-                    var selected = TerminalUi.Menu(
+                    var selected = ModalDialogs.Menu(
                         i18n.Settings_Title,
                         new[]
                         {
@@ -280,7 +280,7 @@ namespace UmamusumeResponseAnalyzer
                 var addressItem = $"{i18n.Tabs_Core_ListenAddress}: {ListenAddress}";
                 var portItem = $"{i18n.Tabs_Core_ListenPort}: {ListenPort}";
                 var firstRunItem = $"{firstRunTitle}: {ShowFirstRunPrompt}";
-                var selected = TerminalUi.Menu(
+                var selected = ModalDialogs.Menu(
                     i18n.Tabs_Core_Title,
                     new[] { addressItem, portItem, firstRunItem, i18n.Return },
                     cancellationToken: cancellationToken);
@@ -291,7 +291,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     while (true)
                     {
-                        var address = TerminalUi.Ask(
+                        var address = ModalDialogs.Ask(
                             i18n.Tabs_Core_ListenAddressPrompt,
                             ListenAddress,
                             cancellationToken: cancellationToken);
@@ -305,7 +305,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     while (true)
                     {
-                        var port = TerminalUi.Ask(
+                        var port = ModalDialogs.Ask(
                             i18n.Tabs_Core_ListenPortPrompt,
                             ListenPort.ToString(),
                             cancellationToken: cancellationToken);
@@ -333,14 +333,14 @@ namespace UmamusumeResponseAnalyzer
             while (true)
             {
                 var targetsItem = $"{i18n.Tabs_Repository_Targets}: {string.Join(',', Targets)}";
-                var selected = TerminalUi.Menu(
+                var selected = ModalDialogs.Menu(
                     i18n.Tabs_Repository_Title,
                     new[] { targetsItem, i18n.Return },
                     cancellationToken: cancellationToken);
                 if (selected == i18n.Return)
                     return;
 
-                var input = TerminalUi.Ask(
+                var input = ModalDialogs.Ask(
                     i18n.Tabs_Repository_TargetsPrompt,
                     string.Join(',', Targets),
                     allowEmpty: true,
@@ -365,7 +365,7 @@ namespace UmamusumeResponseAnalyzer
                 .ToArray();
             while (true)
             {
-                var selected = TerminalUi.Menu(
+                var selected = ModalDialogs.Menu(
                     i18n.Tabs_Plugin_Title,
                     choices,
                     x => x.Label,
@@ -427,7 +427,7 @@ namespace UmamusumeResponseAnalyzer
                     $"{Label(nameof(CustomDatabaseRepository))}: {CustomDatabaseRepository}";
                 var forceGithubItem =
                     $"{i18n.Tabs_Updater_ForceUseGithubToUpdate}: {ForceUseGithubToUpdate}";
-                var selected = TerminalUi.Menu(
+                var selected = ModalDialogs.Menu(
                     i18n.Tabs_Updater_Title,
                     new[]
                     {
@@ -447,7 +447,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 else if (selected == languageItem)
                 {
-                    DatabaseLanguage = TerminalUi.Menu(
+                    DatabaseLanguage = ModalDialogs.Menu(
                         nameof(DatabaseLanguage),
                         new[] { "ja-JP", "zh-TW", "zh-CN" },
                         cancellationToken: cancellationToken);
@@ -456,7 +456,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     while (true)
                     {
-                        var url = TerminalUi.Ask(
+                        var url = ModalDialogs.Ask(
                             i18n.Tabs_Updater_CustomDatabaseRepositoryPrompt,
                             CustomDatabaseRepository,
                             allowEmpty: true,
@@ -489,7 +489,7 @@ namespace UmamusumeResponseAnalyzer
                             $"Tabs_Language_{language}",
                             i18n.Culture)
                         ?? language.ToString());
-            var selected = TerminalUi.Menu(
+            var selected = ModalDialogs.Menu(
                 i18n.Tabs_Language_Title,
                 choices.Keys,
                 cancellationToken: cancellationToken);
@@ -540,7 +540,7 @@ namespace UmamusumeResponseAnalyzer
                     $"Tabs_Debug_{nameof(SaveResponseForDebug)}",
                     i18n.Culture)
                 ?? nameof(SaveResponseForDebug);
-            var selected = TerminalUi.MultiSelect(
+            var selected = ModalDialogs.MultiSelect(
                 i18n.Tabs_Debug_Title,
                 [label],
                 SaveResponseForDebug ? [label] : [],

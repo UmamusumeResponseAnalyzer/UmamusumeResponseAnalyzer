@@ -18,7 +18,7 @@ internal static class WebInstallApi
     static readonly JsonSerializerSettings JsonSettings = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
 
     internal static Func<PluginInformation, CancellationToken, bool> ConfirmInstall = (plugin, ct) =>
-        TerminalUi.Confirm(BuildInstallConfirmation(plugin), cancellationToken: ct);
+        ModalDialogs.Confirm(BuildInstallConfirmation(plugin), cancellationToken: ct);
 
     internal static string BuildInstallConfirmation(PluginInformation plugin) =>
         $"{PluginRepository.Text("Confirm")} {plugin.DisplayName} v{plugin.RawVersion}\n" +

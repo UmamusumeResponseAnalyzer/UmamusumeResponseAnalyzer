@@ -1,11 +1,10 @@
-using System.Globalization;
+using static HistoryConfigDialog;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using Gallop.Endpoints;
 using MessagePack;
 using Terminal.Gui.App;
 using Terminal.Gui.Input;
-using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -405,41 +404,6 @@ sealed record PluginCase(
         if (!baseline.SequenceEqual(File.ReadAllBytes(settingsPath)))
             throw new InvalidOperationException($"{Id}: config {action} changed settings.json.");
         RequirePanelText(ui, "61/100", $"config {action} isolates modal arrow keys");
-    }
-
-    static void SetHistoryLimit(Dialog dialog, int value)
-    {
-        var views = Descendants(dialog).ToArray();
-        if (views.OfType<NumericUpDown<int>>().FirstOrDefault() is { } numeric)
-        {
-            numeric.Value = value;
-            return;
-        }
-
-        if (views.OfType<TextField>().FirstOrDefault() is { } text)
-        {
-            text.Text = value.ToString(CultureInfo.InvariantCulture);
-            return;
-        }
-
-        throw new InvalidOperationException($"Config dialog {dialog.Title} has no historyLimit editor.");
-    }
-
-    static void AcceptButton(IApplication application, Dialog dialog, string text)
-    {
-        var button = dialog.Buttons.SingleOrDefault(
-            candidate => candidate.Text?.ToString().Contains(text, StringComparison.Ordinal) == true)
-            ?? throw new InvalidOperationException($"Config dialog {dialog.Title} has no {text} button.");
-        button.SetFocus();
-        application.Keyboard.RaiseKeyDownEvent(Key.Enter);
-    }
-
-    static IEnumerable<View> Descendants(View root)
-    {
-        yield return root;
-        foreach (var child in root.SubViews)
-        foreach (var descendant in Descendants(child))
-            yield return descendant;
     }
 
     static string CaptureScrollablePanel(WorkspaceSmokeSession ui)

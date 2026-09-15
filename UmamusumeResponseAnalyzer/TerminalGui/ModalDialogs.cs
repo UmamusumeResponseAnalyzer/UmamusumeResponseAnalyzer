@@ -207,123 +207,75 @@ static class ModalDialogs
         IEnumerable<T> choices,
         Func<T, string>? converter = null,
         CancellationToken cancellationToken = default)
-    {
-        var host = TerminalUi.RequireHost();
-        var app = host.Application;
-        var context = host.OwnerContext;
-        var lifetimeToken = host.LifetimeToken;
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            lifetimeToken,
-            cancellationToken);
-        return Select(app, context, title, choices, converter, linkedCts.Token);
-    }
-
-    static T Select<T>(
-        IApplication app,
-        SynchronizationContext context,
-        string title,
-        IEnumerable<T> choices,
-        Func<T, string>? converter,
-        CancellationToken cancellationToken)
-    {
-        if (Environment.CurrentManagedThreadId != app.MainThreadId)
+        => RunOnOwner((app, token) =>
         {
-            return InvokeOnOwner(
-                context,
-                () => Select(app, context, title, choices, converter, cancellationToken));
-        }
+            var values = choices.ToArray();
+            if (values.Length == 0)
+                throw new ArgumentException("选择列表不能为空。", nameof(choices));
 
-        var values = choices.ToArray();
-        if (values.Length == 0)
-            throw new ArgumentException("选择列表不能为空。", nameof(choices));
-
-        var index = RunList(
-            app,
-            title,
-            values.Select(x => converter?.Invoke(x) ?? x?.ToString() ?? string.Empty).ToArray(),
-            cancellationToken);
-        return values[index];
-    }
+            var index = RunList(
+                app,
+                title,
+                values.Select(x => converter?.Invoke(x) ?? x?.ToString() ?? string.Empty).ToArray(),
+                token);
+            return values[index];
+        }, cancellationToken);
 
     internal static T Menu<T>(
         string title,
         IEnumerable<T> choices,
         Func<T, string>? converter = null,
         CancellationToken cancellationToken = default)
-    {
-        var host = TerminalUi.RequireHost();
-        var app = host.Application;
-        var context = host.OwnerContext;
-        var lifetimeToken = host.LifetimeToken;
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            lifetimeToken,
-            cancellationToken);
-        return Menu(app, context, title, choices, converter, linkedCts.Token);
-    }
-
-    static T Menu<T>(
-        IApplication app,
-        SynchronizationContext context,
-        string title,
-        IEnumerable<T> choices,
-        Func<T, string>? converter,
-        CancellationToken cancellationToken)
-    {
-        if (Environment.CurrentManagedThreadId != app.MainThreadId)
+        => RunOnOwner((app, token) =>
         {
-            return InvokeOnOwner(
-                context,
-                () => Menu(app, context, title, choices, converter, cancellationToken));
-        }
+            var values = choices.ToArray();
+            if (values.Length == 0)
+                throw new ArgumentException("菜单不能为空。", nameof(choices));
 
-        var values = choices.ToArray();
-        if (values.Length == 0)
-            throw new ArgumentException("菜单不能为空。", nameof(choices));
-
-        using var window = new Window
-        {
-            X = 0,
-            Y = 0,
-            Width = Dim.Fill(),
-            Height = Dim.Fill(),
-            BorderStyle = null,
-            ShadowStyle = ShadowStyles.None
-        };
-        window.Margin.Thickness = Thickness.Empty;
-        window.Add(new Label
-        {
-            X = 0,
-            Y = 0,
-            Width = Dim.Fill(),
-            Height = PromptHeight,
-            Text = title
-        });
-        var selectedIndex = -1;
-        var items = values
-            .Select((value, index) => new MenuItem
+            using var window = new Window
             {
-                Title = converter?.Invoke(value) ?? value?.ToString() ?? string.Empty,
-                Action = () =>
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill(),
+                BorderStyle = null,
+                ShadowStyle = ShadowStyles.None
+            };
+            window.Margin.Thickness = Thickness.Empty;
+            window.Add(new Label
+            {
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = PromptHeight,
+                Text = title
+            });
+            var selectedIndex = -1;
+            var items = values
+                .Select((value, index) => new MenuItem
                 {
-                    selectedIndex = index;
-                    app.RequestStop(window);
-                }
-            })
-            .ToArray();
-        var menu = new Terminal.Gui.Views.Menu(items)
-        {
-            X = 0,
-            Y = PromptHeight,
-            Width = Dim.Fill(),
-            Height = Dim.Fill()
-        };
-        window.Add(menu);
-        items[0].SetFocus();
-        Run(app, window, cancellationToken);
-        return selectedIndex >= 0
-            ? values[selectedIndex]
-            : throw new OperationCanceledException("菜单已取消。");
-    }
+                    Title = converter?.Invoke(value) ?? value?.ToString() ?? string.Empty,
+                    Action = () =>
+                    {
+                        selectedIndex = index;
+                        app.RequestStop(window);
+                    }
+                })
+                .ToArray();
+            var menu = new Terminal.Gui.Views.Menu(items)
+            {
+                X = 0,
+                Y = PromptHeight,
+                Width = Dim.Fill(),
+                Height = Dim.Fill()
+            };
+            window.Add(menu);
+            items[0].SetFocus();
+            Run(app, window, token);
+            return selectedIndex >= 0
+                ? values[selectedIndex]
+                : throw new OperationCanceledException("菜单已取消。");
+        }, cancellationToken);
 
     internal static IReadOnlyList<T> MultiSelect<T>(
         string title,
@@ -331,232 +283,124 @@ static class ModalDialogs
         IEnumerable<T>? selected = null,
         Func<T, string>? converter = null,
         CancellationToken cancellationToken = default)
-    {
-        var host = TerminalUi.RequireHost();
-        var app = host.Application;
-        var context = host.OwnerContext;
-        var lifetimeToken = host.LifetimeToken;
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            lifetimeToken,
-            cancellationToken);
-        return MultiSelect(
-            app,
-            context,
-            title,
-            choices,
-            selected,
-            converter,
-            linkedCts.Token);
-    }
-
-    static IReadOnlyList<T> MultiSelect<T>(
-        IApplication app,
-        SynchronizationContext context,
-        string title,
-        IEnumerable<T> choices,
-        IEnumerable<T>? selected,
-        Func<T, string>? converter,
-        CancellationToken cancellationToken)
-    {
-        if (Environment.CurrentManagedThreadId != app.MainThreadId)
+        => RunOnOwner((app, token) =>
         {
-            return InvokeOnOwner(
-                context,
-                () => MultiSelect(
-                    app,
-                    context,
-                    title,
-                    choices,
-                    selected,
-                    converter,
-                    cancellationToken));
-        }
+            var values = choices.ToArray();
+            if (values.Length == 0)
+                throw new ArgumentException("多选列表不能为空。", nameof(choices));
 
-        var values = choices.ToArray();
-        if (values.Length == 0)
-            throw new ArgumentException("多选列表不能为空。", nameof(choices));
+            using var dialog = CreateDialog(title);
+            var list = CreateList(values.Select(x => converter?.Invoke(x) ?? x?.ToString() ?? string.Empty));
+            list.MarkMultiple = true;
+            list.ShowMarks = true;
+            var selectedValues = selected?.ToHashSet() ?? [];
+            for (var i = 0; i < values.Length; i++)
+            {
+                if (selectedValues.Contains(values[i]))
+                    list.Source?.SetMark(i, true);
+            }
 
-        using var dialog = CreateDialog(title);
-        var list = CreateList(values.Select(x => converter?.Invoke(x) ?? x?.ToString() ?? string.Empty));
-        list.MarkMultiple = true;
-        list.ShowMarks = true;
-        var selectedValues = selected?.ToHashSet() ?? [];
-        for (var i = 0; i < values.Length; i++)
-        {
-            if (selectedValues.Contains(values[i]))
-                list.Source?.SetMark(i, true);
-        }
-
-        var accepted = false;
-        var ok = CreateButton("确定", isDefault: true, () =>
-        {
-            accepted = true;
-            app.RequestStop(dialog);
-        });
-        var cancel = CreateButton("取消", isDefault: false, () => app.RequestStop(dialog));
-        Layout(dialog, list, ok, cancel);
-        list.SetFocus();
-        Run(app, dialog, cancellationToken);
-        if (!accepted)
-            throw new OperationCanceledException("多选已取消。");
-        return list.GetAllMarkedItems().Select(x => values[x]).ToArray();
-    }
+            var accepted = false;
+            var ok = CreateButton("确定", isDefault: true, () =>
+            {
+                accepted = true;
+                app.RequestStop(dialog);
+            });
+            var cancel = CreateButton("取消", isDefault: false, () => app.RequestStop(dialog));
+            Layout(dialog, list, ok, cancel);
+            list.SetFocus();
+            Run(app, dialog, token);
+            if (!accepted)
+                throw new OperationCanceledException("多选已取消。");
+            return list.GetAllMarkedItems().Select(x => values[x]).ToArray();
+        }, cancellationToken);
 
     internal static string Ask(
         string title,
         string? value = null,
         bool allowEmpty = false,
         CancellationToken cancellationToken = default)
-    {
-        var host = TerminalUi.RequireHost();
-        var app = host.Application;
-        var context = host.OwnerContext;
-        var lifetimeToken = host.LifetimeToken;
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            lifetimeToken,
-            cancellationToken);
-        return Ask(app, context, title, value, allowEmpty, linkedCts.Token);
-    }
-
-    static string Ask(
-        IApplication app,
-        SynchronizationContext context,
-        string title,
-        string? value,
-        bool allowEmpty,
-        CancellationToken cancellationToken)
-    {
-        if (Environment.CurrentManagedThreadId != app.MainThreadId)
+        => RunOnOwner((app, token) =>
         {
-            return InvokeOnOwner(
-                context,
-                () => Ask(app, context, title, value, allowEmpty, cancellationToken));
-        }
-
-        using var dialog = CreateDialog(title, height: 10);
-        var input = new TextField
-        {
-            Text = value ?? string.Empty,
-            X = 1,
-            Y = PromptHeight,
-            Width = Dim.Fill(1)
-        };
-        input.MouseHighlightStates |= MouseState.In;
-        var accepted = false;
-        var ok = CreateButton("确定", true, () =>
-        {
-            if (allowEmpty || !string.IsNullOrWhiteSpace(input.Text))
+            using var dialog = CreateDialog(title, height: 10);
+            var input = new TextField
             {
-                accepted = true;
-                app.RequestStop(dialog);
-            }
-        });
-        var cancel = CreateButton("取消", false, () => app.RequestStop(dialog));
-        ok.X = Pos.Center() - 10;
-        ok.Y = Pos.Bottom(input) + 1;
-        cancel.X = Pos.Right(ok) + 2;
-        cancel.Y = ok.Y;
-        dialog.Add(input, ok, cancel);
-        input.SetFocus();
-        Run(app, dialog, cancellationToken);
+                Text = value ?? string.Empty,
+                X = 1,
+                Y = PromptHeight,
+                Width = Dim.Fill(1)
+            };
+            input.MouseHighlightStates |= MouseState.In;
+            var accepted = false;
+            var ok = CreateButton("确定", true, () =>
+            {
+                if (allowEmpty || !string.IsNullOrWhiteSpace(input.Text))
+                {
+                    accepted = true;
+                    app.RequestStop(dialog);
+                }
+            });
+            var cancel = CreateButton("取消", false, () => app.RequestStop(dialog));
+            ok.X = Pos.Center() - 10;
+            ok.Y = Pos.Bottom(input) + 1;
+            cancel.X = Pos.Right(ok) + 2;
+            cancel.Y = ok.Y;
+            dialog.Add(input, ok, cancel);
+            input.SetFocus();
+            Run(app, dialog, token);
 
-        if (!accepted)
-            throw new OperationCanceledException("输入已取消。");
-        return input.Text;
-    }
+            if (!accepted)
+                throw new OperationCanceledException("输入已取消。");
+            return input.Text;
+        }, cancellationToken);
 
     internal static bool Confirm(
         string title,
         bool defaultValue = false,
         CancellationToken cancellationToken = default)
-    {
-        var host = TerminalUi.RequireHost();
-        var app = host.Application;
-        var context = host.OwnerContext;
-        var lifetimeToken = host.LifetimeToken;
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            lifetimeToken,
-            cancellationToken);
-        return Confirm(app, context, title, defaultValue, linkedCts.Token);
-    }
-
-    static bool Confirm(
-        IApplication app,
-        SynchronizationContext context,
-        string title,
-        bool defaultValue,
-        CancellationToken cancellationToken)
-    {
-        if (Environment.CurrentManagedThreadId != app.MainThreadId)
+        => RunOnOwner((app, token) =>
         {
-            return InvokeOnOwner(
-                context,
-                () => Confirm(app, context, title, defaultValue, cancellationToken));
-        }
-
-        using var dialog = CreateDialog(title, height: 9);
-        var result = false;
-        var yes = CreateButton("是", defaultValue, () =>
-        {
-            result = true;
-            app.RequestStop(dialog);
-        });
-        var no = CreateButton("否", !defaultValue, () =>
-        {
-            result = false;
-            app.RequestStop(dialog);
-        });
-        yes.X = Pos.Center() - 8;
-        yes.Y = PromptHeight + 1;
-        no.X = Pos.Right(yes) + 2;
-        no.Y = yes.Y;
-        dialog.Add(yes, no);
-        (defaultValue ? yes : no).SetFocus();
-        Run(app, dialog, cancellationToken);
-        return result;
-    }
+            using var dialog = CreateDialog(title, height: 9);
+            var result = false;
+            var yes = CreateButton("是", defaultValue, () =>
+            {
+                result = true;
+                app.RequestStop(dialog);
+            });
+            var no = CreateButton("否", !defaultValue, () =>
+            {
+                result = false;
+                app.RequestStop(dialog);
+            });
+            yes.X = Pos.Center() - 8;
+            yes.Y = PromptHeight + 1;
+            no.X = Pos.Right(yes) + 2;
+            no.Y = yes.Y;
+            dialog.Add(yes, no);
+            (defaultValue ? yes : no).SetFocus();
+            Run(app, dialog, token);
+            return result;
+        }, cancellationToken);
 
     internal static bool Acknowledge(
         string title = "按 Enter 返回",
         CancellationToken cancellationToken = default)
-    {
-        var host = TerminalUi.RequireHost();
-        var app = host.Application;
-        var context = host.OwnerContext;
-        var lifetimeToken = host.LifetimeToken;
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            lifetimeToken,
-            cancellationToken);
-        return Acknowledge(app, context, title, linkedCts.Token);
-    }
-
-    static bool Acknowledge(
-        IApplication app,
-        SynchronizationContext context,
-        string title,
-        CancellationToken cancellationToken)
-    {
-        if (Environment.CurrentManagedThreadId != app.MainThreadId)
+        => RunOnOwner((app, token) =>
         {
-            return InvokeOnOwner(
-                context,
-                () => Acknowledge(app, context, title, cancellationToken));
-        }
-
-        using var dialog = CreateDialog(title, height: 9);
-        var accepted = false;
-        var ok = CreateButton("确定", true, () =>
-        {
-            accepted = true;
-            app.RequestStop(dialog);
-        });
-        ok.X = Pos.Center();
-        ok.Y = PromptHeight + 1;
-        dialog.Add(ok);
-        ok.SetFocus();
-        Run(app, dialog, cancellationToken);
-        return accepted;
-    }
+            using var dialog = CreateDialog(title, height: 9);
+            var accepted = false;
+            var ok = CreateButton("确定", true, () =>
+            {
+                accepted = true;
+                app.RequestStop(dialog);
+            });
+            ok.X = Pos.Center();
+            ok.Y = PromptHeight + 1;
+            dialog.Add(ok);
+            ok.SetFocus();
+            Run(app, dialog, token);
+            return accepted;
+        }, cancellationToken);
 
     static int RunList(
         IApplication app,
@@ -652,6 +496,15 @@ static class ModalDialogs
         dialog.Add(list, ok, cancel);
     }
 
+    static T RunOnOwner<T>(Func<IApplication, CancellationToken, T> action, CancellationToken cancellationToken)
+    {
+        var host = TerminalUi.RequireHost();
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(host.LifetimeToken, cancellationToken);
+        return Environment.CurrentManagedThreadId == host.Application.MainThreadId
+            ? action(host.Application, linked.Token)
+            : InvokeOnOwner(host.OwnerContext, () => action(host.Application, linked.Token));
+    }
+
     static T InvokeOnOwner<T>(SynchronizationContext context, Func<T> action)
     {
         T result = default!;
@@ -674,41 +527,21 @@ static class ModalDialogs
     static Task InvokeOnOwnerAsync(SynchronizationContext context, Func<Task> action)
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.Post(_ =>
+        context.Post(async _ =>
         {
-            Task task;
             try
             {
-                task = action();
+                await action().ConfigureAwait(false);
+                completion.TrySetResult();
+            }
+            catch (OperationCanceledException ex)
+            {
+                completion.TrySetCanceled(ex.CancellationToken);
             }
             catch (Exception ex)
             {
                 completion.TrySetException(ex);
-                return;
             }
-
-            _ = task.ContinueWith(
-                static (completed, state) =>
-                {
-                    var source = (TaskCompletionSource)state!;
-                    try
-                    {
-                        completed.GetAwaiter().GetResult();
-                        source.TrySetResult();
-                    }
-                    catch (OperationCanceledException ex)
-                    {
-                        source.TrySetCanceled(ex.CancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        source.TrySetException(ex);
-                    }
-                },
-                completion,
-                CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
         }, null);
         return completion.Task;
     }

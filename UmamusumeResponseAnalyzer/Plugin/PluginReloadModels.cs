@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace UmamusumeResponseAnalyzer.Plugin;
 
 internal sealed class PendingPluginUnload(
@@ -22,13 +20,8 @@ internal sealed class PendingPluginUnload(
     }
 }
 
-internal sealed record StagedAssembly(string Name, Assembly Assembly);
-
-internal sealed record StagedPlugin(IPlugin Plugin);
-
 internal sealed record StagedGroupLoad(
     HashSet<string> Names,
     string Key,
     PluginManager.PluginLoadContext Context,
-    List<StagedAssembly> Assemblies,
-    List<StagedPlugin> Plugins);
+    List<IPlugin> Plugins);

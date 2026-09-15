@@ -168,22 +168,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
             return null;
         }
 
-        internal static IDisposable EnterPluginRegistration(IPlugin plugin)
-            => TryEnterPluginRegistration(plugin)
-               ?? throw new InvalidOperationException(
-                   $"插件已卸载或 generation 不接受注册: {InternalName(plugin)}");
-
-        // Hotkey dispatch keeps this scope call as part of its unchanged owner/callback path.
-        // Runtime callback admission is carried solely by PluginGeneration leases.
-        internal static IDisposable EnterPluginCallbackScope()
-            => NoopScope.Instance;
-
-        sealed class NoopScope : IDisposable
-        {
-            internal static NoopScope Instance { get; } = new();
-            public void Dispose() { }
-        }
-
         static bool IsShuttingDown()
             => Runtime.ShutdownRequested;
 
@@ -243,7 +227,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             foreach (var name in names)
             {
                 loadedByName.TryGetValue(name, out var plugin);
-                var metadata = GetValueIgnoreCase(scanned, name) ?? GetValueIgnoreCase(knownByName, name);
+                var metadata = scanned.GetValueOrDefault(name) ?? knownByName.GetValueOrDefault(name);
                 var displayName = metadata?.DisplayName ?? name;
                 var author = metadata?.Author ?? string.Empty;
                 var version = metadata?.Version;

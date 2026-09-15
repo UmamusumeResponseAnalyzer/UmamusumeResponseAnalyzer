@@ -1,10 +1,10 @@
+using static HistoryConfigDialog;
 using System.Globalization;
 using System.Text.Json;
 using Terminal.Gui.App;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using Terminal.Gui.Time;
-using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.Plugin;
 
@@ -111,7 +111,7 @@ static void AssertConfigTransactions(IApplication application, PluginCase plugin
 
     OnNextDialog(application, dialog =>
     {
-        SetDraft(dialog, 23);
+        SetHistoryLimit(dialog, 23);
         AcceptButton(application, dialog, "保存");
     });
     plugin.ConfigPromptAsync(application).GetAwaiter().GetResult();
@@ -123,7 +123,7 @@ static void AssertConfigTransactions(IApplication application, PluginCase plugin
 
     OnNextDialog(application, dialog =>
     {
-        SetDraft(dialog, 31);
+        SetHistoryLimit(dialog, 31);
         AcceptButton(application, dialog, "保存");
     });
     plugin.ConfigPromptAsync(application).GetAwaiter().GetResult();
@@ -160,7 +160,7 @@ static void AssertConfigTransactions(IApplication application, PluginCase plugin
     {
         OnNextDialog(application, dialog =>
         {
-            SetDraft(dialog, 991);
+            SetHistoryLimit(dialog, 991);
             cancellation.Cancel();
         });
         AssertCanceled(
@@ -195,7 +195,7 @@ static void AssertCanceledWithoutMutation(
 {
     OnNextDialog(application, dialog =>
     {
-        SetDraft(dialog, 991);
+        SetHistoryLimit(dialog, 991);
         cancel(dialog);
     });
     AssertCanceled(plugin.ConfigPromptAsync(application), $"{pluginCase.InternalName} {operation}");
@@ -252,41 +252,6 @@ static void OnNextDialog(IApplication application, Action<Dialog> action)
         action(dialog);
         return false;
     });
-}
-
-static void SetDraft(Dialog dialog, int value)
-{
-    var views = Descendants(dialog).ToArray();
-    if (views.OfType<NumericUpDown<int>>().FirstOrDefault() is { } numeric)
-    {
-        numeric.Value = value;
-        return;
-    }
-
-    if (views.OfType<TextField>().FirstOrDefault() is { } text)
-    {
-        text.Text = value.ToString(CultureInfo.InvariantCulture);
-        return;
-    }
-
-    throw new InvalidOperationException($"Config dialog {dialog.Title} has no historyLimit editor.");
-}
-
-static void AcceptButton(IApplication application, Dialog dialog, string text)
-{
-    var button = dialog.Buttons.SingleOrDefault(
-        candidate => candidate.Text?.ToString().Contains(text, StringComparison.Ordinal) == true)
-        ?? throw new InvalidOperationException($"Config dialog {dialog.Title} has no {text} button.");
-    button.SetFocus();
-    application.Keyboard.RaiseKeyDownEvent(Key.Enter);
-}
-
-static IEnumerable<View> Descendants(View root)
-{
-    yield return root;
-    foreach (var child in root.SubViews)
-    foreach (var descendant in Descendants(child))
-        yield return descendant;
 }
 
 static void AssertDraftLimit(

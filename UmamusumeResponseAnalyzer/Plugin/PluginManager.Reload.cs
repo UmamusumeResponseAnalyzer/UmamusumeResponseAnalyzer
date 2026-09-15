@@ -1,7 +1,5 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Runtime.Loader;
 using UmamusumeResponseAnalyzer.TerminalGui;
 
 namespace UmamusumeResponseAnalyzer.Plugin
@@ -277,7 +275,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             var affectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { pluginName };
             List<PendingPluginUnload> unloads = [];
-            var existing = GetValueIgnoreCase(LifecycleMetadatas, pluginName);
+            var existing = LifecycleMetadatas.GetValueOrDefault(pluginName);
             affectedNames.UnionWith(DependencyComponent(pluginName, scanned));
             if (existing is not null)
             {
@@ -344,7 +342,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             var notLoaded = false;
             var loadedPlugin = LifecycleLoadedPlugins.FirstOrDefault(plugin =>
                 string.Equals(InternalName(plugin), pluginName, StringComparison.OrdinalIgnoreCase));
-            var existing = GetValueIgnoreCase(LifecycleMetadatas, pluginName);
+            var existing = LifecycleMetadatas.GetValueOrDefault(pluginName);
             group = LifecycleContextGroups.FirstOrDefault(candidate =>
                 candidate.Contains(pluginName, StringComparer.OrdinalIgnoreCase));
             if (group is null)
@@ -483,7 +481,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
 
                 if (initialize && deliverStarted && staged.Plugins.Count != 0)
-                    startedPluginBatches.Add([.. staged.Plugins.Select(x => x.Plugin)]);
+                    startedPluginBatches.Add([.. staged.Plugins]);
 
                 foreach (var name in group.Where(LifecycleMetadatas.ContainsKey))
                     outcomes[name] = IsPluginLoaded(name)
@@ -512,12 +510,12 @@ namespace UmamusumeResponseAnalyzer.Plugin
             var ordered = TopologicalOrder(group);
             var key = GroupKey(group);
             var ctx = new PluginLoadContext(key, ordered.Select(name => LifecycleMetadatas[name]));
-            var staged = new StagedGroupLoad(group, key, ctx, [], []);
+            var staged = new StagedGroupLoad(group, key, ctx, []);
 
             foreach (var name in ordered)
             {
                 var metadata = LifecycleMetadatas[name];
-                var failure = await StageIntoContextAsync(staged, metadata);
+                var failure = await LoadIntoContextAsync(staged.Context, metadata, staged.Plugins);
                 if (failure is null)
                     continue;
 
@@ -541,62 +539,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
             return staged;
         }
 
-        static async Task<Exception?> StageIntoContextAsync(StagedGroupLoad staged, PluginMetadata metadata)
-        {
-            IPlugin? plugin = null;
-            var phase = "读取插件程序集";
-            try
-            {
-                using var stream = CreateStream(metadata);
-                var assembly = staged.Context.LoadFromStream(stream);
-                var assemblyName = assembly.GetName().Name;
-                PluginPackageValidator.ValidateAssemblyIdentity(assemblyName, metadata.PluginName);
-
-                if (!ShouldLoadPluginForCurrentTargets(metadata))
-                    return null;
-
-                phase = "读取插件导出类型";
-                var type = assembly.GetExportedTypes().FirstOrDefault(candidate =>
-                    typeof(IPlugin).IsAssignableFrom(candidate) && !candidate.IsAbstract);
-                if (type is null)
-                    throw new InvalidDataException($"未找到实现 {nameof(IPlugin)} 的公开具体类型。");
-
-                phase = "创建插件实例";
-                if (Activator.CreateInstance(type) is not IPlugin createdPlugin)
-                    throw new InvalidDataException($"无法创建插件实例: type={type.FullName ?? type.Name}");
-                plugin = createdPlugin;
-                _ = GenerationFor(plugin);
-
-                staged.Plugins.Add(new(plugin));
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Exception failure = PluginLoadException(metadata, phase, ex);
-                if (plugin is not null)
-                {
-                    try { await CompleteFailedPluginLoadAsync(plugin, flush: false); }
-                    catch (Exception cleanupEx)
-                    {
-                        failure = new AggregateException(
-                            "插件加载及清理失败。",
-                            failure,
-                            cleanupEx);
-                    }
-                }
-
-                return failure;
-            }
-        }
-
         static Exception? InitializeStagedPlugins(StagedGroupLoad staged)
         {
             var availableGroupMembers = staged.Plugins
-                .Select(plugin => InternalName(plugin.Plugin))
+                .Select(InternalName)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var plugin in staged.Plugins)
                 if (!TryInitializePlugin(
-                        plugin.Plugin,
+                        plugin,
                         committed: false,
                         out var failure,
                         availableGroupMembers))
@@ -610,10 +560,10 @@ namespace UmamusumeResponseAnalyzer.Plugin
             try
             {
                 foreach (var plugin in staged.Plugins)
-                    LifecycleLoadedPlugins.Add(plugin.Plugin);
+                    LifecycleLoadedPlugins.Add(plugin);
                 LifecycleContexts.Add(staged.Key, staged.Context);
                 if (initialize)
-                    CommitPendingRegistrations(staged.Plugins.Select(plugin => plugin.Plugin));
+                    CommitPendingRegistrations(staged.Plugins);
             }
             catch (Exception commitError)
             {
@@ -626,7 +576,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     foreach (var plugin in staged.Plugins)
                     {
                         var index = LifecycleLoadedPlugins.FindIndex(candidate =>
-                            ReferenceEquals(candidate, plugin.Plugin));
+                            ReferenceEquals(candidate, plugin));
                         if (index >= 0)
                             LifecycleLoadedPlugins.RemoveAt(index);
                     }
@@ -635,7 +585,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 {
                     failures.Add(new InvalidOperationException("插件 staged state 回滚失败。", ex));
                 }
-                try { RemoveAnalyzerMethods(staged.Plugins.Select(plugin => plugin.Plugin)); }
+                try { RemoveAnalyzerMethods(staged.Plugins); }
                 catch (Exception ex) { failures.Add(ex); }
                 if (failures.Count != 1)
                     throw new AggregateException("插件 staged registration 提交失败。", failures);
@@ -649,7 +599,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             var generations = staged.Plugins
                 .AsEnumerable()
                 .Reverse()
-                .Select(plugin => RequireGeneration(plugin.Plugin))
+                .Select(RequireGeneration)
                 .ToList();
             foreach (var generation in generations)
                 _ = generation.Close();

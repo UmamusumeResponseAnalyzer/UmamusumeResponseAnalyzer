@@ -28,12 +28,12 @@ namespace UmamusumeResponseAnalyzer
         {
             if (!await NeedUpdate(cancellationToken))
             {
-                TerminalUi.Acknowledge(I18N_AlreadyLatestInstruction, cancellationToken);
+                ModalDialogs.Acknowledge(I18N_AlreadyLatestInstruction, cancellationToken);
                 return;
             }
 
             var path = Path.Combine(Path.GetTempPath(), "latest-UmamusumeResponseAnalyzer.exe");
-            await TerminalUi.RunProgressAsync(
+            await ModalDialogs.RunProgressAsync(
                 (progress, token) => Download(
                     progress,
                     I18N_DownloadProgramInstruction,
@@ -41,7 +41,7 @@ namespace UmamusumeResponseAnalyzer
                     token),
                 cancellationToken);
 
-            if (!TerminalUi.Acknowledge(
+            if (!ModalDialogs.Acknowledge(
                     I18N_BeginUpdateProgramInstruction,
                     cancellationToken))
                 return;
@@ -125,7 +125,7 @@ namespace UmamusumeResponseAnalyzer
         }
         internal static async Task UpdateAssets(CancellationToken cancellationToken = default)
         {
-            await TerminalUi.RunProgressAsync((progress, token) => Task.WhenAll(
+            await ModalDialogs.RunProgressAsync((progress, token) => Task.WhenAll(
                 [
                     Download(progress, I18N_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH, token),
                     Download(progress, I18N_DownloadNamesInstruction, Database.NAMES_FILEPATH, token),
@@ -138,7 +138,7 @@ namespace UmamusumeResponseAnalyzer
                 ]),
                 cancellationToken);
 
-            TerminalUi.Acknowledge(I18N_DownloadedInstruction, cancellationToken);
+            ModalDialogs.Acknowledge(I18N_DownloadedInstruction, cancellationToken);
         }
         static string GetDownloadUrl(string filepath)
         {

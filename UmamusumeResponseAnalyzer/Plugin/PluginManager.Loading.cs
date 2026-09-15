@@ -81,10 +81,6 @@ internal static partial class PluginManager
             satellites);
     }
 
-    static TValue? GetValueIgnoreCase<TValue>(IReadOnlyDictionary<string, TValue> source, string key)
-        where TValue : class
-        => source.TryGetValue(key, out var value) ? value : null;
-
     static string ResolvePluginName(string pluginName, params IEnumerable<string>[] sources)
     {
         foreach (var source in sources)
@@ -190,7 +186,7 @@ internal static partial class PluginManager
         foreach (var name in ordered)
         {
             var metadata = LifecycleMetadatas[name];
-            var failure = LoadIntoContext(context, metadata);
+            var failure = LoadIntoContextAsync(context, metadata, LifecycleLoadedPlugins).GetAwaiter().GetResult();
             if (failure is null)
                 continue;
 
@@ -219,17 +215,18 @@ internal static partial class PluginManager
             LoadGroup(group);
     }
 
-    internal static Exception? LoadIntoContext(AssemblyLoadContext context, PluginMetadata metadata)
+    static async Task<Exception?> LoadIntoContextAsync(
+        AssemblyLoadContext context,
+        PluginMetadata metadata,
+        List<IPlugin> plugins)
     {
         IPlugin? plugin = null;
-        Assembly? assembly = null;
-        string? assemblyName = null;
         var phase = "读取插件程序集";
         try
         {
             using var stream = CreateStream(metadata);
-            assembly = context.LoadFromStream(stream);
-            assemblyName = assembly.GetName().Name;
+            var assembly = context.LoadFromStream(stream);
+            var assemblyName = assembly.GetName().Name;
             PluginPackageValidator.ValidateAssemblyIdentity(assemblyName, metadata.PluginName);
 
             if (!ShouldLoadPluginForCurrentTargets(metadata))
@@ -246,7 +243,7 @@ internal static partial class PluginManager
                      ?? throw new InvalidDataException($"无法创建插件实例: type={type.FullName ?? type.Name}");
             _ = GenerationFor(plugin);
 
-            LifecycleLoadedPlugins.Add(plugin);
+            plugins.Add(plugin);
             return null;
         }
         catch (Exception ex)
@@ -254,7 +251,7 @@ internal static partial class PluginManager
             Exception failure = PluginLoadException(metadata, phase, ex);
             if (plugin is not null)
             {
-                try { CompleteFailedPluginLoadAsync(plugin, flush: false).GetAwaiter().GetResult(); }
+                try { await CompleteFailedPluginLoadAsync(plugin, flush: false).ConfigureAwait(false); }
                 catch (Exception cleanupEx)
                 {
                     failure = new AggregateException(

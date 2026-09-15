@@ -377,7 +377,6 @@ public sealed class PluginDispatchReloadTests : IDisposable
         var callback = Task.Run(async () =>
         {
             using var lease = PluginManager.EnterPluginCallback(plugin);
-            using var callbackScope = PluginManager.EnterPluginCallbackScope();
             using var ownerScope = HotkeyManager.RegisterScope(plugin);
             await entry.Handler();
         });

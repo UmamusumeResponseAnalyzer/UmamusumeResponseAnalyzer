@@ -375,21 +375,6 @@ internal static partial class PluginManager
                 added.Where(registration => registration.Kind == AnalyzerKind.Response))));
     }
 
-    internal static void RemoveAnalyzerRegistration(AnalyzerRegistration registration)
-        => RemoveAnalyzerRegistrations([registration]);
-
-    internal static void RemoveAnalyzerRegistrations(IEnumerable<AnalyzerRegistration> registrations)
-    {
-        var removed = registrations.ToHashSet(ReferenceEqualityComparer.Instance);
-        if (removed.Count == 0)
-            return;
-
-        var current = Runtime.ReadAnalyzers();
-        Runtime.PublishAnalyzers(new(
-            current.Request.Where(registration => !removed.Contains(registration)).ToImmutableArray(),
-            current.Response.Where(registration => !removed.Contains(registration)).ToImmutableArray()));
-    }
-
     internal static PluginCallbackSnapshot<AnalyzerRegistration> SnapshotAnalyzerRegistrations(
         AnalyzerKind kind,
         Type endpointType)

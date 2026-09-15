@@ -25,7 +25,7 @@ internal static class PluginRepository
                 PluginApiBase, cancellationToken), Config.Repository.Targets);
             if (plugins.Count == 0)
             {
-                TerminalUi.Acknowledge(Text("Empty"), cancellationToken);
+                ModalDialogs.Acknowledge(Text("Empty"), cancellationToken);
                 return;
             }
             var choices = plugins
@@ -33,7 +33,7 @@ internal static class PluginRepository
                 .ThenBy(p => string.IsNullOrWhiteSpace(p.Category) ? UncategorizedLabel : p.Category)
                 .ThenBy(DisplayLabel, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            var selected = TerminalUi.MultiSelect(Text("SelectPlugins"), choices,
+            var selected = ModalDialogs.MultiSelect(Text("SelectPlugins"), choices,
                 converter: FormatChoice, cancellationToken: cancellationToken).ToList();
             var installed = await InstallPluginsAsync(selected, cancellationToken);
             if (installed.Count == 0)
@@ -45,11 +45,11 @@ internal static class PluginRepository
                 .Select(r => r.PluginName).ToArray();
             if (failed.Length > 0)
                 throw new InvalidOperationException($"插件安装完成，但加载失败：{string.Join("、", failed)}");
-            TerminalUi.Acknowledge($"插件已安装并生效：{string.Join("、", installed)}", cancellationToken);
+            ModalDialogs.Acknowledge($"插件已安装并生效：{string.Join("、", installed)}", cancellationToken);
         }
         catch (global::UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.PostShutdownProcessRequestedException) { throw; }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
-        catch (Exception ex) { TerminalUi.Acknowledge($"{Text("Failed")}: {ex.Message}", cancellationToken); }
+        catch (Exception ex) { ModalDialogs.Acknowledge($"{Text("Failed")}: {ex.Message}", cancellationToken); }
     }
 
     internal static List<PluginInformation> BuildCatalog(IEnumerable<PluginInformation> raw, IReadOnlyCollection<string> targets) =>

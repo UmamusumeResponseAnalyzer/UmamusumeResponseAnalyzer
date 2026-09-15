@@ -220,7 +220,6 @@ internal sealed class HotkeyInputDispatcher(HotkeyRuntime runtime)
                 if (callback is null)
                     return;
 
-                using var callbackScope = PluginManager.EnterPluginCallbackScope();
                 await entry.Handler();
             });
             return;
