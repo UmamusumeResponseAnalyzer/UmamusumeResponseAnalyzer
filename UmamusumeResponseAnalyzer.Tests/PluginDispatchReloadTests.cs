@@ -308,11 +308,11 @@ public sealed class PluginDispatchReloadTests : IDisposable
         var constructorRelease = Path.Combine(tempDir, "constructor-release");
         CompilePackage(BlockingConstructorPluginSource(pluginName, constructorEntered, constructorRelease));
 
-        var initialize = Task.Run(PluginManager.Init);
+        var initialize = Task.Run(() => PluginManager.Init());
         try
         {
             await WaitUntilAsync(() => File.Exists(constructorEntered));
-            var secondInit = Assert.Throws<InvalidOperationException>(PluginManager.Init);
+            var secondInit = Assert.Throws<InvalidOperationException>(() => PluginManager.Init());
             Assert.Contains("已有插件 lifecycle 事务", secondInit.Message, StringComparison.Ordinal);
             var unload = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => PluginManager.UnloadPluginsAsync(pluginName));
@@ -459,7 +459,7 @@ public sealed class PluginDispatchReloadTests : IDisposable
         CompilePackage(PhaseContractPluginSource(pluginName, lifecycleLog));
 
         PluginManager.Init();
-        AssertPhaseFailure(Assert.Throws<InvalidOperationException>(PluginManager.Init), "Loaded");
+        AssertPhaseFailure(Assert.Throws<InvalidOperationException>(() => PluginManager.Init()), "Loaded");
         AssertLifecycleOutcome(await PluginManager.LoadPluginsAsync(pluginName), pluginName);
         AssertLifecycleOutcome(await PluginManager.ReloadPluginsAsync(pluginName), pluginName);
         AssertLifecycleOutcome(await PluginManager.UnloadPluginsAsync(pluginName), pluginName);
@@ -469,13 +469,13 @@ public sealed class PluginDispatchReloadTests : IDisposable
             "Loaded");
 
         PluginManager.InitializeLoadedPlugins();
-        AssertPhaseFailure(Assert.Throws<InvalidOperationException>(PluginManager.Init), "Initialized");
+        AssertPhaseFailure(Assert.Throws<InvalidOperationException>(() => PluginManager.Init()), "Initialized");
         PluginManager.InitializeLoadedPlugins();
         Assert.Equal(["initialize"], File.ReadAllLines(lifecycleLog));
 
         await PluginManager.TriggerStartedAsync();
         await PluginManager.TriggerStartedAsync();
-        AssertPhaseFailure(Assert.Throws<InvalidOperationException>(PluginManager.Init), "Started");
+        AssertPhaseFailure(Assert.Throws<InvalidOperationException>(() => PluginManager.Init()), "Started");
         PluginManager.InitializeLoadedPlugins();
         await PluginManager.TriggerStartedAsync();
         Assert.Equal(["initialize", "started"], File.ReadAllLines(lifecycleLog));
@@ -529,7 +529,7 @@ public sealed class PluginDispatchReloadTests : IDisposable
         try
         {
             await WaitUntilAsync(() => File.Exists(disposeEntered));
-            AssertPhaseFailure(Assert.Throws<InvalidOperationException>(PluginManager.Init), "ShuttingDown");
+            AssertPhaseFailure(Assert.Throws<InvalidOperationException>(() => PluginManager.Init()), "ShuttingDown");
             AssertPhaseFailure(
                 Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins),
                 "ShuttingDown");

@@ -4,8 +4,6 @@
   <resheader name="version"><value>2.0</value></resheader>
   <data name="Empty" xml:space="preserve"><value>No available versions in the plugin registry.</value></data>
   <data name="SelectPlugins" xml:space="preserve"><value>Select plugins to install</value></data>
-  <data name="SelectVersion" xml:space="preserve"><value>Select a version</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Cancelled" xml:space="preserve"><value>Installation cancelled.</value></data>
   <data name="Failed" xml:space="preserve"><value>Plugin registry operation failed</value></data>
   <data name="InstalledNotLoaded" xml:space="preserve"><value>ZIP saved, but loading did not succeed.</value></data>

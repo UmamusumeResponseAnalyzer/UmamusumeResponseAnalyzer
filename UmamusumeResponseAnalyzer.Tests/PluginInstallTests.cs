@@ -218,8 +218,10 @@ public sealed class PluginInstallTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => PluginRepository.InstallPluginsAsync([handler.Manifest, handler.Manifest]));
     }
 
-    [Fact]
-    public async Task MenuSortsCategoriesSelectsVersionAndReloadsAfterAllDownloads()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MenuInstallsLatestStableAndReloadsAfterAllDownloads(bool updateInstalled)
     {
         var otherPath = Path.Combine(tempDir, "Zulu.zip");
         PluginCompiler.CompilePackage(PluginCode, "Zulu", otherPath);
@@ -239,8 +241,22 @@ public sealed class PluginInstallTests : IDisposable
         var olderPath = Path.Combine(tempDir, "older.zip");
         PluginCompiler.CompilePackage(PluginCode, Name, olderPath, version: "2026.03.03");
         handler.Packages.Add(9, (1, PluginPackageValidator.Validate(olderPath, false).Manifest, File.ReadAllBytes(olderPath)));
+        var prereleasePath = Path.Combine(tempDir, "prerelease.zip");
+        PluginCompiler.CompilePackage(PluginCode, Name, prereleasePath, version: "2026.03.05");
+        handler.Packages.Add(11, (1, PluginPackageValidator.Validate(prereleasePath, false).Manifest, File.ReadAllBytes(prereleasePath)));
+        handler.Prereleases.Add(11);
+        if (updateInstalled)
+        {
+            File.Copy(olderPath, PluginRepository.InstallZipPath(Name));
+            await PluginManager.ReloadPluginsAsync(Name);
+        }
         WebInstallApi.ConfirmInstall = (_, _) => throw new InvalidOperationException("Menu must not use web confirmation.");
-        handler.AfterDownload = () => Assert.DoesNotContain(PluginManager.SnapshotPluginStatuses(), p => p.IsLoaded);
+        handler.AfterDownload = () =>
+        {
+            Assert.Null(PluginManager.FindLoadedPlugin("Zulu"));
+            Assert.Equal(updateInstalled ? new Version(2026, 3, 3) : null,
+                PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.IsLoaded)?.Version);
+        };
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cancellation.CancelAfter(TimeSpan.FromSeconds(20));
         var menu = Task.Run(() => PluginRepository.ShowMenuAsync(cancellation.Token), cancellation.Token);
@@ -255,11 +271,12 @@ public sealed class PluginInstallTests : IDisposable
             await terminal.InjectAsync(Key.Space);
             await terminal.InjectAsync(Key.Tab);
             await terminal.InjectAsync(Key.Enter);
-            await terminal.WaitForScreenAsync("2026.03.03");
-            await terminal.InjectAsync(Key.CursorDown);
-            await terminal.InjectAsync(Key.Enter);
             await terminal.WaitForScreenAsync("插件已安装并生效");
-            Assert.Equal([20L, 9L], handler.Downloads);
+            Assert.Equal([20L, 10L], handler.Downloads);
+            Assert.Equal(3, handler.Requests);
+            Assert.Equal(package, File.ReadAllBytes(PluginRepository.InstallZipPath(Name)));
+            Assert.Equal(new Version(2026, 3, 4),
+                PluginManager.SnapshotPluginStatuses().Single(p => p.InternalName == Name).Version);
             Assert.NotNull(PluginManager.FindLoadedPlugin(Name));
             Assert.NotNull(PluginManager.FindLoadedPlugin("Zulu"));
             Assert.Empty(Directory.GetFiles("Plugins", "*.source.json"));
@@ -294,9 +311,10 @@ public sealed class PluginInstallTests : IDisposable
         return request;
     }
 
-    sealed class PackageHandler(byte[] bytes, PluginInformation manifest) : HttpMessageHandler
+    internal sealed class PackageHandler(byte[] bytes, PluginInformation manifest) : HttpMessageHandler
     {
         internal readonly Dictionary<long, (long RepositoryId, PluginInformation Manifest, byte[] Bytes)> Packages = new() { [10] = (1, manifest, bytes) };
+        internal readonly HashSet<long> Prereleases = [];
         internal PluginInformation Manifest => Packages[10].Manifest;
         internal byte[] Bytes
         {
@@ -307,8 +325,9 @@ public sealed class PluginInstallTests : IDisposable
         internal int Requests;
         internal Action? AfterDownload;
         internal Action<HttpResponseMessage>? OnDownloadResponse;
+        internal Task? DownloadBarrier;
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Requests++;
@@ -326,17 +345,18 @@ public sealed class PluginInstallTests : IDisposable
                 var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(package.Bytes) };
                 OnDownloadResponse?.Invoke(response);
                 AfterDownload?.Invoke();
-                return Task.FromResult(response);
+                if (DownloadBarrier is { } barrier)
+                    await barrier.WaitAsync(cancellationToken);
+                return response;
             }
             var plugins = Packages.OrderByDescending(p => p.Value.Manifest.Version).ThenByDescending(p => p.Key)
-                .Select(p => new { source = new { repositoryId = p.Value.RepositoryId }, releaseId = p.Key, manifest = p.Value.Manifest });
+                .Select(p => new { source = new { repositoryId = p.Value.RepositoryId }, releaseId = p.Key, prerelease = Prereleases.Contains(p.Key), manifest = p.Value.Manifest });
             var body = segments[^1] switch
             {
-                "Plugins" => JsonConvert.SerializeObject(plugins.GroupBy(p => p.source.repositoryId).Select(g => g.First())),
-                "releases" => JsonConvert.SerializeObject(plugins.Where(p => p.source.repositoryId == long.Parse(segments[^2]))),
+                "Plugins" => JsonConvert.SerializeObject(plugins.Where(p => !p.prerelease).GroupBy(p => p.source.repositoryId).Select(g => g.First())),
                 _ => JsonConvert.SerializeObject(plugins.Single(p => p.releaseId == long.Parse(segments[^1])))
             };
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         }
     }
 

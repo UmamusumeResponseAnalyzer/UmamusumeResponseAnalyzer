@@ -536,7 +536,7 @@ internal sealed class WorkspaceViewport : View
         var hasFocusableView = view.CanFocus;
         foreach (var child in view.SubViews)
             hasFocusableView |= EnableFocusPath(child);
-        if (hasFocusableView && view.SubViews.Count > 0)
+        if (!view.CanFocus && hasFocusableView && view.SubViews.Count > 0)
         {
             view.CanFocus = true;
             view.TabStop = TabBehavior.TabGroup;

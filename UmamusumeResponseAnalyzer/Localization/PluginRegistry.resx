@@ -4,8 +4,6 @@
   <resheader name="version"><value>2.0</value></resheader>
   <data name="Empty" xml:space="preserve"><value>插件仓库没有可用版本。</value></data>
   <data name="SelectPlugins" xml:space="preserve"><value>选择要安装的插件</value></data>
-  <data name="SelectVersion" xml:space="preserve"><value>选择版本</value></data>
-  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
   <data name="Cancelled" xml:space="preserve"><value>已取消安装。</value></data>
   <data name="Failed" xml:space="preserve"><value>插件仓库操作失败</value></data>
   <data name="InstalledNotLoaded" xml:space="preserve"><value>ZIP 已保存，但加载未成功。</value></data>

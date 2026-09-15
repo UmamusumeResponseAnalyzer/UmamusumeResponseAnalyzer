@@ -71,24 +71,8 @@ internal static class PluginRepository
         {
             try
             {
-                var versionsUrl = new Uri(new Uri(plugin.DownloadUrl), "../").AbsoluteUri;
-                var versions = await FetchPluginsAsync(versionsUrl, cancellationToken);
-                if (versions.Any(p => !p.DownloadUrl.StartsWith(versionsUrl, StringComparison.Ordinal)))
-                    throw new InvalidDataException("插件版本来源与所选仓库不匹配。 / Plugin version does not match the selected repository.");
-                if (versions.Count == 0)
-                    throw new InvalidDataException(Text("Empty"));
-                var selectedVersion = versions[0];
-                if (versions.Count > 1)
-                {
-                    var choice = TerminalUi.Select(Text("SelectVersion"), versions.Append<PluginInformation?>(null),
-                        p => p is null ? Text("Cancel") : $"v{p.RawVersion} — {p.Changelog}".ReplaceLineEndings(" "),
-                        cancellationToken);
-                    if (choice is null)
-                        continue;
-                    selectedVersion = choice;
-                }
-                TerminalUi.Log("URA", $"[{DisplayLabel(plugin)} v{selectedVersion.RawVersion}] 正在下载");
-                var manifest = await DownloadPluginZipAsync(selectedVersion, cancellationToken);
+                TerminalUi.Log("URA", $"[{DisplayLabel(plugin)} v{plugin.RawVersion}] 正在下载");
+                var manifest = await DownloadPluginZipAsync(plugin, cancellationToken);
                 installed.Add(manifest.InternalName);
                 TerminalUi.Log("URA", $"[{DisplayLabel(manifest)}] 安装完成");
             }

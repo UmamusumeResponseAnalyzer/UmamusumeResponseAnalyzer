@@ -226,7 +226,10 @@ internal sealed class UiHost : IUiInputSink
     }
 
     internal IReadOnlyList<string> CompleteCommand(string input)
-        => HostCommands.Complete(input, session.GetCommandSnapshot());
+        => HostCommands.Complete(input, session.GetCommandSnapshot() with
+        {
+            Plugins = PluginManager.SnapshotPluginStatuses()
+        });
 
     internal void RequestShutdown()
     {

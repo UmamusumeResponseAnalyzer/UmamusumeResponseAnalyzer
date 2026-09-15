@@ -13,6 +13,7 @@ internal sealed class BootstrapWorkspace : IDisposable
 {
     const int MaxLogRows = 128;
     internal const string PanelKey = "status";
+    const string MenuPanelKey = "menu";
 
     readonly UiHost uiHost;
     readonly object gate = new();
@@ -28,6 +29,8 @@ internal sealed class BootstrapWorkspace : IDisposable
     };
     readonly List<BootstrapPluginRow> plugins = [];
     readonly List<BootstrapLogRow> logs = [];
+    TaskCompletionSource<string>? menuSelection;
+    bool showingMenu;
     bool disposed;
 
     public BootstrapWorkspace(UiHost uiHost, Workspace workspace)
@@ -44,6 +47,60 @@ internal sealed class BootstrapWorkspace : IDisposable
     }
 
     public Workspace Workspace { get; }
+
+    internal void ShowPreparingMenu(string title, IReadOnlyList<string> choices)
+    {
+        lock (gate)
+        {
+            ThrowIfDisposed();
+            SetMenuPanel(title, choices, null);
+        }
+    }
+
+    internal async Task<string> ShowMenuAsync(
+        string title,
+        IReadOnlyList<string> choices,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var selection = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        lock (gate)
+        {
+            ThrowIfDisposed();
+            if (menuSelection is { Task.IsCompleted: false })
+                throw new InvalidOperationException("Bootstrap 启动菜单正在等待选择。");
+            menuSelection = selection;
+            SetMenuPanel(title, choices, selection);
+        }
+        using var cancellation = cancellationToken.Register(() => selection.TrySetCanceled(cancellationToken));
+        return await selection.Task;
+    }
+
+    void SetMenuPanel(string title, IReadOnlyList<string> choices, TaskCompletionSource<string>? selection)
+    {
+        showingMenu = true;
+        uiHost.SetPanel(
+            Workspace,
+            MenuPanelKey,
+            title,
+            new WorkspaceContent(() => new BootstrapMenuView(title, choices, selection, uiHost.RequestShutdown)),
+            fullBleed: true,
+            switchToWorkspace: true);
+    }
+
+    internal void ShowInformation()
+    {
+        lock (gate)
+        {
+            ThrowIfDisposed();
+            menuSelection?.TrySetCanceled();
+            menuSelection = null;
+            showingMenu = false;
+            uiHost.RemovePanel(Workspace, MenuPanelKey);
+            Refresh();
+            uiHost.SwitchWorkspace(Workspace);
+        }
+    }
 
     public void SetSettings(IReadOnlyList<(string Label, string Value)> values)
     {
@@ -102,33 +159,37 @@ internal sealed class BootstrapWorkspace : IDisposable
     void Refresh()
     {
         lock (gate)
+        {
             ThrowIfDisposed();
-        uiHost.SetPanel(
-            Workspace,
-            PanelKey,
-            "启动状态",
-            new WorkspaceContent(() =>
-            {
-                (string Label, string Value)[] settingsSnapshot;
-                BootstrapPhase[] phaseSnapshot;
-                BootstrapPluginRow[] pluginSnapshot;
-                BootstrapLogRow[] logSnapshot;
-                lock (gate)
+            if (showingMenu)
+                return;
+            uiHost.SetPanel(
+                Workspace,
+                PanelKey,
+                "启动状态",
+                new WorkspaceContent(() =>
                 {
-                    settingsSnapshot = settings.ToArray();
-                    phaseSnapshot = phases.Values.ToArray();
-                    pluginSnapshot = plugins.ToArray();
-                    logSnapshot = logs.ToArray();
-                }
+                    (string Label, string Value)[] settingsSnapshot;
+                    BootstrapPhase[] phaseSnapshot;
+                    BootstrapPluginRow[] pluginSnapshot;
+                    BootstrapLogRow[] logSnapshot;
+                    lock (gate)
+                    {
+                        settingsSnapshot = settings.ToArray();
+                        phaseSnapshot = phases.Values.ToArray();
+                        pluginSnapshot = plugins.ToArray();
+                        logSnapshot = logs.ToArray();
+                    }
 
-                return new BootstrapDashboardView(
-                    settingsSnapshot,
-                    phaseSnapshot,
-                    pluginSnapshot,
-                    logSnapshot);
-            }),
-            fullBleed: true,
-            switchToWorkspace: false);
+                    return new BootstrapDashboardView(
+                        settingsSnapshot,
+                        phaseSnapshot,
+                        pluginSnapshot,
+                        logSnapshot);
+                }),
+                fullBleed: true,
+                switchToWorkspace: false);
+        }
     }
 
     public void Dispose()
@@ -138,6 +199,8 @@ internal sealed class BootstrapWorkspace : IDisposable
             if (disposed)
                 return;
             disposed = true;
+            menuSelection?.TrySetCanceled();
+            menuSelection = null;
         }
 
         uiHost.LogAdded -= OnLogAdded;
@@ -155,6 +218,84 @@ internal sealed class BootstrapWorkspace : IDisposable
         UiSeverity.Error => "ERR",
         _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
     };
+}
+
+internal sealed class BootstrapMenuView : View
+{
+    readonly TaskCompletionSource<string>? selection;
+    readonly Menu menu;
+
+    internal BootstrapMenuView(
+        string title,
+        IReadOnlyList<string> choices,
+        TaskCompletionSource<string>? selection,
+        Action requestShutdown)
+    {
+        this.selection = selection;
+        Width = Dim.Fill();
+        Height = Dim.Fill();
+        CanFocus = true;
+        TabStop = TabBehavior.TabGroup;
+        var prompt = new Label
+        {
+            Text = selection is null ? "正在准备启动… / Preparing startup…" : title,
+            Width = Dim.Fill(),
+            Height = 3
+        };
+        var items = choices.Select(value => new MenuItem
+        {
+            Title = value,
+            Action = () =>
+            {
+                if (selection?.TrySetResult(value) != true)
+                    return;
+                menu!.Enabled = false;
+                SetFocus();
+                prompt.Text = $"正在执行：{value} / Running: {value}";
+            }
+        }).ToArray();
+        menu = new Menu(items)
+        {
+            Y = Pos.Bottom(prompt), Width = Dim.Fill(), Height = Dim.Fill(), Enabled = selection is not null
+        };
+        AddCommand(Command.Down, () =>
+        {
+            menu.AdvanceFocus(NavigationDirection.Forward, TabBehavior.TabStop);
+            return true;
+        });
+        AddCommand(Command.Up, () =>
+        {
+            menu.AdvanceFocus(NavigationDirection.Backward, TabBehavior.TabStop);
+            return true;
+        });
+        KeyBindings.Add(Key.CursorDown, Command.Down);
+        KeyBindings.Add(Key.CursorUp, Command.Up);
+        AddCommand(Command.Accept, () => true);
+        Add(prompt, menu);
+        Initialized += (_, _) =>
+        {
+            if (selection is null)
+                SetFocus();
+            else
+                items[0].SetFocus();
+        };
+        AddCommand(Command.Quit, () =>
+        {
+            if (selection is null)
+                requestShutdown();
+            else
+                selection.TrySetCanceled();
+            return true;
+        });
+        KeyBindings.Add(Key.Esc, Command.Quit);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            selection?.TrySetCanceled();
+        base.Dispose(disposing);
+    }
 }
 
 internal sealed record BootstrapPhase(

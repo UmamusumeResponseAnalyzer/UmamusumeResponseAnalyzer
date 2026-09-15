@@ -282,9 +282,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 ? generation
                 : throw new InvalidOperationException($"插件缺少 runtime generation: {InternalName(plugin)}");
 
-        internal static void Init()
+        internal static void Init(CancellationToken cancellationToken = default)
         {
-            using var transaction = EnterInitializationTransaction();
+            using var transaction = EnterInitializationTransaction(cancellationToken);
             Directory.CreateDirectory("Plugins");
             LoadMetadatas();
             BuildGroups();
@@ -292,7 +292,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             Lifecycle.Phase = PluginLifecyclePhase.Loaded;
         }
 
-        static IDisposable EnterInitializationTransaction()
+        static IDisposable EnterInitializationTransaction(CancellationToken cancellationToken)
         {
             RejectCallbackLifecycleReentry();
             if (!Runtime.LifecycleGate.Wait(0))
@@ -304,6 +304,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (Lifecycle.Phase is not PluginLifecyclePhase.Created and
                     not PluginLifecyclePhase.Stopped)
                     throw LifecyclePhaseFailure("Init");

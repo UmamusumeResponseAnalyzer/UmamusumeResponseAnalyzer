@@ -18,6 +18,8 @@ namespace UmamusumeResponseAnalyzer
         internal static Task _plugin_initialize_task = null!;
         public static bool Started => Server.IsRunning;
         const string PORTABLE_WORKING_DIRECTORY = "./.portable";
+        const string PluginRepositoryMenuItem = "插件仓库";
+        const string QqGroupMenuItem = "加入QQ群（号被封过之后在频道里说话会概率被夹";
         public readonly static string WORKING_DIRECTORY = Directory.Exists(PORTABLE_WORKING_DIRECTORY) ? PORTABLE_WORKING_DIRECTORY : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
         public static async Task Main(string[] args)
         {
@@ -141,58 +143,65 @@ namespace UmamusumeResponseAnalyzer
                     Terminal.Gui.Input.Command.Quit);
                 shutdownBindingAdded = true;
                 HotkeyManager.OverlaySink = uiHost;
-
-                await ResourceUpdater.HandleStartupProgramUpdateAsync(lifetimeCts.Token);
-                if (Config.Core.ShowFirstRunPrompt)
-                {
-                    try
-                    {
-                        ShowFirstLaunchPrompt(lifetimeCts.Token);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return;
-                    }
-                    Config.Core.ShowFirstRunPrompt = false;
-                    Config.Save();
-                }
-
-                var updateSource = string.IsNullOrWhiteSpace(Config.Updater.CustomDatabaseRepository)
-                    ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror()
-                    : Config.Updater.CustomDatabaseRepository;
-                bootstrap.SetSettings(
-                    [
-                        ("版本", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"),
-                        ("工作目录", Directory.GetCurrentDirectory()),
-                        ("配置文件", Path.GetFullPath(Config.CONFIG_FILEPATH)),
-                        ("监听地址", $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
-                        ("服务器目标", Config.Repository.Targets.Count == 0 ? "未限制" : string.Join(", ", Config.Repository.Targets)),
-                        ("数据语言", Config.Updater.DatabaseLanguage),
-                        ("训练员性别", Config.Updater.TrainerIsMale ? "男" : "女"),
-                        ("更新源", updateSource)
-                    ]);
-                bootstrap.SetPhase(
-                    "config",
-                    "配置",
-                    UiSeverity.Success,
-                    $"已读取 {Config.CONFIG_FILEPATH}");
-
-                _plugin_initialize_task = pluginInitialization = StartPluginInitializationAsync(bootstrap);
-                await _plugin_initialize_task;
-                try
-                {
-                    await ShowMenu(lifetimeCts.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
+                bootstrap.ShowPreparingMenu(I18N_Instruction, BuildStartupMenuChoices());
 
                 async Task CompleteStartupAsync()
                 {
                     await uiHost.Ready.WaitAsync(lifetimeCts.Token);
                     try
                     {
+                        await ResourceUpdater.HandleStartupProgramUpdateAsync(lifetimeCts.Token);
+                        if (Config.Core.ShowFirstRunPrompt)
+                        {
+                            try
+                            {
+                                ShowFirstLaunchPrompt(lifetimeCts.Token);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                lifetimeCts.Cancel();
+                                return;
+                            }
+                            Config.Core.ShowFirstRunPrompt = false;
+                            Config.Save();
+                        }
+
+                        var updateSource = string.IsNullOrWhiteSpace(Config.Updater.CustomDatabaseRepository)
+                            ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror()
+                            : Config.Updater.CustomDatabaseRepository;
+                        bootstrap.SetSettings(
+                            [
+                                ("版本", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"),
+                                ("工作目录", Directory.GetCurrentDirectory()),
+                                ("配置文件", Path.GetFullPath(Config.CONFIG_FILEPATH)),
+                                ("监听地址", $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
+                                ("服务器目标", Config.Repository.Targets.Count == 0 ? "未限制" : string.Join(", ", Config.Repository.Targets)),
+                                ("数据语言", Config.Updater.DatabaseLanguage),
+                                ("训练员性别", Config.Updater.TrainerIsMale ? "男" : "女"),
+                                ("更新源", updateSource)
+                            ]);
+                        bootstrap.SetPhase(
+                            "config",
+                            "配置",
+                            UiSeverity.Success,
+                            $"已读取 {Config.CONFIG_FILEPATH}");
+
+                        _plugin_initialize_task = pluginInitialization = StartPluginInitializationAsync(bootstrap, lifetimeCts.Token);
+                        await _plugin_initialize_task;
+                        try
+                        {
+                            await ShowMenu(bootstrap, lifetimeCts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            lifetimeCts.Cancel();
+                            return;
+                        }
+
+                        bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
+                        bootstrap.ShowInformation();
+                        await uiHost.FlushAsync();
+
                         var serverStarted = await Task.Run(async () =>
                         {
                             bootstrap.SetPhase("database", "数据文件", UiSeverity.Info, "正在加载事件、技能、名称等数据。");
@@ -300,15 +309,32 @@ namespace UmamusumeResponseAnalyzer
                         await PluginManager.TriggerStartedAsync(lifetimeCts.Token);
                         pluginUpdateCheck = CheckPluginUpdatesAsync(uiHost, lifetimeCts.Token);
                     }
+                    catch (PostShutdownProcessRequestedException ex)
+                    {
+                        workflowFailure = ExceptionDispatchInfo.Capture(ex);
+                        lifetimeCts.Cancel();
+                    }
                     catch (OperationCanceledException) when (lifetimeCts.IsCancellationRequested)
                     {
-                        throw;
                     }
                     catch (Exception ex)
                     {
-                        bootstrap.SetPhase("host", "宿主", UiSeverity.Error, ex.Message);
-                        TerminalUi.LogException("URA", ex);
-                        throw;
+                        workflowFailure = ExceptionDispatchInfo.Capture(ex);
+                        Environment.ExitCode = 1;
+                        if (lifetimeCts.IsCancellationRequested)
+                            return;
+                        try
+                        {
+                            bootstrap.ShowInformation();
+                            bootstrap.SetPhase("host", "宿主", UiSeverity.Error, ex.Message);
+                            TerminalUi.LogException("URA", ex);
+                            await uiHost.FlushAsync();
+                        }
+                        catch
+                        {
+                            uiHost.RequestShutdown();
+                            throw;
+                        }
                     }
                 }
 
@@ -334,7 +360,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception ex)
             {
-                workflowFailure = ExceptionDispatchInfo.Capture(ex);
+                workflowFailure ??= ExceptionDispatchInfo.Capture(ex);
             }
             finally
             {
@@ -442,33 +468,32 @@ namespace UmamusumeResponseAnalyzer
                 throw new AggregateException(aggregateMessage, cleanupFailures);
         }
 
-        static Task StartPluginInitializationAsync(BootstrapWorkspace bootstrap)
+        static async Task StartPluginInitializationAsync(BootstrapWorkspace bootstrap, CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
+            cancellationToken.ThrowIfCancellationRequested();
+            bootstrap.SetPhase("plugin-scan", "插件扫描", UiSeverity.Info, "正在扫描 Plugins/。");
+            try
             {
-                bootstrap.SetPhase("plugin-scan", "插件扫描", UiSeverity.Info, "正在扫描 Plugins/。");
-                try
-                {
-                    PluginManager.Init();
-                }
-                catch (Exception ex)
-                {
-                    bootstrap.SetPhase("plugin-scan", "插件扫描", UiSeverity.Error, ex.Message);
-                    TerminalUi.LogException("Plugin", ex);
-                    throw;
-                }
+                await Task.Run(() => PluginManager.Init(cancellationToken), cancellationToken);
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                bootstrap.SetPhase("plugin-scan", "插件扫描", UiSeverity.Error, ex.Message);
+                TerminalUi.LogException("Plugin", ex);
+                throw;
+            }
 
-                var loadedPluginCount = PluginManager.SnapshotPluginStatuses().Count(plugin => plugin.IsLoaded);
-                var failedPluginCount = PluginManager.FailedPlugins.Count;
-                bootstrap.SetPhase(
-                    "plugin-scan",
-                    "插件扫描",
-                    failedPluginCount == 0 ? UiSeverity.Success : UiSeverity.Warning,
-                    failedPluginCount == 0
-                        ? $"发现 {loadedPluginCount} 个可用插件。"
-                        : $"发现 {loadedPluginCount} 个可用插件，{failedPluginCount} 个插件失败。");
-                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
-            });
+            cancellationToken.ThrowIfCancellationRequested();
+            var loadedPluginCount = PluginManager.SnapshotPluginStatuses().Count(plugin => plugin.IsLoaded);
+            var failedPluginCount = PluginManager.FailedPlugins.Count;
+            bootstrap.SetPhase(
+                "plugin-scan",
+                "插件扫描",
+                failedPluginCount == 0 ? UiSeverity.Success : UiSeverity.Warning,
+                failedPluginCount == 0
+                    ? $"发现 {loadedPluginCount} 个可用插件。"
+                    : $"发现 {loadedPluginCount} 个可用插件，{failedPluginCount} 个插件失败。");
+            bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
         }
 
         static IReadOnlyList<BootstrapPluginRow> BuildBootstrapPluginSummary(bool initialized)
@@ -613,27 +638,29 @@ namespace UmamusumeResponseAnalyzer
                 "首次设置完成。启动前请更新数据文件，并从「插件仓库」安装所需插件。",
                 cancellationToken);
         }
-        static async Task ShowMenu(CancellationToken cancellationToken)
+        static List<string> BuildStartupMenuChoices()
         {
-            const string pluginRepository = "插件仓库";
-            const string qqGroup = "加入QQ群（号被封过之后在频道里说话会概率被夹";
+            var selections = new List<string>
+            {
+                I18N_Start,
+                I18N_Options,
+                PluginRepositoryMenuItem,
+                I18N_UpdateAssets,
+                I18N_UpdateProgram,
+                QqGroupMenuItem
+            };
+            if (OperatingSystem.IsWindows())
+                selections.Add(I18N_InstallUraCore);
+            return selections;
+        }
+
+        static async Task ShowMenu(BootstrapWorkspace bootstrap, CancellationToken cancellationToken)
+        {
             while (true)
             {
-                var selections = new List<string>
-                {
-                    I18N_Start,
-                    I18N_Options,
-                    pluginRepository,
-                    I18N_UpdateAssets,
-                    I18N_UpdateProgram,
-                    qqGroup
-                };
-                if (OperatingSystem.IsWindows())
-                    selections.Add(I18N_InstallUraCore);
-
-                var selected = TerminalUi.Menu(
+                var selected = await bootstrap.ShowMenuAsync(
                     I18N_Instruction,
-                    selections,
+                    BuildStartupMenuChoices(),
                     cancellationToken: cancellationToken);
                 if (selected == I18N_Start)
                     return;
@@ -644,7 +671,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         await Config.PromptAsync(cancellationToken);
                     }
-                    else if (selected == pluginRepository)
+                    else if (selected == PluginRepositoryMenuItem)
                     {
                         await PluginRepository.ShowMenuAsync(cancellationToken);
                     }
@@ -660,7 +687,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         await HachimiEdgeInstaller.ShowAsync(cancellationToken);
                     }
-                    else if (selected == qqGroup)
+                    else if (selected == QqGroupMenuItem)
                     {
                         Process.Start(new ProcessStartInfo
                         {
