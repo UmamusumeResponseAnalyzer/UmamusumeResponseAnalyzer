@@ -7,3 +7,5 @@
 单独调试跨插件项目时，设置 `UraTestPluginSourcesRoot` 与 `URA_TEST_PLUGINS_ROOT` 为插件检出目录的绝对路径。构建传入 `GenerateUraPluginManifestOnBuild=false`、`PackageUraPluginOnBuild=false`、`DeployUraPluginToLocalAppDataOnBuild=false`；`PluginSmokeTests` 还需本轮 ZIP。对捕获语料运行 replay 时，将语料路径作为 `PluginReplaySmoke` 的命令行参数；不要提交捕获数据。
 
 `PluginRuntimeSmoke` 与 `AnalyzerHistoryConfigSmoke` 共用 `SmokeHost.cs` 中的 `HistoryConfigDialog`，负责历史上限编辑、按钮操作和控件遍历。
+
+`PluginSmokeTests`、`PluginRuntimeSmoke` 与 `AnalyzerHistoryConfigSmoke` 共用 `RuntimePluginContext` 及其事件、分析器记录器；分析器支持直接 DTO 调用和经 `AnalyzerDispatchContext` 的 raw/DTO 投影。`RandomDtoFactory` 使用固定 seed 生成 DTO，角色和训练命令使用共享的强类型初始化。

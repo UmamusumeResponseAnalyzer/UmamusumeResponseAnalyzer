@@ -420,7 +420,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 var failedPlugin = LifecycleMetadatas.TryGetValue(internalName, out var metadata)
                     ? metadata.FilePath
                     : internalName;
-                failure = new InvalidOperationException($"插件初始化失败: plugin={internalName}", ex);
+                failure = new InvalidOperationException($"插件 {internalName} 初始化失败", ex);
                 if (!LifecycleFailedPlugins.Contains(failedPlugin))
                     LifecycleFailedPlugins.Add(failedPlugin);
                 if (committed)

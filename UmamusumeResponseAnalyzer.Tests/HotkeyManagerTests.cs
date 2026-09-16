@@ -473,6 +473,32 @@ public sealed class HotkeyManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task PopupNavigationUsesTheSameKeysForScrollingAndSelection()
+    {
+        var sink = new RecordingOverlaySink { PopupVisibleLineCount = 3 };
+        HotkeyManager.OverlaySink = sink;
+        HotkeyManager.PopupAutoCloseDelay = TimeSpan.Zero;
+        foreach (var selectable in new[] { false, true })
+        {
+            HotkeyManager.ShowPopup(new HotkeyPopup(
+                [.. Enumerable.Range(0, 20).Select(index => new HotkeyPopupLine($"line-{index}"))],
+                Selection: selectable ? new([.. Enumerable.Range(0, 20)], 0, _ => Task.CompletedTask) : null));
+            foreach (var (key, expected) in new[]
+            {
+                (KeyCode.CursorDown, 1), (KeyCode.PageDown, 6),
+                (KeyCode.CursorUp, 5), (KeyCode.PageUp, 0),
+                (KeyCode.End, selectable ? 19 : 17), (KeyCode.Home, 0)
+            })
+            {
+                await PressAsync(key);
+                Assert.Equal(expected, selectable ? sink.Popup!.Selection!.SelectedIndex : sink.Popup!.ScrollOffset);
+            }
+            await PressAsync(KeyCode.Esc);
+            Assert.Null(sink.Popup);
+        }
+    }
+
+    [Fact]
     public async Task PopupAutoClose_ClosesCurrentPopupAndCanceledTimerCannotCloseReplacement()
     {
         var sink = new RecordingOverlaySink();

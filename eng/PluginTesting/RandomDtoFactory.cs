@@ -166,14 +166,14 @@ sealed class RandomDtoFactory(int seed)
         SetArrayFieldEmpty(data, "unchecked_event_array");
         SetArrayFieldEmpty(data, "select_index_info_array");
 
-        var charaInfo = data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var charaInfo = (SingleModeChara?)data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (charaInfo is not null)
         {
-            SetIntField(charaInfo, "state", 1);
-            SetIntField(charaInfo, "turn", 1);
-            SetArrayFieldEmpty(charaInfo, "skill_array");
-            SetArrayFieldEmpty(charaInfo, "skill_tips_array");
-            SetArrayFieldEmpty(charaInfo, "support_card_array");
+            charaInfo.state = 1;
+            charaInfo.turn = 1;
+            charaInfo.skill_array = [];
+            charaInfo.skill_tips_array = [];
+            charaInfo.support_card_array = [];
             StabilizeProperFields(charaInfo);
         }
 
@@ -203,14 +203,14 @@ sealed class RandomDtoFactory(int seed)
             : new[] { 101, 105, 102, 103, 106 };
         SetArrayFieldEmpty(data, "unchecked_event_array");
 
-        var charaInfo = data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var charaInfo = (SingleModeChara?)data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (charaInfo is not null)
         {
             StabilizeSendGameStatusCharaInfo(charaInfo, scenarioId, trainIds);
-            StabilizeEventLoggerTurnState((SingleModeChara)charaInfo, trainIds);
+            StabilizeEventLoggerTurnState(charaInfo, trainIds);
         }
 
-        var homeInfo = data.GetType().GetField("home_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var homeInfo = (SingleModeHomeInfo?)data.GetType().GetField("home_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (homeInfo is not null)
             StabilizeHomeCommandInfo(homeInfo, trainIds);
 
@@ -237,47 +237,44 @@ sealed class RandomDtoFactory(int seed)
         }
     }
 
-    static void StabilizeSendGameStatusCharaInfo(object charaInfo, int scenarioId, int[] trainIds)
+    static void StabilizeSendGameStatusCharaInfo(SingleModeChara charaInfo, int scenarioId, int[] trainIds)
     {
-        SetIntField(charaInfo, "state", 1);
-        SetIntField(charaInfo, "playing_state", 1);
-        SetIntField(charaInfo, "scenario_id", scenarioId);
-        SetIntField(charaInfo, "turn", 1);
-        SetIntField(charaInfo, "card_id", 1001);
-        SetIntField(charaInfo, "rarity", 3);
-        SetIntField(charaInfo, "motivation", 5);
-        SetIntField(charaInfo, "vital", 80);
-        SetIntField(charaInfo, "max_vital", 100);
-        SetIntField(charaInfo, "speed", 500);
-        SetIntField(charaInfo, "stamina", 500);
-        SetIntField(charaInfo, "power", 500);
-        SetIntField(charaInfo, "guts", 500);
-        SetIntField(charaInfo, "wiz", 500);
-        SetIntField(charaInfo, "max_speed", 1200);
-        SetIntField(charaInfo, "max_stamina", 1200);
-        SetIntField(charaInfo, "max_power", 1200);
-        SetIntField(charaInfo, "max_guts", 1200);
-        SetIntField(charaInfo, "max_wiz", 1200);
-        SetIntField(charaInfo, "skill_point", 1200);
-        SetArrayValue(charaInfo, "chara_effect_id_array", Array.Empty<int>());
-        SetArrayFieldEmpty(charaInfo, "skill_array");
-        SetArrayFieldEmpty(charaInfo, "skill_tips_array");
+        StabilizeTrainingChara(charaInfo, trainIds, [1, 2, 3, 4, 5, 6, 102, 103, 111]);
+        charaInfo.scenario_id = scenarioId;
+        charaInfo.card_id = 1001;
+        charaInfo.rarity = 3;
+        charaInfo.chara_effect_id_array = [];
+        charaInfo.skill_array = [];
+        charaInfo.skill_tips_array = [];
         StabilizeProperFields(charaInfo);
+    }
 
-        StabilizeArrayField(charaInfo, "support_card_array", 6, (item, index) =>
+    static void StabilizeTrainingChara(SingleModeChara charaInfo, int[] trainIds, int[] evaluationIds)
+    {
+        charaInfo.state = 1;
+        charaInfo.playing_state = 1;
+        charaInfo.turn = 1;
+        charaInfo.motivation = 5;
+        charaInfo.vital = 80;
+        charaInfo.max_vital = 100;
+        charaInfo.speed = charaInfo.stamina = charaInfo.power = charaInfo.guts = charaInfo.wiz = 500;
+        charaInfo.max_speed = charaInfo.max_stamina = charaInfo.max_power = charaInfo.max_guts = charaInfo.max_wiz = 1200;
+        charaInfo.skill_point = 1200;
+        charaInfo.support_card_array = [.. Enumerable.Range(1, 6).Select(position => new SingleModeSupportCard
         {
-            SetIntField(item, "position", index + 1);
-            SetIntField(item, "support_card_id", 10001 + index);
-        });
-
-        var evaluationIds = new[] { 1, 2, 3, 4, 5, 6, 102, 103, 111 };
-        StabilizeArrayField(charaInfo, "evaluation_info_array", evaluationIds.Length, (item, index) =>
+            position = position,
+            support_card_id = 10000 + position
+        })];
+        charaInfo.evaluation_info_array = [.. evaluationIds.Select(targetId => new EvaluationInfo
         {
-            SetIntField(item, "target_id", evaluationIds[index]);
-            SetIntField(item, "evaluation", 80);
-        });
-
-        StabilizeTrainingLevelInfo(charaInfo, trainIds);
+            target_id = targetId,
+            evaluation = 80
+        })];
+        charaInfo.training_level_info_array = [.. trainIds.Select(commandId => new TrainingLevelInfo
+        {
+            command_id = commandId,
+            level = 1
+        })];
     }
 
     static void StabilizeEventLoggerTurnState(SingleModeChara charaInfo, int[] trainIds)
@@ -308,38 +305,27 @@ sealed class RandomDtoFactory(int seed)
         if (commandResult is not null)
             SetIntField(commandResult, "result_state", 0);
 
-        var charaInfo = data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var charaInfo = (SingleModeChara?)data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (charaInfo is not null)
         {
-            SetIntField(charaInfo, "state", 1);
-            SetIntField(charaInfo, "turn", 1);
-            SetArrayFieldEmpty(charaInfo, "skill_array");
-            SetArrayFieldEmpty(charaInfo, "skill_tips_array");
-            SetArrayFieldEmpty(charaInfo, "support_card_array");
+            charaInfo.state = 1;
+            charaInfo.turn = 1;
+            charaInfo.skill_array = [];
+            charaInfo.skill_tips_array = [];
+            charaInfo.support_card_array = [];
             StabilizeProperFields(charaInfo);
         }
 
         StabilizeSendGameStatusExecCommandResponse(value);
     }
 
-    static void StabilizeProperFields(object charaInfo)
+    static void StabilizeProperFields(SingleModeChara charaInfo)
     {
-        foreach (var fieldName in new[]
-        {
-            "proper_distance_short",
-            "proper_distance_mile",
-            "proper_distance_middle",
-            "proper_distance_long",
-            "proper_running_style_nige",
-            "proper_running_style_oikomi",
-            "proper_running_style_sashi",
-            "proper_running_style_senko",
-            "proper_ground_turf",
-            "proper_ground_dirt"
-        })
-        {
-            SetIntField(charaInfo, fieldName, 1);
-        }
+        charaInfo.proper_distance_short = charaInfo.proper_distance_mile =
+            charaInfo.proper_distance_middle = charaInfo.proper_distance_long = 1;
+        charaInfo.proper_running_style_nige = charaInfo.proper_running_style_oikomi =
+            charaInfo.proper_running_style_sashi = charaInfo.proper_running_style_senko = 1;
+        charaInfo.proper_ground_turf = charaInfo.proper_ground_dirt = 1;
     }
 
     static void StabilizeRaceEndResponse(object value)
@@ -377,13 +363,13 @@ sealed class RandomDtoFactory(int seed)
             });
         });
 
-        var charaInfo = eventContainer.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(eventContainer);
+        var charaInfo = (SingleModeChara?)eventContainer.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(eventContainer);
         if (charaInfo is not null)
         {
-            SetIntField(charaInfo, "state", 1);
-            SetIntField(charaInfo, "turn", 1);
-            SetArrayFieldEmpty(charaInfo, "skill_array");
-            SetArrayFieldEmpty(charaInfo, "skill_tips_array");
+            charaInfo.state = 1;
+            charaInfo.turn = 1;
+            charaInfo.skill_array = [];
+            charaInfo.skill_tips_array = [];
             StabilizeProperFields(charaInfo);
         }
     }
@@ -396,40 +382,13 @@ sealed class RandomDtoFactory(int seed)
 
         SetArrayFieldEmpty(data, "unchecked_event_array");
 
-        var charaInfo = data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var charaInfo = (SingleModeChara?)data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (charaInfo is not null)
         {
-            SetIntField(charaInfo, "state", 1);
-            SetIntField(charaInfo, "playing_state", 1);
-            SetIntField(charaInfo, "turn", 1);
-            SetIntField(charaInfo, "motivation", 5);
-            SetIntField(charaInfo, "vital", 80);
-            SetIntField(charaInfo, "max_vital", 100);
-            SetIntField(charaInfo, "speed", 500);
-            SetIntField(charaInfo, "stamina", 500);
-            SetIntField(charaInfo, "power", 500);
-            SetIntField(charaInfo, "guts", 500);
-            SetIntField(charaInfo, "wiz", 500);
-            SetIntField(charaInfo, "max_speed", 1200);
-            SetIntField(charaInfo, "max_stamina", 1200);
-            SetIntField(charaInfo, "max_power", 1200);
-            SetIntField(charaInfo, "max_guts", 1200);
-            SetIntField(charaInfo, "max_wiz", 1200);
-            SetIntField(charaInfo, "skill_point", 1200);
-            StabilizeArrayField(charaInfo, "support_card_array", 6, (item, index) =>
-            {
-                SetIntField(item, "position", index + 1);
-                SetIntField(item, "support_card_id", 10001 + index);
-            });
-            StabilizeArrayField(charaInfo, "evaluation_info_array", 6, (item, index) =>
-            {
-                SetIntField(item, "target_id", index + 1);
-                SetIntField(item, "evaluation", 80);
-            });
-            StabilizeTrainingLevelInfo(charaInfo);
+            StabilizeTrainingChara(charaInfo, [101, 105, 102, 103, 106], [1, 2, 3, 4, 5, 6]);
         }
 
-        var homeInfo = data.GetType().GetField("home_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var homeInfo = (SingleModeHomeInfo?)data.GetType().GetField("home_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (homeInfo is not null)
             StabilizeHomeCommandInfo(homeInfo);
 
@@ -438,33 +397,19 @@ sealed class RandomDtoFactory(int seed)
             StabilizeRamenDataSet(ramenDataSet);
     }
 
-    static void StabilizeTrainingLevelInfo(object charaInfo)
-        => StabilizeTrainingLevelInfo(charaInfo, [101, 105, 102, 103, 106]);
-
-    static void StabilizeTrainingLevelInfo(object charaInfo, int[] trainIds)
+    static void StabilizeHomeCommandInfo(SingleModeHomeInfo homeInfo, int[]? trainIds = null)
     {
-        StabilizeArrayField(charaInfo, "training_level_info_array", trainIds.Length, (item, index) =>
+        trainIds ??= [101, 105, 102, 103, 106];
+        homeInfo.command_info_array = [.. trainIds.Select((commandId, index) => new SingleModeCommandInfo
         {
-            SetIntField(item, "command_id", trainIds[index]);
-            SetIntField(item, "level", 1);
-        });
-    }
-
-    static void StabilizeHomeCommandInfo(object homeInfo)
-        => StabilizeHomeCommandInfo(homeInfo, [101, 105, 102, 103, 106]);
-
-    static void StabilizeHomeCommandInfo(object homeInfo, int[] trainIds)
-    {
-        StabilizeArrayField(homeInfo, "command_info_array", trainIds.Length, (item, index) =>
-        {
-            SetIntField(item, "command_type", 1);
-            SetIntField(item, "command_id", trainIds[index]);
-            SetIntField(item, "is_enable", 1);
-            SetIntField(item, "failure_rate", index * 5);
-            SetArrayValue(item, "training_partner_array", Enumerable.Range(1, index % 3 + 1).ToArray());
-            SetArrayValue(item, "tips_event_partner_array", Array.Empty<int>());
-            SetParams(item, "params_inc_dec_info_array", trainIds[index], includeVital: true);
-        });
+            command_type = 1,
+            command_id = commandId,
+            is_enable = 1,
+            failure_rate = index * 5,
+            training_partner_array = [.. Enumerable.Range(1, index % 3 + 1)],
+            tips_event_partner_array = [],
+            params_inc_dec_info_array = CreateParams(commandId, includeVital: true)
+        })];
     }
 
     static void StabilizeArcDataSet(object arcDataSet)
@@ -486,7 +431,7 @@ sealed class RandomDtoFactory(int seed)
         {
             SetIntField(item, "command_type", 1);
             SetIntField(item, "command_id", trainIds[index]);
-            SetParams(item, "params_inc_dec_info_array", trainIds[index] + 10, includeVital: false);
+            SetArrayValue(item, "params_inc_dec_info_array", CreateParams(trainIds[index] + 10, includeVital: false));
         });
     }
 
@@ -503,7 +448,7 @@ sealed class RandomDtoFactory(int seed)
         {
             SetIntField(item, "command_type", 1);
             SetIntField(item, "command_id", trainIds[index]);
-            SetParams(item, "params_inc_dec_info_array", trainIds[index] + 10, includeVital: false);
+            SetArrayValue(item, "params_inc_dec_info_array", CreateParams(trainIds[index] + 10, includeVital: false));
             SetArrayFieldEmpty(item, "gain_sport_rank_array");
         });
         SetArrayValue(sportDataSet, "item_id_array", Array.Empty<int>());
@@ -547,7 +492,7 @@ sealed class RandomDtoFactory(int seed)
         {
             SetIntField(item, "command_type", 1);
             SetIntField(item, "command_id", trainIds[index]);
-            SetParams(item, "params_inc_dec_info_array", trainIds[index] + 10, includeVital: false);
+            SetArrayValue(item, "params_inc_dec_info_array", CreateParams(trainIds[index] + 10, includeVital: false));
             SetArrayFieldEmpty(item, "point_up_info_array");
             SetBoolField(item, "is_recommend", index == 0);
         });
@@ -584,7 +529,7 @@ sealed class RandomDtoFactory(int seed)
         {
             SetIntField(item, "command_type", 1);
             SetIntField(item, "command_id", trainIds[index]);
-            SetParams(item, "params_inc_dec_info_array", trainIds[index] + 10, includeVital: false);
+            SetArrayValue(item, "params_inc_dec_info_array", CreateParams(trainIds[index] + 10, includeVital: false));
         });
 
         var bathingInfo = EnsureObjectField(onsenDataSet, "bathing_info");
@@ -621,7 +566,7 @@ sealed class RandomDtoFactory(int seed)
         {
             SetIntField(item, "command_type", 1);
             SetIntField(item, "command_id", trainIds[index]);
-            SetParams(item, "params_inc_dec_info_array", trainIds[index] + 10, includeVital: false);
+            SetArrayValue(item, "params_inc_dec_info_array", CreateParams(trainIds[index] + 10, includeVital: false));
         });
         StabilizeArrayField(ramenDataSet, "command_feeling_info_array", trainIds.Length, (item, index) =>
         {
@@ -666,41 +611,14 @@ sealed class RandomDtoFactory(int seed)
         SetArrayFieldEmpty(data, "select_index_info_array");
         SetReferenceFieldNull(data, "race_start_info");
 
-        var charaInfo = data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var charaInfo = (SingleModeChara?)data.GetType().GetField("chara_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (charaInfo is not null)
         {
-            SetIntField(charaInfo, "state", 1);
-            SetIntField(charaInfo, "playing_state", 1);
-            SetIntField(charaInfo, "scenario_id", 10);
-            SetIntField(charaInfo, "turn", 1);
-            SetIntField(charaInfo, "motivation", 5);
-            SetIntField(charaInfo, "vital", 80);
-            SetIntField(charaInfo, "max_vital", 100);
-            SetIntField(charaInfo, "speed", 500);
-            SetIntField(charaInfo, "stamina", 500);
-            SetIntField(charaInfo, "power", 500);
-            SetIntField(charaInfo, "guts", 500);
-            SetIntField(charaInfo, "wiz", 500);
-            SetIntField(charaInfo, "max_speed", 1200);
-            SetIntField(charaInfo, "max_stamina", 1200);
-            SetIntField(charaInfo, "max_power", 1200);
-            SetIntField(charaInfo, "max_guts", 1200);
-            SetIntField(charaInfo, "max_wiz", 1200);
-            SetIntField(charaInfo, "skill_point", 1200);
-            StabilizeArrayField(charaInfo, "support_card_array", 6, (item, index) =>
-            {
-                SetIntField(item, "position", index + 1);
-                SetIntField(item, "support_card_id", 10001 + index);
-            });
-            StabilizeArrayField(charaInfo, "evaluation_info_array", 6, (item, index) =>
-            {
-                SetIntField(item, "target_id", index + 1);
-                SetIntField(item, "evaluation", 80);
-            });
-            StabilizeTrainingLevelInfo(charaInfo);
+            StabilizeTrainingChara(charaInfo, [101, 105, 102, 103, 106], [1, 2, 3, 4, 5, 6]);
+            charaInfo.scenario_id = 10;
         }
 
-        var homeInfo = data.GetType().GetField("home_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
+        var homeInfo = (SingleModeHomeInfo?)data.GetType().GetField("home_info", BindingFlags.Instance | BindingFlags.Public)?.GetValue(data);
         if (homeInfo is not null)
             StabilizeHomeCommandInfo(homeInfo);
 
@@ -718,7 +636,7 @@ sealed class RandomDtoFactory(int seed)
             SetIntField(item, "command_id", trainIds[index]);
             SetIntField(item, "legend_id", 9046 + index % 3);
             SetIntField(item, "gain_gauge", index + 1);
-            SetParams(item, "params_inc_dec_info_array", trainIds[index] + 10, includeVital: false);
+            SetArrayValue(item, "params_inc_dec_info_array", CreateParams(trainIds[index] + 10, includeVital: false));
             SetArrayFieldEmpty(item, "friend_gauge_gain_array");
         });
         SetArrayFieldEmpty(legendDataSet, "evaluation_info_array");
@@ -737,25 +655,14 @@ sealed class RandomDtoFactory(int seed)
         SetArrayValue(legendDataSet, "activated_buff_id_array", Array.Empty<int>());
     }
 
-    static void SetParams(object value, string fieldName, int baseValue, bool includeVital)
+    static SingleModeParamsIncDecInfo[] CreateParams(int baseValue, bool includeVital)
     {
-        var field = value.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.Public);
-        if (field?.FieldType.IsArray != true)
-            return;
-
-        var elementType = field.FieldType.GetElementType()!;
-        var targetTypes = includeVital ? new[] { 1, 2, 3, 4, 5, 30, 10 } : new[] { 1, 2, 3, 4, 5, 30 };
-        var array = Array.CreateInstance(elementType, targetTypes.Length);
-        for (var i = 0; i < targetTypes.Length; i++)
+        var targetTypes = includeVital ? new[] { 1, 2, 3, 4, 5, 30, 10 } : [1, 2, 3, 4, 5, 30];
+        return [.. targetTypes.Select((targetType, index) => new SingleModeParamsIncDecInfo
         {
-            var item = Activator.CreateInstance(elementType)
-                ?? throw new InvalidOperationException($"Cannot create DTO array value: {elementType.FullName}");
-            SetIntField(item, "target_type", targetTypes[i]);
-            SetIntField(item, "value", targetTypes[i] == 10 ? -10 : baseValue + i);
-            array.SetValue(item, i);
-        }
-
-        field.SetValue(value, array);
+            target_type = targetType,
+            value = targetType == 10 ? -10 : baseValue + index
+        })];
     }
 
     static void StabilizeArrayField(object value, string fieldName, int length, Action<object, int> stabilize)

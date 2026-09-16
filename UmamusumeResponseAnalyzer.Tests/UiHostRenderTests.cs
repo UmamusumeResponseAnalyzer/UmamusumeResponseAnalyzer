@@ -736,6 +736,29 @@ public sealed class UiHostRenderTests : IDisposable
     }
 
     [Fact]
+    public async Task ExceptionLogsKeepContextNestedFailuresAndFullDetails()
+    {
+        var error = new InvalidOperationException("插件 Demo 初始化失败", new AggregateException(
+            new InvalidDataException("配置文件: settings.yaml"),
+            new IOException("读取失败, path=data.bin")));
+        var lines = new List<UiLogLine>();
+        host.LogAdded += lines.Add;
+        try
+        {
+            TerminalUi.LogException("URA", error);
+            await host.FlushAsync();
+            var line = Assert.Single(lines);
+            Assert.Equal(string.Join(Environment.NewLine,
+                "[URA] 插件 Demo 初始化失败", "配置文件: settings.yaml", "读取失败, path=data.bin"), line.Text);
+            Assert.Equal(error.ToString(), line.ExceptionDetails);
+        }
+        finally
+        {
+            host.LogAdded -= lines.Add;
+        }
+    }
+
+    [Fact]
     public async Task BootstrapGlobalAndFailureLogsRemainHiddenUntilWorkspaceSwitch()
     {
         var bootstrap = host.Bootstrap;

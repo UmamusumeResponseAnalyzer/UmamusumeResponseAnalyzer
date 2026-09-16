@@ -126,69 +126,43 @@ internal sealed class HotkeyInputDispatcher(HotkeyRuntime runtime)
     {
         if (key.IsCtrl || key.IsAlt || key.IsShift)
             return false;
-        if (runtime.HasSelectablePopup)
-            return await HandleSelectablePopupKeyAsync(key);
+        var selectable = runtime.HasSelectablePopup;
 
         switch (key.KeyCode)
         {
-            case KeyCode.Space:
-            case KeyCode.Enter:
-            case KeyCode.Esc:
-                runtime.HidePopup();
-                return true;
-            case KeyCode.CursorUp:
-                runtime.ScrollPopup(-1);
-                return true;
-            case KeyCode.CursorDown:
-                runtime.ScrollPopup(1);
-                return true;
-            case KeyCode.PageUp:
-                runtime.ScrollPopup(-5);
-                return true;
-            case KeyCode.PageDown:
-                runtime.ScrollPopup(5);
-                return true;
-            case KeyCode.Home:
-                runtime.SetPopupScroll(0);
-                return true;
-            case KeyCode.End:
-                runtime.SetPopupScroll(int.MaxValue);
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    async Task<bool> HandleSelectablePopupKeyAsync(Key key)
-    {
-        switch (key.KeyCode)
-        {
-            case KeyCode.Enter:
+            case KeyCode.Enter when selectable:
                 var handler = runtime.CloseAndGetPopupSelectionHandler();
                 if (handler is not null)
                     await InvokeSafely(handler);
                 return true;
             case KeyCode.Space:
+            case KeyCode.Enter:
             case KeyCode.Esc:
                 runtime.HidePopup();
                 return true;
             case KeyCode.CursorUp:
-                runtime.MovePopupSelection(-1);
-                return true;
             case KeyCode.CursorDown:
-                runtime.MovePopupSelection(1);
-                return true;
             case KeyCode.PageUp:
-                runtime.MovePopupSelection(-5);
-                return true;
             case KeyCode.PageDown:
-                runtime.MovePopupSelection(5);
+                var delta = key.KeyCode switch
+                {
+                    KeyCode.CursorUp => -1,
+                    KeyCode.CursorDown => 1,
+                    KeyCode.PageUp => -5,
+                    _ => 5
+                };
+                if (selectable)
+                    runtime.MovePopupSelection(delta);
+                else
+                    runtime.ScrollPopup(delta);
                 return true;
             case KeyCode.Home:
-                runtime.SetPopupSelection(0);
-                return true;
             case KeyCode.End:
-                runtime.SetPopupSelection(int.MaxValue);
+                var position = key.KeyCode == KeyCode.Home ? 0 : int.MaxValue;
+                if (selectable)
+                    runtime.SetPopupSelection(position);
+                else
+                    runtime.SetPopupScroll(position);
                 return true;
             default:
                 return false;

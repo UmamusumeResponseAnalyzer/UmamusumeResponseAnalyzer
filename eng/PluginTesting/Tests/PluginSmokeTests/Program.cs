@@ -184,13 +184,13 @@ static void AssertReleaseAnalyzersDoNotRoundTripThroughJson()
 static void AssertEventResponseAnalyzerEndpointCoverage(IApplication application)
 {
     var plugin = new EventResponseAnalyzer.EventResponseAnalyzer();
-    using var context = new SmokePluginContext(application);
+    using var context = new RuntimePluginContext(application);
     plugin.Initialize(context);
-    if (context.Analyzers.Registrations.Count != 2)
+    if (context.AnalyzerRegistry.Registrations.Count != 2)
         throw new InvalidOperationException(
-            $"EventResponseAnalyzer must use exactly 2 programmatic registrations, actual={context.Analyzers.Registrations.Count}.");
+            $"EventResponseAnalyzer must use exactly 2 programmatic registrations, actual={context.AnalyzerRegistry.Registrations.Count}.");
 
-    var actual = context.Analyzers.Registrations
+    var actual = context.AnalyzerRegistry.Registrations
         .Where(registration => registration.Kind == AnalyzerKind.Response)
         .SelectMany(registration => PluginManager.ExpandEndpointPatterns(registration.Patterns))
         .Select(endpoint => endpoint.EndpointType)
@@ -262,12 +262,12 @@ static void AssertEventResponseAnalyzerPriorityAfterLegendScenarioAnalyzer(IAppl
     };
     var eventPlugin = new EventResponseAnalyzer.EventResponseAnalyzer();
     var legendPlugin = new LegendScenarioAnalyzer.LegendScenarioAnalyzer();
-    using var eventContext = new SmokePluginContext(application);
-    using var legendContext = new SmokePluginContext(application);
+    using var eventContext = new RuntimePluginContext(application);
+    using var legendContext = new RuntimePluginContext(application);
     eventPlugin.Initialize(eventContext);
     legendPlugin.Initialize(legendContext);
-    var eventPriorities = ResponseAnalyzerPriorities(eventContext.Analyzers);
-    var legendPriorities = ResponseAnalyzerPriorities(legendContext.Analyzers);
+    var eventPriorities = ResponseAnalyzerPriorities(eventContext.AnalyzerRegistry);
+    var legendPriorities = ResponseAnalyzerPriorities(legendContext.AnalyzerRegistry);
 
     foreach (var endpoint in sharedEndpoints)
     {
@@ -283,7 +283,7 @@ static void AssertEventResponseAnalyzerPriorityAfterLegendScenarioAnalyzer(IAppl
     legendPlugin.Dispose();
 }
 
-static Dictionary<Type, int> ResponseAnalyzerPriorities(SmokeAnalyzerRegistry registry)
+static Dictionary<Type, int> ResponseAnalyzerPriorities(RecordingAnalyzerRegistry registry)
     => registry.Registrations
         .Where(registration => registration.Kind == AnalyzerKind.Response)
         .SelectMany(registration => PluginManager.ExpandEndpointPatterns(registration.Patterns)
@@ -359,7 +359,7 @@ static async ValueTask AssertEventResponseAnalyzerDisplayStates(WorkspaceSmokeSe
     var narrowText = string.Empty;
 
     var plugin = new EventResponseAnalyzer.EventResponseAnalyzer();
-    using var context = new SmokePluginContext(ui.Application);
+    using var context = new RuntimePluginContext(ui.Application);
     var target = Workspace.Create("EventResponseAnalyzer");
     target.SwitchTo();
     var emptyWorkspace = CaptureEventScreen(ui);
@@ -504,7 +504,7 @@ static async ValueTask AssertEventResponseAnalyzerDisplayStates(WorkspaceSmokeSe
                 }
             };
             await DispatchHostResponse(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 "https://api.games.umamusume.jp/umamusume/single_mode/check_event",
                 MessagePackSerializer.Serialize(response));
             var framebuffer = ui.CaptureScreen();
@@ -706,7 +706,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
     {
         WriteEventResponseAnalyzerHistorySettings(16);
         var plugin = new EventResponseAnalyzer.EventResponseAnalyzer();
-        using var context = new SmokePluginContext(ui.Application);
+        using var context = new RuntimePluginContext(ui.Application);
         try
         {
             plugin.Initialize(context);
@@ -717,7 +717,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
             const int storyAcrossEndpoints = 990_004;
             const int longStory = 990_005;
 
-            await DispatchCheck(context.Analyzers, 11, 22,
+            await DispatchCheck(context.AnalyzerRegistry, 11, 22,
                 CreateHistoryEvent(storyA, 1),
                 CreateHistoryEvent(storyB, 2),
                 CreateHistoryEvent(storyA, 3));
@@ -728,16 +728,16 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
             Navigate(Key.CursorUp, storyA, 3, storyB);
             Navigate(Key.CursorRight, storyB, 2, storyA);
 
-            await DispatchCheck(context.Analyzers, 12, 22, CreateHistoryEvent(storyA, 4));
+            await DispatchCheck(context.AnalyzerRegistry, 12, 22, CreateHistoryEvent(storyA, 4));
             RequireCurrent(storyA, 4);
-            await DispatchCheck(context.Analyzers, 11, 23, CreateHistoryEvent(storyA, 5));
+            await DispatchCheck(context.AnalyzerRegistry, 11, 23, CreateHistoryEvent(storyA, 5));
             RequireCurrent(storyA, 5);
-            await DispatchCheck(context.Analyzers, 11, 22, CreateHistoryEvent(storyC, 6));
+            await DispatchCheck(context.AnalyzerRegistry, 11, 22, CreateHistoryEvent(storyC, 6));
             RequireCurrent(storyC, 6);
 
-            await DispatchCheck(context.Analyzers, 30, 40, CreateHistoryEvent(storyAcrossEndpoints, 7));
-            await DispatchExecCommand(context.Analyzers, 30, 40, CreateHistoryEvent(storyAcrossEndpoints, 8));
-            await DispatchLoad(context.Analyzers, 30, 40, CreateHistoryEvent(storyAcrossEndpoints, 9));
+            await DispatchCheck(context.AnalyzerRegistry, 30, 40, CreateHistoryEvent(storyAcrossEndpoints, 7));
+            await DispatchExecCommand(context.AnalyzerRegistry, 30, 40, CreateHistoryEvent(storyAcrossEndpoints, 8));
+            await DispatchLoad(context.AnalyzerRegistry, 30, 40, CreateHistoryEvent(storyAcrossEndpoints, 9));
             RequireCurrent(storyAcrossEndpoints, 9);
 
             Navigate(Key.CursorLeft, storyA, 3, storyB, storyC, storyAcrossEndpoints);
@@ -749,13 +749,13 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
             Navigate(Key.CursorDown, storyAcrossEndpoints, 9, storyA, storyB, storyC);
 
             Navigate(Key.CursorLeft, storyA, 3, storyB, storyC, storyAcrossEndpoints);
-            await DispatchCheck(context.Analyzers, 11, 22, CreateHistoryEvent(storyA, 10));
+            await DispatchCheck(context.AnalyzerRegistry, 11, 22, CreateHistoryEvent(storyA, 10));
             RequireCurrent(storyA, 10, storyB, storyC, storyAcrossEndpoints);
             Navigate(Key.CursorDown, storyB, 2, storyA, storyC, storyAcrossEndpoints);
 
             Navigate(Key.CursorRight, storyAcrossEndpoints, 9, storyA, storyB, storyC);
             await DispatchCheck(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 50,
                 60,
                 CreateHistoryEvent(longStory, [.. Enumerable.Range(1, 60)]));
@@ -799,7 +799,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
     {
         WriteEventResponseAnalyzerHistorySettings(4);
         var plugin = new EventResponseAnalyzer.EventResponseAnalyzer();
-        using var context = new SmokePluginContext(ui.Application);
+        using var context = new RuntimePluginContext(ui.Application);
         try
         {
             plugin.Initialize(context);
@@ -811,25 +811,25 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
             const int storyE = 991_005;
             const int storyF = 991_006;
 
-            await DispatchCheck(context.Analyzers, 70, 80,
+            await DispatchCheck(context.AnalyzerRegistry, 70, 80,
                 CreateHistoryEvent(storyA, 1),
                 CreateHistoryEvent(storyB, 2));
             RequireCurrent(storyB, 2, storyA);
             ui.SendKey(Key.CursorLeft);
             RequireCurrent(storyA, 1, storyB);
 
-            await DispatchCheck(context.Analyzers, 70, 80, CreateHistoryEvent(storyC, 3));
+            await DispatchCheck(context.AnalyzerRegistry, 70, 80, CreateHistoryEvent(storyC, 3));
             RequireCurrent(storyA, 1, storyB, storyC);
-            await DispatchCheck(context.Analyzers, 70, 80, CreateHistoryEvent(storyD, 4));
+            await DispatchCheck(context.AnalyzerRegistry, 70, 80, CreateHistoryEvent(storyD, 4));
             RequireCurrent(storyA, 1, storyB, storyC, storyD);
-            await DispatchCheck(context.Analyzers, 70, 80, CreateHistoryEvent(storyE, 5));
+            await DispatchCheck(context.AnalyzerRegistry, 70, 80, CreateHistoryEvent(storyE, 5));
             RequireCurrent(storyE, 5, storyA, storyB, storyC, storyD);
-            await DispatchCheck(context.Analyzers, 70, 80, CreateHistoryEvent(storyF, 6));
+            await DispatchCheck(context.AnalyzerRegistry, 70, 80, CreateHistoryEvent(storyF, 6));
             RequireCurrent(storyF, 6, storyA, storyB, storyC, storyD, storyE);
 
             ui.SendKey(Key.CursorLeft);
             RequireCurrent(storyC, 3, storyA, storyB, storyD, storyE, storyF);
-            await DispatchCheck(context.Analyzers, 70, 80, CreateHistoryEvent(storyC, 77));
+            await DispatchCheck(context.AnalyzerRegistry, 70, 80, CreateHistoryEvent(storyC, 77));
             RequireCurrent(storyC, 77, storyA, storyB, storyD, storyE, storyF);
             ui.SendKey(Key.CursorRight);
             RequireCurrent(storyF, 6, storyA, storyB, storyC, storyD, storyE);
@@ -881,7 +881,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
         };
 
     static ValueTask DispatchCheck(
-        SmokeAnalyzerRegistry registry,
+        RecordingAnalyzerRegistry registry,
         int charaId,
         int turn,
         params SingleModeEventInfo[] events)
@@ -898,7 +898,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
             }));
 
     static ValueTask DispatchExecCommand(
-        SmokeAnalyzerRegistry registry,
+        RecordingAnalyzerRegistry registry,
         int charaId,
         int turn,
         params SingleModeEventInfo[] events)
@@ -915,7 +915,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
             }));
 
     static ValueTask DispatchLoad(
-        SmokeAnalyzerRegistry registry,
+        RecordingAnalyzerRegistry registry,
         int charaId,
         int turn,
         params SingleModeEventInfo[] events)
@@ -1011,14 +1011,14 @@ static void RequireEvent(bool condition, string message)
 static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventPanel(WorkspaceSmokeSession ui)
 {
     var plugin = new EventResponseAnalyzer.EventResponseAnalyzer();
-    using var context = new SmokePluginContext(ui.Application);
+    using var context = new RuntimePluginContext(ui.Application);
     var target = Workspace.Create("EventResponseAnalyzer");
     try
     {
         plugin.Initialize(context);
         await AssertPanelUpdate(
             () => DispatchHostResponse(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 "https://api.games.umamusume.jp/umamusume/single_mode_legend/exec_command",
                 MessagePackSerializer.Serialize(CreateExecCommandResponse(830241003))),
             switchesToTarget: true,
@@ -1026,7 +1026,7 @@ static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventP
             "Legend ExecCommand group card event");
         await AssertPanelUpdate(
             () => DispatchHostResponse(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 "https://api.games.umamusume.jp/umamusume/single_mode_legend/load",
                 MessagePackSerializer.Serialize(CreateLoadResponse(830241003))),
             switchesToTarget: true,
@@ -1034,7 +1034,7 @@ static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventP
             "Legend Load group card event");
         await AssertPanelUpdate(
             () => DispatchHostResponse(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 "https://api.games.umamusume.jp/umamusume/single_mode_legend/check_event",
                 MessagePackSerializer.Serialize(CreateCheckEventResponse(400010112))),
             switchesToTarget: false,
@@ -1042,7 +1042,7 @@ static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventP
             "Legend CheckEvent buff selection");
         await AssertPanelUpdate(
             () => DispatchHostResponse(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 "https://api.games.umamusume.jp/umamusume/single_mode_legend/exec_command",
                 MessagePackSerializer.Serialize(CreateExecCommandResponse(400010112))),
             switchesToTarget: false,
@@ -1050,7 +1050,7 @@ static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventP
             "Legend ExecCommand buff selection");
         await AssertPanelUpdate(
             () => DispatchHostResponse(
-                context.Analyzers,
+                context.AnalyzerRegistry,
                 "https://api.games.umamusume.jp/umamusume/single_mode_legend/load",
                 MessagePackSerializer.Serialize(CreateLoadResponse(400010112))),
             switchesToTarget: false,
@@ -1160,7 +1160,7 @@ static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventP
 }
 
 static async ValueTask DispatchHostResponse(
-    SmokeAnalyzerRegistry registry,
+    RecordingAnalyzerRegistry registry,
     string canonicalUrl,
     byte[] payload)
 {
@@ -1324,7 +1324,7 @@ static class PluginSmokeRunner
         var attributeAnalyzerCount = 0;
         var registeredAnalyzerCount = 0;
         var plugin = target.Create();
-        using (var context = new SmokePluginContext(ui.Application))
+        using (var context = new RuntimePluginContext(ui.Application))
         {
             ui.Bootstrap.SwitchTo();
             var beforeInitialize = ui.CaptureScreen();
@@ -1342,10 +1342,10 @@ static class PluginSmokeRunner
                     "SendGameStatusPlugin" => 2,
                     _ => 0,
                 };
-                if (context.Analyzers.Registrations.Count != expectedProgrammaticRegistrations)
+                if (context.AnalyzerRegistry.Registrations.Count != expectedProgrammaticRegistrations)
                     throw new InvalidOperationException(
                         $"{target.AssemblyName} programmatic registration count mismatch: " +
-                        $"expected={expectedProgrammaticRegistrations}, actual={context.Analyzers.Registrations.Count}.");
+                        $"expected={expectedProgrammaticRegistrations}, actual={context.AnalyzerRegistry.Registrations.Count}.");
                 if (!ReferenceEquals(Workspace.Current, ui.Bootstrap))
                     throw new InvalidOperationException(
                         $"{target.AssemblyName} changed the visible workspace during Initialize.");
@@ -1356,7 +1356,7 @@ static class PluginSmokeRunner
                         $"{target.AssemblyName} changed the visible framebuffer during Initialize.");
                 }
                 attributeAnalyzerCount += await InvokeAttributeAnalyzers(plugin);
-                registeredAnalyzerCount += await InvokeRegisteredAnalyzers(plugin.GetType(), context.Analyzers);
+                registeredAnalyzerCount += await InvokeRegisteredAnalyzers(plugin.GetType(), context.AnalyzerRegistry);
                 exercised = AssertExpectedVisibleState(target, ui);
             }
             finally
@@ -1568,7 +1568,7 @@ static class PluginSmokeRunner
         return count;
     }
 
-    static async Task<int> InvokeRegisteredAnalyzers(Type pluginType, SmokeAnalyzerRegistry registry)
+    static async Task<int> InvokeRegisteredAnalyzers(Type pluginType, RecordingAnalyzerRegistry registry)
     {
         var count = 0;
         foreach (var registration in registry.Registrations.OrderBy(x => x.Priority))
@@ -1608,101 +1608,6 @@ static class PluginSmokeRunner
             Device: "android",
             DeviceSubtype: "phone");
 
-}
-
-sealed class SmokePluginContext(IApplication application) : IPluginContext, IDisposable
-{
-    readonly SmokeHostEvents events = new();
-    readonly CancellationTokenSource lifetime = new();
-    readonly List<Task> backgroundTasks = [];
-
-    public IApplication Application { get; } = application;
-    public IPluginHostEvents Events => events;
-    public SmokeAnalyzerRegistry Analyzers { get; } = new();
-    IPluginAnalyzerRegistry IPluginContext.Analyzers => Analyzers;
-    public bool IsPluginAvailable(string internalName) => false;
-
-    public void RunBackground(Func<CancellationToken, ValueTask> operation)
-    {
-        ArgumentNullException.ThrowIfNull(operation);
-        backgroundTasks.Add(Task.Run(() => operation(lifetime.Token).AsTask(), lifetime.Token));
-    }
-
-    public void Dispose()
-    {
-        lifetime.Cancel();
-        try
-        {
-            Task.WhenAll(backgroundTasks).WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
-        }
-        catch (OperationCanceledException) { }
-        catch (AggregateException ex) when (ex.InnerExceptions.All(inner => inner is OperationCanceledException)) { }
-        events.Dispose();
-        Analyzers.Dispose();
-        lifetime.Dispose();
-    }
-}
-
-sealed class SmokeHostEvents : IPluginHostEvents, IDisposable
-{
-    readonly List<Func<CancellationToken, ValueTask>> startedHandlers = [];
-    bool disposed;
-
-    public void OnStarted(Func<CancellationToken, ValueTask> handler)
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        startedHandlers.Add(handler);
-    }
-
-    public void Dispose()
-    {
-        disposed = true;
-        startedHandlers.Clear();
-    }
-}
-
-sealed class SmokeAnalyzerRegistry : IPluginAnalyzerRegistry, IDisposable
-{
-    readonly List<SmokeAnalyzerRegistration> registrations = [];
-    bool disposed;
-
-    public IReadOnlyList<SmokeAnalyzerRegistration> Registrations => registrations;
-
-    public void Register<TPayload>(
-        AnalyzerKind kind,
-        IReadOnlyList<EndpointPattern> patterns,
-        Func<AnalyzerInvocation<TPayload>, ValueTask> handler,
-        int priority = 0)
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        registrations.Add(new(
-            kind,
-            [.. patterns],
-            typeof(TPayload),
-            priority,
-            context => handler(new(
-                context.Endpoint,
-                typeof(TPayload) == typeof(ReadOnlyMemory<byte>)
-                    ? (TPayload)(object)context.Payload
-                    : (TPayload)context.GetDto(typeof(TPayload)),
-                context.Headers))));
-    }
-
-    public void Dispose()
-    {
-        disposed = true;
-        registrations.Clear();
-    }
-}
-
-sealed record SmokeAnalyzerRegistration(
-    AnalyzerKind Kind,
-    IReadOnlyList<EndpointPattern> Patterns,
-    Type PayloadType,
-    int Priority,
-    Func<AnalyzerDispatchContext, ValueTask> Handler)
-{
-    public ValueTask Invoke(AnalyzerDispatchContext context) => Handler(context);
 }
 
 sealed record EventRenderCapture(

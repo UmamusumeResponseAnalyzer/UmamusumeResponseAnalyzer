@@ -1,4 +1,5 @@
 using System.Globalization;
+using UmamusumeResponseAnalyzer;
 using Terminal.Gui.ViewBase;
 using System.Collections.Concurrent;
 using Gallop.Endpoints;
@@ -414,13 +415,18 @@ sealed class WorkspaceSmokeSession : IDisposable
 
 sealed class RecordingHostEvents : IPluginHostEvents, IDisposable
 {
+    bool disposed;
     public List<RecordedHostSubscription> Subscriptions { get; } = [];
 
     public void OnStarted(Func<CancellationToken, ValueTask> handler)
-        => Subscriptions.Add(new(handler));
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        Subscriptions.Add(new(handler));
+    }
 
     public void Dispose()
     {
+        disposed = true;
         foreach (var subscription in Subscriptions)
             subscription.Dispose();
     }
@@ -436,6 +442,7 @@ sealed class RecordedHostSubscription(Func<CancellationToken, ValueTask> handler
 
 sealed class RecordingAnalyzerRegistry : IPluginAnalyzerRegistry, IDisposable
 {
+    bool disposed;
     public List<RecordedAnalyzerRegistration> Registrations { get; } = [];
 
     public void Register<TPayload>(
@@ -443,15 +450,19 @@ sealed class RecordingAnalyzerRegistry : IPluginAnalyzerRegistry, IDisposable
         IReadOnlyList<EndpointPattern> patterns,
         Func<AnalyzerInvocation<TPayload>, ValueTask> handler,
         int priority = 0)
-        => Registrations.Add(new(
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        Registrations.Add(new(
             kind,
             [.. patterns],
             typeof(TPayload),
             priority,
             (endpoint, payload, headers) => handler(new(endpoint, (TPayload)payload, headers))));
+    }
 
     public void Dispose()
     {
+        disposed = true;
         foreach (var registration in Registrations)
             registration.Dispose();
     }
@@ -470,6 +481,12 @@ sealed class RecordedAnalyzerRegistration(
     public Type PayloadType { get; } = payloadType;
     public int Priority { get; } = priority;
     public bool IsDisposed { get; private set; }
+
+    public ValueTask Invoke(AnalyzerDispatchContext context)
+        => Invoke(
+            PayloadType == typeof(ReadOnlyMemory<byte>) ? context.Payload : context.GetDto(PayloadType),
+            context.Endpoint,
+            context.Headers);
 
     public ValueTask Invoke(
         object payload,
