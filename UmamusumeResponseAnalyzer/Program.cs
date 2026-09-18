@@ -17,7 +17,7 @@ namespace UmamusumeResponseAnalyzer
         internal static Task<DatabaseAvailability> _database_initialize_task = null!;
         internal static Task _plugin_initialize_task = null!;
         public static bool Started => Server.IsRunning;
-        const string PORTABLE_WORKING_DIRECTORY = "./.portable";
+        static readonly string PORTABLE_WORKING_DIRECTORY = Path.Combine(AppContext.BaseDirectory, ".portable");
         const string PluginRepositoryMenuItem = "插件仓库";
         const string QqGroupMenuItem = "加入QQ群（号被封过之后在频道里说话会概率被夹";
         public readonly static string WORKING_DIRECTORY = Directory.Exists(PORTABLE_WORKING_DIRECTORY) ? PORTABLE_WORKING_DIRECTORY : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
@@ -26,12 +26,13 @@ namespace UmamusumeResponseAnalyzer
             Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
-            if (!Directory.Exists(WORKING_DIRECTORY)) Directory.CreateDirectory(WORKING_DIRECTORY);
-            Directory.SetCurrentDirectory(WORKING_DIRECTORY);
             try
             {
                 if (TryHandleCliOnlyArguments(args))
                     return;
+
+                if (!Directory.Exists(WORKING_DIRECTORY)) Directory.CreateDirectory(WORKING_DIRECTORY);
+                Directory.SetCurrentDirectory(WORKING_DIRECTORY);
 
                 if (Console.IsInputRedirected || Console.IsOutputRedirected)
                 {

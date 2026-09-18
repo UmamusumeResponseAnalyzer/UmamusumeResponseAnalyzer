@@ -14,6 +14,58 @@ namespace UmamusumeResponseAnalyzer.Tests;
 public sealed class StartupWorkflowTests
 {
     [Fact]
+    public async Task MainUsesApplicationPortableDirectoryAndLeavesCliDirectoryUnchanged()
+    {
+        var scenario = nameof(MainUsesApplicationPortableDirectoryAndLeavesCliDirectoryUnchanged);
+        if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
+        {
+            Assert.Equal("ok", await TerminalUiLifecycleProcessTests.RunChildAsync(scenario, typeof(StartupWorkflowTests), scenario));
+            return;
+        }
+
+        var root = Path.Combine(Path.GetTempPath(), "ura-startup-path-" + Guid.NewGuid().ToString("N"));
+        var originalCwd = Directory.GetCurrentDirectory();
+        var originalBaseDirectory = AppContext.GetData("APP_CONTEXT_BASE_DIRECTORY");
+        var originalExitCode = Environment.ExitCode;
+        try
+        {
+            var applicationDirectory = Path.Combine(root, "app");
+            var portableDirectory = Directory.CreateDirectory(Path.Combine(applicationDirectory, ".portable")).FullName;
+            var callerDirectory = Directory.CreateDirectory(Path.Combine(root, "caller")).FullName;
+            Directory.CreateDirectory(Path.Combine(callerDirectory, ".portable"));
+            AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", applicationDirectory);
+            Directory.SetCurrentDirectory(callerDirectory);
+
+            // Resolve Main after setting the application directory so static path fields use this isolated layout.
+            var main = typeof(UmamusumeResponseAnalyzer).GetMethod(nameof(UmamusumeResponseAnalyzer.Main))!;
+            foreach (var args in new[] { new[] { "--version" }, new[] { "--unknown-option" } })
+            {
+                await (Task)main.Invoke(null, [args])!;
+                Assert.Equal(callerDirectory, Directory.GetCurrentDirectory());
+                Assert.Empty(Directory.EnumerateFileSystemEntries(Path.Combine(callerDirectory, ".portable")));
+            }
+
+            Assert.True(Console.IsInputRedirected || Console.IsOutputRedirected);
+            foreach (var launchDirectory in new[] { callerDirectory, portableDirectory })
+            {
+                Directory.SetCurrentDirectory(launchDirectory);
+                await (Task)main.Invoke(null, [Array.Empty<string>()])!;
+                Assert.Equal(1, Environment.ExitCode);
+                Assert.Equal(portableDirectory, Directory.GetCurrentDirectory());
+                Assert.Empty(Directory.EnumerateFileSystemEntries(portableDirectory));
+            }
+        }
+        finally
+        {
+            AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY", originalBaseDirectory);
+            Directory.SetCurrentDirectory(originalCwd);
+            Environment.ExitCode = originalExitCode;
+            Directory.Delete(root, recursive: true);
+        }
+        TerminalUiLifecycleChildProcess.WriteResult("ok");
+    }
+
+    [Fact]
     public Task InstallNewPluginFromStartupWorkspace()
         => RunScenarioAsync(nameof(InstallNewPluginFromStartupWorkspace), s => InstallAsync(s, existing: false, shared: false));
 
