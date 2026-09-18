@@ -7,6 +7,7 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 * 任意可以把游戏请求/响应 MessagePack payload 发送到宿主 `/notify/request` / `/notify/response` 的 sender。请求必须带 `X-Hachimi-Game-Url` header，值为游戏原始 canonical URL；该 URL 的 path 必须命中 Gallop endpoint catalog，或能在带/不带 `/umamusume` 前缀两种形式之间切换后命中 catalog。Windows 安装入口使用 [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge) 和 [HTTP 转发插件](https://github.com/UmamusumeResponseAnalyzer/hachimi-httpforward-plugin)。
 * sender 的目标地址默认设置为 `http://127.0.0.1:4693`。如果游戏在手机或其他设备上运行，首次运行向导可把监听地址改为 `0.0.0.0`；启动时按控制台提示放行防火墙。
 * Windows 版主菜单提供 `安装 Hachimi-Edge`，支持 DMM 日服、Komoe 繁中、Steam 日服及国际服；可选择自动发现的目录或手动选择游戏 EXE。关闭目标游戏后操作，一次安装一个目录。
+* DMM 自动发现读取 `%APPDATA%\dmmgameplayer5\dmmgame.cnf` 中唯一的已安装 `umamusume/GCL` 记录，并验证 `umamusume.exe` 存在。记录损坏时显示警告，继续使用注册表及 Komoe 等来源。DMMPlugin 通过 Host 的 `UraCoreHelper.FindDmmGameExecutable` 复用此解析。
 * (可选，如果需要脱离 DMM 启动游戏) DMM Game Player β 及 HTTPS proxy，比如 [Fiddler](https://www.telerik.com/fiddler/fiddler-classic) 或 [mitmproxy](https://mitmproxy.org/)。
 
 # 安装 Installation

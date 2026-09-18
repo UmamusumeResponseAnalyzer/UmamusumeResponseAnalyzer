@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="I18N_DmmPath_InvalidRecords" xml:space="preserve">
+    <value>The installation record must contain a contents array of game objects; the Umamusume GCL entry must contain detail.installed as a boolean.</value>
+  </data>
+  <data name="I18N_DmmPath_RecordCount" xml:space="preserve">
+    <value>Expected one installed Umamusume GCL entry, found {0}.</value>
+  </data>
+  <data name="I18N_DmmPath_InvalidDirectory" xml:space="preserve">
+    <value>The installed game entry must contain an existing absolute directory in detail.path.</value>
+  </data>
+  <data name="I18N_DmmPath_ExecutableMissing" xml:space="preserve">
+    <value>The recorded game executable does not exist: {0}.</value>
+  </data>
+  <data name="I18N_DmmPath_DiscoveryFailed" xml:space="preserve">
+    <value>Cannot discover Umamusume from {0}: {1}</value>
+  </data>
+</root>

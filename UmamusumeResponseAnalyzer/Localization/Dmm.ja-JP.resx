@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="I18N_DmmPath_InvalidRecords" xml:space="preserve">
+    <value>インストール情報にはゲームオブジェクトの contents 配列が必要です。ウマ娘 GCL の detail.installed は真偽値である必要があります。</value>
+  </data>
+  <data name="I18N_DmmPath_RecordCount" xml:space="preserve">
+    <value>インストール済みウマ娘 GCL の情報が 1 件必要ですが、{0} 件見つかりました。</value>
+  </data>
+  <data name="I18N_DmmPath_InvalidDirectory" xml:space="preserve">
+    <value>ゲームのインストール情報の detail.path には、存在するディレクトリの絶対パスが必要です。</value>
+  </data>
+  <data name="I18N_DmmPath_ExecutableMissing" xml:space="preserve">
+    <value>インストール情報のゲーム実行ファイルが存在しません：{0}。</value>
+  </data>
+  <data name="I18N_DmmPath_DiscoveryFailed" xml:space="preserve">
+    <value>{0} からウマ娘を自動検出できません：{1}</value>
+  </data>
+</root>

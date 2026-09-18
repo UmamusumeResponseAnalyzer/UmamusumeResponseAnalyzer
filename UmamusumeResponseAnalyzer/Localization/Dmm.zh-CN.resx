@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="I18N_DmmPath_InvalidRecords" xml:space="preserve">
+    <value>安装记录必须包含由游戏对象组成的 contents 数组；赛马娘 GCL 条目的 detail.installed 必须为布尔值。</value>
+  </data>
+  <data name="I18N_DmmPath_RecordCount" xml:space="preserve">
+    <value>需要唯一的已安装赛马娘 GCL 记录，实际找到 {0} 条。</value>
+  </data>
+  <data name="I18N_DmmPath_InvalidDirectory" xml:space="preserve">
+    <value>游戏安装记录的 detail.path 必须是存在的绝对目录路径。</value>
+  </data>
+  <data name="I18N_DmmPath_ExecutableMissing" xml:space="preserve">
+    <value>安装记录中的游戏可执行文件不存在：{0}。</value>
+  </data>
+  <data name="I18N_DmmPath_DiscoveryFailed" xml:space="preserve">
+    <value>无法从 {0} 自动发现赛马娘：{1}</value>
+  </data>
+</root>

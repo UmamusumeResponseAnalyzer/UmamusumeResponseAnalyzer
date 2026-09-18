@@ -3,12 +3,61 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Security;
 using System.Runtime.Versioning;
+using static UmamusumeResponseAnalyzer.Localization.Dmm;
 
 namespace UmamusumeResponseAnalyzer
 {
     public static class UraCoreHelper
     {
         public static IReadOnlyList<string> GamePaths => LoadGamePaths();
+
+        /// <summary>
+        /// Reads the official DMM installation record. Returns null when no installed game is recorded.
+        /// </summary>
+        /// <exception cref="InvalidDataException">The installation record or game location is invalid.</exception>
+        public static string? FindDmmGameExecutable(string? installationFile = null)
+        {
+            installationFile ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "dmmgameplayer5", "dmmgame.cnf");
+            try
+            {
+                var config = JObject.Parse(File.ReadAllText(installationFile));
+                if (config["contents"] is not JArray contents)
+                    throw new InvalidDataException(I18N_DmmPath_InvalidRecords);
+
+                var matches = new List<JObject>();
+                foreach (var entry in contents)
+                {
+                    if (entry is not JObject game)
+                        throw new InvalidDataException(I18N_DmmPath_InvalidRecords);
+                    if (game["productId"] is not JValue { Value: "umamusume" }
+                        || game["gameType"] is not JValue { Value: "GCL" })
+                        continue;
+                    if (game["detail"] is not JObject detail
+                        || detail["installed"] is not JValue { Type: JTokenType.Boolean, Value: bool installed })
+                        throw new InvalidDataException(I18N_DmmPath_InvalidRecords);
+                    if (installed) matches.Add(detail);
+                }
+                if (matches.Count == 0) return null;
+                if (matches.Count > 1)
+                    throw new InvalidDataException(string.Format(I18N_DmmPath_RecordCount, matches.Count));
+                if (matches[0]["path"] is not JValue { Type: JTokenType.String, Value: string directory }
+                    || !Path.IsPathFullyQualified(directory) || !Directory.Exists(directory))
+                    throw new InvalidDataException(I18N_DmmPath_InvalidDirectory);
+
+                var executable = Path.GetFullPath(Path.Combine(directory, "umamusume.exe"));
+                if (!File.Exists(executable))
+                    throw new InvalidDataException(string.Format(I18N_DmmPath_ExecutableMissing, executable));
+                return executable;
+            }
+            catch (FileNotFoundException) { return null; }
+            catch (DirectoryNotFoundException) { return null; }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException
+                or JsonException or ArgumentException or NotSupportedException or SecurityException)
+            {
+                throw new InvalidDataException(string.Format(I18N_DmmPath_DiscoveryFailed, installationFile, ex.Message), ex);
+            }
+        }
 
         /// <summary>
         /// Registry value names may append a MuiCache property after the executable name.
@@ -30,51 +79,47 @@ namespace UmamusumeResponseAnalyzer
             return null;
         }
 
-        internal static IReadOnlyList<string> LoadGamePaths(List<string>? warnings = null)
+        internal static IReadOnlyList<string> LoadGamePaths(List<string>? warnings = null,
+            string? dmmInstallationFile = null, RegistryKey? currentUser = null)
         {
             if (!OperatingSystem.IsWindows())
                 return [];
 
             var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            currentUser ??= Registry.CurrentUser;
 
             // MuiCache — value names that are full exe paths
             TryExtractFromValueNames(
                 @"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache",
-                Registry.CurrentUser,
+                currentUser,
                 paths, warnings);
 
             // Explorer AppSwitched — same structure
             TryExtractFromValueNames(
                 @"Software\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched",
-                Registry.CurrentUser,
+                currentUser,
                 paths, warnings);
 
             // AppCompatFlags Compatibility Assistant Store — same structure
             TryExtractFromValueNames(
                 @"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store",
-                Registry.CurrentUser,
+                currentUser,
                 paths, warnings);
 
             // GameConfigStore — each child subkey has MatchedExeFullPath value
-            TryExtractFromGameConfigStore(paths, warnings);
-            var dmmPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "dmmgameplayer5", "dmmgame.cnf");
+            TryExtractFromGameConfigStore(currentUser, paths, warnings);
             try
             {
-                if (File.Exists(dmmPath))
-                {
-                    var config = JObject.Parse(File.ReadAllText(dmmPath));
-                    foreach (var game in config["contents"] as JArray ?? [])
-                        if ((string?)game["productId"] == "umamusume" && (string?)game["detail"]?["path"] is { Length: > 0 } path)
-                            paths.Add(path);
-                }
+                if (FindDmmGameExecutable(dmmInstallationFile) is { } executable)
+                    paths.Add(Path.GetDirectoryName(executable)!);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            catch (InvalidDataException ex)
             {
-                warnings?.Add($"{dmmPath}: {ex.Message}");
+                warnings?.Add(ex.Message);
             }
             try
             {
-                using var komoe = Registry.CurrentUser.OpenSubKey(@"Software\komoemumamusume");
+                using var komoe = currentUser.OpenSubKey(@"Software\komoemumamusume");
                 if (komoe?.GetValue("GameInstallPath") is string path && path.Length > 0)
                     paths.Add(path);
             }
@@ -113,11 +158,11 @@ namespace UmamusumeResponseAnalyzer
         }
 
         [SupportedOSPlatform("windows")]
-        private static void TryExtractFromGameConfigStore(HashSet<string> results, List<string>? warnings)
+        private static void TryExtractFromGameConfigStore(RegistryKey hive, HashSet<string> results, List<string>? warnings)
         {
             try
             {
-                using var storeKey = Registry.CurrentUser.OpenSubKey(@"System\GameConfigStore\Children");
+                using var storeKey = hive.OpenSubKey(@"System\GameConfigStore\Children");
                 if (storeKey is null) return;
 
                 foreach (var subkeyName in storeKey.GetSubKeyNames())
