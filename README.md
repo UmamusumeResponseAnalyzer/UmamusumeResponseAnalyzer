@@ -66,7 +66,7 @@ The Windows installer applies the selected client's active URACloud component se
 * 同名来源可并列展示，一次不能选择多个同名插件。本机同一 `InternalName`（OrdinalIgnoreCase）只能安装一个，ZIP 位于 `Plugins/<InternalName>.zip`；宿主只扫描 `Plugins/` 顶层 ZIP。
 * 下载先写临时文件，核对 manifest 的 Author、InternalName、Version 和 ZIP 包契约后替换目标 ZIP，上限 64 MiB。下载或校验失败保留现有 ZIP。菜单安装结束后批量热重载。
 * 更新检查仅处理已加载插件，按 `InternalName` 匹配并比较版本；同名多个来源使匹配不唯一时明确报错。发现更新只通知，安装由用户手动选择。
-* 本地 `/uracloud/install` 接受白名单 Origin（`https://ura.shuise.net` 或 `http://localhost:5173`）的 `{repositoryId, releaseId}`，下载源固定为 URACloud。宿主获取 manifest 后在本机确认插件身份与版本，并提示插件将在本机执行代码。网页可指定预发行 Release。
+* 网页安装入口位于插件模块 [WebInstallApi.cs](UmamusumeResponseAnalyzer/Plugin/WebInstallApi.cs)。本地 `/uracloud/install` 接受白名单 Origin（`https://ura.shuise.net`）的 `{repositoryId, releaseId}`，下载源固定为 URACloud。宿主获取 manifest 后在本机确认插件身份与版本，并提示插件将在本机执行代码。网页可指定预发行 Release。
 * 安装响应 `{ok, loaded, installed, error}` 区分 ZIP 保存与加载结果：保存后加载失败返回 `ok: true, loaded: false`。`/uracloud/status` 返回 Host 版本和已加载插件，其中 `loaded: true, source: null`；网页会显示来源未知，不能标记已安装同一 Release。
 
 Host **1.15.0.0** uses repository and release IDs to address URACloud downloads. The plugin repository menu installs and updates to the latest stable release from the catalog. Web requests require local confirmation of the plugin identity and version; downloads validate the package structure and manifest identity before replacing the ZIP. Status and version checks cover loaded plugins. Status reports no source identity; installation and loading results are separate.

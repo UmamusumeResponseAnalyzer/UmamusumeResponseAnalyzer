@@ -1,11 +1,10 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using WatsonWebserver.Core;
 using WatsonWebserver.Lite;
 
-namespace UmamusumeResponseAnalyzer;
+namespace UmamusumeResponseAnalyzer.Plugin;
 
 /// <summary>Local URACloud integration: numeric references, allowed origins, and Host-side confirmation.</summary>
 internal static class WebInstallApi
@@ -13,7 +12,6 @@ internal static class WebInstallApi
     static readonly HashSet<string> AllowedOrigins = new(StringComparer.Ordinal)
     {
         "https://ura.shuise.net",
-        "http://localhost:5173",
     };
     static readonly JsonSerializerSettings JsonSettings = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
 

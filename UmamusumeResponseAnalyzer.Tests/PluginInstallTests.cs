@@ -65,6 +65,7 @@ public sealed class PluginInstallTests : IDisposable
         foreach (var (origin, body, expected) in new[]
         {
             ("https://example.com", "{}", HttpStatusCode.Forbidden),
+            ("http://localhost:5173", "{\"repositoryId\":1,\"releaseId\":10}", HttpStatusCode.Forbidden),
             ("", "{}", HttpStatusCode.Forbidden),
             ("https://ura.shuise.net", "not json", HttpStatusCode.BadRequest),
             ("https://ura.shuise.net", "{\"repositoryId\":0,\"releaseId\":10}", HttpStatusCode.BadRequest),
