@@ -392,7 +392,8 @@ namespace UmamusumeResponseAnalyzer
                     PluginManager.DescribeException(root));
                 _ = PluginManager.ReportPluginFailure(
                     registration.Method?.DeclaringType?.Name ?? registration.Source,
-                    failure);
+                    failure,
+                    root.ToString());
             }
         }
 

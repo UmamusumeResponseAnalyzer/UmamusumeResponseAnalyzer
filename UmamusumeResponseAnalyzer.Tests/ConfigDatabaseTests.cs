@@ -12,175 +12,212 @@ namespace UmamusumeResponseAnalyzer.Tests
     [Collection("Database")]
     public class ConfigSerializationTests
     {
-        private const string CompleteYaml = """
-            core:
-              listen-address: 127.0.0.1
-              listen-port: 4693
-              show-first-run-prompt: true
-            repository:
-              targets: []
-            plugin: {}
-            updater:
-              is-github-blocked: false
-              trainer-is-male: true
-              database-language: ja-JP
-              custom-database-repository: ''
-              force-use-github-to-update: false
-            language:
-              selected: AutoDetect
-            misc:
-              save-response-for-debug: false
-            workspace-taskbar-title-order: []
-            """;
-
         [Theory]
-        [InlineData("core")]
-        [InlineData("repository")]
-        [InlineData("plugin")]
-        [InlineData("updater")]
-        [InlineData("language")]
-        [InlineData("misc")]
-        public void Deserialize_MissingSection_ThrowsWithSourceAndFieldPath(string section)
+        [InlineData("{}")]
+        [InlineData("core: {}")]
+        [InlineData("repository: {}")]
+        [InlineData("plugin: {}")]
+        [InlineData("updater: {}")]
+        [InlineData("language: {}")]
+        [InlineData("misc: {}")]
+        public void Deserialize_MissingSectionsAndFields_UsesRuntimeDefaults(string yaml)
         {
-            var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize(RemoveSection(CompleteYaml, section), "settings/config.yaml"));
+            var config = Config.Deserialize(yaml, "settings/config.yaml");
 
-            Assert.Contains("settings/config.yaml", exception.Message);
-            Assert.Contains(section, exception.Message);
+            Assert.Equal(Config.Serialize(new YamlConfig()), Config.Serialize(config));
         }
 
         [Theory]
-        [InlineData("core")]
-        [InlineData("repository")]
-        [InlineData("plugin")]
-        [InlineData("updater")]
-        [InlineData("language")]
-        [InlineData("misc")]
-        public void Deserialize_ExplicitNullSection_ThrowsWithSourceAndFieldPath(string section)
+        [InlineData("zh-CN")]
+        [InlineData("en-US")]
+        [InlineData("ja-JP")]
+        public void Deserialize_DefaultsFollowCurrentCulture(string culture)
         {
-            var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize(ReplaceSection(CompleteYaml, section, $"{section}: null"), "config.yaml"));
+            var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+            var previousUiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture = new(culture);
+                System.Globalization.CultureInfo.CurrentUICulture = new(culture);
+                var config = Config.Deserialize("{}", "config.yaml");
 
-            Assert.Contains("config.yaml", exception.Message);
-            Assert.Contains(section, exception.Message);
+                Assert.Equal(Config.Serialize(new YamlConfig()), Config.Serialize(config));
+                Assert.Equal(
+                    System.Globalization.RegionInfo.CurrentRegion.Name == "CN" || culture == "zh-CN",
+                    config.Updater.IsGithubBlocked);
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+                System.Globalization.CultureInfo.CurrentUICulture = previousUiCulture;
+            }
         }
 
-        [Fact]
-        public void Deserialize_NullDocument_ThrowsWithSourceAndRootPath()
+        [Theory]
+        [InlineData("")]
+        [InlineData("---\n")]
+        [InlineData("null")]
+        [InlineData("~")]
+        public void Deserialize_NullDocument_ThrowsWithSourceAndRootPath(string yaml)
         {
             var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize("null", "settings/config.yaml"));
+                Config.Deserialize(yaml, "settings/config.yaml"));
 
             Assert.Contains("settings/config.yaml", exception.Message);
             Assert.Contains("$", exception.Message);
         }
 
-        [Fact]
-        public void Deserialize_UnknownRootField_ThrowsWithSource()
+        [Theory]
+        [InlineData("core: null")]
+        [InlineData("repository: null")]
+        [InlineData("plugin: null")]
+        [InlineData("updater: null")]
+        [InlineData("language: null")]
+        [InlineData("misc: null")]
+        [InlineData("core: {listen-address: null}")]
+        [InlineData("core: {listen-port: null}")]
+        [InlineData("core: {listen-port: ~}")]
+        [InlineData("core: {listen-port: }")]
+        [InlineData("core: {show-first-run-prompt: null}")]
+        [InlineData("repository: {targets: null}")]
+        [InlineData("updater: {is-github-blocked: null}")]
+        [InlineData("updater: {trainer-is-male: null}")]
+        [InlineData("updater: {database-language: null}")]
+        [InlineData("updater: {force-use-github-to-update: null}")]
+        [InlineData("language: {selected: null}")]
+        [InlineData("misc: {save-response-for-debug: null}")]
+        [InlineData("workspace-taskbar-title-order: null")]
+        [InlineData("updater: {custom-database-repository: &nil null}\ncore: {listen-port: *nil}")]
+        [InlineData("updater: {custom-database-repository: &nil null}\ncore: {show-first-run-prompt: *nil}")]
+        [InlineData("updater: {custom-database-repository: &nil null}\nlanguage: {selected: *nil}")]
+        [InlineData("updater: {custom-database-repository: &nil null}\ncore: {listen-address: *nil}")]
+        [InlineData("updater: {custom-database-repository: &nil null}\nrepository: {targets: *nil}")]
+        [InlineData("updater: {custom-database-repository: &nil null}\ncore: *nil")]
+        public void Deserialize_ForbiddenNull_ThrowsWithSourceAndYamlPosition(string yaml)
         {
-            var yaml = $"removed-section: true{Environment.NewLine}{CompleteYaml}";
-            var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize(yaml, "config.yaml"));
-
-            Assert.Contains("config.yaml", exception.Message);
-            Assert.Contains("removed-section", exception.Message);
-        }
-
-        [Fact]
-        public void Deserialize_UnknownNestedField_ThrowsWithSource()
-        {
-            var yaml = CompleteYaml.Replace(
-                "  listen-port: 4693",
-                "  listen-port: 4693\n  request-additional-header: true",
-                StringComparison.Ordinal);
-            var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize(yaml, "config.yaml"));
-
-            Assert.Contains("config.yaml", exception.Message);
-            Assert.Contains("request-additional-header", exception.Message);
-        }
-
-        [Fact]
-        public void Deserialize_DuplicateField_ThrowsWithSourceAndField()
-        {
-            var yaml = CompleteYaml.Replace(
-                "  listen-port: 4693",
-                "  listen-port: 4693\n  listen-port: 5000",
-                StringComparison.Ordinal);
-            var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize(yaml, "config.yaml"));
-
-            Assert.Contains("config.yaml", exception.Message);
-            Assert.Contains("listen-port", exception.Message);
-        }
-
-        [Fact]
-        public void Deserialize_InvalidScalar_ThrowsWithSourceAndYamlPosition()
-        {
-            var yaml = CompleteYaml.Replace("  listen-port: 4693", "  listen-port: nope", StringComparison.Ordinal);
             var exception = Assert.Throws<InvalidDataException>(() =>
                 Config.Deserialize(yaml, "settings/config.yaml"));
+            var yamlException = Assert.IsAssignableFrom<YamlDotNet.Core.YamlException>(exception.InnerException);
 
             Assert.Contains("settings/config.yaml", exception.Message);
-            Assert.Contains(":", exception.Message);
+            Assert.Contains($"{yamlException.Start.Line}:{yamlException.Start.Column}", exception.Message);
+            Assert.Contains("null", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void Deserialize_UnknownFields_AreIgnoredAndDiscardedWhenSaved()
+        {
+            var yaml = """
+                removed-section:
+                  duplicate: 1
+                  duplicate: 2
+                core:
+                  listen-port: 5000
+                  request-additional-header: true
+                plugin:
+                  removed-option: null
+                """;
+            var config = Config.Deserialize(yaml, "config.yaml");
+            var saved = Config.Serialize(config);
+
+            Assert.Equal(5000, config.Core.ListenPort);
+            Assert.DoesNotContain("removed-", saved);
+            Assert.DoesNotContain("duplicate", saved);
+            Assert.DoesNotContain("request-additional-header", saved);
+            Assert.Equal(saved, Config.Serialize(Config.Deserialize(saved, "saved.yaml")));
+        }
+
+        [Theory]
+        [InlineData("core: {}\ncore: {}", "core")]
+        [InlineData("core: {listen-port: 4693, listen-port: 5000}", "listen-port")]
+        [InlineData("unknown: 1\nunknown: 2", "unknown")]
+        [InlineData("core: {unknown: 1, unknown: 2}", "unknown")]
+        public void Deserialize_DuplicateField_ThrowsWithSourceAndField(string yaml, string field)
+        {
+            var exception = Assert.Throws<InvalidDataException>(() =>
+                Config.Deserialize(yaml, "config.yaml"));
+
+            Assert.Contains("config.yaml", exception.Message);
+            Assert.Contains(field, exception.Message);
+            Assert.Contains("duplicate", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("core: {listen-port: nope}")]
+        [InlineData("core: {show-first-run-prompt: nope}")]
+        [InlineData("language: {selected: nope}")]
+        public void Deserialize_InvalidScalar_ThrowsWithSourceAndYamlPosition(string yaml)
+        {
+            var exception = Assert.Throws<InvalidDataException>(() =>
+                Config.Deserialize(yaml, "settings/config.yaml"));
+            var yamlException = Assert.IsAssignableFrom<YamlDotNet.Core.YamlException>(exception.InnerException);
+
+            Assert.Contains("settings/config.yaml", exception.Message);
+            Assert.Contains($"{yamlException.Start.Line}:{yamlException.Start.Column}", exception.Message);
             Assert.Contains("nope", exception.Message);
         }
 
         [Theory]
-        [InlineData("  listen-address: 127.0.0.1", "  listen-address: null", "core.listen-address")]
-        [InlineData("  listen-port: 4693", "  listen-port: null", "core.listen-port")]
-        [InlineData("  targets: []", "  targets: null", "repository.targets")]
-        [InlineData("  database-language: ja-JP", "  database-language: null", "updater.database-language")]
-        [InlineData("  selected: AutoDetect", "  selected: null", "language.selected")]
-        [InlineData("workspace-taskbar-title-order: []", "workspace-taskbar-title-order: null", "workspace-taskbar-title-order")]
-        public void Deserialize_ExplicitNullValue_ThrowsWithFieldPath(
-            string original,
-            string replacement,
-            string fieldPath)
+        [InlineData("repository: {targets: [Cygames, null]}", "repository.targets[1]")]
+        [InlineData("workspace-taskbar-title-order: [null]", "workspace-taskbar-title-order[0]")]
+        [InlineData("updater: {custom-database-repository: &nil null}\nrepository: {targets: [*nil]}", "repository.targets[0]")]
+        [InlineData("updater: {custom-database-repository: &nil null}\nworkspace-taskbar-title-order: [first, *nil]", "workspace-taskbar-title-order[1]")]
+        public void Deserialize_NullCollectionItem_ThrowsWithIndexedFieldPath(string yaml, string fieldPath)
         {
-            var yaml = CompleteYaml.Replace(original, replacement, StringComparison.Ordinal);
             var exception = Assert.Throws<InvalidDataException>(() =>
                 Config.Deserialize(yaml, "config.yaml"));
 
+            Assert.Contains("config.yaml", exception.Message);
             Assert.Contains(fieldPath, exception.Message);
         }
 
-        [Fact]
-        public void Deserialize_NullCollectionItem_ThrowsWithIndexedFieldPath()
-        {
-            var yaml = CompleteYaml.Replace("  targets: []", "  targets: [Cygames, null]", StringComparison.Ordinal);
-            var exception = Assert.Throws<InvalidDataException>(() =>
-                Config.Deserialize(yaml, "config.yaml"));
-
-            Assert.Contains("repository.targets[1]", exception.Message);
-        }
-
-        // custom-database-repository 可选:空值(显式 null / YAML 空标量 / 引号空串)与缺失一样
-        // 表示"未设置",归一为 string.Empty,由消费方回退默认仓库。旧逻辑把空标量解析出的
-        // null 当成"不能为空"拒绝,导致留空该可选字段的 config.yaml 无法启动。
         [Theory]
-        [InlineData("  custom-database-repository: null")]     // 显式 null
-        [InlineData("  custom-database-repository:")]          // YAML 空标量(冒号后无值)→ null
-        [InlineData("  custom-database-repository: ''")]       // 引号空串
-        public void Deserialize_OptionalCustomDatabaseRepository_NormalizesToEmpty(string line)
+        [InlineData("updater: {}")]
+        [InlineData("updater: {custom-database-repository: null}")]
+        [InlineData("updater: {custom-database-repository: }")]
+        [InlineData("updater: {custom-database-repository: ''}")]
+        public void Deserialize_OptionalCustomDatabaseRepository_NormalizesToEmpty(string yaml)
         {
-            var yaml = CompleteYaml.Replace(
-                "  custom-database-repository: ''",
-                line,
-                StringComparison.Ordinal);
-
-            var config = Config.Deserialize(yaml, "config.yaml");
-
-            Assert.Equal(string.Empty, config.Updater.CustomDatabaseRepository);
+            Assert.Equal(string.Empty, Config.Deserialize(yaml, "config.yaml").Updater.CustomDatabaseRepository);
         }
 
+        [Fact]
+        public void Deserialize_Aliases_PreserveValuesAndListIdentity()
+        {
+            var config = Config.Deserialize("""
+                repository: {targets: &names [a, b]}
+                workspace-taskbar-title-order: *names
+                updater: {trainer-is-male: &enabled false}
+                core: {show-first-run-prompt: *enabled}
+                """, "config.yaml");
+
+            Assert.Equal(["a", "b"], config.Repository.Targets);
+            Assert.Same(config.Repository.Targets, config.WorkspaceTaskbarTitleOrder);
+            Assert.False(config.Updater.TrainerIsMale);
+            Assert.False(config.Core.ShowFirstRunPrompt);
+        }
+
+        [Theory]
+        [InlineData("core: {listen-port: *missing}")]
+        [InlineData("core: {listen-port: *nil}\nupdater: {custom-database-repository: &nil null}")]
+        public void Deserialize_UndeclaredOrForwardAlias_PreservesYamlError(string yaml)
+        {
+            var exception = Assert.Throws<InvalidDataException>(() => Config.Deserialize(yaml, "config.yaml"));
+
+            Assert.Contains("config.yaml", exception.Message);
+            Assert.IsAssignableFrom<YamlDotNet.Core.YamlException>(exception.InnerException);
+        }
         [Fact]
         public void Deserialize_MissingFields_UsesCurrentDefaults()
         {
-            var yaml = ReplaceSection(CompleteYaml, "repository", "repository: {}")
-                .Replace("  listen-address: 127.0.0.1", string.Empty, StringComparison.Ordinal)
-                .Replace("  custom-database-repository: ''", string.Empty, StringComparison.Ordinal)
-                .Replace("workspace-taskbar-title-order: []", string.Empty, StringComparison.Ordinal);
+            var yaml = """
+                core: {listen-port: 4693, show-first-run-prompt: true}
+                repository: {}
+                plugin: {}
+                updater: {is-github-blocked: false, trainer-is-male: true, database-language: ja-JP, force-use-github-to-update: false}
+                language: {selected: AutoDetect}
+                misc: {save-response-for-debug: false}
+                """;
 
             var config = Config.Deserialize(yaml, "config.yaml");
 
@@ -233,7 +270,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                     CustomDatabaseRepository = "https://example.com/repo",
                     ForceUseGithubToUpdate = true
                 },
-                Language = new LanguageConfig(),
+                Language = new LanguageConfig { Selected = LanguageConfig.Language.Japanese },
                 Misc = new MiscConfig { SaveResponseForDebug = true },
                 WorkspaceTaskbarTitleOrder = ["插件", "启动信息", "遥测"]
             };
@@ -252,6 +289,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Equal("https://example.com/repo", restored.Updater.CustomDatabaseRepository);
             Assert.True(restored.Updater.ForceUseGithubToUpdate);
             Assert.True(restored.Misc.SaveResponseForDebug);
+            Assert.Equal(LanguageConfig.Language.Japanese, restored.Language.Selected);
             Assert.Equal(["插件", "启动信息", "遥测"], restored.WorkspaceTaskbarTitleOrder);
         }
 
@@ -289,23 +327,6 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             // LanguageConfig.Selected 源码默认 AutoDetect
             Assert.Equal(LanguageConfig.Language.AutoDetect, new LanguageConfig().Selected);
-        }
-
-        private static string RemoveSection(string yaml, string section) =>
-            ReplaceSection(yaml, section, string.Empty);
-
-        private static string ReplaceSection(string yaml, string section, string replacement)
-        {
-            var lines = yaml.Split('\n').ToList();
-            var start = lines.FindIndex(line => line.StartsWith($"{section}:", StringComparison.Ordinal));
-            Assert.True(start >= 0, $"Section not found: {section}");
-            var end = start + 1;
-            while (end < lines.Count && (lines[end].Length == 0 || char.IsWhiteSpace(lines[end][0])))
-                end++;
-            lines.RemoveRange(start, end - start);
-            if (replacement.Length > 0)
-                lines.Insert(start, replacement);
-            return string.Join('\n', lines);
         }
     }
 

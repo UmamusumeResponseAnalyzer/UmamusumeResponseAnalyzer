@@ -2,6 +2,8 @@
   <!-- URA plugin build hooks distributed by the UmamusumeResponseAnalyzer package. -->
 
   <PropertyGroup>
+    <_UraNewtonsoftJsonAssemblyPath>$(MSBuildToolsPath)\Newtonsoft.Json.dll</_UraNewtonsoftJsonAssemblyPath>
+    <_UraNewtonsoftJsonAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Full'">$(MSBuildToolsPath32)\Newtonsoft.Json.dll</_UraNewtonsoftJsonAssemblyPath>
     <_UraNuGetProjectModelAssemblyPath>$(MSBuildToolsPath)\NuGet.ProjectModel.dll</_UraNuGetProjectModelAssemblyPath>
     <_UraNuGetProjectModelAssemblyPath Condition="!Exists('$(_UraNuGetProjectModelAssemblyPath)')">$([System.IO.Path]::GetFullPath('$(MSBuildExtensionsPath32)\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.ProjectModel.dll'))</_UraNuGetProjectModelAssemblyPath>
   </PropertyGroup>
@@ -44,7 +46,7 @@
         }
 
         // Inline tasks compile against netstandard; load the build host's serializer at runtime.
-        var jsonConvert = System.Reflection.Assembly.LoadFrom(Path.Combine(@"$(MSBuildToolsPath)", "Newtonsoft.Json.dll"))
+        var jsonConvert = System.Reflection.Assembly.LoadFrom(@"$(_UraNewtonsoftJsonAssemblyPath)")
             .GetType("Newtonsoft.Json.JsonConvert", throwOnError: true);
         var serialize = (Func<object, string>)Delegate.CreateDelegate(typeof(Func<object, string>), jsonConvert, "SerializeObject");
         var json = serialize(new

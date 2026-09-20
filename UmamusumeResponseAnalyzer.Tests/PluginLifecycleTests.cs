@@ -67,8 +67,10 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.NotNull(context.Context.Analyzers);
         }
 
-        [Fact]
-        public async Task NestedCallbacksBlockLifecycleAcrossAwaitAndReleaseAfterReturn()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task NestedCallbacksBlockLifecycleAcrossAwaitAndReleaseAfterReturn(bool sameOwner)
         {
             var first = new ContextInitializePlugin();
             var second = new ContextInitializePlugin();
@@ -77,7 +79,7 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             using (PluginManager.EnterPluginCallback(first))
             {
-                using (PluginManager.EnterPluginCallback(second))
+                using (PluginManager.EnterPluginCallback(sameOwner ? first : second))
                 {
                     await Task.Yield();
                     Assert.Contains("插件 callback 内禁止启动 lifecycle 操作",
@@ -121,10 +123,52 @@ namespace UmamusumeResponseAnalyzer.Tests
             PluginManager.InitializePlugin(failing);
             PluginManager.InitializePlugin(counter);
 
-            var ex = await Record.ExceptionAsync(() => PluginManager.TriggerStartedForPluginsAsync([failing, counter]));
+            var host = TerminalUi.RequireHost();
+            var lines = new List<UiLogLine>();
+            host.LogAdded += lines.Add;
+            try
+            {
+                var ex = await Record.ExceptionAsync(() => PluginManager.TriggerStartedForPluginsAsync([failing, counter]));
+                await host.FlushAsync();
 
-            Assert.Null(ex);
-            Assert.Equal(1, counter.StartedCalls);
+                Assert.Null(ex);
+                Assert.Equal(1, counter.StartedCalls);
+                var line = Assert.Single(lines, line => line.Text.Contains("插件事件处理错误", StringComparison.Ordinal));
+                Assert.Contains(nameof(StartedFailurePlugin), line.ExceptionDetails);
+                Assert.Contains(@"C:\plugins\started\settings.yaml", line.ExceptionDetails);
+                Assert.Contains(nameof(StartedFailurePlugin.OnStarted), line.ExceptionDetails);
+            }
+            finally
+            {
+                host.LogAdded -= lines.Add;
+            }
+        }
+
+        [Fact]
+        public async Task BackgroundFailureKeepsOriginalDetailsAndStillDrains()
+        {
+            var host = TerminalUi.RequireHost();
+            var failure = new TaskCompletionSource<UiLogLine>(TaskCreationOptions.RunContinuationsAsynchronously);
+            void Observe(UiLogLine line)
+            {
+                if (line.Text.Contains("插件后台操作失败", StringComparison.Ordinal))
+                    failure.TrySetResult(line);
+            }
+            host.LogAdded += Observe;
+            try
+            {
+                var plugin = new BackgroundFailurePlugin();
+                PluginManager.InitializePlugin(plugin);
+                var line = await failure.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.Contains(nameof(BackgroundFailurePlugin), line.ExceptionDetails);
+                Assert.Contains(@"C:\plugins\background\pending.json", line.ExceptionDetails);
+                Assert.Contains(nameof(BackgroundFailurePlugin.Run), line.ExceptionDetails);
+                await PluginManager.ShutdownAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            finally
+            {
+                host.LogAdded -= Observe;
+            }
         }
 
         [Fact]
@@ -1181,14 +1225,11 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             public override void Initialize(IPluginContext context)
             {
-                context.Events.OnStarted(_ => throw new HostileMessageException());
+                context.Events.OnStarted(OnStarted);
             }
-        }
 
-        sealed class HostileMessageException : Exception
-        {
-            public override string Message => throw new InvalidOperationException("Message getter failed");
-            public override string ToString() => throw new InvalidOperationException("ToString failed");
+            public ValueTask OnStarted(CancellationToken cancellationToken)
+                => throw new InvalidOperationException(@"started failed, path=C:\plugins\started\settings.yaml");
         }
 
         sealed class StartedCounterPlugin : TestPlugin
@@ -1202,6 +1243,17 @@ namespace UmamusumeResponseAnalyzer.Tests
                     StartedCalls++;
                     return ValueTask.CompletedTask;
                 });
+            }
+        }
+
+        sealed class BackgroundFailurePlugin : TestPlugin
+        {
+            public override void Initialize(IPluginContext context) => context.RunBackground(Run);
+
+            public async ValueTask Run(CancellationToken cancellationToken)
+            {
+                await Task.Yield();
+                throw new InvalidOperationException(@"background failed, path=C:\plugins\background\pending.json");
             }
         }
 

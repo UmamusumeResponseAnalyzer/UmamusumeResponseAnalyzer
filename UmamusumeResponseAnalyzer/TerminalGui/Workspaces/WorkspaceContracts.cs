@@ -59,16 +59,3 @@ internal sealed record UiLogLine(
     string Text,
     UiSeverity Severity,
     string? ExceptionDetails = null);
-
-internal sealed record UiNotification(
-    Workspace? Workspace,
-    string Text,
-    UiSeverity Severity,
-    DateTimeOffset ExpiresAt)
-{
-    internal static TimeSpan DefaultTtl(UiSeverity severity)
-        => TimeSpan.FromSeconds(severity >= UiSeverity.Warning ? 10 : 5);
-
-    internal static DateTimeOffset ExpiresAtFromNow(UiSeverity severity, TimeSpan? ttl = null)
-        => DateTimeOffset.Now.Add(ttl ?? DefaultTtl(severity));
-}

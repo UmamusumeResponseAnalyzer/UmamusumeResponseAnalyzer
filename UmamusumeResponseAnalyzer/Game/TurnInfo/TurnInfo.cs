@@ -1,5 +1,4 @@
 using Gallop;
-using System.Collections.Frozen;
 using UmamusumeResponseAnalyzer.Entities;
 
 namespace UmamusumeResponseAnalyzer.Game.TurnInfo
@@ -27,7 +26,7 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         ;
         public ScenarioType Scenario => (ScenarioType)CharaInfo.scenario_id;
         public int Turn => CharaInfo.turn;
-        public int TotalStats => StatsRevised.Sum();
+        public int TotalStats => checked(SpeedRevised + StaminaRevised + PowerRevised + GutsRevised + WizRevised);
         public int Year => (Turn - 1) / 24 + 1;
         public Motivation Motivation => new(CharaInfo.motivation);
         public int Vital => CharaInfo.vital;
@@ -35,8 +34,8 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         /// <summary>
         /// Key是位置，Value是support_card_id
         /// </summary>
-        public FrozenDictionary<int, int> SupportCards => CharaInfo.support_card_array.ToDictionary(x => x.position, x => x.support_card_id).ToFrozenDictionary();
-        public FrozenDictionary<int, EvaluationInfo> Evaluations => CharaInfo.evaluation_info_array.ToDictionary(x => x.target_id, x => x).ToFrozenDictionary();
+        public IReadOnlyDictionary<int, int> SupportCards => CharaInfo.support_card_array.ToDictionary(x => x.position, x => x.support_card_id);
+        public IReadOnlyDictionary<int, EvaluationInfo> Evaluations => CharaInfo.evaluation_info_array.ToDictionary(x => x.target_id, x => x);
         public int Month => ((Turn - 1) % 24) / 2 + 1;
         public string HalfMonth => (Turn % 2 == 0) ? "后半" : "前半";
         public int TotalTurns = 78;

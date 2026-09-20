@@ -220,11 +220,7 @@ internal sealed class HotkeyRuntime
                 .ToArray();
             count += popupState.Shortcuts.Count - popupShortcuts.Length;
             if (popupShortcuts.Length != popupState.Shortcuts.Count)
-            {
-                TransitionPopupLocked(
-                    PopupTransitionKind.ReplaceShortcuts,
-                    shortcuts: popupShortcuts);
-            }
+                popupState = popupState with { Shortcuts = popupShortcuts };
 
             return count;
         }
@@ -576,20 +572,6 @@ internal sealed class HotkeyRuntime
         if (expectedGeneration is not null && expectedGeneration.Value != popupState.Generation)
             return default;
 
-        if (kind == PopupTransitionKind.ReplaceShortcuts)
-        {
-            popupState = popupState with { Shortcuts = shortcuts ?? [] };
-            return new(
-                true,
-                PopupRenderAction.None,
-                null,
-                null,
-                popupState.Generation,
-                overlaySinkGeneration,
-                null,
-                null);
-        }
-
         if (kind is PopupTransitionKind.Hide or PopupTransitionKind.Detach)
         {
             if (kind == PopupTransitionKind.Hide &&
@@ -807,8 +789,7 @@ internal sealed class HotkeyRuntime
     {
         Display,
         Hide,
-        Detach,
-        ReplaceShortcuts
+        Detach
     }
 
     enum PopupRenderAction

@@ -38,6 +38,12 @@ internal sealed record AnalyzerRuntimeSnapshot(
     ImmutableArray<AnalyzerRegistration> Request,
     ImmutableArray<AnalyzerRegistration> Response)
 {
+    internal FrozenDictionary<Type, ImmutableArray<AnalyzerRegistration>> RequestByEndpoint { get; } = Request
+        .GroupBy(registration => registration.EndpointType)
+        .ToFrozenDictionary(group => group.Key, group => group.ToImmutableArray());
+    internal FrozenDictionary<Type, ImmutableArray<AnalyzerRegistration>> ResponseByEndpoint { get; } = Response
+        .GroupBy(registration => registration.EndpointType)
+        .ToFrozenDictionary(group => group.Key, group => group.ToImmutableArray());
     internal static AnalyzerRuntimeSnapshot Empty { get; } = new([], []);
 }
 

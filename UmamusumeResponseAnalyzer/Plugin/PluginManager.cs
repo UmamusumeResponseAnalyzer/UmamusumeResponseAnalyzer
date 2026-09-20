@@ -105,16 +105,13 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static string DescribeException(Exception exception)
         {
             var exceptionType = exception.GetType().FullName ?? exception.GetType().Name;
-            string message;
-            try { message = exception.Message; }
-            catch (Exception error)
-            {
-                message = $"<读取 Message 失败: {error.GetType().FullName ?? error.GetType().Name}>";
-            }
-            return $"exception={exceptionType}, message={message}";
+            return $"exception={exceptionType}, message={exception.Message}";
         }
 
-        internal static Exception? ReportPluginFailure(string source, InvalidOperationException failure)
+        internal static Exception? ReportPluginFailure(
+            string source,
+            InvalidOperationException failure,
+            string details)
         {
             Exception? notificationError = null;
             try
@@ -132,7 +129,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     source,
                     notificationError is null
                         ? failure
-                        : new AggregateException("插件错误及 notification diagnostics 失败。", failure, notificationError));
+                        : new AggregateException("插件错误及 notification diagnostics 失败。", failure, notificationError),
+                    details: details);
                 return null;
             }
             catch (Exception logError)

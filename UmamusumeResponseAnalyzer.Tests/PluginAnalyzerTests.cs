@@ -1,3 +1,4 @@
+using UmamusumeResponseAnalyzer.PluginTesting;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Runtime.CompilerServices;
@@ -575,16 +576,30 @@ namespace UmamusumeResponseAnalyzer.Tests
             if (await RunThroughNotificationServerAsync())
                 return;
 
-            var throwingPlugin = new HostileMessageResponsePlugin();
+            var throwingPlugin = new ThrowingResponsePlugin();
             var nextPlugin = new ResponseDispatchPlugin();
             LoadTestPlugin(throwingPlugin);
             LoadTestPlugin(nextPlugin);
             var payload = MessagePackSerializer.Serialize(new DataLinkIndexResponse());
 
-            await PostResponseAsync(AccountIndexPath, payload, MissingHeaders);
+            var lines = new List<UiLogLine>();
+            runtime.Host.LogAdded += lines.Add;
+            try
+            {
+                await PostResponseAsync(AccountIndexPath, payload, MissingHeaders);
+                await runtime.Host.FlushAsync();
 
-            Assert.Equal(1, nextPlugin.RawCalls);
-            Assert.Equal(1, nextPlugin.DtoCalls);
+                Assert.Equal(1, nextPlugin.RawCalls);
+                Assert.Equal(1, nextPlugin.DtoCalls);
+                var line = Assert.Single(lines, line => line.Text.Contains("响应分析插件处理失败", StringComparison.Ordinal));
+                Assert.Contains(nameof(ThrowingResponsePlugin), line.ExceptionDetails);
+                Assert.Contains(@"C:\plugins\analyzer\data.bin", line.ExceptionDetails);
+                Assert.Contains(nameof(ThrowingResponsePlugin.OnDto), line.ExceptionDetails);
+            }
+            finally
+            {
+                runtime.Host.LogAdded -= lines.Add;
+            }
         }
 
         [Fact]
@@ -632,7 +647,7 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             foreach (var descriptor in GameEndpointCatalog.ByPath.Values.OrderBy(x => x.Path, StringComparer.Ordinal))
             {
-                var request = RandomDtoFactory.Create(descriptor.RequestType, $"request:{descriptor.Path}");
+                var request = RandomDtoGenerator.Create(descriptor.RequestType, $"request:{descriptor.Path}", RandomDtoProfile.Protocol);
                 var requestPayload = MessagePackSerializer.Serialize(descriptor.RequestType, request);
                 await PostRequestAsync(descriptor.Path, requestPayload, MissingHeaders);
 
@@ -641,7 +656,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                     $"Request analyzer was not called for endpoint {descriptor.Path} ({descriptor.EndpointType.FullName}).");
                 AssertDtoPayloadMatches(descriptor.RequestType, requestPayload, receivedRequest!, descriptor, "request");
 
-                var response = RandomDtoFactory.Create(descriptor.ResponseType, $"response:{descriptor.Path}");
+                var response = RandomDtoGenerator.Create(descriptor.ResponseType, $"response:{descriptor.Path}", RandomDtoProfile.Protocol);
                 var responsePayload = MessagePackSerializer.Serialize(descriptor.ResponseType, response);
                 await PostResponseAsync(descriptor.Path, responsePayload, MissingHeaders);
 
@@ -1020,90 +1035,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             public virtual void Initialize(IPluginContext context) { }
         }
 
-        sealed class RandomDtoFactory(int seed)
-        {
-            const int MaxDepth = 4;
-            readonly Random random = new(seed);
-
-            public static object Create(Type type, string salt)
-                => new RandomDtoFactory(StableSeed(type.FullName + ":" + salt)).CreateValue(type, 0)!;
-
-            static int StableSeed(string text)
-            {
-                unchecked
-                {
-                    var hash = 17;
-                    foreach (var c in text)
-                        hash = (hash * 31) + c;
-                    return hash;
-                }
-            }
-
-            object? CreateValue(Type type, int depth)
-            {
-                if (type == typeof(string))
-                    return $"dto-{depth}-{random.Next(1, 1_000_000)}";
-                if (type == typeof(bool))
-                    return random.Next(0, 2) == 0;
-                if (type == typeof(byte))
-                    return (byte)random.Next(byte.MinValue, byte.MaxValue + 1);
-                if (type == typeof(sbyte))
-                    return (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue + 1);
-                if (type == typeof(short))
-                    return (short)random.Next(short.MinValue, short.MaxValue);
-                if (type == typeof(ushort))
-                    return (ushort)random.Next(ushort.MinValue, ushort.MaxValue);
-                if (type == typeof(int))
-                    return random.Next(-1_000_000, 1_000_000);
-                if (type == typeof(uint))
-                    return (uint)random.Next(0, 1_000_000);
-                if (type == typeof(long))
-                    return random.NextInt64(-1_000_000_000, 1_000_000_000);
-                if (type == typeof(ulong))
-                    return (ulong)random.NextInt64(0, 1_000_000_000);
-                if (type == typeof(float))
-                    return (float)(random.NextDouble() * 10_000);
-                if (type == typeof(double))
-                    return random.NextDouble() * 10_000;
-                if (type == typeof(decimal))
-                    return (decimal)(random.NextDouble() * 10_000);
-                if (type.IsEnum)
-                {
-                    var values = Enum.GetValues(type);
-                    return values.Length == 0 ? Activator.CreateInstance(type) : values.GetValue(random.Next(values.Length));
-                }
-                if (Nullable.GetUnderlyingType(type) is { } nullableType)
-                    return CreateValue(nullableType, depth);
-                if (type == typeof(byte[]))
-                {
-                    var bytes = new byte[4];
-                    random.NextBytes(bytes);
-                    return bytes;
-                }
-                if (type.IsArray)
-                {
-                    var elementType = type.GetElementType()!;
-                    var length = depth >= MaxDepth ? 0 : 2;
-                    var array = Array.CreateInstance(elementType, length);
-                    for (var i = 0; i < length; i++)
-                        array.SetValue(CreateValue(elementType, depth + 1), i);
-                    return array;
-                }
-                if (type.IsAbstract || type.IsInterface)
-                    return type.IsValueType ? Activator.CreateInstance(type) : null;
-                if (depth >= MaxDepth && !type.IsValueType)
-                    return null;
-
-                var instance = Activator.CreateInstance(type);
-                if (instance is null)
-                    return null;
-
-                foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public))
-                    field.SetValue(instance, CreateValue(field.FieldType, depth + 1));
-                return instance;
-            }
-        }
-
         sealed class CatalogDispatchPlugin : TestPlugin
         {
             static readonly MethodInfo RegisterEndpointMethod = typeof(CatalogDispatchPlugin)
@@ -1299,21 +1230,8 @@ namespace UmamusumeResponseAnalyzer.Tests
             [ResponseAnalyzer<GameApi.Account.Index>]
             public ValueTask OnDto(DataLinkIndexResponse response)
             {
-                throw new InvalidOperationException("analyzer failed");
+                throw new InvalidOperationException(@"analyzer failed, path=C:\plugins\analyzer\data.bin");
             }
-        }
-
-        sealed class HostileMessageResponsePlugin : TestPlugin
-        {
-            [ResponseAnalyzer<GameApi.Account.Index>]
-            public ValueTask OnDto(DataLinkIndexResponse response)
-                => throw new HostileMessageException();
-        }
-
-        sealed class HostileMessageException : Exception
-        {
-            public override string Message => throw new InvalidOperationException("Message getter failed");
-            public override string ToString() => throw new InvalidOperationException("ToString failed");
         }
 
         sealed class RequestDispatchPlugin : TestPlugin

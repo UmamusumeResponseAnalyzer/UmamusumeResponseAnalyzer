@@ -142,6 +142,18 @@ public sealed class UiHostRenderTests : IDisposable
     [Fact]
     public async Task Taskbar_HoverClickDragAndResizePreserveCanonicalWorkspace()
     {
+        const string scenario = "taskbar-hover-click-drag-resize";
+        if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
+        {
+            Assert.Equal(
+                "ok",
+                await TerminalUiLifecycleProcessTests.RunChildAsync(
+                    scenario,
+                    typeof(UiHostRenderTests),
+                    nameof(Taskbar_HoverClickDragAndResizePreserveCanonicalWorkspace)));
+            return;
+        }
+
         await terminal.ResizeAsync(80, 18);
         var first = CreateWorkspace("Taskbar First");
         var second = CreateWorkspace("Taskbar Second");
@@ -215,6 +227,7 @@ public sealed class UiHostRenderTests : IDisposable
             "SecondWorkspaceBody",
             await terminal.CaptureScreenAsync(),
             StringComparison.Ordinal);
+        TerminalUiLifecycleChildProcess.WriteResult("ok");
     }
 
     [Fact]

@@ -375,15 +375,13 @@ internal static partial class PluginManager
                 added.Where(registration => registration.Kind == AnalyzerKind.Response))));
     }
 
-    internal static PluginCallbackSnapshot<AnalyzerRegistration> SnapshotAnalyzerRegistrations(
+    internal static AnalyzerCallbackSnapshot SnapshotAnalyzerRegistrations(
         AnalyzerKind kind,
         Type endpointType)
     {
         var snapshot = Runtime.ReadAnalyzers();
-        var registrations = kind == AnalyzerKind.Request ? snapshot.Request : snapshot.Response;
-        return PluginCallbackSnapshot<AnalyzerRegistration>.Create(
-            registrations.Where(registration => registration.EndpointType == endpointType),
-            static registration => registration.Plugin);
+        var index = kind == AnalyzerKind.Request ? snapshot.RequestByEndpoint : snapshot.ResponseByEndpoint;
+        return AnalyzerCallbackSnapshot.Create(index.GetValueOrDefault(endpointType, []));
     }
 
     static void RemoveAnalyzerMethods(IPlugin plugin)

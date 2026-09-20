@@ -44,16 +44,23 @@ static class SelfTests
             $"content-length: {body.Length}",
             "",
             "");
-        var bytes = Encoding.ASCII.GetBytes(headerText).Concat(body).ToArray();
-
-        var message = HttpMessageEnvelope.Parse("sample.txt", bytes);
-
-        AssertEqual(PacketDirection.Request, message.Direction);
-        AssertEqual("https://api.games.umamusume.jp/umamusume/single_mode_ramen/start", message.CanonicalUrl);
-        AssertEqual("sid-1", message.Headers.Sid);
-        AssertBytes(body, message.Body);
+        foreach (var header in new[]
+        {
+            headerText,
+            headerText.Replace("\r\n", "\n", StringComparison.Ordinal),
+            headerText.Replace("HTTP/1.1\r\n", "HTTP/1.1\n\n", StringComparison.Ordinal)
+        })
+        {
+            var message = HttpMessageEnvelope.Parse("sample.txt", Encoding.ASCII.GetBytes(header).Concat(body).ToArray());
+            AssertEqual(PacketDirection.Request, message.Direction);
+            AssertEqual("https://api.games.umamusume.jp/umamusume/single_mode_ramen/start", message.CanonicalUrl);
+            AssertEqual("sid-1", message.Headers.Sid);
+            AssertBytes(body, message.Body);
+        }
         AssertThrows<FormatException>(
             () => HttpMessageEnvelope.Parse("bad-length.txt", Encoding.ASCII.GetBytes(headerText.Replace($"content-length: {body.Length}", "content-length: 999", StringComparison.Ordinal)).Concat(body).ToArray()));
+        AssertThrows<FormatException>(
+            () => HttpMessageEnvelope.Parse("no-separator.txt", Encoding.ASCII.GetBytes(headerText.TrimEnd('\r', '\n'))));
         Console.WriteLine("PASS parser self-test");
     }
 
@@ -163,22 +170,13 @@ sealed record HttpMessageEnvelope(
 
     static (int HeaderLength, int SeparatorLength) FindHeaderSeparator(string sourceName, byte[] bytes)
     {
-        for (var i = 0; i <= bytes.Length - 4; i++)
-        {
-            if (bytes[i] == '\r' &&
-                bytes[i + 1] == '\n' &&
-                bytes[i + 2] == '\r' &&
-                bytes[i + 3] == '\n')
-            {
-                return (i, 4);
-            }
-        }
+        var index = bytes.AsSpan().IndexOf("\r\n\r\n"u8);
+        if (index >= 0)
+            return (index, 4);
 
-        for (var i = 0; i <= bytes.Length - 2; i++)
-        {
-            if (bytes[i] == '\n' && bytes[i + 1] == '\n')
-                return (i, 2);
-        }
+        index = bytes.AsSpan().IndexOf("\n\n"u8);
+        if (index >= 0)
+            return (index, 2);
 
         throw new FormatException($"{sourceName}: HTTP header/body separator was not found.");
     }

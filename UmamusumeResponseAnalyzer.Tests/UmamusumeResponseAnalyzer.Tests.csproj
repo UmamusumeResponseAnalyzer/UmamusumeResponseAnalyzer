@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\eng\PluginTesting\RandomDtoGenerator.cs" Link="RandomDtoGenerator.cs" />
     <ProjectReference Include="..\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj" />
   </ItemGroup>
 

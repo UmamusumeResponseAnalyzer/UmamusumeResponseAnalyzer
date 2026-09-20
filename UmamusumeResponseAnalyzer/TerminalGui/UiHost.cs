@@ -114,7 +114,8 @@ internal sealed class UiHost : IUiInputSink
         ArgumentNullException.ThrowIfNull(shortcuts);
         session.EnsureWorkspaceAvailable(workspace);
 
-        var expiresAt = UiNotification.ExpiresAtFromNow(severity, ttl);
+        var expiresAt = DateTimeOffset.Now.Add(
+            ttl ?? TimeSpan.FromSeconds(severity >= UiSeverity.Warning ? 10 : 5));
         var shortcutRegistrationId =
             HotkeyManager.RegisterNotificationShortcuts(expiresAt, shortcuts);
         try

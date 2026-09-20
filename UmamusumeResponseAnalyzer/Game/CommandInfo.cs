@@ -7,7 +7,7 @@ namespace UmamusumeResponseAnalyzer.Game
 {
     public class CommandInfo
     {
-        static readonly FrozenDictionary<int, int> ToTrainIndex = new Dictionary<int, int>
+        internal static readonly FrozenDictionary<int, int> ToTrainIndex = new Dictionary<int, int>
         {
             { 1101, 0 },
             { 1102, 1 },

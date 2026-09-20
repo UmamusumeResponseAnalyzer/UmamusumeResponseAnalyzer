@@ -290,14 +290,28 @@ public sealed class PluginDispatchReloadTests : IDisposable
         PluginManager.Init();
         PluginManager.InitializeLoadedPlugins();
 
+        var context = new WeakReference(CapturePluginLoadContext(failingName));
         var error = await Assert.ThrowsAsync<AggregateException>(
             () => PluginManager.UnloadPluginsAsync(failingName, healthyName));
 
-        Assert.Contains(error.InnerExceptions, ex => ex.Message.Contains(failingName, StringComparison.Ordinal));
+        var failure = Assert.Single(error.InnerExceptions, ex => ex.Message.Contains(failingName, StringComparison.Ordinal));
+        while (failure.InnerException is { } inner)
+            failure = inner;
+        Assert.IsType<InvalidOperationException>(failure);
+        Assert.Contains(@"C:\plugins\dispose\state.bin", failure.Message);
+        Assert.Contains("FailingDisposePluginNs.Plugin.Dispose()", failure.Message);
         Assert.Equal(["disposed"], File.ReadAllLines(failingLog));
         Assert.Equal(["disposed"], File.ReadAllLines(healthyLog));
         Assert.DoesNotContain(PluginManager.SnapshotLoadedPlugins(), plugin =>
             PluginManager.InternalName(plugin) is failingName or healthyName);
+        for (var i = 0; context.IsAlive && i < 20; i++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            await Task.Delay(20, TestContext.Current.CancellationToken);
+        }
+        Assert.False(context.IsAlive, "Dispose diagnostics must not retain the plugin exception or ALC.");
     }
 
     [Fact]
@@ -917,11 +931,8 @@ public sealed class PluginDispatchReloadTests : IDisposable
             }
         }
 
-        sealed class DisposeFailureException : Exception
-        {
-            public override string Message => throw new InvalidOperationException("Message getter failed");
-            public override string ToString() => throw new InvalidOperationException("ToString failed");
-        }
+        sealed class DisposeFailureException()
+            : Exception(@"dispose failed, path=C:\plugins\dispose\state.bin");
         """);
 
     static (string Name, string Source) BlockingConstructorPluginSource(

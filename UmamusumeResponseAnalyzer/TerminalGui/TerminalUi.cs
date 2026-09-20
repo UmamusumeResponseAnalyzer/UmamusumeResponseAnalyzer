@@ -23,13 +23,14 @@ public static class TerminalUi
     internal static void LogException(
         string source,
         Exception ex,
-        UiSeverity severity = UiSeverity.Error)
+        UiSeverity severity = UiSeverity.Error,
+        string? details = null)
     {
         ArgumentNullException.ThrowIfNull(ex);
         RequireHost().Log(
             $"[{source}] {FormatExceptionLogMessage(ex)}",
             severity,
-            ex.ToString());
+            details is null ? ex.ToString() : $"{ex}{Environment.NewLine}{details}");
     }
 
     internal static string FormatExceptionLogMessage(Exception ex)

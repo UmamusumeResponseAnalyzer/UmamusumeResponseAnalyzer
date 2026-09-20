@@ -73,7 +73,7 @@ internal sealed class PluginHostEvents
                     var failure = new InvalidOperationException(
                         $"插件事件处理错误: plugin={PluginManager.InternalName(plugin)}, " +
                         PluginManager.DescribeException(ex));
-                    _ = PluginManager.ReportPluginFailure("Plugin", failure);
+                    _ = PluginManager.ReportPluginFailure("Plugin", failure, ex.ToString());
                 }
             }
         }

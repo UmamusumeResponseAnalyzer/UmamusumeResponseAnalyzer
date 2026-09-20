@@ -54,13 +54,38 @@ var targets = new[]
     new TargetAssembly(
         "SendGameStatusPlugin",
         static () => new SendGameStatusPlugin.SendGameStatusPlugin(),
-        ExpectedManifestDependencies: ["EventLoggerPlugin"]),
+        ExpectedManifestDependencies: ["EventLoggerPlugin", "RamenScenarioAnalyzer"]),
 };
 
 var failures = new List<string>();
 var summaries = new List<PluginRunSummary>();
 PluginSmokeRunner.ValidatePackageRoot(targets);
 using var ui = new WorkspaceSmokeSession();
+if (args is ["--package-load"])
+{
+    try
+    {
+        PackageLoadSmoke.Run(targets, ui, async () =>
+        {
+            InitializeHostConfigForSmoke();
+            await InitializeSmokeDatabase([new Story
+            {
+                Id = 501143706,
+                TriggerName = "ZIP 角色",
+                Name = "ZIP 选择事件",
+                Choices = [[new Choice { Option = "ZIP 选项", SuccessEffect = "速度 +10" }]]
+            }]);
+        });
+    }
+    catch (Exception exception)
+    {
+        Console.Error.WriteLine($"FAIL ZIP business: {exception}");
+        Environment.ExitCode = 1;
+    }
+    return;
+}
+if (args.Length != 0)
+    throw new ArgumentException("Usage: PluginSmokeTests [--package-load]");
 
 AssertReleaseAnalyzersDoNotRoundTripThroughJson();
 AssertGamePacketCollectorCatalog();
@@ -131,7 +156,7 @@ if (failures.Count != 0)
 
 Console.WriteLine();
 Console.WriteLine(
-    $"PASS plugin smoke tests: assemblies={targets.Length}, plugins={summaries.Sum(x => x.PluginCount)}, attributeAnalyzers={summaries.Sum(x => x.AttributeAnalyzerCount)}, registeredAnalyzers={summaries.Sum(x => x.RegisteredAnalyzerCount)}");
+    $"PASS source plugin smoke tests: assemblies={targets.Length}, plugins={summaries.Sum(x => x.PluginCount)}, attributeAnalyzers={summaries.Sum(x => x.AttributeAnalyzerCount)}, registeredAnalyzers={summaries.Sum(x => x.RegisteredAnalyzerCount)}");
 
 static void AssertPluginUiContract()
 {
@@ -1319,8 +1344,6 @@ static class PluginSmokeRunner
 
     public static async Task<PluginRunSummary> Run(TargetAssembly target, WorkspaceSmokeSession ui)
     {
-        AssertExpectedManifestDependency(target);
-
         var attributeAnalyzerCount = 0;
         var registeredAnalyzerCount = 0;
         var plugin = target.Create();
@@ -1338,8 +1361,8 @@ static class PluginSmokeRunner
                     "EventResponseAnalyzer" => 2,
                     "GamePacketCollector" => 2,
                     "LegendScenarioAnalyzer" => 2,
-                    "RamenScenarioAnalyzer" => 2,
-                    "SendGameStatusPlugin" => 2,
+                    "RamenScenarioAnalyzer" => 4,
+                    "SendGameStatusPlugin" => 5,
                     _ => 0,
                 };
                 if (context.AnalyzerRegistry.Registrations.Count != expectedProgrammaticRegistrations)
@@ -1456,7 +1479,7 @@ static class PluginSmokeRunner
         }
     }
 
-    static string FindPackagePath(TargetAssembly target)
+    internal static string FindPackagePath(TargetAssembly target)
     {
         if (packagePaths is null || !packagePaths.TryGetValue(target.AssemblyName, out var packagePath))
             throw new InvalidOperationException($"Package root was not validated for {target.AssemblyName}.");
@@ -1516,6 +1539,8 @@ static class PluginSmokeRunner
                 return (Path: path, InternalName: internalName);
             })
             .ToArray();
+        if (packages.Length != targets.Count())
+            throw new InvalidOperationException($"Expected exactly {targets.Count()} ZIPs under {packageRoot}, found {packages.Length}.");
         var resolvedPaths = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var target in targets)
@@ -1535,6 +1560,9 @@ static class PluginSmokeRunner
         }
 
         packagePaths = resolvedPaths;
+        foreach (var target in targets)
+            AssertExpectedManifestDependency(target);
+        Console.WriteLine($"PASS ZIP structure: packages={resolvedPaths.Count}, manifests and dependencies verified");
     }
 
     public static string FindRepositoryRoot()

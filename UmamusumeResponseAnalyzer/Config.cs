@@ -5,6 +5,7 @@ using UmamusumeResponseAnalyzer.Plugin;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization.NodeDeserializers;
 using i18n = UmamusumeResponseAnalyzer.Localization.Config;
 
 namespace UmamusumeResponseAnalyzer
@@ -16,6 +17,10 @@ namespace UmamusumeResponseAnalyzer
         private readonly static ISerializer _serializer = new SerializerBuilder().WithQuotingNecessaryStrings().WithNamingConvention(HyphenatedNamingConvention.Instance).Build();
         private readonly static IDeserializer _deserializer = new DeserializerBuilder()
             .WithDuplicateKeyChecking()
+            .WithEnforceNullability()
+            .IgnoreUnmatchedProperties()
+            .WithNodeDeserializer(inner => new RequiredValueNodeDeserializer(inner), where => where.InsteadOf<NullNodeDeserializer>())
+            .WithNodeDeserializer(inner => new RequiredPropertyNodeDeserializer(inner), where => where.InsteadOf<ObjectNodeDeserializer>())
             .WithNamingConvention(HyphenatedNamingConvention.Instance)
             .Build();
         public static CoreConfig Core => Current.Core;
@@ -55,13 +60,18 @@ namespace UmamusumeResponseAnalyzer
         {
             try
             {
-                var config = _deserializer.Deserialize<YamlConfigDto>(yaml)
+                var config = _deserializer.Deserialize<YamlConfig>(yaml)
                     ?? throw Invalid(sourcePath, "$", "内容不能为 null");
-                return config.ToDomain(sourcePath);
-            }
-            catch (InvalidDataException)
-            {
-                throw;
+                config.Updater.CustomDatabaseRepository ??= string.Empty;
+                foreach (var (values, path) in new[]
+                         {
+                             (config.Repository.Targets, "repository.targets"),
+                             (config.WorkspaceTaskbarTitleOrder, "workspace-taskbar-title-order")
+                         })
+                    for (var index = 0; index < values.Count; index++)
+                        if (values[index] is null)
+                            throw Invalid(sourcePath, $"{path}[{index}]", "不能为空");
+                return config;
             }
             catch (YamlException exception)
             {
@@ -72,8 +82,36 @@ namespace UmamusumeResponseAnalyzer
             }
         }
 
-        internal static InvalidDataException Invalid(string sourcePath, string fieldPath, string reason) =>
+        private static InvalidDataException Invalid(string sourcePath, string fieldPath, string reason) =>
             new($"配置文件“{sourcePath}”中的 {fieldPath} {reason}。");
+
+        private sealed class RequiredValueNodeDeserializer(INodeDeserializer inner) : INodeDeserializer
+        {
+            public bool Deserialize(IParser parser, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer,
+                out object? value, ObjectDeserializer rootDeserializer)
+            {
+                var node = parser.Current!;
+                var handled = inner.Deserialize(parser, expectedType, nestedObjectDeserializer, out value, rootDeserializer);
+                if (handled && value is null && expectedType.IsValueType && Nullable.GetUnderlyingType(expectedType) is null)
+                    throw new YamlException(node.Start, node.End, $"null 不能赋给 {expectedType.Name}。");
+                return handled;
+            }
+        }
+
+        private sealed class RequiredPropertyNodeDeserializer(INodeDeserializer inner) : INodeDeserializer
+        {
+            public bool Deserialize(IParser parser, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer,
+                out object? value, ObjectDeserializer rootDeserializer) =>
+                inner.Deserialize(parser, expectedType, (nestedParser, type) =>
+                {
+                    var node = nestedParser.Current!;
+                    var result = nestedObjectDeserializer(nestedParser, type);
+                    // 已解析的别名绕过 NullNodeDeserializer，必须在赋值转换前检查。
+                    if (result is null && type.IsValueType && Nullable.GetUnderlyingType(type) is null)
+                        throw new YamlException(node.Start, node.End, $"null 不能赋给 {type.Name}。");
+                    return result;
+                }, out value, rootDeserializer);
+        }
 
         internal static async Task PromptAsync(CancellationToken cancellationToken)
         {
@@ -116,139 +154,6 @@ namespace UmamusumeResponseAnalyzer
             }
         }
 
-    }
-
-    internal sealed class YamlConfigDto
-    {
-        public CoreConfigDto? Core { get; set; }
-        public RepositoryConfigDto? Repository { get; set; }
-        public PluginConfigDto? Plugin { get; set; }
-        public UpdaterConfigDto? Updater { get; set; }
-        public LanguageConfigDto? Language { get; set; }
-        public MiscConfigDto? Misc { get; set; }
-        public List<string?>? WorkspaceTaskbarTitleOrder { get; set; } = [];
-
-        internal YamlConfig ToDomain(string sourcePath) => new()
-        {
-            Core = RequiredSection(Core, sourcePath, "core").ToDomain(sourcePath),
-            Repository = RequiredSection(Repository, sourcePath, "repository").ToDomain(sourcePath),
-            Plugin = RequiredSection(Plugin, sourcePath, "plugin").ToDomain(),
-            Updater = RequiredSection(Updater, sourcePath, "updater").ToDomain(sourcePath),
-            Language = RequiredSection(Language, sourcePath, "language").ToDomain(sourcePath),
-            Misc = RequiredSection(Misc, sourcePath, "misc").ToDomain(sourcePath),
-            WorkspaceTaskbarTitleOrder = RequiredStrings(
-                WorkspaceTaskbarTitleOrder,
-                sourcePath,
-                "workspace-taskbar-title-order")
-        };
-
-        private static T RequiredSection<T>(T? value, string sourcePath, string fieldPath) where T : class =>
-            value ?? throw Config.Invalid(sourcePath, fieldPath, "不能为空或缺失");
-
-        internal static T Required<T>(T? value, string sourcePath, string fieldPath) where T : class =>
-            value ?? throw Config.Invalid(sourcePath, fieldPath, "不能为空");
-
-        internal static T Required<T>(T? value, string sourcePath, string fieldPath) where T : struct =>
-            value ?? throw Config.Invalid(sourcePath, fieldPath, "不能为空");
-
-        internal static List<string> RequiredStrings(
-            List<string?>? values,
-            string sourcePath,
-            string fieldPath)
-        {
-            if (values is null)
-                throw Config.Invalid(sourcePath, fieldPath, "不能为空");
-            return values
-                .Select((value, index) =>
-                    value ?? throw Config.Invalid(sourcePath, $"{fieldPath}[{index}]", "不能为空"))
-                .ToList();
-        }
-    }
-
-    internal sealed class CoreConfigDto
-    {
-        public string? ListenAddress { get; set; } = "127.0.0.1";
-        public int? ListenPort { get; set; } = 4693;
-        public bool? ShowFirstRunPrompt { get; set; } = true;
-
-        internal CoreConfig ToDomain(string sourcePath) => new()
-        {
-            ListenAddress = YamlConfigDto.Required(ListenAddress, sourcePath, "core.listen-address"),
-            ListenPort = YamlConfigDto.Required(ListenPort, sourcePath, "core.listen-port"),
-            ShowFirstRunPrompt = YamlConfigDto.Required(
-                ShowFirstRunPrompt,
-                sourcePath,
-                "core.show-first-run-prompt")
-        };
-    }
-
-    internal sealed class RepositoryConfigDto
-    {
-        public List<string?>? Targets { get; set; } = [];
-
-        internal RepositoryConfig ToDomain(string sourcePath) => new()
-        {
-            Targets = YamlConfigDto.RequiredStrings(Targets, sourcePath, "repository.targets")
-        };
-    }
-
-    internal sealed class PluginConfigDto
-    {
-        internal PluginConfig ToDomain() => new();
-    }
-
-    internal sealed class UpdaterConfigDto
-    {
-        public bool? IsGithubBlocked { get; set; } =
-            RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
-        public bool? TrainerIsMale { get; set; } = true;
-        public string? DatabaseLanguage { get; set; } = "ja-JP";
-        public string? CustomDatabaseRepository { get; set; } = string.Empty;
-        public bool? ForceUseGithubToUpdate { get; set; } = false;
-
-        internal UpdaterConfig ToDomain(string sourcePath) => new()
-        {
-            IsGithubBlocked = YamlConfigDto.Required(
-                IsGithubBlocked,
-                sourcePath,
-                "updater.is-github-blocked"),
-            TrainerIsMale = YamlConfigDto.Required(
-                TrainerIsMale,
-                sourcePath,
-                "updater.trainer-is-male"),
-            DatabaseLanguage = YamlConfigDto.Required(
-                DatabaseLanguage,
-                sourcePath,
-                "updater.database-language"),
-            CustomDatabaseRepository = CustomDatabaseRepository ?? string.Empty,
-            ForceUseGithubToUpdate = YamlConfigDto.Required(
-                ForceUseGithubToUpdate,
-                sourcePath,
-                "updater.force-use-github-to-update")
-        };
-    }
-
-    internal sealed class LanguageConfigDto
-    {
-        public LanguageConfig.Language? Selected { get; set; } = LanguageConfig.Language.AutoDetect;
-
-        internal LanguageConfig ToDomain(string sourcePath) => new()
-        {
-            Selected = YamlConfigDto.Required(Selected, sourcePath, "language.selected")
-        };
-    }
-
-    internal sealed class MiscConfigDto
-    {
-        public bool? SaveResponseForDebug { get; set; } = false;
-
-        internal MiscConfig ToDomain(string sourcePath) => new()
-        {
-            SaveResponseForDebug = YamlConfigDto.Required(
-                SaveResponseForDebug,
-                sourcePath,
-                "misc.save-response-for-debug")
-        };
     }
 
     public class YamlConfig
@@ -410,7 +315,7 @@ namespace UmamusumeResponseAnalyzer
         public bool IsGithubBlocked { get; set; } = RegionInfo.CurrentRegion.Name == "CN" || CultureInfo.CurrentUICulture.Name == "zh-CN";
         public bool TrainerIsMale { get; set; } = true;
         public string DatabaseLanguage { get; set; } = "ja-JP";
-        public string CustomDatabaseRepository { get; set; } = string.Empty;
+        public string? CustomDatabaseRepository { get; set; } = string.Empty;
         public bool ForceUseGithubToUpdate { get; set; }
 
         internal void Prompt(CancellationToken cancellationToken)

@@ -108,6 +108,15 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Equal(2800, turn.TotalStats);
         }
 
+        [Fact]
+        public void TotalStats_RejectsOverflow()
+        {
+            var turn = new TurnInfo(MakeResp(MakeChara(
+                speed: 600_000_000, stamina: 600_000_000, power: 0, guts: 0, wiz: 0)));
+
+            Assert.Throws<OverflowException>(() => turn.TotalStats);
+        }
+
         [Theory]
         [InlineData(1, 1, 1, "前半")]
         [InlineData(2, 1, 1, "后半")]
@@ -176,6 +185,38 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             Assert.Equal(80, turn.Evaluations[1].evaluation);
             Assert.Equal(35, turn.Evaluations[101].evaluation);
+        }
+
+        [Fact]
+        public void Collections_ReadCurrentDtoAndRetainDictionaryFailures()
+        {
+            var chara = MakeChara();
+            var response = MakeResp(chara);
+            var turn = new TurnInfo(response);
+            Assert.Empty(turn.SupportCards);
+            Assert.Empty(turn.Evaluations);
+            Assert.Throws<KeyNotFoundException>(() => turn.SupportCards[1]);
+            Assert.Throws<KeyNotFoundException>(() => turn.Evaluations[1]);
+
+            chara.support_card_array = [new() { position = 1, support_card_id = 30001 }];
+            chara.evaluation_info_array = [new() { target_id = 1, evaluation = 80 }];
+            var supports = turn.SupportCards;
+            var evaluations = turn.Evaluations;
+            chara.support_card_array[0].support_card_id = 30002;
+            chara.evaluation_info_array = [new() { target_id = 2, evaluation = 35 }];
+            Assert.Equal(30001, supports[1]);
+            Assert.Equal(80, evaluations[1].evaluation);
+            Assert.Equal(30002, turn.SupportCards[1]);
+            Assert.Equal(35, turn.Evaluations[2].evaluation);
+
+            chara.support_card_array = [.. chara.support_card_array, new() { position = 1 }];
+            chara.evaluation_info_array = [.. chara.evaluation_info_array, new() { target_id = 2 }];
+            Assert.Throws<ArgumentException>(() => turn.SupportCards);
+            Assert.Throws<ArgumentException>(() => turn.Evaluations);
+
+            response.chara_info = MakeChara();
+            Assert.Empty(turn.SupportCards);
+            Assert.Empty(turn.Evaluations);
         }
 
         [Fact]

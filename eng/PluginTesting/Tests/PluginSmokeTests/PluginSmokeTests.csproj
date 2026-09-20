@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(UraTestHostRoot)\eng\PluginTesting\RandomDtoGenerator.cs" Link="RandomDtoGenerator.cs" />
     <Compile Include="$(UraTestHostRoot)\eng\PluginTesting\RandomDtoFactory.cs" Link="RandomDtoFactory.cs" />
     <Compile Include="$(UraTestHostRoot)\eng\PluginTesting\SmokeHost.cs" Link="WorkspaceSmokeSession.cs" />
     <ProjectReference Include="$(UraTestHostRoot)\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj" />

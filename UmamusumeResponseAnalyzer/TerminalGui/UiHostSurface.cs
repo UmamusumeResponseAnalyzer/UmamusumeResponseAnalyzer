@@ -14,7 +14,7 @@ internal sealed class UiHostSurface : IDisposable
     readonly IApplication application;
     readonly Workspace bootstrap;
     readonly TaskCompletionSource ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    readonly List<NotificationState> notifications = [];
+    readonly List<NotifyIngress> notifications = [];
 
     Workspace[] renderedWorkspaces;
     Workspace renderedWorkspace;
@@ -164,12 +164,7 @@ internal sealed class UiHostSurface : IDisposable
             return;
         }
 
-        notifications.Add(new(
-            notification.Workspace,
-            notification.Text,
-            notification.Severity,
-            notification.ExpiresAt,
-            notification.ShortcutRegistrationId));
+        notifications.Add(notification);
     }
 
     internal void ShowPopup(HotkeyPopup popup, int generation)
@@ -494,13 +489,6 @@ internal sealed class UiHostSurface : IDisposable
         notifications.RemoveAll(
             notification => ReferenceEquals(notification.Workspace, workspace));
     }
-
-    sealed record NotificationState(
-        Workspace? Workspace,
-        string Text,
-        UiSeverity Severity,
-        DateTimeOffset ExpiresAt,
-        long ShortcutRegistrationId);
 
     sealed class UiHostWindow : Window
     {

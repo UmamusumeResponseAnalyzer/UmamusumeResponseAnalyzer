@@ -492,21 +492,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
         static async Task<StagedGroupLoad?> StageGroupLoadAsync(HashSet<string> group)
         {
-            var missing = group.Where(name => !LifecycleMetadatas.ContainsKey(name)).ToList();
-            if (missing.Count != 0)
-            {
-                foreach (var name in group)
-                    if (LifecycleMetadatas.TryGetValue(name, out var present))
-                    {
-                        ReportPluginDiagnostic(
-                            $"插件 {name} 加载失败: 依赖的共享上下文插件 {string.Join("、", missing)} 未安装。",
-                            UiSeverity.Error);
-                        if (!LifecycleFailedPlugins.Contains(present.FilePath))
-                            LifecycleFailedPlugins.Add(present.FilePath);
-                    }
-                return null;
-            }
-
             var ordered = TopologicalOrder(group);
             var key = GroupKey(group);
             var ctx = new PluginLoadContext(key, ordered.Select(name => LifecycleMetadatas[name]));
@@ -720,7 +705,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 {
                     failures.Add(new InvalidOperationException(
                         $"插件清理失败: plugin={pluginName}, phase=Dispose, " +
-                        DescribeException(ex)));
+                        $"{DescribeException(ex)}{Environment.NewLine}{ex}"));
                 }
             }
 

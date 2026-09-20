@@ -1,45 +1,42 @@
+using System.Collections.Immutable;
+
 namespace UmamusumeResponseAnalyzer.Plugin;
 
-internal sealed class PluginCallbackSnapshot<T>(
-    List<T> items,
+internal sealed class AnalyzerCallbackSnapshot(
+    List<AnalyzerRegistration> items,
     List<IDisposable> leases) : IDisposable
 {
-    List<T>? items = items;
+    List<AnalyzerRegistration>? items = items;
     List<IDisposable>? leases = leases;
 
     internal int Count => items?.Count ?? 0;
-    internal T this[int index] => items![index];
+    internal AnalyzerRegistration this[int index] => items![index];
 
-    internal static PluginCallbackSnapshot<T> Create(
-        IEnumerable<T> candidates,
-        Func<T, IPlugin> plugin,
+    internal static AnalyzerCallbackSnapshot Create(
+        ImmutableArray<AnalyzerRegistration> candidates,
         CancellationToken cancellationToken = default)
     {
-        var candidateList = candidates.ToList();
-        var admitted = new HashSet<IPlugin>(ReferenceEqualityComparer.Instance);
-        var rejected = new HashSet<IPlugin>(ReferenceEqualityComparer.Instance);
+        var admission = new Dictionary<IPlugin, bool>(ReferenceEqualityComparer.Instance);
+        var items = new List<AnalyzerRegistration>();
         var leases = new List<IDisposable>();
         try
         {
-            foreach (var candidate in candidateList)
+            foreach (var candidate in candidates)
             {
-                var owner = plugin(candidate);
-                if (admitted.Contains(owner) || rejected.Contains(owner))
-                    continue;
-
-                var lease = PluginManager.TryEnterPluginCallback(owner, cancellationToken);
-                if (lease is null)
-                    rejected.Add(owner);
-                else
+                var owner = candidate.Plugin;
+                if (!admission.TryGetValue(owner, out var admitted))
                 {
-                    admitted.Add(owner);
-                    leases.Add(lease);
+                    var lease = PluginManager.TryEnterPluginCallback(owner, cancellationToken);
+                    admitted = lease is not null;
+                    admission.Add(owner, admitted);
+                    if (lease is not null)
+                        leases.Add(lease);
                 }
+                if (admitted)
+                    items.Add(candidate);
             }
 
-            return new(
-                candidateList.Where(candidate => admitted.Contains(plugin(candidate))).ToList(),
-                leases);
+            return new(items, leases);
         }
         catch
         {
@@ -266,7 +263,8 @@ internal sealed class PluginGeneration(IPlugin plugin)
     internal IDisposable EnterCallbackFlow(IDisposable generationLease)
     {
         var previous = CallbackFlow.Value;
-        CallbackFlow.Value = true;
+        if (!previous)
+            CallbackFlow.Value = true;
         return new CallbackFlowLease(generationLease, previous);
     }
 
@@ -336,7 +334,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
             var failure = new InvalidOperationException(
                 $"插件后台操作失败: plugin={PluginManager.InternalName(Plugin)}, " +
                 PluginManager.DescribeException(ex));
-            _ = PluginManager.ReportPluginFailure("Plugin", failure);
+            _ = PluginManager.ReportPluginFailure("Plugin", failure, ex.ToString());
         }
     }
 
@@ -379,7 +377,8 @@ internal sealed class PluginGeneration(IPlugin plugin)
             var current = Interlocked.Exchange(ref generationLease, null);
             if (current is null)
                 return;
-            CallbackFlow.Value = previous;
+            if (CallbackFlow.Value != previous)
+                CallbackFlow.Value = previous;
             current.Dispose();
         }
     }

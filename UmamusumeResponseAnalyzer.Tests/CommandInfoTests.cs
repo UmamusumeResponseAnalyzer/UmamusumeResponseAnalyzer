@@ -69,10 +69,13 @@ namespace UmamusumeResponseAnalyzer.Tests
             return new TrainingPartner(turn, position, command);
         }
 
-        [Fact]
-        public void Shining_True_WhenFriendship80AndOnSpecialty()
+        [Theory]
+        [InlineData(101)]
+        [InlineData(1101)]
+        [InlineData(901)]
+        public void Shining_True_WhenFriendship80AndOnSpecialty(int commandId)
         {
-            var partner = BuildPartner(position: 1, cardId: 30001, friendship: 80, commandId: 101);
+            var partner = BuildPartner(position: 1, cardId: 30001, friendship: 80, commandId: commandId);
 
             Assert.True(partner.Shining);
             Assert.Equal(PartnerPriority.闪, partner.Priority);
@@ -214,11 +217,14 @@ namespace UmamusumeResponseAnalyzer.Tests
         [Fact]
         public void TrainIndex_HonorsCustomDictionary()
         {
-            var resp = MakeResp([], [], [Command(777, [])]);
+            var resp = MakeResp([Card(1, 30001)], [Eval(1, 80)], [Command(777, [1])]);
             var turn = new TurnInfo(resp);
-            var info = new CommandInfo(resp, turn, 777, trainIndexDictionary: new Dictionary<int, int> { [777] = 5 });
+            var info = new CommandInfo(resp, turn, 777,
+                trainIndexDictionary: new Dictionary<int, int> { [777] = 5 },
+                toTrainIdDictionary: new Dictionary<int, int> { [777] = 101 });
 
             Assert.Equal(6, info.TrainIndex);
+            Assert.True(Assert.Single(info.TrainingPartners).Shining);
         }
 
         [Fact]
