@@ -6,8 +6,8 @@ internal interface IUiInputSink
 {
     int PopupVisibleLineCount => 1;
     Task<bool> TryHandleWorkspaceCommandAsync(Command command);
-    void ShowPopup(HotkeyPopup popup, int generation);
-    void HidePopup(int generation);
+    void ShowPopup(HotkeyPopup popup);
+    void HidePopup();
 }
 
 internal sealed record HotkeyPopup(

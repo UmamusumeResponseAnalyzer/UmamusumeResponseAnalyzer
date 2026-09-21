@@ -497,38 +497,33 @@ internal sealed class WorkspaceViewport : View
     static int PreferredViewHeight(View view, int declaredHeight, int fallback, int width)
     {
         var text = view.Text?.ToString();
-        var textHeight = string.IsNullOrEmpty(text) ? 0 : WrapLines(text, width).Count();
+        var textHeight = string.IsNullOrEmpty(text) ? 0 : CountWrappedLines(text, width);
         var subViewHeight = view.SubViews.Count == 0 ? 0 : view.GetHeightRequiredForSubViews();
         return Math.Max(fallback, Math.Max(declaredHeight, Math.Max(textHeight, subViewHeight)));
     }
 
-    static IEnumerable<string> WrapLines(string text, int width)
+    static int CountWrappedLines(string text, int width)
     {
         width = Math.Max(1, width);
+        var count = 0;
         foreach (var logicalLine in text.ReplaceLineEndings("\n").Split('\n'))
         {
-            if (logicalLine.Length == 0)
-            {
-                yield return string.Empty;
-                continue;
-            }
-
-            var line = new StringBuilder();
+            count++;
+            var hasContent = false;
             var used = 0;
             foreach (var rune in logicalLine.EnumerateRunes())
             {
                 var columns = Math.Max(0, rune.GetColumns());
-                if (line.Length > 0 && used + columns > width)
+                if (hasContent && used + columns > width)
                 {
-                    yield return line.ToString();
-                    line.Clear();
+                    count++;
                     used = 0;
                 }
-                line.Append(rune);
+                hasContent = true;
                 used += columns;
             }
-            yield return line.ToString();
         }
+        return count;
     }
 
     static bool EnableFocusPath(View view)

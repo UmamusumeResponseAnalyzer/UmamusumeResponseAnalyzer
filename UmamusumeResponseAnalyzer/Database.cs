@@ -77,30 +77,21 @@ namespace UmamusumeResponseAnalyzer
         public static IReadOnlyList<int> SaddleIds => Current.SaddleIds;
         public static SuccessionRelationTable SuccessionRelation => Current.SuccessionRelation;
         #endregion
-        public static Task<DatabaseAvailability> Initialize() => Initialize(Directory.GetCurrentDirectory());
+        public static Task<DatabaseAvailability> Initialize() => Task.FromResult(Initialize(Directory.GetCurrentDirectory()));
 
-        private static async Task<DatabaseAvailability> Initialize(string dataDirectory)
+        private static DatabaseAvailability Initialize(string dataDirectory)
         {
-            // 并行加载所有数据文件
-            var eventsTask = DeserializeAsync<List<Story>>(Path.Combine(dataDirectory, EVENT_NAME_FILEPATH));
-            var namesTask = DeserializeAsync<List<BaseName>>(Path.Combine(dataDirectory, NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-            var skillsTask = DeserializeAsync<List<SkillData>>(Path.Combine(dataDirectory, SKILLS_FILEPATH));
-            var skillUpgradeTask = DeserializeAsync<List<SkillUpgradeSpeciality>>(Path.Combine(dataDirectory, SKILL_UPGRADE_SPECIALITY_FILEPATH));
-            var talentSkillTask = DeserializeAsync<Dictionary<int, TalentSkillData[]>>(Path.Combine(dataDirectory, TALENT_SKILLS_FILEPATH));
-            var factorIdsTask = DeserializeAsync<Dictionary<int, string>>(Path.Combine(dataDirectory, FACTOR_IDS_FILEPATH));
-            var saddleIdsTask = DeserializeAsync<int[]>(Path.Combine(dataDirectory, SADDLE_IDS_FILEPATH));
-            var successionTask = DeserializeAsync<SuccessionRelationTable>(Path.Combine(dataDirectory, SUCCESSION_RELATION_FILEPATH));
+            var events = Deserialize<List<Story>>(Path.Combine(dataDirectory, EVENT_NAME_FILEPATH));
+            var names = Deserialize<List<BaseName>>(Path.Combine(dataDirectory, NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+            var skills = Deserialize<List<SkillData>>(Path.Combine(dataDirectory, SKILLS_FILEPATH));
+            var skillUpgrade = Deserialize<List<SkillUpgradeSpeciality>>(Path.Combine(dataDirectory, SKILL_UPGRADE_SPECIALITY_FILEPATH));
+            var talentSkill = Deserialize<Dictionary<int, TalentSkillData[]>>(Path.Combine(dataDirectory, TALENT_SKILLS_FILEPATH));
+            var factorIds = Deserialize<Dictionary<int, string>>(Path.Combine(dataDirectory, FACTOR_IDS_FILEPATH));
+            var saddleIds = Deserialize<int[]>(Path.Combine(dataDirectory, SADDLE_IDS_FILEPATH));
+            var succession = Deserialize<SuccessionRelationTable>(Path.Combine(dataDirectory, SUCCESSION_RELATION_FILEPATH));
 
-            await Task.WhenAll(eventsTask, namesTask, skillsTask, skillUpgradeTask, talentSkillTask, factorIdsTask, saddleIdsTask, successionTask);
-
-            if (eventsTask.Result is not { } events
-                || namesTask.Result is not { } names
-                || skillsTask.Result is not { } skills
-                || skillUpgradeTask.Result is not { } skillUpgrade
-                || talentSkillTask.Result is not { } talentSkill
-                || factorIdsTask.Result is not { } factorIds
-                || saddleIdsTask.Result is not { } saddleIds
-                || successionTask.Result is not { } succession)
+            if (events is null || names is null || skills is null || skillUpgrade is null
+                || talentSkill is null || factorIds is null || saddleIds is null || succession is null)
                 return DatabaseAvailability.Unavailable;
 
             try
@@ -145,7 +136,7 @@ namespace UmamusumeResponseAnalyzer
             TerminalUi.Notify("Database", message, UiSeverity.Warning);
         }
 
-        static async Task<T?> DeserializeAsync<T>(string filepath, JsonSerializerSettings? settings = null)
+        static T? Deserialize<T>(string filepath, JsonSerializerSettings? settings = null)
         {
             if (!File.Exists(filepath))
             {
@@ -155,8 +146,8 @@ namespace UmamusumeResponseAnalyzer
 
             try
             {
-                await using var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.Read, 16384, true);
-                await using var brotliStream = new System.IO.Compression.BrotliStream(fileStream, System.IO.Compression.CompressionMode.Decompress);
+                using var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.Read, 16384);
+                using var brotliStream = new System.IO.Compression.BrotliStream(fileStream, System.IO.Compression.CompressionMode.Decompress);
                 using var streamReader = new StreamReader(brotliStream, Encoding.UTF8);
                 using var jsonReader = new JsonTextReader(streamReader);
 

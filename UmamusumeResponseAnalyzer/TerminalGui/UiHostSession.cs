@@ -293,14 +293,10 @@ internal sealed class UiHostSession
         }
     }
 
-    internal bool BeginShutdown()
+    internal void BeginShutdown()
     {
         lock (gate)
-        {
             lifecycle = Lifecycle.Stopping;
-            events.Enqueue(new ShutdownIngress());
-            return ArmDrainLocked();
-        }
     }
 
     internal bool BeginDrain()
@@ -350,22 +346,22 @@ internal sealed class UiHostSession
         }
     }
 
-    internal bool ShowPopup(HotkeyPopup popup, int generation)
+    internal bool ShowPopup(HotkeyPopup popup)
     {
         lock (gate)
         {
             EnsureAvailableLocked();
-            return AdmitLocked(new ShowPopupIngress(popup, generation));
+            return AdmitLocked(new ShowPopupIngress(popup));
         }
     }
 
-    internal bool HidePopup(int generation)
+    internal bool HidePopup()
     {
         lock (gate)
         {
             if (lifecycle >= Lifecycle.Stopping || rootCreationFailure is not null)
                 return false;
-            return AdmitLocked(new HidePopupIngress(generation));
+            return AdmitLocked(new HidePopupIngress());
         }
     }
 
@@ -541,15 +537,11 @@ internal sealed record NavigateWorkspaceIngress(
     Command Command,
     TaskCompletionSource<bool> Completion) : UiHostIngress;
 
-internal sealed record ShowPopupIngress(
-    HotkeyPopup Popup,
-    int Generation) : UiHostIngress;
+internal sealed record ShowPopupIngress(HotkeyPopup Popup) : UiHostIngress;
 
-internal sealed record HidePopupIngress(int Generation) : UiHostIngress;
+internal sealed record HidePopupIngress : UiHostIngress;
 
 internal sealed record FlushIngress(TaskCompletionSource Completion) : UiHostIngress;
-
-internal sealed record ShutdownIngress : UiHostIngress;
 
 internal sealed record WorkspaceHotkey(
     ConsoleKey Key,

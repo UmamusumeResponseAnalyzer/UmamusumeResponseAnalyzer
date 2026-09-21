@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace UmamusumeResponseAnalyzer.Plugin;
@@ -18,20 +17,13 @@ internal enum PluginLifecyclePhase
 internal sealed record PluginRuntimeSnapshot(
     FrozenDictionary<string, PluginManager.PluginMetadata> Metadatas,
     ImmutableArray<string> FailedPlugins,
-    ImmutableArray<IPlugin> LoadedPlugins,
-    ImmutableArray<ImmutableHashSet<string>> ContextGroups,
-    FrozenDictionary<string, PluginManager.PluginLoadContext> Contexts,
-    PluginLifecyclePhase Phase)
+    ImmutableArray<IPlugin> LoadedPlugins)
 {
     internal static PluginRuntimeSnapshot Empty { get; } = new(
         new Dictionary<string, PluginManager.PluginMetadata>(StringComparer.OrdinalIgnoreCase)
             .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
         [],
-        [],
-        [],
-        new Dictionary<string, PluginManager.PluginLoadContext>(StringComparer.OrdinalIgnoreCase)
-            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-        PluginLifecyclePhase.Created);
+        []);
 }
 
 internal sealed record AnalyzerRuntimeSnapshot(
@@ -88,10 +80,7 @@ internal sealed class PluginRuntimeState
         Volatile.Write(ref snapshot, new(
             state.Metadatas.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
             [.. state.FailedPlugins],
-            [.. state.LoadedPlugins],
-            [.. state.ContextGroups.Select(group => group.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase))],
-            state.Contexts.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-            state.Phase));
+            [.. state.LoadedPlugins]));
     }
 
     internal void PublishAnalyzers(AnalyzerRuntimeSnapshot value)

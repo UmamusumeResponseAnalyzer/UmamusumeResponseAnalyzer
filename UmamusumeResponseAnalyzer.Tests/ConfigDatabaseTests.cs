@@ -488,16 +488,30 @@ namespace UmamusumeResponseAnalyzer.Tests
             var directory = Path.Combine(Path.GetTempPath(), $"ura-database-missing-{Guid.NewGuid():N}");
             Directory.CreateDirectory(directory);
             var previousDirectory = Directory.GetCurrentDirectory();
+            var logs = new List<UiLogLine>();
+            void ObserveLog(UiLogLine entry) => logs.Add(entry);
+            runtime.Host.LogAdded += ObserveLog;
             try
             {
                 Directory.SetCurrentDirectory(directory);
                 var result = await Database.Initialize();
                 await runtime.Host.FlushAsync();
+                var warnings = logs.Where(entry => entry.Text.StartsWith("[Database]", StringComparison.Ordinal)
+                                                   && entry.Severity == UiSeverity.Warning).ToArray();
+                Assert.Equal(8, warnings.Length);
+                foreach (var file in new[]
+                         {
+                             Database.EVENT_NAME_FILEPATH, Database.NAMES_FILEPATH, Database.SKILLS_FILEPATH,
+                             Database.SKILL_UPGRADE_SPECIALITY_FILEPATH, Database.TALENT_SKILLS_FILEPATH,
+                             Database.FACTOR_IDS_FILEPATH, Database.SADDLE_IDS_FILEPATH, Database.SUCCESSION_RELATION_FILEPATH
+                         })
+                    Assert.Contains(warnings, entry => entry.Text.Contains(file, StringComparison.Ordinal));
                 var message = Assert.Throws<InvalidOperationException>(() => Database.Events).Message;
                 TerminalUiLifecycleChildProcess.WriteResult($"{result}|{Database.Availability}|{message}");
             }
             finally
             {
+                runtime.Host.LogAdded -= ObserveLog;
                 Directory.SetCurrentDirectory(previousDirectory);
                 Directory.Delete(directory, true);
             }

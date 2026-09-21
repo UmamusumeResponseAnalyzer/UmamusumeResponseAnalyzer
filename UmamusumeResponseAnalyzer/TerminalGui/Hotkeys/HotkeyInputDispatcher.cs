@@ -26,7 +26,7 @@ internal sealed class HotkeyInputDispatcher(HotkeyRuntime runtime)
 
             var command = steps > 0 ? Command.Up : Command.Down;
             for (var remaining = Math.Abs(steps); remaining > 0; remaining--)
-                await runtime.TryHandleWorkspaceCommandAsync(sink, command);
+                await sink.TryHandleWorkspaceCommandAsync(command);
         }
         finally
         {
@@ -62,7 +62,7 @@ internal sealed class HotkeyInputDispatcher(HotkeyRuntime runtime)
         if (!hasActivePopup &&
             runtime.TryCaptureWorkspaceSink(out var sink) &&
             TryGetWorkspaceCommand(key, out var workspaceCommand) &&
-            await runtime.TryHandleWorkspaceCommandAsync(sink, workspaceCommand))
+            await sink.TryHandleWorkspaceCommandAsync(workspaceCommand))
         {
             return true;
         }

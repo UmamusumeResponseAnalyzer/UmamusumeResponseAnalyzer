@@ -6,21 +6,16 @@ using UmamusumeResponseAnalyzer.Plugin;
 
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
-internal sealed class UiHost : IUiInputSink
+internal sealed class UiHost : IUiInputSink, IDisposable
 {
     readonly UiHostSession session = new();
     readonly UiHostSurface surface;
-    readonly TaskCompletionSource shutdownCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    readonly CancellationTokenSource stopping = new();
+    // Exit does not wait for commands; an active command must still be able to release this semaphore.
     readonly SemaphoreSlim commandExecution = new(1, 1);
     readonly CancellationTokenRegistration lifetimeRegistration;
-    readonly object commandTasksGate = new();
-    readonly HashSet<Task> commandTasks = [];
 
     int shutdownStarted;
-    bool commandsDrained;
-    bool shutdownRequested;
-    bool applicationStopRequested;
+    bool disposed;
     Exception? ingressFailure;
 
     internal UiHost(
@@ -175,24 +170,13 @@ internal sealed class UiHost : IUiInputSink
     internal Task HandleCommandAsync(string command)
     {
         ArgumentNullException.ThrowIfNull(command);
-        lock (commandTasksGate)
-        {
-            session.EnsureAvailable();
-            var task = QueueCommandAsync(command);
-            commandTasks.Add(task);
-            _ = task.ContinueWith(
-                static (completed, state) => ((UiHost)state!).CommandCompleted(completed),
-                this,
-                CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
-            return task;
-        }
+        session.EnsureAvailable();
+        return QueueCommandAsync(command);
     }
 
     async Task QueueCommandAsync(string command)
     {
-        await commandExecution.WaitAsync(stopping.Token).ConfigureAwait(false);
+        await commandExecution.WaitAsync(LifetimeToken).ConfigureAwait(false);
         try
         {
             var snapshot = session.GetCommandSnapshot();
@@ -201,28 +185,6 @@ internal sealed class UiHost : IUiInputSink
         finally
         {
             commandExecution.Release();
-        }
-    }
-
-    void CommandCompleted(Task command)
-    {
-        _ = command.Exception;
-        lock (commandTasksGate)
-            commandTasks.Remove(command);
-    }
-
-    async Task WaitForCommandsAsync()
-    {
-        Task[] commands;
-        lock (commandTasksGate)
-            commands = [.. commandTasks];
-        try
-        {
-            await Task.WhenAll(commands);
-        }
-        catch
-        {
-            // Each command owns its result; shutdown only waits for terminal cleanup.
         }
     }
 
@@ -237,91 +199,17 @@ internal sealed class UiHost : IUiInputSink
         if (Interlocked.Exchange(ref shutdownStarted, 1) != 0)
             return;
 
-        Exception? failure = null;
+        session.BeginShutdown();
         try
         {
             ShutdownStarting?.Invoke();
         }
-        catch (Exception ex)
-        {
-            failure = ex;
-        }
-        var pluginShutdown = PluginManager.ShutdownAsync();
-        _ = OrchestrateShutdownAsync(pluginShutdown, failure);
-    }
-
-    async Task OrchestrateShutdownAsync(Task pluginShutdown, Exception? failure)
-    {
-        try
-        {
-            await pluginShutdown;
-        }
-        catch (Exception ex)
-        {
-            failure = CombineFailure(failure, ex);
-        }
-
-        try
-        {
-            await BeginHostShutdownAsync();
-        }
-        catch (Exception ex)
-        {
-            failure = CombineFailure(failure, ex);
-        }
-
-        if (failure is null)
-            shutdownCompletion.TrySetResult();
-        else
-            shutdownCompletion.TrySetException(failure);
-    }
-
-    async Task BeginHostShutdownAsync()
-    {
-        bool schedule;
-        lock (commandTasksGate)
-            schedule = session.BeginShutdown();
-
-        Exception? failure = null;
-        try
-        {
-            await Task.Run(DisconnectHotkeys);
-        }
-        catch (Exception ex)
-        {
-            failure = ex;
-        }
-        try
-        {
-            stopping.Cancel();
-        }
-        catch (Exception ex)
-        {
-            failure = CombineFailure(failure, ex);
-        }
-        try
-        {
-            ScheduleDrain(schedule);
-        }
-        catch (Exception ex)
-        {
-            failure = CombineFailure(failure, ex);
-        }
-
-        await WaitForCommandsAsync();
-        Volatile.Write(ref commandsDrained, true);
-        try
+        finally
         {
             OwnerContext.Post(
-                static state => ((UiHost)state!).RequestApplicationStop(),
-                this);
+                static state => ((UiHostSurface)state!).RequestApplicationStop(),
+                surface);
         }
-        catch (Exception ex)
-        {
-            failure = CombineFailure(failure, ex);
-        }
-        if (failure is not null)
-            ExceptionDispatchInfo.Capture(failure).Throw();
     }
 
     internal async Task RunAsync()
@@ -348,7 +236,7 @@ internal sealed class UiHost : IUiInputSink
             var schedule = session.RootCreated();
             if (schedule)
                 DrainPostedEvents();
-            if (!shutdownRequested)
+            if (Volatile.Read(ref shutdownStarted) == 0)
             {
                 surface.StartOverlayTimer(RefreshExpiringOverlays);
                 await surface.RunAsync();
@@ -365,33 +253,15 @@ internal sealed class UiHost : IUiInputSink
             primaryFailure = ExceptionDispatchInfo.Capture(failure);
         }
 
-        RequestShutdown();
         Exception? cleanupFailure = null;
         try
         {
-            await shutdownCompletion.Task;
+            Dispose();
         }
         catch (Exception ex)
         {
             cleanupFailure = ex;
         }
-
-        void CaptureCleanup(Action cleanup)
-        {
-            try
-            {
-                cleanup();
-            }
-            catch (Exception ex)
-            {
-                cleanupFailure = CombineFailure(cleanupFailure, ex);
-            }
-        }
-
-        CaptureCleanup(surface.StopOverlayTimer);
-        CaptureCleanup(DisconnectHotkeys);
-        CaptureCleanup(FinishRun);
-        CaptureCleanup(surface.Dispose);
 
         if (primaryFailure is not null)
         {
@@ -401,6 +271,33 @@ internal sealed class UiHost : IUiInputSink
         }
         if (cleanupFailure is not null)
             ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+            return;
+        disposed = true;
+        Exception? failure = null;
+        void Cleanup(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                failure = CombineFailure(failure, ex);
+            }
+        }
+
+        Cleanup(RequestShutdown);
+        Cleanup(surface.StopOverlayTimer);
+        Cleanup(DisconnectHotkeys);
+        Cleanup(FinishRun);
+        Cleanup(surface.Dispose);
+        if (failure is not null)
+            ExceptionDispatchInfo.Capture(failure).Throw();
     }
 
     int IUiInputSink.PopupVisibleLineCount
@@ -434,16 +331,16 @@ internal sealed class UiHost : IUiInputSink
         return completion.Task;
     }
 
-    void IUiInputSink.ShowPopup(HotkeyPopup popup, int generation)
+    void IUiInputSink.ShowPopup(HotkeyPopup popup)
     {
         ArgumentNullException.ThrowIfNull(popup);
-        var schedule = session.ShowPopup(popup, generation);
+        var schedule = session.ShowPopup(popup);
         ScheduleDrain(schedule);
     }
 
-    void IUiInputSink.HidePopup(int generation)
+    void IUiInputSink.HidePopup()
     {
-        var schedule = session.HidePopup(generation);
+        var schedule = session.HidePopup();
         ScheduleDrain(schedule);
     }
 
@@ -492,11 +389,6 @@ internal sealed class UiHost : IUiInputSink
                 RequestShutdown();
             }
 
-            if (batch.Shutdown)
-            {
-                shutdownRequested = true;
-                RequestApplicationStop();
-            }
         }
         finally
         {
@@ -510,7 +402,6 @@ internal sealed class UiHost : IUiInputSink
         var changes = UiChange.None;
         var flushCompletions = new List<TaskCompletionSource>();
         var admittedEvents = session.TakeBatch();
-        var shutdown = admittedEvents.Any(admitted => admitted is ShutdownIngress);
         var failure = ingressFailure;
         if (failure is not null)
         {
@@ -523,7 +414,6 @@ internal sealed class UiHost : IUiInputSink
                 admittedEvents.Count,
                 changes,
                 flushCompletions,
-                shutdown,
                 failure);
         }
 
@@ -531,7 +421,7 @@ internal sealed class UiHost : IUiInputSink
         {
             try
             {
-                changes |= Apply(admittedEvents[index], flushCompletions, ref shutdown);
+                changes |= Apply(admittedEvents[index], flushCompletions);
             }
             catch (Exception ex)
             {
@@ -543,13 +433,12 @@ internal sealed class UiHost : IUiInputSink
                 break;
             }
         }
-        return new(admittedEvents.Count, changes, flushCompletions, shutdown, failure);
+        return new(admittedEvents.Count, changes, flushCompletions, failure);
     }
 
     UiChange Apply(
         UiHostIngress uiEvent,
-        List<TaskCompletionSource> flushCompletions,
-        ref bool shutdown)
+        List<TaskCompletionSource> flushCompletions)
     {
         switch (uiEvent)
         {
@@ -641,16 +530,13 @@ internal sealed class UiHost : IUiInputSink
                 navigate.Completion.TrySetResult(surface.Navigate(navigate.Command));
                 return UiChange.None;
             case ShowPopupIngress showPopup:
-                surface.ShowPopup(showPopup.Popup, showPopup.Generation);
+                surface.ShowPopup(showPopup.Popup);
                 return UiChange.Hotkey;
-            case HidePopupIngress hidePopup:
-                surface.HidePopup(hidePopup.Generation);
+            case HidePopupIngress:
+                surface.HidePopup();
                 return UiChange.Hotkey;
             case FlushIngress flush:
                 flushCompletions.Add(flush.Completion);
-                return UiChange.None;
-            case ShutdownIngress:
-                shutdown = true;
                 return UiChange.None;
             default:
                 throw new InvalidOperationException(
@@ -673,9 +559,9 @@ internal sealed class UiHost : IUiInputSink
             result = await HostCommands.ExecuteAsync(
                 command,
                 snapshot,
-                stopping.Token).ConfigureAwait(false);
+                LifetimeToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (stopping.IsCancellationRequested)
+        catch (OperationCanceledException) when (LifetimeToken.IsCancellationRequested)
         {
         }
         catch (Exception ex)
@@ -683,12 +569,12 @@ internal sealed class UiHost : IUiInputSink
             failure = ex;
         }
 
-        if (stopping.IsCancellationRequested && failure is null)
+        if (LifetimeToken.IsCancellationRequested && failure is null)
             return;
 
         IReadOnlyList<PluginManager.PluginRuntimeStatus>? plugins = null;
         Exception? refreshFailure = null;
-        if (!stopping.IsCancellationRequested)
+        if (!LifetimeToken.IsCancellationRequested)
         {
             try
             {
@@ -714,7 +600,7 @@ internal sealed class UiHost : IUiInputSink
             }
         }
 
-        if (stopping.IsCancellationRequested)
+        if (LifetimeToken.IsCancellationRequested)
         {
             if (postFailure is not null)
                 ExceptionDispatchInfo.Capture(postFailure).Throw();
@@ -746,7 +632,7 @@ internal sealed class UiHost : IUiInputSink
             ownerFailure = ex;
         }
 
-        if (stopping.IsCancellationRequested &&
+        if (LifetimeToken.IsCancellationRequested &&
             postFailure is null &&
             failure is null &&
             refreshFailure is null)
@@ -756,7 +642,7 @@ internal sealed class UiHost : IUiInputSink
             failure is not null &&
             (refreshFailure is not null ||
              ownerFailure is not null ||
-             stopping.IsCancellationRequested))
+             LifetimeToken.IsCancellationRequested))
         {
             postFailure = failure;
         }
@@ -822,7 +708,7 @@ internal sealed class UiHost : IUiInputSink
             return false;
 
         surface.ExpireNotifications();
-        return session.IsRunning && !shutdownRequested;
+        return session.IsRunning;
     }
 
     void DisconnectHotkeys()
@@ -834,27 +720,15 @@ internal sealed class UiHost : IUiInputSink
         HotkeyManager.UnregisterAll();
     }
 
-    void RequestApplicationStop()
-    {
-        if (!shutdownRequested ||
-            !stopping.IsCancellationRequested ||
-            !Volatile.Read(ref commandsDrained) ||
-            applicationStopRequested)
-        {
-            return;
-        }
-
-        applicationStopRequested = true;
-        surface.RequestApplicationStop();
-    }
-
     static Exception CombineFailure(Exception? failure, Exception next)
         => failure is null ? next : new AggregateException(failure, next);
 
     void FinishRun()
     {
         var finished = session.Finish();
-        Exception? failure = AbandonAll(finished.Abandoned, 0);
+        Exception? failure = AbandonAll(finished.Abandoned, 0, ingressFailure);
+        if (ReferenceEquals(failure, ingressFailure))
+            failure = null;
 
         void Capture(Action cleanup)
         {
@@ -868,8 +742,6 @@ internal sealed class UiHost : IUiInputSink
             }
         }
 
-        if (!stopping.IsCancellationRequested)
-            Capture(stopping.Cancel);
         Capture(Bootstrap.Dispose);
         Capture(surface.Finish);
         foreach (var hotkey in finished.Hotkeys)
@@ -880,8 +752,6 @@ internal sealed class UiHost : IUiInputSink
                 hotkey.Entry));
         }
         Capture(lifetimeRegistration.Dispose);
-        Capture(commandExecution.Dispose);
-        Capture(stopping.Dispose);
         if (failure is not null)
             ExceptionDispatchInfo.Capture(failure).Throw();
     }
@@ -944,7 +814,6 @@ internal sealed class UiHost : IUiInputSink
         int Count,
         UiChange Changes,
         List<TaskCompletionSource> FlushCompletions,
-        bool Shutdown,
         Exception? Failure);
 
 }

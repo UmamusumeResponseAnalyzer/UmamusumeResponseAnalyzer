@@ -11,6 +11,30 @@ namespace UmamusumeResponseAnalyzer.Tests;
 [Collection("HotkeyManager")]
 public sealed class WorkspaceViewTests
 {
+    [Theory]
+    [InlineData("", 3, 1)]
+    [InlineData("\r\n\r\n", 3, 3)]
+    [InlineData("a\nb\n", 3, 3)]
+    [InlineData("abc", 3, 1)]
+    [InlineData("abcd", 3, 2)]
+    [InlineData("ab cd ef", 4, 2)]
+    [InlineData("马娘A", 3, 2)]
+    [InlineData("😀😀A", 3, 2)]
+    [InlineData("\u0301\u0301", 1, 1)]
+    [InlineData("\u0301马", 1, 2)]
+    [InlineData("马\u0301", 1, 2)]
+    public void TextPanelHeightPreservesHardWrapping(string text, int width, int expectedHeight)
+    {
+        var workspace = new Workspace("Text height");
+        using var viewport = new WorkspaceViewport(workspace) { Frame = new(0, 0, width, 1) };
+        var view = new View { Text = text, Height = 0 };
+        viewport.SetPanel(Panel(workspace, "text", "Text", new(() => view), 1, fullBleed: true));
+
+        viewport.Reconcile();
+
+        Assert.Equal(expectedHeight, Assert.IsType<DimAbsolute>(view.Height).Size);
+    }
+
     [Fact]
     public async Task ReconcileRealizesOnlyFinalContentAndReusesItsView()
     {

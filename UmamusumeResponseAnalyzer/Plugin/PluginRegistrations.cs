@@ -384,9 +384,6 @@ internal static partial class PluginManager
         return AnalyzerCallbackSnapshot.Create(index.GetValueOrDefault(endpointType, []));
     }
 
-    static void RemoveAnalyzerMethods(IPlugin plugin)
-        => RemoveAnalyzerMethods([plugin]);
-
     static void RemoveAnalyzerMethods(IEnumerable<IPlugin> plugins)
     {
         var removed = plugins.ToHashSet<IPlugin>(ReferenceEqualityComparer.Instance);

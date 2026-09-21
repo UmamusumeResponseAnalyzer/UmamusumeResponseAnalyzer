@@ -23,13 +23,13 @@ internal static class WebInstallApi
         $"{plugin.Author}/{plugin.InternalName}\n{plugin.RepositoryUrl}\n" +
         PluginRepository.Text("ExecutionWarning");
 
-    public static void Register(WebserverLite server, ServerRequestBarrier requests)
+    public static void Register(WebserverLite server, CancellationToken cancellationToken)
     {
         var routes = server.Routes.PreAuthentication.Static;
-        routes.Add(WatsonWebserver.Core.HttpMethod.OPTIONS, "/uracloud/status", requests.Wrap(Preflight));
-        routes.Add(WatsonWebserver.Core.HttpMethod.OPTIONS, "/uracloud/install", requests.Wrap(Preflight));
-        routes.Add(WatsonWebserver.Core.HttpMethod.GET, "/uracloud/status", requests.Wrap(StatusAsync));
-        routes.Add(WatsonWebserver.Core.HttpMethod.POST, "/uracloud/install", requests.Wrap(InstallAsync));
+        routes.Add(WatsonWebserver.Core.HttpMethod.OPTIONS, "/uracloud/status", ctx => Preflight(ctx, cancellationToken));
+        routes.Add(WatsonWebserver.Core.HttpMethod.OPTIONS, "/uracloud/install", ctx => Preflight(ctx, cancellationToken));
+        routes.Add(WatsonWebserver.Core.HttpMethod.GET, "/uracloud/status", ctx => StatusAsync(ctx, cancellationToken));
+        routes.Add(WatsonWebserver.Core.HttpMethod.POST, "/uracloud/install", ctx => InstallAsync(ctx, cancellationToken));
     }
 
     static void ApplyCors(HttpContextBase ctx)

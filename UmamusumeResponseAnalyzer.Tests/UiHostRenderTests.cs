@@ -934,38 +934,98 @@ public sealed class UiHostRenderTests : IDisposable
 public sealed class UiHostShutdownProcessTests
 {
     [Fact]
-    public Task PluginDisposeAndFlushCompleteBeforeHostStops()
+    public Task DisposeBeforeRunAbandonsPendingIngressWithoutCreatingUi()
         => RunScenarioAsync(
-            "plugin-before-host-stop",
-            nameof(PluginDisposeAndFlushCompleteBeforeHostStops),
+            "dispose-before-run",
+            nameof(DisposeBeforeRunAbandonsPendingIngressWithoutCreatingUi),
+            async () =>
+            {
+                using var terminal = new TerminalGuiTestApp();
+                var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, CancellationToken.None);
+                var created = false;
+                Workspace.Current.SetPanel("pending", "pending", new WorkspaceContent(() =>
+                {
+                    created = true;
+                    return new Label();
+                }));
+                var flush = host.FlushAsync();
+
+                terminal.RunOnOwnerThread(host.Dispose);
+
+                Assert.False(created);
+                Assert.True(host.Ready.IsCanceled);
+                Assert.Null(terminal.Application.TopRunnableView);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => flush);
+            });
+
+    [Fact]
+    public Task ShutdownDoesNotWaitForActiveCommand()
+        => RunScenarioAsync(
+            "shutdown-active-command",
+            nameof(ShutdownDoesNotWaitForActiveCommand),
+            async () =>
+            {
+                using var terminal = new TerminalGuiTestApp();
+                using var lifetime = new CancellationTokenSource();
+                var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, lifetime.Token);
+                host.ShutdownStarting += lifetime.Cancel;
+                var run = await terminal.StartAsync(host);
+                using var plugin = new PackagedPluginFixture(
+                    "BlockingCommandPlugin",
+                    _ => CommandPrimaryFailurePluginSource("BlockingCommandPlugin"));
+                var pluginType = plugin.Plugin.GetType();
+                var command = host.HandleCommandAsync("/plugin unload BlockingCommandPlugin");
+                try
+                {
+                    Assert.True((bool)(await Task.Run(() => pluginType
+                        .GetMethod("WaitUntilDisposing")!.Invoke(null, null)))!);
+                    host.RequestShutdown();
+                    await run.WaitAsync(TimeSpan.FromSeconds(5));
+                    Assert.False(command.IsCompleted);
+                }
+                finally
+                {
+                    pluginType.GetMethod("ReleaseDispose")!.Invoke(null, null);
+                }
+
+                var failure = await Record.ExceptionAsync(() => command.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.False(failure is TimeoutException);
+                Assert.DoesNotContain(nameof(ObjectDisposedException), failure?.ToString() ?? string.Empty);
+            });
+
+    [Fact]
+    public Task PluginUnloadAndFlushCompleteWhileHostRuns()
+        => RunScenarioAsync(
+            "plugin-unload-while-host-runs",
+            nameof(PluginUnloadAndFlushCompleteWhileHostRuns),
             RunPluginShutdownAsync);
 
     [Fact]
-    public Task AdmissionFencePrecedesBlockingOverlayDetach()
+    public Task ShutdownClosesAdmissionBeforeUiCleanup()
         => RunScenarioAsync(
             "shutdown-admission-fence",
-            nameof(AdmissionFencePrecedesBlockingOverlayDetach),
+            nameof(ShutdownClosesAdmissionBeforeUiCleanup),
             RunAdmissionFenceAsync);
 
     [Fact]
-    public Task ShutdownHandshakeDoesNotDependOnPostOrder()
+    public Task ShutdownBeforeRunDoesNotStartUiLoop()
         => RunScenarioAsync(
             "shutdown-worker-before-drain",
-            nameof(ShutdownHandshakeDoesNotDependOnPostOrder),
+            nameof(ShutdownBeforeRunDoesNotStartUiLoop),
             RunWorkerBeforeDrainAsync);
 
     [Fact]
-    public Task WindowQuitCancelsLifetimeBeforeWaitingForPluginLease()
+    public Task WindowQuitCancelsLifetime()
         => RunScenarioAsync(
             "window-quit-cancels-lifetime",
-            nameof(WindowQuitCancelsLifetimeBeforeWaitingForPluginLease),
+            nameof(WindowQuitCancelsLifetime),
             RunWindowQuitAsync);
 
     [Fact]
-    public Task PluginDisposeObservesCancelledLifetimeWithoutActiveLease()
+    public Task ShutdownCancelsLifetimeWithoutDisposingPlugins()
         => RunScenarioAsync(
             "plugin-dispose-sees-cancelled-lifetime",
-            nameof(PluginDisposeObservesCancelledLifetimeWithoutActiveLease),
+            nameof(ShutdownCancelsLifetimeWithoutDisposingPlugins),
             RunDisposeAfterStartedAsync);
 
     [Fact]
@@ -1056,11 +1116,11 @@ public sealed class UiHostShutdownProcessTests
             "ShutdownWorkspacePlugin",
             root => WorkspaceRemovalPluginSource(Path.Combine(root, "panel-removed")));
 
-        host.RequestShutdown();
-        await run.WaitAsync(TimeSpan.FromSeconds(5));
-
+        await PluginManager.UnloadPluginsAsync("ShutdownWorkspacePlugin");
+        Assert.False(run.IsCompleted);
         Assert.Equal("removed", File.ReadAllText(Path.Combine(plugin.Root, "panel-removed")));
         Assert.True(view.DetachedAndDisposedWhileHostAccepted);
+        await terminal.StopAsync(host, run);
     }
 
     static async Task RunAdmissionFenceAsync()
@@ -1073,7 +1133,6 @@ public sealed class UiHostShutdownProcessTests
         Assert.False(navigation.IsCompleted);
 
         host.RequestShutdown();
-        await terminal.WaitForAsync(() => HotkeyManager.OverlaySink is null);
         Assert.False(navigation.IsCompleted);
         Assert.Contains(
             "stopping",
@@ -1142,7 +1201,8 @@ public sealed class UiHostShutdownProcessTests
         host.RequestShutdown();
         await run.WaitAsync(TimeSpan.FromSeconds(5));
 
-        Assert.Equal("disposed", File.ReadAllText(Path.Combine(plugin.Root, "disposed")));
+        Assert.True(lifetime.IsCancellationRequested);
+        Assert.False(File.Exists(Path.Combine(plugin.Root, "disposed")));
     }
 
     static async Task RunCreateWindowFailureAsync()
@@ -1175,9 +1235,7 @@ public sealed class UiHostShutdownProcessTests
     {
         using var terminal = new TerminalGuiTestApp();
         var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, CancellationToken.None);
-        using var plugin = new PackagedPluginFixture(
-            "FailingShutdownPlugin",
-            _ => FailingShutdownPluginSource());
+        host.ShutdownStarting += () => throw new InvalidOperationException("shutdown-cleanup-failure");
         Config.WorkspaceTaskbarTitleOrder = null!;
 
         var failure = await Record.ExceptionAsync(async () =>
@@ -1256,11 +1314,14 @@ public sealed class UiHostShutdownProcessTests
         host.Log("later-batch", UiSeverity.Info);
         var flush = host.FlushAsync();
 
-        var run = await terminal.StartAsync(host);
+        var start = terminal.StartAsync(host);
         var flushFailure = await Record.ExceptionAsync(async () =>
             await flush.WaitAsync(TimeSpan.FromSeconds(5)));
         var runFailure = await Record.ExceptionAsync(async () =>
-            await run.WaitAsync(TimeSpan.FromSeconds(5)));
+        {
+            var run = await start;
+            await run.WaitAsync(TimeSpan.FromSeconds(5));
+        });
 
         Assert.Contains("first-batch-failure", flushFailure?.ToString());
         Assert.Contains("first-batch-failure", runFailure?.ToString());
@@ -1459,19 +1520,6 @@ public sealed class UiHostShutdownProcessTests
                         throw new InvalidOperationException("plugin lifetime was not cancelled");
                     File.WriteAllText(@"{{disposed.Replace("\"", "\"\"")}}", "disposed");
                 }
-            }
-            """;
-
-    static string FailingShutdownPluginSource()
-        => """
-            using System;
-            using UmamusumeResponseAnalyzer.Plugin;
-
-            public sealed class Plugin : IPlugin
-            {
-                public void Initialize(IPluginContext context) { }
-                public void Dispose()
-                    => throw new InvalidOperationException("shutdown-cleanup-failure");
             }
             """;
 

@@ -14,14 +14,12 @@ namespace UmamusumeResponseAnalyzer
 {
     public static class UmamusumeResponseAnalyzer
     {
-        internal static Task<DatabaseAvailability> _database_initialize_task = null!;
-        internal static Task _plugin_initialize_task = null!;
         public static bool Started => Server.IsRunning;
         static readonly string PORTABLE_WORKING_DIRECTORY = Path.Combine(AppContext.BaseDirectory, ".portable");
         const string PluginRepositoryMenuItem = "插件仓库";
         const string QqGroupMenuItem = "加入QQ群（号被封过之后在频道里说话会概率被夹";
         public readonly static string WORKING_DIRECTORY = Directory.Exists(PORTABLE_WORKING_DIRECTORY) ? PORTABLE_WORKING_DIRECTORY : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
@@ -42,7 +40,7 @@ namespace UmamusumeResponseAnalyzer
                     return;
                 }
 
-                await RunInteractiveOnDedicatedThreadAsync();
+                RunInteractive();
             }
             catch (PostShutdownProcessRequestedException ex)
             {
@@ -50,69 +48,23 @@ namespace UmamusumeResponseAnalyzer
             }
         }
 
-        static Task RunInteractiveOnDedicatedThreadAsync()
+        static void RunInteractive()
         {
-            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var uiThread = new Thread(() =>
+            var previousContext = SynchronizationContext.Current;
+            Application.MaximumIterationsPerSecond = 50;
+            using var application = Application.Create();
+            application.Init();
+            using var context = new SingleThreadSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(context);
+            try
             {
-                var previousContext = SynchronizationContext.Current;
-                IApplication? application = null;
-                SingleThreadSynchronizationContext? context = null;
-                Exception? failure = null;
-                try
-                {
-                    Application.MaximumIterationsPerSecond = 50;
-                    application = Application.Create();
-                    application.Init();
-                    context = new SingleThreadSynchronizationContext();
-                    SynchronizationContext.SetSynchronizationContext(context);
-                    context.Bind(application);
-                    var workflow = RunInteractiveAsync(application, context);
-                    try
-                    {
-                        context.Run(workflow);
-                    }
-                    finally
-                    {
-                        if (workflow.IsCompleted)
-                            application = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    failure = ex;
-                }
-                finally
-                {
-                    try
-                    {
-                        application?.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        failure ??= ex;
-                    }
-                    SynchronizationContext.SetSynchronizationContext(previousContext);
-                    try
-                    {
-                        context?.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        failure ??= ex;
-                    }
-                }
-                if (failure is null)
-                    completion.TrySetResult();
-                else
-                    completion.TrySetException(failure);
-            })
+                context.Bind(application);
+                context.Run(RunInteractiveAsync(application, context));
+            }
+            finally
             {
-                IsBackground = false,
-                Name = "Terminal.Gui UI"
-            };
-            uiThread.Start();
-            return completion.Task;
+                SynchronizationContext.SetSynchronizationContext(previousContext);
+            }
         }
 
         static async Task RunInteractiveAsync(
@@ -120,11 +72,9 @@ namespace UmamusumeResponseAnalyzer
             SingleThreadSynchronizationContext synchronizationContext)
         {
             var lifetimeCts = new CancellationTokenSource();
+            var lifetimeToken = lifetimeCts.Token;
             UiHost? uiHost = null;
             ShutdownCommandTarget? shutdownTarget = null;
-            var pluginInitialization = Task.CompletedTask;
-            var pluginUpdateCheck = Task.CompletedTask;
-            Task? uiTask = null;
             var shutdownBindingAdded = false;
             ExceptionDispatchInfo? workflowFailure = null;
             try
@@ -133,7 +83,7 @@ namespace UmamusumeResponseAnalyzer
                 uiHost = new(
                     application,
                     synchronizationContext,
-                    lifetimeCts.Token);
+                    lifetimeToken);
                 uiHost.ShutdownStarting += lifetimeCts.Cancel;
                 TerminalUi.Initialize(uiHost);
                 var bootstrap = uiHost.Bootstrap;
@@ -148,15 +98,15 @@ namespace UmamusumeResponseAnalyzer
 
                 async Task CompleteStartupAsync()
                 {
-                    await uiHost.Ready.WaitAsync(lifetimeCts.Token);
                     try
                     {
-                        await ResourceUpdater.HandleStartupProgramUpdateAsync(lifetimeCts.Token);
+                        await uiHost.Ready.WaitAsync(lifetimeToken);
+                        await ResourceUpdater.HandleStartupProgramUpdateAsync(lifetimeToken);
                         if (Config.Core.ShowFirstRunPrompt)
                         {
                             try
                             {
-                                ShowFirstLaunchPrompt(lifetimeCts.Token);
+                                ShowFirstLaunchPrompt(lifetimeToken);
                             }
                             catch (OperationCanceledException)
                             {
@@ -187,11 +137,10 @@ namespace UmamusumeResponseAnalyzer
                             UiSeverity.Success,
                             $"已读取 {Config.CONFIG_FILEPATH}");
 
-                        _plugin_initialize_task = pluginInitialization = StartPluginInitializationAsync(bootstrap, lifetimeCts.Token);
-                        await _plugin_initialize_task;
+                        await StartPluginInitializationAsync(bootstrap, lifetimeToken);
                         try
                         {
-                            await ShowMenu(bootstrap, lifetimeCts.Token);
+                            await ShowMenu(bootstrap, lifetimeToken);
                         }
                         catch (OperationCanceledException)
                         {
@@ -206,9 +155,7 @@ namespace UmamusumeResponseAnalyzer
                         var serverStarted = await Task.Run(async () =>
                         {
                             bootstrap.SetPhase("database", "数据文件", UiSeverity.Info, "正在加载事件、技能、名称等数据。");
-                            _database_initialize_task = Database.Initialize();
-                            var databaseAvailability = await _database_initialize_task;
-                            await _plugin_initialize_task;
+                            var databaseAvailability = await Database.Initialize();
                             if (databaseAvailability != DatabaseAvailability.Ready)
                             {
                                 const string message = "数据文件不完整或损坏；请更新全部数据文件后重新启动。";
@@ -221,7 +168,7 @@ namespace UmamusumeResponseAnalyzer
                             }
                             bootstrap.SetPhase("database", "数据文件", UiSeverity.Success, "已加载完整数据快照。");
 
-                            lifetimeCts.Token.ThrowIfCancellationRequested();
+                            lifetimeToken.ThrowIfCancellationRequested();
                             bootstrap.SetPhase("plugin-init", "插件初始化", UiSeverity.Info, "正在调用插件 Initialize。");
                             PluginManager.InitializeLoadedPlugins();
                             bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true));
@@ -235,11 +182,11 @@ namespace UmamusumeResponseAnalyzer
                                     ? $"已初始化 {loadedPluginCount} 个插件。"
                                     : $"已初始化 {loadedPluginCount} 个插件，{failedPluginCount} 个插件失败。");
 
-                            lifetimeCts.Token.ThrowIfCancellationRequested();
+                            lifetimeToken.ThrowIfCancellationRequested();
                             bootstrap.SetPhase("server", "HTTP server", UiSeverity.Info, "正在启动监听。");
                             try
                             {
-                                Server.Start(lifetimeCts.Token); //启动HTTP服务器
+                                Server.Start(lifetimeToken); //启动HTTP服务器
                                 bootstrap.SetPhase("server", "HTTP server", UiSeverity.Success, $"监听 http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}");
                             }
                             catch (Exception ex)
@@ -277,7 +224,7 @@ namespace UmamusumeResponseAnalyzer
                             for (var i = 0; i < 30; i++)
                             {
                                 if (Server.IsRunning) break;
-                                await Task.Delay(100, lifetimeCts.Token);
+                                await Task.Delay(100, lifetimeToken);
                             }
                             if (!Server.IsRunning)
                             {
@@ -291,7 +238,7 @@ namespace UmamusumeResponseAnalyzer
                             bootstrap.Log("URA", startedMessage, UiSeverity.Success);
                             bootstrap.SetPhase("host", "宿主", UiSeverity.Success, startedMessage);
                             return true;
-                        }, lifetimeCts.Token);
+                        }, lifetimeToken);
 
                         if (!serverStarted)
                             return;
@@ -307,8 +254,8 @@ namespace UmamusumeResponseAnalyzer
                                 ctx.AddLine("（没有加载任何插件）");
                             return Task.CompletedTask;
                         });
-                        await PluginManager.TriggerStartedAsync(lifetimeCts.Token);
-                        pluginUpdateCheck = CheckPluginUpdatesAsync(uiHost, lifetimeCts.Token);
+                        await PluginManager.TriggerStartedAsync(lifetimeToken);
+                        _ = CheckPluginUpdatesAsync(uiHost, lifetimeToken);
                     }
                     catch (PostShutdownProcessRequestedException ex)
                     {
@@ -340,24 +287,8 @@ namespace UmamusumeResponseAnalyzer
                 }
 
                 // Terminal.Gui 2.4.17 的 RunAsync 会同步进入 run loop，必须先创建 startup waiter。
-                var startupTask = CompleteStartupAsync();
-                uiTask = uiHost.RunAsync();
-                _ = uiTask.ContinueWith(
-                    static (_, state) => ((CancellationTokenSource)state!).Cancel(),
-                    lifetimeCts,
-                    CancellationToken.None,
-                    TaskContinuationOptions.ExecuteSynchronously,
-                    TaskScheduler.Default);
-                try
-                {
-                    await Task.WhenAll(uiTask, startupTask);
-                }
-                catch (OperationCanceledException) when (
-                    lifetimeCts.IsCancellationRequested &&
-                    !uiTask.IsFaulted &&
-                    !startupTask.IsFaulted)
-                {
-                }
+                _ = CompleteStartupAsync();
+                await uiHost.RunAsync();
             }
             catch (Exception ex)
             {
@@ -365,7 +296,6 @@ namespace UmamusumeResponseAnalyzer
             }
             finally
             {
-                var serverShutdown = Task.CompletedTask;
                 await RunCleanupAsync(
                     workflowFailure,
                     [
@@ -374,43 +304,10 @@ namespace UmamusumeResponseAnalyzer
                             lifetimeCts.Cancel();
                             return ValueTask.CompletedTask;
                         },
-                        async () =>
-                        {
-                            if (uiHost is null || uiTask is not null)
-                                return;
-
-                            uiTask = uiHost.RunAsync();
-                            try
-                            {
-                                await uiTask;
-                            }
-                            catch (OperationCanceledException) when (lifetimeCts.IsCancellationRequested)
-                            {
-                            }
-                        },
-                        async () =>
-                        {
-                            try
-                            {
-                                await pluginUpdateCheck;
-                            }
-                            catch (OperationCanceledException) when (lifetimeCts.IsCancellationRequested)
-                            {
-                            }
-                        },
-                        async () =>
-                        {
-                            try
-                            {
-                                await pluginInitialization;
-                            }
-                            catch (OperationCanceledException) when (lifetimeCts.IsCancellationRequested)
-                            {
-                            }
-                        },
+                        async () => await Server.StopAsync(),
                         () =>
                         {
-                            serverShutdown = Server.StopAsync();
+                            uiHost?.Dispose();
                             return ValueTask.CompletedTask;
                         },
                         () =>
@@ -429,12 +326,6 @@ namespace UmamusumeResponseAnalyzer
                             shutdownTarget?.Dispose();
                             return ValueTask.CompletedTask;
                         },
-                        () =>
-                        {
-                            application.Dispose();
-                            return ValueTask.CompletedTask;
-                        },
-                        async () => await serverShutdown,
                         () =>
                         {
                             lifetimeCts.Dispose();
@@ -809,8 +700,9 @@ namespace UmamusumeResponseAnalyzer
                 ArgumentNullException.ThrowIfNull(callback);
                 lock (lifecycleGate)
                 {
-                    if (closing != 0 || !workItems.TryAdd((callback, state)))
-                        throw new InvalidOperationException("Terminal.Gui UI synchronization context 已停止。");
+                    if (closing != 0)
+                        return;
+                    workItems.Add((callback, state));
                 }
                 WakeApplicationLoop();
             }

@@ -74,6 +74,51 @@ public sealed class SharedContextTests : IDisposable
         Assert.Empty(PluginManager.Contexts);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GroupConstructionFailureDisposesEarlierMembers(bool loadAtRuntime)
+    {
+        if (loadAtRuntime)
+            RestartPluginManager();
+
+        var logPath = Path.Combine(testDirectory, "group-lifecycle.txt");
+        CreatePackage("Anchor", source: $$"""
+            using System.IO;
+            using UmamusumeResponseAnalyzer.Plugin;
+
+            public sealed class AnchorPlugin : IPlugin
+            {
+                public AnchorPlugin() => File.AppendAllLines(@"{{logPath}}", ["constructed"]);
+                public void Initialize(IPluginContext context)
+                    => File.AppendAllLines(@"{{logPath}}", ["initialized"]);
+                public void Dispose() => File.AppendAllLines(@"{{logPath}}", ["disposed"]);
+            }
+            """);
+        CreatePackage("Member", ["Anchor"], """
+            using System;
+            using UmamusumeResponseAnalyzer.Plugin;
+
+            public sealed class MemberPlugin : IPlugin
+            {
+                public MemberPlugin() => throw new InvalidOperationException("constructor failed");
+                public void Initialize(IPluginContext context) { }
+            }
+            """);
+
+        if (loadAtRuntime)
+            Assert.Equal(PluginManager.PluginLifecycleOutcome.Failed,
+                Assert.Single(await PluginManager.LoadPluginsAsync("Member")).Outcome);
+        else
+            RestartPluginManager();
+
+        Assert.Empty(PluginManager.LoadedPlugins);
+        Assert.Empty(PluginManager.Contexts);
+        Assert.Equal(Path.Combine(pluginsDirectory, "Member.zip"), Assert.Single(PluginManager.FailedPlugins));
+        await PluginManager.ShutdownAsync();
+        Assert.Equal(["constructed", "disposed"], File.ReadAllLines(logPath));
+    }
+
     [Fact]
     public void ManifestDependencyLoadsBothPackagesInOneAssemblyLoadContext()
     {

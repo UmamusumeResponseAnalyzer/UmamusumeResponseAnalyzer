@@ -59,8 +59,7 @@ public sealed class PluginInstallTests : IDisposable
     public async Task WebCancellationAndInvalidRequestsNeverDownload()
     {
         WebInstallApi.ConfirmInstall = (_, _) => throw new InvalidOperationException("Must reject before confirmation.");
-        using var requests = new ServerRequestBarrier(TestContext.Current.CancellationToken);
-        using var server = StartServer(requests, out var port);
+        using var server = StartServer(TestContext.Current.CancellationToken, out var port);
         using var client = new HttpClient();
         foreach (var (origin, body, expected) in new[]
         {
@@ -103,8 +102,7 @@ public sealed class PluginInstallTests : IDisposable
         handler.Manifest.Description = "2026-08-11T03:16:39.2341390Z";
         PluginInformation? confirmed = null;
         WebInstallApi.ConfirmInstall = (p, _) => { confirmed = p; return true; };
-        using var requests = new ServerRequestBarrier(TestContext.Current.CancellationToken);
-        using var server = StartServer(requests, out var port);
+        using var server = StartServer(TestContext.Current.CancellationToken, out var port);
         using var client = new HttpClient();
         using var request = WebRequest(port);
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
@@ -184,8 +182,7 @@ public sealed class PluginInstallTests : IDisposable
         PluginCompiler.CompilePackage(PluginCode.Replace("{ }", "{ throw new System.InvalidOperationException(\"load failure\"); }"),
             Name, brokenPath, version: "2026.03.04");
         handler.Bytes = File.ReadAllBytes(brokenPath);
-        using var requests = new ServerRequestBarrier(TestContext.Current.CancellationToken);
-        using var server = StartServer(requests, out var port);
+        using var server = StartServer(TestContext.Current.CancellationToken, out var port);
         using var client = new HttpClient();
         using var request = WebRequest(port);
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
@@ -292,15 +289,15 @@ public sealed class PluginInstallTests : IDisposable
         }
     }
 
-    internal static WebserverLite StartServer(ServerRequestBarrier requests, out int port)
+    internal static WebserverLite StartServer(CancellationToken cancellationToken, out int port)
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
         port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         var server = new WebserverLite(new WebserverSettings("127.0.0.1", port), ctx => ctx.Response.Send(string.Empty));
-        WebInstallApi.Register(server, requests);
-        server.Start(TestContext.Current.CancellationToken);
+        WebInstallApi.Register(server, cancellationToken);
+        server.Start(cancellationToken);
         return server;
     }
 

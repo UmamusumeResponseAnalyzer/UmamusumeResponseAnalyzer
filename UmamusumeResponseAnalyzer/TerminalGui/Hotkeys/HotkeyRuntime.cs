@@ -12,9 +12,6 @@ internal sealed class HotkeyRuntime
 
     PopupState popupState = new(null, [], null, 0);
     IUiInputSink? overlaySink;
-    long overlaySinkGeneration;
-    int activeSinkCallouts;
-    bool overlaySinkDetaching;
     TimeSpan popupAutoCloseDelay = TimeSpan.FromSeconds(3);
     long notificationShortcutRegistrationId;
 
@@ -41,48 +38,23 @@ internal sealed class HotkeyRuntime
         }
         set
         {
-            PopupTransitionEffect detachEffect = default;
             lock (gate)
             {
-                while (overlaySinkDetaching)
-                    Monitor.Wait(gate);
-
                 if (value is not null)
                 {
-                    if (ReferenceEquals(overlaySink, value))
-                        return;
-                    if (overlaySink is not null)
-                    {
-                        throw new InvalidOperationException(
-                            "UI input sink 已绑定；必须先完整 detach，不能原地替换 Host。");
-                    }
-
+                    if (overlaySink is not null && !ReferenceEquals(overlaySink, value))
+                        throw new InvalidOperationException("UI input sink 已绑定，不能替换 Host。");
                     overlaySink = value;
-                    overlaySinkGeneration = unchecked(overlaySinkGeneration + 1);
                     return;
                 }
 
-                if (overlaySink is null)
-                    return;
-
-                overlaySinkDetaching = true;
-                detachEffect = TransitionPopupLocked(PopupTransitionKind.Detach);
-                overlaySink = null;
-                overlaySinkGeneration = unchecked(overlaySinkGeneration + 1);
-                while (activeSinkCallouts > 0)
-                    Monitor.Wait(gate);
-            }
-
-            try
-            {
-                ApplyPopupTransition(detachEffect);
-            }
-            finally
-            {
-                lock (gate)
+                try
                 {
-                    overlaySinkDetaching = false;
-                    Monitor.PulseAll(gate);
+                    HidePopupLocked();
+                }
+                finally
+                {
+                    overlaySink = null;
                 }
             }
         }
@@ -179,14 +151,12 @@ internal sealed class HotkeyRuntime
 
     internal void Clear()
     {
-        PopupTransitionEffect effect;
         lock (gate)
         {
             hotkeys.Clear();
             notificationShortcutRegistrations.Clear();
-            effect = TransitionPopupLocked(PopupTransitionKind.Hide);
+            HidePopupLocked();
         }
-        ApplyPopupTransition(effect);
     }
 
     internal int UnregisterByOwner(object owner)
@@ -281,34 +251,18 @@ internal sealed class HotkeyRuntime
         return entry;
     }
 
-    internal bool TryCaptureWorkspaceSink(out WorkspaceSinkSnapshot snapshot)
+    internal bool TryCaptureWorkspaceSink(out IUiInputSink sink)
     {
         lock (gate)
         {
             if (popupState.Popup is not null || overlaySink is null)
             {
-                snapshot = default;
+                sink = null!;
                 return false;
             }
 
-            snapshot = new(overlaySink, overlaySinkGeneration);
+            sink = overlaySink;
             return true;
-        }
-    }
-
-    internal async Task<bool> TryHandleWorkspaceCommandAsync(
-        WorkspaceSinkSnapshot snapshot,
-        Command command)
-    {
-        if (!TryBeginSinkCallout(snapshot.Sink, snapshot.Generation))
-            return false;
-        try
-        {
-            return await snapshot.Sink.TryHandleWorkspaceCommandAsync(command);
-        }
-        finally
-        {
-            EndSinkCallout();
         }
     }
 
@@ -324,25 +278,12 @@ internal sealed class HotkeyRuntime
             popup with { Shortcuts = null },
             Math.Max(0, popup.ScrollOffset),
             refreshExpiresAt: true,
-            EstimateVisiblePopupLines(sink, snapshot.SinkGeneration),
+            EstimateVisiblePopupLines(sink),
             snapshot.AutoCloseDelay);
         var shortcuts = CreateTransientShortcutEntries(popup.Shortcuts ?? [], owner);
 
-        PopupTransitionEffect effect;
         lock (gate)
-        {
-            if (overlaySink is null ||
-                overlaySinkGeneration != snapshot.SinkGeneration ||
-                !ReferenceEquals(overlaySink, sink))
-            {
-                throw new InvalidOperationException("Hotkey popup 的 UI input sink 已 detach。");
-            }
-            effect = TransitionPopupLocked(
-                PopupTransitionKind.Display,
-                shownPopup,
-                shortcuts);
-        }
-        ApplyPopupTransition(effect);
+            DisplayPopupLocked(shownPopup, shortcuts);
     }
 
     internal void HidePopup()
@@ -377,17 +318,12 @@ internal sealed class HotkeyRuntime
         var selection = snapshot.Popup?.Selection?.Normalize();
         var selectedLineIndex = selection?.SelectedLineIndex ?? -1;
 
-        PopupTransitionEffect effect;
         lock (gate)
         {
-            effect = TransitionPopupLocked(
-                PopupTransitionKind.Hide,
-                expectedGeneration: snapshot.Generation);
+            return HidePopupLocked(snapshot.Generation) && selection is not null && selectedLineIndex >= 0
+                ? () => selection.ConfirmAsync(selectedLineIndex)
+                : null;
         }
-        ApplyPopupTransition(effect);
-        return effect.Changed && selection is not null && selectedLineIndex >= 0
-            ? () => selection.ConfirmAsync(selectedLineIndex)
-            : null;
     }
 
     internal long RegisterNotificationShortcuts(
@@ -419,14 +355,8 @@ internal sealed class HotkeyRuntime
 
     void HidePopup(int? generation)
     {
-        PopupTransitionEffect effect;
         lock (gate)
-        {
-            effect = TransitionPopupLocked(
-                PopupTransitionKind.Hide,
-                expectedGeneration: generation);
-        }
-        ApplyPopupTransition(effect);
+            HidePopupLocked(generation);
     }
 
     void SetPopupScroll(PopupSnapshot snapshot, int scrollOffset)
@@ -438,17 +368,10 @@ internal sealed class HotkeyRuntime
             snapshot.Popup,
             scrollOffset,
             refreshExpiresAt: true,
-            EstimateVisiblePopupLines(snapshot.Sink, snapshot.SinkGeneration),
+            EstimateVisiblePopupLines(snapshot.Sink),
             snapshot.AutoCloseDelay);
-        PopupTransitionEffect effect;
         lock (gate)
-        {
-            effect = TransitionPopupLocked(
-                PopupTransitionKind.Display,
-                popup,
-                expectedGeneration: snapshot.Generation);
-        }
-        ApplyPopupTransition(effect);
+            DisplayPopupLocked(popup, expectedGeneration: snapshot.Generation);
     }
 
     void SetPopupSelection(PopupSnapshot snapshot, int selectedIndex)
@@ -463,7 +386,7 @@ internal sealed class HotkeyRuntime
         };
         var visibleCount = Math.Min(
             snapshot.Popup.Lines.Count,
-            EstimateVisiblePopupLines(snapshot.Sink, snapshot.SinkGeneration));
+            EstimateVisiblePopupLines(snapshot.Sink));
         var popup = snapshot.Popup with
         {
             ScrollOffset = ScrollOffsetForSelectedLine(
@@ -475,15 +398,8 @@ internal sealed class HotkeyRuntime
             ExpiresAt = null
         };
 
-        PopupTransitionEffect effect;
         lock (gate)
-        {
-            effect = TransitionPopupLocked(
-                PopupTransitionKind.Display,
-                popup,
-                expectedGeneration: snapshot.Generation);
-        }
-        ApplyPopupTransition(effect);
+            DisplayPopupLocked(popup, expectedGeneration: snapshot.Generation);
     }
 
     static HotkeyPopup NormalizePopupForDisplay(
@@ -536,168 +452,56 @@ internal sealed class HotkeyRuntime
     static DateTimeOffset? GetPopupExpiresAt(TimeSpan delay)
         => delay <= TimeSpan.Zero ? null : DateTimeOffset.Now.Add(delay);
 
-    int EstimateVisiblePopupLines(IUiInputSink? sink, long sinkGeneration)
-    {
-        if (sink is null || !TryBeginSinkCallout(sink, sinkGeneration))
-            return 1;
-        try
-        {
-            return Math.Max(1, sink.PopupVisibleLineCount);
-        }
-        finally
-        {
-            EndSinkCallout();
-        }
-    }
+    static int EstimateVisiblePopupLines(IUiInputSink? sink)
+        => Math.Max(1, sink?.PopupVisibleLineCount ?? 1);
 
     PopupSnapshot SnapshotPopup()
     {
         lock (gate)
-        {
-            return new(
-                popupState.Popup,
-                popupState.Generation,
-                overlaySink,
-                overlaySinkGeneration,
-                popupAutoCloseDelay);
-        }
+            return new(popupState.Popup, popupState.Generation, overlaySink, popupAutoCloseDelay);
     }
 
-    PopupTransitionEffect TransitionPopupLocked(
-        PopupTransitionKind kind,
-        HotkeyPopup? popup = null,
+    // The sink only queues UI work. Keep state changes and queue order under the same lock.
+    void DisplayPopupLocked(
+        HotkeyPopup popup,
         IReadOnlyList<TransientShortcutEntry>? shortcuts = null,
         int? expectedGeneration = null)
     {
         if (expectedGeneration is not null && expectedGeneration.Value != popupState.Generation)
-            return default;
-
-        if (kind is PopupTransitionKind.Hide or PopupTransitionKind.Detach)
-        {
-            if (kind == PopupTransitionKind.Hide &&
-                popupState.Popup is null &&
-                popupState.Shortcuts.Count == 0 &&
-                popupState.AutoClose is null)
-            {
-                return default;
-            }
-
-            var wasVisible = popupState.Popup is not null;
-            var previousAutoClose = popupState.AutoClose;
-            var generation = unchecked(popupState.Generation + 1);
-            popupState = new(null, [], null, generation);
-            return new(
-                true,
-                kind == PopupTransitionKind.Detach
-                    ? PopupRenderAction.Detach
-                    : wasVisible ? PopupRenderAction.Hide : PopupRenderAction.None,
-                overlaySink,
-                null,
-                generation,
-                overlaySinkGeneration,
-                previousAutoClose,
-                null);
-        }
-
-        ArgumentNullException.ThrowIfNull(popup);
-        var nextAutoClose = popup.ExpiresAt is null ? null : new CancellationTokenSource();
-        var nextGeneration = unchecked(popupState.Generation + 1);
-        var oldAutoClose = popupState.AutoClose;
-        popupState = new(
-            popup,
-            shortcuts ?? popupState.Shortcuts,
-            nextAutoClose,
-            nextGeneration);
-        return new(
-            true,
-            PopupRenderAction.Show,
-            overlaySink,
-            popup,
-            nextGeneration,
-            overlaySinkGeneration,
-            oldAutoClose,
-            nextAutoClose is null
-                ? null
-                : new(
-                    nextGeneration,
-                    popup.ExpiresAt!.Value,
-                    nextAutoClose,
-                    nextAutoClose.Token));
-    }
-
-    void ApplyPopupTransition(PopupTransitionEffect effect)
-    {
-        CancelAndDispose(effect.PreviousAutoClose);
-        if (!effect.Changed)
             return;
 
-        switch (effect.Render)
+        var sink = overlaySink
+            ?? throw new InvalidOperationException("Hotkey popup 需要先绑定 UI input sink。");
+        CancelAndDispose(popupState.AutoClose);
+        var autoClose = popup.ExpiresAt is null ? null : new CancellationTokenSource();
+        var generation = unchecked(popupState.Generation + 1);
+        popupState = new(popup, shortcuts ?? popupState.Shortcuts, autoClose, generation);
+        try
         {
-            case PopupRenderAction.Show:
-                if (effect.Sink is null ||
-                    !TryBeginSinkCallout(effect.Sink, effect.SinkGeneration))
-                {
-                    return;
-                }
-                try
-                {
-                    try
-                    {
-                        effect.Sink.ShowPopup(effect.Popup!, effect.Generation);
-                    }
-                    finally
-                    {
-                        EndSinkCallout();
-                    }
-                }
-                catch
-                {
-                    PopupTransitionEffect rollback;
-                    lock (gate)
-                    {
-                        rollback = TransitionPopupLocked(
-                            PopupTransitionKind.Hide,
-                            expectedGeneration: effect.Generation);
-                    }
-                    CancelAndDispose(rollback.PreviousAutoClose);
-                    throw;
-                }
-                break;
-            case PopupRenderAction.Hide:
-                if (effect.Sink is null ||
-                    !TryBeginSinkCallout(effect.Sink, effect.SinkGeneration))
-                {
-                    return;
-                }
-                try
-                {
-                    effect.Sink.HidePopup(effect.Generation);
-                }
-                finally
-                {
-                    EndSinkCallout();
-                }
-                break;
-            case PopupRenderAction.Detach:
-                effect.Sink!.HidePopup(effect.Generation);
-                break;
+            sink.ShowPopup(popup);
+        }
+        catch
+        {
+            popupState = new(null, [], null, unchecked(generation + 1));
+            CancelAndDispose(autoClose);
+            throw;
+        }
+        if (autoClose is not null)
+            _ = AutoClosePopupAsync(generation, popup.ExpiresAt!.Value, autoClose.Token);
+    }
+
+    bool HidePopupLocked(int? expectedGeneration = null)
+    {
+        if (expectedGeneration is not null && expectedGeneration.Value != popupState.Generation ||
+            popupState.Popup is null)
+        {
+            return false;
         }
 
-        if (effect.AutoClose is { } autoClose)
-        {
-            lock (gate)
-            {
-                if (popupState.Generation != autoClose.Generation ||
-                    !ReferenceEquals(popupState.AutoClose, autoClose.Source))
-                {
-                    return;
-                }
-            }
-            _ = AutoClosePopupAsync(
-                autoClose.Generation,
-                autoClose.ExpiresAt,
-                autoClose.CancellationToken);
-        }
+        CancelAndDispose(popupState.AutoClose);
+        popupState = new(null, [], null, unchecked(popupState.Generation + 1));
+        overlaySink?.HidePopup();
+        return true;
     }
 
     static void CancelAndDispose(CancellationTokenSource? source)
@@ -706,32 +510,6 @@ internal sealed class HotkeyRuntime
             return;
         source.Cancel();
         source.Dispose();
-    }
-
-    bool TryBeginSinkCallout(IUiInputSink sink, long sinkGeneration)
-    {
-        lock (gate)
-        {
-            if (overlaySinkDetaching ||
-                overlaySinkGeneration != sinkGeneration ||
-                !ReferenceEquals(overlaySink, sink))
-            {
-                return false;
-            }
-
-            activeSinkCallouts++;
-            return true;
-        }
-    }
-
-    void EndSinkCallout()
-    {
-        lock (gate)
-        {
-            activeSinkCallouts--;
-            if (activeSinkCallouts == 0)
-                Monitor.PulseAll(gate);
-        }
     }
 
     async Task AutoClosePopupAsync(
@@ -785,21 +563,6 @@ internal sealed class HotkeyRuntime
         }
     }
 
-    enum PopupTransitionKind
-    {
-        Display,
-        Hide,
-        Detach
-    }
-
-    enum PopupRenderAction
-    {
-        None,
-        Show,
-        Hide,
-        Detach
-    }
-
     readonly record struct PopupState(
         HotkeyPopup? Popup,
         IReadOnlyList<TransientShortcutEntry> Shortcuts,
@@ -810,24 +573,7 @@ internal sealed class HotkeyRuntime
         HotkeyPopup? Popup,
         int Generation,
         IUiInputSink? Sink,
-        long SinkGeneration,
         TimeSpan AutoCloseDelay);
-
-    readonly record struct PopupTransitionEffect(
-        bool Changed,
-        PopupRenderAction Render,
-        IUiInputSink? Sink,
-        HotkeyPopup? Popup,
-        int Generation,
-        long SinkGeneration,
-        CancellationTokenSource? PreviousAutoClose,
-        AutoCloseRequest? AutoClose);
-
-    readonly record struct AutoCloseRequest(
-        int Generation,
-        DateTimeOffset ExpiresAt,
-        CancellationTokenSource Source,
-        CancellationToken CancellationToken);
 
     sealed record TransientShortcutEntry(
         ConsoleKey Key,
@@ -838,7 +584,4 @@ internal sealed class HotkeyRuntime
         DateTimeOffset ExpiresAt,
         IReadOnlyList<TransientShortcutEntry> Shortcuts);
 
-    internal readonly record struct WorkspaceSinkSnapshot(
-        IUiInputSink Sink,
-        long Generation);
 }

@@ -64,7 +64,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
     static readonly AsyncLocal<bool> CallbackFlow = new();
     readonly object gate = new();
     readonly CancellationTokenSource backgroundCancellation = new();
-    readonly HashSet<Task> backgroundTasks = [];
+    readonly List<Task> backgroundTasks = [];
     PluginRegistrationPlan? pendingRegistration;
     TaskCompletionSource? callbackDrain;
     TaskCompletionSource? closeCompletion;
@@ -84,6 +84,15 @@ internal sealed class PluginGeneration(IPlugin plugin)
         {
             lock (gate)
                 return accepting;
+        }
+    }
+
+    internal bool IsClosed
+    {
+        get
+        {
+            lock (gate)
+                return closed;
         }
     }
 
@@ -334,7 +343,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
             var failure = new InvalidOperationException(
                 $"插件后台操作失败: plugin={PluginManager.InternalName(Plugin)}, " +
                 PluginManager.DescribeException(ex));
-            _ = PluginManager.ReportPluginFailure("Plugin", failure, ex.ToString());
+            PluginManager.ReportPluginFailure("Plugin", failure, ex.ToString());
         }
     }
 

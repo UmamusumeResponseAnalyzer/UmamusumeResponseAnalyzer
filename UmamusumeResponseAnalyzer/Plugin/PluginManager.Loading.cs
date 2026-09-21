@@ -175,44 +175,14 @@ internal static partial class PluginManager
     static string GroupKey(IEnumerable<string> group)
         => string.Join("&", group.Order(StringComparer.OrdinalIgnoreCase));
 
-    internal static void LoadGroup(HashSet<string> group)
-    {
-        var ordered = TopologicalOrder(group);
-        var key = GroupKey(group);
-        var createdContext = !LifecycleContexts.TryGetValue(key, out var context);
-        context ??= new PluginLoadContext(key, ordered.Select(name => LifecycleMetadatas[name]));
-
-        var loadedBefore = LifecycleLoadedPlugins.ToHashSet<IPlugin>(ReferenceEqualityComparer.Instance);
-        foreach (var name in ordered)
-        {
-            var metadata = LifecycleMetadatas[name];
-            var failure = LoadIntoContextAsync(context, metadata, LifecycleLoadedPlugins).GetAwaiter().GetResult();
-            if (failure is null)
-                continue;
-
-            if (createdContext)
-            {
-                var cleanupFailures = RollBackGroupLoad(group, context, loadedBefore);
-                if (cleanupFailures.Count != 0)
-                    failure = new AggregateException(
-                        "插件组加载及清理失败。",
-                        [failure, .. cleanupFailures]);
-            }
-
-            ReportPluginDiagnostic(failure);
-            if (!LifecycleFailedPlugins.Contains(metadata.FilePath))
-                LifecycleFailedPlugins.Add(metadata.FilePath);
-            return;
-        }
-
-        if (createdContext)
-            LifecycleContexts[key] = context;
-    }
-
     internal static void LoadPlugins()
     {
         foreach (var group in LifecycleContextGroups.OrderBy(GroupKey, StringComparer.OrdinalIgnoreCase))
-            LoadGroup(group);
+        {
+            var staged = StageGroupLoadAsync(group).GetAwaiter().GetResult();
+            if (staged is not null)
+                CommitStagedGroupLoadAsync(staged, initialize: false).GetAwaiter().GetResult();
+        }
     }
 
     static async Task<Exception?> LoadIntoContextAsync(
@@ -272,26 +242,6 @@ internal static partial class PluginManager
 
     static InvalidOperationException PluginLoadException(PluginMetadata metadata, string phase, Exception inner)
         => new($"插件加载失败: plugin={metadata.PluginName}, phase={phase}", inner);
-
-    static List<Exception> RollBackGroupLoad(
-        HashSet<string> group,
-        PluginLoadContext context,
-        HashSet<IPlugin> loadedBefore)
-    {
-        List<Exception> failures = [];
-        foreach (var plugin in LifecycleLoadedPlugins
-                     .Where(candidate => !loadedBefore.Contains(candidate) && group.Contains(InternalName(candidate)))
-                     .Reverse()
-                     .ToList())
-        {
-            try { CompleteFailedPluginLoadAsync(plugin, flush: false).GetAwaiter().GetResult(); }
-            catch (Exception ex) { failures.Add(ex); }
-        }
-
-        try { context.Unload(); }
-        catch (Exception ex) { failures.Add(ex); }
-        return failures;
-    }
 
     internal static Assembly? ResolveSharedAssembly(AssemblyName requested)
     {

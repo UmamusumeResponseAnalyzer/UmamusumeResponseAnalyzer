@@ -40,7 +40,7 @@ public sealed class StartupWorkflowTests
             var main = typeof(UmamusumeResponseAnalyzer).GetMethod(nameof(UmamusumeResponseAnalyzer.Main))!;
             foreach (var args in new[] { new[] { "--version" }, new[] { "--unknown-option" } })
             {
-                await (Task)main.Invoke(null, [args])!;
+                main.Invoke(null, [args]);
                 Assert.Equal(callerDirectory, Directory.GetCurrentDirectory());
                 Assert.Empty(Directory.EnumerateFileSystemEntries(Path.Combine(callerDirectory, ".portable")));
             }
@@ -49,7 +49,7 @@ public sealed class StartupWorkflowTests
             foreach (var launchDirectory in new[] { callerDirectory, portableDirectory })
             {
                 Directory.SetCurrentDirectory(launchDirectory);
-                await (Task)main.Invoke(null, [Array.Empty<string>()])!;
+                main.Invoke(null, [Array.Empty<string>()]);
                 Assert.Equal(1, Environment.ExitCode);
                 Assert.Equal(portableDirectory, Directory.GetCurrentDirectory());
                 Assert.Empty(Directory.EnumerateFileSystemEntries(portableDirectory));
@@ -113,7 +113,7 @@ public sealed class StartupWorkflowTests
             await session.Terminal.WaitForScreenAsync("初始化完成");
             await session.CloseAsync();
             Assert.False(Server.IsRunning);
-            Assert.Equal(1, File.ReadAllLines("lifecycle.log").Count(line => line.EndsWith("disposed")));
+            Assert.DoesNotContain("disposed", File.ReadAllText("lifecycle.log"));
         });
 
     static async Task InstallAsync(StartupSession session, bool existing, bool shared)
@@ -241,8 +241,8 @@ public sealed class StartupWorkflowTests
         });
 
     [Fact]
-    public Task CancellationDuringPluginScanClosesLoadedInstances()
-        => RunScenarioAsync(nameof(CancellationDuringPluginScanClosesLoadedInstances),
+    public Task CancellationDuringPluginScanStopsUiWithoutWaiting()
+        => RunScenarioAsync(nameof(CancellationDuringPluginScanStopsUiWithoutWaiting),
             session => CancelDuringPluginScanAsync(session, Key.C.WithCtrl));
 
     [Fact]
@@ -264,6 +264,7 @@ public sealed class StartupWorkflowTests
                     File.WriteAllText("scan-entered", "entered");
                     if (!SpinWait.SpinUntil(() => File.Exists("scan-release"), TimeSpan.FromSeconds(10)))
                         throw new TimeoutException("scan-release");
+                    File.WriteAllText("scan-returned", "returned");
                 }
                 public void Initialize(IPluginContext context) => throw new Exception("Must not initialize");
                 public void Dispose() => File.WriteAllText("scan-disposed", "disposed");
@@ -278,12 +279,10 @@ public sealed class StartupWorkflowTests
         Assert.Equal(DatabaseAvailability.Unavailable, Database.Availability);
         Assert.False(Server.IsRunning);
         await session.Terminal.InjectAsync(cancelKey);
-        File.WriteAllText("scan-release", "release");
         await session.Run.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.True(File.Exists("scan-disposed"));
-        Assert.Empty(PluginManager.SnapshotLoadedPlugins());
-        Assert.ThrowsAny<OperationCanceledException>(() => PluginManager.Init(new CancellationToken(true)));
-        Assert.Empty(PluginManager.SnapshotLoadedPlugins());
+        Assert.False(File.Exists("scan-disposed"));
+        File.WriteAllText("scan-release", "release");
+        await session.Terminal.WaitForAsync(() => File.Exists("scan-returned"));
     }
 
     [Fact]
@@ -416,6 +415,7 @@ public sealed class StartupWorkflowTests
                 }
                 finally
                 {
+                    Terminal.Application.Dispose();
                     SynchronizationContext.SetSynchronizationContext(previous);
                     ((IDisposable)context).Dispose();
                 }

@@ -10,73 +10,6 @@ using static UmamusumeResponseAnalyzer.Localization.Server;
 
 namespace UmamusumeResponseAnalyzer
 {
-    internal sealed class ServerRequestBarrier(CancellationToken hostCancellationToken) : IDisposable
-    {
-        readonly object gate = new();
-        readonly CancellationTokenSource lifetime = CancellationTokenSource.CreateLinkedTokenSource(hostCancellationToken);
-        readonly TaskCompletionSource drained = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        int inFlight;
-        bool stopping;
-
-        internal CancellationToken Token => lifetime.Token;
-
-        internal Func<HttpContextBase, Task> Wrap(Func<HttpContextBase, CancellationToken, Task> handler) => ctx => InvokeAsync(ctx, handler);
-
-        async Task InvokeAsync(HttpContextBase ctx, Func<HttpContextBase, CancellationToken, Task> handler)
-        {
-            var rejected = false;
-            lock (gate)
-            {
-                if (stopping)
-                {
-                    rejected = true;
-                    ctx.Response.StatusCode = 503;
-                }
-                else
-                {
-                    inFlight++;
-                }
-            }
-
-            if (rejected)
-            {
-                await ctx.Response.Send("server_stopping");
-                return;
-            }
-
-            try
-            {
-                await handler(ctx, lifetime.Token);
-            }
-            finally
-            {
-                lock (gate)
-                {
-                    if (--inFlight == 0 && stopping)
-                        drained.TrySetResult();
-                }
-            }
-        }
-
-        internal Task StopAsync()
-        {
-            lock (gate)
-            {
-                if (stopping)
-                    return drained.Task;
-
-                stopping = true;
-                if (inFlight == 0)
-                    drained.TrySetResult();
-            }
-
-            lifetime.Cancel();
-            return drained.Task;
-        }
-
-        public void Dispose() => lifetime.Dispose();
-    }
-
     internal sealed class AnalyzerDispatchContext(
         GameEndpointDescriptor descriptor,
         byte[] payload,
@@ -138,55 +71,41 @@ namespace UmamusumeResponseAnalyzer
 
         const string GameEndpointPathPrefix = "/umamusume";
         const string CanonicalUrlHeaderName = "X-Hachimi-Game-Url";
-        static ServerRequestBarrier? requests;
-        static Task? shutdownTask;
         internal static WebserverLite Instance
         {
-            get => Volatile.Read(ref instance) ?? defaultInstance.Value;
-            set => Volatile.Write(ref instance, value);
+            get => instance ?? defaultInstance.Value;
+            set => instance = value;
         }
-        internal static bool IsRunning => Volatile.Read(ref instance)?.IsListening
+        internal static bool IsRunning => instance?.IsListening
             ?? (defaultInstance.IsValueCreated && defaultInstance.Value.IsListening);
         internal static void Start(CancellationToken hostCancellationToken)
         {
-            if (Volatile.Read(ref shutdownTask) is not null)
-                throw new InvalidOperationException("HTTP server lifecycle 已启动，不能重复 Start。");
-
-            var requestBarrier = new ServerRequestBarrier(hostCancellationToken);
-            if (Interlocked.CompareExchange(ref requests, requestBarrier, null) is not null)
-            {
-                requestBarrier.Dispose();
-                throw new InvalidOperationException("HTTP server lifecycle 已启动，不能重复 Start。");
-            }
-
-            Instance.Routes.PreAuthentication.Static.Add(
+            var server = Instance;
+            var routes = server.Routes.PreAuthentication.Static;
+            routes.Add(
                 WatsonWebserver.Core.HttpMethod.POST,
                 "/notify/response",
-                requestBarrier.Wrap((ctx, cancellationToken) => HandleNotificationAsync(AnalyzerKind.Response, ctx, cancellationToken)));
-            Instance.Routes.PreAuthentication.Static.Add(
+                ctx => HandleNotificationAsync(AnalyzerKind.Response, ctx, hostCancellationToken));
+            routes.Add(
                 WatsonWebserver.Core.HttpMethod.POST,
                 "/notify/request",
-                requestBarrier.Wrap((ctx, cancellationToken) => HandleNotificationAsync(AnalyzerKind.Request, ctx, cancellationToken)));
-            Instance.Routes.PreAuthentication.Static.Add(
+                ctx => HandleNotificationAsync(AnalyzerKind.Request, ctx, hostCancellationToken));
+            routes.Add(
                 WatsonWebserver.Core.HttpMethod.GET,
                 "/notify/ping",
-                requestBarrier.Wrap((ctx, cancellationToken) =>
+                ctx =>
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    hostCancellationToken.ThrowIfCancellationRequested();
                     TerminalUi.Log("Server", I18N_PingReceived, UiSeverity.Trace);
                     return ctx.Response.Send("pong");
-                }));
-            WebInstallApi.Register(Instance, requestBarrier);
-            Instance.Start(requestBarrier.Token);
+                });
+            WebInstallApi.Register(server, hostCancellationToken);
+            server.Start(hostCancellationToken);
         }
 
         internal static Task StopAsync()
         {
-            var existing = Volatile.Read(ref shutdownTask);
-            if (existing is not null)
-                return existing;
-
-            var server = Volatile.Read(ref instance);
+            var server = instance;
             if (server is null)
             {
                 if (!defaultInstance.IsValueCreated)
@@ -194,66 +113,16 @@ namespace UmamusumeResponseAnalyzer
                 server = defaultInstance.Value;
             }
 
-            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var task = completion.Task;
-            existing = Interlocked.CompareExchange(ref shutdownTask, task, null);
-            if (existing is not null)
-                return existing;
-
-            _ = CompleteShutdownAsync(completion, server, Volatile.Read(ref requests));
-            return task;
-        }
-
-        static async Task CompleteShutdownAsync(
-            TaskCompletionSource completion,
-            WebserverLite server,
-            ServerRequestBarrier? requestBarrier)
-        {
             try
             {
-                await ShutdownCoreAsync(server, requestBarrier);
-                completion.SetResult();
+                if (server.IsListening)
+                    server.Stop();
             }
-            catch (OperationCanceledException ex)
+            finally
             {
-                completion.SetCanceled(ex.CancellationToken);
+                server.Dispose();
             }
-            catch (Exception ex)
-            {
-                completion.SetException(ex);
-            }
-        }
-
-        internal static Task ShutdownCoreAsync(WebserverLite server, ServerRequestBarrier? requestBarrier)
-        {
-            var drained = Task.CompletedTask;
-            return UmamusumeResponseAnalyzer.RunCleanupAsync(
-                null,
-                [
-                    () =>
-                    {
-                        drained = requestBarrier?.StopAsync() ?? Task.CompletedTask;
-                        return ValueTask.CompletedTask;
-                    },
-                    () =>
-                    {
-                        if (server.IsListening)
-                            server.Stop();
-                        return ValueTask.CompletedTask;
-                    },
-                    () => new ValueTask(drained),
-                    () =>
-                    {
-                        server.Dispose();
-                        return ValueTask.CompletedTask;
-                    },
-                    () =>
-                    {
-                        requestBarrier?.Dispose();
-                        return ValueTask.CompletedTask;
-                    },
-                ],
-                "HTTP server shutdown 失败。");
+            return Task.CompletedTask;
         }
 
         static async Task HandleNotificationAsync(
@@ -390,7 +259,7 @@ namespace UmamusumeResponseAnalyzer
                 var failure = new InvalidOperationException(
                     $"{label}分析插件处理失败: plugin={PluginManager.InternalName(registration.Plugin)}, " +
                     PluginManager.DescribeException(root));
-                _ = PluginManager.ReportPluginFailure(
+                PluginManager.ReportPluginFailure(
                     registration.Method?.DeclaringType?.Name ?? registration.Source,
                     failure,
                     root.ToString());

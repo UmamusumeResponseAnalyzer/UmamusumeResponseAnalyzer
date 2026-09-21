@@ -19,7 +19,6 @@ internal sealed class UiHostSurface : IDisposable
     Workspace[] renderedWorkspaces;
     Workspace renderedWorkspace;
     HotkeyPopup? hotkeyPopup;
-    int hotkeyPopupGeneration;
     int popupVisibleLineCount = 1;
     Window? window;
     WorkspaceViewport? workspaceViewport;
@@ -167,25 +166,15 @@ internal sealed class UiHostSurface : IDisposable
         notifications.Add(notification);
     }
 
-    internal void ShowPopup(HotkeyPopup popup, int generation)
-    {
-        if (generation < hotkeyPopupGeneration)
-            return;
-        hotkeyPopup = popup;
-        hotkeyPopupGeneration = generation;
-    }
+    internal void ShowPopup(HotkeyPopup popup) => hotkeyPopup = popup;
 
-    internal void HidePopup(int generation)
-    {
-        if (generation < hotkeyPopupGeneration)
-            return;
-        hotkeyPopup = null;
-        hotkeyPopupGeneration = generation;
-    }
+    internal void HidePopup() => hotkeyPopup = null;
 
     internal void RequestApplicationStop()
-        => application.RequestStop(
-            window ?? throw new InvalidOperationException("UiHost window 尚未创建。"));
+    {
+        if (window is not null)
+            application.RequestStop(window);
+    }
 
     internal void Reconcile(UiChange changes)
     {

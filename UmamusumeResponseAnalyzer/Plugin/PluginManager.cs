@@ -42,9 +42,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static IReadOnlyList<IPlugin> LoadedPlugins
             => Runtime.ReadSnapshot().LoadedPlugins;
         internal static IReadOnlyList<ImmutableHashSet<string>> ContextGroups
-            => Runtime.ReadSnapshot().ContextGroups;
+            => [.. LifecycleContextGroups.Select(group => group.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase))];
         internal static FrozenDictionary<string, PluginLoadContext> Contexts
-            => Runtime.ReadSnapshot().Contexts;
+            => LifecycleContexts.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         internal static IReadOnlyList<AnalyzerRegistration> RequestAnalyzerMethods
             => Runtime.ReadAnalyzers().Request;
         internal static IReadOnlyList<AnalyzerRegistration> ResponseAnalyzerMethods
@@ -108,7 +108,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             return $"exception={exceptionType}, message={exception.Message}";
         }
 
-        internal static Exception? ReportPluginFailure(
+        internal static void ReportPluginFailure(
             string source,
             InvalidOperationException failure,
             string details)
@@ -131,13 +131,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         ? failure
                         : new AggregateException("插件错误及 notification diagnostics 失败。", failure, notificationError),
                     details: details);
-                return null;
             }
-            catch (Exception logError)
+            catch
             {
-                return notificationError is null
-                    ? logError
-                    : new AggregateException("插件 diagnostics sinks 均失败。", notificationError, logError);
             }
         }
 
@@ -210,9 +206,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             var loaded = snapshot.LoadedPlugins;
             var knownByName = snapshot.Metadatas;
 
-            var loadedByName = loaded
-                .GroupBy(InternalName, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+            var loadedByName = loaded.ToDictionary(InternalName, StringComparer.OrdinalIgnoreCase);
             var names = scanned.Keys
                 .Concat(knownByName.Keys)
                 .Concat(loadedByName.Keys)
@@ -226,15 +220,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 var displayName = metadata?.DisplayName ?? name;
                 var author = metadata?.Author ?? string.Empty;
                 var version = metadata?.Version;
-                var isLoaded = false;
-                if (plugin is not null)
-                {
-                    using var inspection = TryEnterPluginInspection(plugin);
-                    if (inspection is not null)
-                    {
-                        isLoaded = true;
-                    }
-                }
+                var isLoaded = plugin is not null && !IsShuttingDown() &&
+                               PluginGenerations.TryGetValue(plugin, out var generation) && !generation.IsClosed;
 
                 statuses.Add(new(
                     metadata?.PluginName ?? name,

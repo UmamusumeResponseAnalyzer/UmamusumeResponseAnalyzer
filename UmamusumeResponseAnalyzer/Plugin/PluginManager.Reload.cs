@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using UmamusumeResponseAnalyzer.TerminalGui;
 
 namespace UmamusumeResponseAnalyzer.Plugin
@@ -459,24 +458,12 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
                 try
                 {
-                    CommitStagedGroupLoad(staged, initialize);
+                    await CommitStagedGroupLoadAsync(staged, initialize);
                 }
-                catch (Exception commitError)
+                catch
                 {
                     foreach (var name in group.Where(LifecycleMetadatas.ContainsKey))
                         outcomes[name] = PluginLifecycleOutcome.Failed;
-                    try
-                    {
-                        await DisposeStagedGroupAsync(staged, flush: initialize);
-                    }
-                    catch (Exception cleanupError)
-                    {
-                        throw new AggregateException(
-                            "插件 staged group 提交及清理失败。",
-                            commitError,
-                            cleanupError);
-                    }
-                    ExceptionDispatchInfo.Capture(commitError).Throw();
                     throw;
                 }
 
@@ -540,41 +527,28 @@ namespace UmamusumeResponseAnalyzer.Plugin
             return null;
         }
 
-        static void CommitStagedGroupLoad(StagedGroupLoad staged, bool initialize)
+        static async Task CommitStagedGroupLoadAsync(StagedGroupLoad staged, bool initialize)
         {
             try
             {
-                foreach (var plugin in staged.Plugins)
-                    LifecycleLoadedPlugins.Add(plugin);
+                LifecycleLoadedPlugins.AddRange(staged.Plugins);
                 LifecycleContexts.Add(staged.Key, staged.Context);
                 if (initialize)
                     CommitPendingRegistrations(staged.Plugins);
             }
             catch (Exception commitError)
             {
-                List<Exception> failures = [commitError];
                 try
                 {
-                    if (LifecycleContexts.TryGetValue(staged.Key, out var context) &&
-                        ReferenceEquals(context, staged.Context))
-                        LifecycleContexts.Remove(staged.Key);
-                    foreach (var plugin in staged.Plugins)
-                    {
-                        var index = LifecycleLoadedPlugins.FindIndex(candidate =>
-                            ReferenceEquals(candidate, plugin));
-                        if (index >= 0)
-                            LifecycleLoadedPlugins.RemoveAt(index);
-                    }
+                    await DisposeStagedGroupAsync(staged, flush: initialize);
                 }
-                catch (Exception ex)
+                catch (Exception cleanupError)
                 {
-                    failures.Add(new InvalidOperationException("插件 staged state 回滚失败。", ex));
+                    throw new AggregateException(
+                        "插件 staged group 提交及清理失败。",
+                        commitError,
+                        cleanupError);
                 }
-                try { RemoveAnalyzerMethods(staged.Plugins); }
-                catch (Exception ex) { failures.Add(ex); }
-                if (failures.Count != 1)
-                    throw new AggregateException("插件 staged registration 提交失败。", failures);
-                ExceptionDispatchInfo.Capture(commitError).Throw();
                 throw;
             }
         }

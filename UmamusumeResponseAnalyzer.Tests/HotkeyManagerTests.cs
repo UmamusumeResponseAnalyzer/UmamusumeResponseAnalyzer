@@ -319,27 +319,6 @@ public sealed class HotkeyManagerTests : IDisposable
     }
 
     [Fact]
-    public void OverlayCalloutCanWaitForWorkThatReentersRegistrationState()
-    {
-        var sink = new RecordingOverlaySink
-        {
-            ShowPopupCallout = () =>
-            {
-                var registration = Task.Run(() =>
-                    HotkeyManager.Register(ConsoleKey.F2, "from sink", NoopHandler));
-                Assert.True(registration.Wait(TimeSpan.FromSeconds(2)));
-            }
-        };
-        HotkeyManager.OverlaySink = sink;
-        HotkeyManager.PopupAutoCloseDelay = TimeSpan.Zero;
-
-        HotkeyManager.ShowPopup(new HotkeyContext().AddLine("visible"));
-
-        Assert.Equal("visible", Assert.Single(sink.Popup!.Lines).Text);
-        Assert.Contains((ConsoleKey.F2, ConsoleModifiers.None), HotkeyManager.Hotkeys.Keys);
-    }
-
-    [Fact]
     public async Task PopupRenderFailure_RollsBackStateAndAutoCloseBeforeRethrowing()
     {
         var showCalls = 0;
@@ -369,40 +348,20 @@ public sealed class HotkeyManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task Detach_WaitsForInFlightShowThenClearsOldSinkAndTimer()
+    public async Task ClearingSinkClearsPopupAndCancelsTimer()
     {
-        using var showEntered = new ManualResetEventSlim();
-        using var releaseShow = new ManualResetEventSlim();
-        var sink = new RecordingOverlaySink
-        {
-            ShowPopupCallout = () =>
-            {
-                showEntered.Set();
-                Assert.True(releaseShow.Wait(TimeSpan.FromSeconds(2)));
-            }
-        };
+        var sink = new RecordingOverlaySink();
         HotkeyManager.OverlaySink = sink;
         HotkeyManager.PopupAutoCloseDelay = TimeSpan.FromMilliseconds(30);
+        HotkeyManager.ShowPopup(new HotkeyContext().AddLine("visible"));
 
-        var show = Task.Run(() =>
-            HotkeyManager.ShowPopup(new HotkeyContext().AddLine("in flight")));
-        Assert.True(showEntered.Wait(TimeSpan.FromSeconds(2)));
-        var detach = Task.Run(() => HotkeyManager.OverlaySink = null);
-        try
-        {
-            Assert.NotSame(detach, await Task.WhenAny(detach, Task.Delay(30)));
-        }
-        finally
-        {
-            releaseShow.Set();
-        }
+        HotkeyManager.OverlaySink = null;
 
-        await Task.WhenAll(show, detach).WaitAsync(TimeSpan.FromSeconds(2));
         Assert.False(HotkeyManager.HasPriorityPopup);
         Assert.Null(sink.Popup);
-        var calloutsAfterDetach = sink.PopupCalloutCount;
+        var callouts = sink.PopupCalloutCount;
         await Task.Delay(70);
-        Assert.Equal(calloutsAfterDetach, sink.PopupCalloutCount);
+        Assert.Equal(callouts, sink.PopupCalloutCount);
     }
 
     [Fact]
@@ -692,7 +651,6 @@ public sealed class HotkeyManagerTests : IDisposable
         readonly object gate = new();
         readonly List<Command> workspaceCommands = [];
         HotkeyPopup? popup;
-        int popupGeneration;
         int showPopupCalls;
         int hidePopupCalls;
 
@@ -734,31 +692,25 @@ public sealed class HotkeyManagerTests : IDisposable
             return Task.FromResult(true);
         }
 
-        public void ShowPopup(HotkeyPopup value, int generation)
+        public void ShowPopup(HotkeyPopup value)
         {
             lock (gate)
                 showPopupCalls++;
             ShowPopupCallout?.Invoke();
             lock (gate)
             {
-                if (generation < popupGeneration)
-                    return;
                 popup = value;
-                popupGeneration = generation;
             }
         }
 
-        public void HidePopup(int generation)
+        public void HidePopup()
         {
             lock (gate)
                 hidePopupCalls++;
             HidePopupCallout?.Invoke();
             lock (gate)
             {
-                if (generation < popupGeneration)
-                    return;
                 popup = null;
-                popupGeneration = generation;
             }
         }
     }
