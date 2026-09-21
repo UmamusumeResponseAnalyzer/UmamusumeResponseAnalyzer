@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -19,9 +20,8 @@ internal static class WebInstallApi
         ModalDialogs.Confirm(BuildInstallConfirmation(plugin), cancellationToken: ct);
 
     internal static string BuildInstallConfirmation(PluginInformation plugin) =>
-        $"{PluginRepository.Text("Confirm")} {plugin.DisplayName} v{plugin.RawVersion}\n" +
-        $"{plugin.Author}/{plugin.InternalName}\n{plugin.RepositoryUrl}\n" +
-        PluginRepository.Text("ExecutionWarning");
+        string.Format(i18n.InstallConfirmation, plugin.DisplayName, plugin.RawVersion,
+            plugin.Author, plugin.InternalName, plugin.RepositoryUrl);
 
     public static void Register(WebserverLite server, CancellationToken cancellationToken)
     {
@@ -61,7 +61,7 @@ internal static class WebInstallApi
         {
             author = p.Author,
             internalName = p.InternalName,
-            version = (p.Version ?? throw new InvalidOperationException($"已加载插件缺少版本: {p.InternalName}")).ToString(),
+            version = (p.Version ?? throw new InvalidOperationException(string.Format(i18n.LoadedVersionMissing, p.InternalName))).ToString(),
             loaded = true,
             source = (object?)null,
             error = (string?)null,
@@ -97,7 +97,7 @@ internal static class WebInstallApi
             var plugin = await PluginRepository.GetPluginAsync(request.RepositoryId, request.ReleaseId, cancellationToken);
             if (!ConfirmInstall(plugin, cancellationToken))
             {
-                await SendJson(ctx, 409, new { ok = false, loaded = false, error = PluginRepository.Text("Cancelled") });
+                await SendJson(ctx, 409, new { ok = false, loaded = false, error = i18n.Cancelled });
                 return;
             }
             var manifest = await PluginRepository.DownloadPluginZipAsync(plugin, cancellationToken);
@@ -109,7 +109,7 @@ internal static class WebInstallApi
                 var result = (await PluginManager.ReloadPluginsAsync(manifest.InternalName)).Single();
                 loaded = result.Outcome == PluginManager.PluginLifecycleOutcome.Succeeded;
                 if (!loaded)
-                    error = PluginRepository.Text("InstalledNotLoaded");
+                    error = i18n.InstalledNotLoaded;
             }
             catch (Exception ex) { error = ex.Message; }
             await SendJson(ctx, 200, new { ok = true, loaded, installed = manifest.InternalName, error });

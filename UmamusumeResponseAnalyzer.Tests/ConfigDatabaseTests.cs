@@ -444,26 +444,24 @@ namespace UmamusumeResponseAnalyzer.Tests
         public void ClimaxItem_KnownKeys_MatchSource()
         {
             var items = Database.ClimaxItem;
-            Assert.Equal("速+3", items[1001]);
-            Assert.Equal("速+7", items[1101]);
-            Assert.Equal("体力+20", items[2001]);
-            Assert.Equal("御守", items[10001]);
+            Assert.Equal(Localization.Database.ClimaxItem_1001, items[1001]);
+            Assert.Equal(Localization.Database.ClimaxItem_1101, items[1101]);
+            Assert.Equal(Localization.Database.ClimaxItem_2001, items[2001]);
+            Assert.Equal(Localization.Database.ClimaxItem_10001, items[10001]);
         }
 
         [Fact]
         public void ClimaxItem_MissingKey_ReturnsUnknownFallback()
         {
-            // ClimaxItem 是 NullableIntStringDictionary，缺省 key 经其 indexer 返回 "未知"
-            Assert.Equal("未知", Database.ClimaxItem[999999]);
+            Assert.Equal(Localization.NameManager.I18N_Unknown, Database.ClimaxItem[999999]);
         }
 
         [Fact]
         public void NullableIntStringDictionary_Indexer_DefaultsToUnknown()
         {
-            // 直接验证该类型 indexer 的缺省返回值（Database.cs 中定义为 "未知"）
             var dict = new NullableIntStringDictionary { { 42, "answer" } };
             Assert.Equal("answer", dict[42]);   // 命中
-            Assert.Equal("未知", dict[0]);       // 未命中 → fallback
+            Assert.Equal(Localization.NameManager.I18N_Unknown, dict[0]);
         }
     }
 
@@ -477,7 +475,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
             {
                 Assert.Equal(
-                    "Unavailable|Unavailable|游戏数据尚未完整加载。请先更新数据文件并重新启动。",
+                    "Unavailable|Unavailable|True",
                     await TerminalUiLifecycleProcessTests.RunChildAsync(
                         scenario,
                         typeof(DatabaseInitializeMissingFilesTests),
@@ -507,7 +505,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                          })
                     Assert.Contains(warnings, entry => entry.Text.Contains(file, StringComparison.Ordinal));
                 var message = Assert.Throws<InvalidOperationException>(() => Database.Events).Message;
-                TerminalUiLifecycleChildProcess.WriteResult($"{result}|{Database.Availability}|{message}");
+                TerminalUiLifecycleChildProcess.WriteResult($"{result}|{Database.Availability}|{message == Localization.Database.I18N_NotLoaded}");
             }
             finally
             {

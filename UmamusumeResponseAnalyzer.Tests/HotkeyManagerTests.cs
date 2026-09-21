@@ -1,4 +1,5 @@
 using System.Collections;
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -744,7 +745,7 @@ public sealed class HotkeyManagerErrorChannelTests(PluginRuntimeFixture runtime)
                 Assert.True(await HotkeyManager.HandleKeyAsync(new(KeyCode.F1)));
                 await host.FlushAsync();
                 await runtime.Terminal.WaitForScreenAsync(
-                    "热键处理失败: hotkey-handler-sentinel");
+                    string.Format(i18n.Hotkey_HandlerFailed, "hotkey-handler-sentinel"));
                 Assert.True(await HotkeyManager.HandleKeyAsync(new(KeyCode.F2)));
                 Assert.Equal(1, laterCalls);
             }

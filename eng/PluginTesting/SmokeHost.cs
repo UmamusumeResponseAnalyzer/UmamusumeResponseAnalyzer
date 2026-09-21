@@ -54,6 +54,15 @@ sealed class WorkspaceSmokeSession : IDisposable
 
     static void InitializeConfig()
     {
+        if (Environment.GetEnvironmentVariable("URA_TEST_UI_CULTURE") is { } cultureName)
+        {
+            if (cultureName is not ("zh-CN" or "en-US" or "ja-JP"))
+                throw new InvalidOperationException($"URA_TEST_UI_CULTURE must be zh-CN, en-US or ja-JP; received '{cultureName}'.");
+            var culture = CultureInfo.GetCultureInfo(cultureName);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+        }
+
         var originalDirectory = Directory.GetCurrentDirectory();
         var configDirectory = Path.Combine(
             Path.GetTempPath(),

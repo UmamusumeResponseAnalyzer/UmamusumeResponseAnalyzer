@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.Runtime.CompilerServices;
 using UmamusumeResponseAnalyzer.TerminalGui;
 
@@ -113,7 +114,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (!item.Available)
                 {
                     ReportPluginDiagnostic(
-                        $"插件 {item.Raw} 不存在，无法加载。",
+                        string.Format(i18n.PluginNotFound, item.Raw),
                         UiSeverity.Warning);
                     outcomes[item.Name] = PluginLifecycleOutcome.Failed;
                     continue;
@@ -156,12 +157,12 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception ex)
                 {
                     outcomes[rawName] = PluginLifecycleOutcome.Failed;
-                    failures.Add(new InvalidOperationException($"插件卸载失败: plugin={name}", ex));
+                    failures.Add(new InvalidOperationException(string.Format(i18n.UnloadFailed, name), ex));
                 }
             }
 
             if (failures.Count != 0)
-                throw new AggregateException("插件批量卸载失败。", failures);
+                throw new AggregateException(i18n.BatchUnloadFailed, failures);
 
             foreach (var plugins in startedPluginBatches)
                 await TriggerStartedForPluginsAsync(plugins);
@@ -181,7 +182,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (Runtime.ShutdownRequested)
                     throw LifecyclePhaseFailure(operation);
                 throw new InvalidOperationException(
-                    "已有插件 lifecycle 事务正在运行，拒绝并发或重入操作。");
+                    i18n.LifecycleTransactionBusy);
             }
             if (Runtime.ShutdownRequested)
             {
@@ -246,7 +247,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             while (pending.TryDequeue(out var name))
             {
                 if (!source.TryGetValue(name, out var metadata))
-                    throw new InvalidDataException($"插件依赖图包含未安装插件: {name}");
+                    throw new InvalidDataException(string.Format(i18n.DependencyNotInstalled, name));
 
                 foreach (var candidate in source.Values)
                     if (candidate.Dependencies.Contains(name, StringComparer.OrdinalIgnoreCase) &&
@@ -313,7 +314,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             if (missing)
             {
-                TerminalUi.Log("Plugin", $"插件 {pluginName} 的文件已不存在，已卸载。", UiSeverity.Warning);
+                TerminalUi.Log("Plugin", string.Format(i18n.MissingFileUnloaded, pluginName), UiSeverity.Warning);
                 await LoadAffectedGroupsAsync(affectedNames, outcomes, startedPluginBatches);
                 return outcomes[pluginName] = PluginLifecycleOutcome.Succeeded;
             }
@@ -322,7 +323,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             var loaded = IsPluginLoaded(pluginName);
             if (loaded)
-                TerminalUi.Log("Plugin", $"插件 {pluginName} 已重载。", UiSeverity.Success);
+                TerminalUi.Log("Plugin", string.Format(i18n.PluginReloaded, pluginName), UiSeverity.Success);
             return outcomes[pluginName] = loaded
                 ? PluginLifecycleOutcome.Succeeded
                 : PluginLifecycleOutcome.Failed;
@@ -347,7 +348,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             if (group is null)
             {
                 if (loadedPlugin is not null)
-                    throw new InvalidOperationException($"已加载插件缺少 context group: {pluginName}");
+                    throw new InvalidOperationException(string.Format(i18n.ContextGroupMissing, pluginName));
                 if (existing is not null)
                     LifecycleMetadatas.Remove(existing.PluginName);
                 notLoaded = true;
@@ -376,7 +377,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
             if (notLoaded)
             {
-                TerminalUi.Log("Plugin", $"插件 {pluginName} 未加载。", UiSeverity.Warning);
+                TerminalUi.Log("Plugin", string.Format(i18n.PluginNotLoaded, pluginName), UiSeverity.Warning);
                 return outcomes[pluginName] = PluginLifecycleOutcome.Succeeded;
             }
 
@@ -398,9 +399,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 .ToArray();
             if (failedSurvivors.Length != 0)
                 throw new InvalidOperationException(
-                    $"插件 {pluginName} 已卸载，但关联插件重新加载失败: {string.Join("、", failedSurvivors)}");
+                    string.Format(i18n.RelatedReloadFailed, pluginName, string.Join(i18n.ListSeparator, failedSurvivors)));
 
-            TerminalUi.Log("Plugin", $"插件 {pluginName} 已卸载。", UiSeverity.Success);
+            TerminalUi.Log("Plugin", string.Format(i18n.PluginUnloaded, pluginName), UiSeverity.Success);
             return outcomes[pluginName] = PluginLifecycleOutcome.Succeeded;
         }
 
@@ -448,7 +449,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                         catch (Exception cleanupFailure)
                         {
                             throw new AggregateException(
-                                "插件组初始化及清理失败。",
+                                i18n.GroupInitializationCleanupFailed,
                                 initializationFailure,
                                 cleanupFailure);
                         }
@@ -498,7 +499,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception cleanupFailure)
                 {
                     failure = new AggregateException(
-                        "插件组加载及清理失败。",
+                        i18n.GroupLoadingCleanupFailed,
                         failure,
                         cleanupFailure);
                 }
@@ -545,7 +546,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception cleanupError)
                 {
                     throw new AggregateException(
-                        "插件 staged group 提交及清理失败。",
+                        i18n.StagedGroupCommitCleanupFailed,
                         commitError,
                         cleanupError);
                 }
@@ -632,7 +633,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception ex)
                 {
                     failures.Add(new InvalidOperationException(
-                        $"插件清理失败: plugin={InternalName(generations[i].Plugin)}, phase=Close",
+                        string.Format(i18n.CleanupPhaseFailed, InternalName(generations[i].Plugin), "Close"),
                         ex));
                 }
             }
@@ -654,7 +655,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     catch (Exception ex)
                     {
                         failures.Add(new InvalidOperationException(
-                            $"插件清理失败: plugin={pluginName}, phase=Flush",
+                            string.Format(i18n.CleanupPhaseFailed, pluginName, "Flush"),
                             ex));
                     }
                 }
@@ -678,8 +679,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception ex)
                 {
                     failures.Add(new InvalidOperationException(
-                        $"插件清理失败: plugin={pluginName}, phase=Dispose, " +
-                        $"{DescribeException(ex)}{Environment.NewLine}{ex}"));
+                        string.Format(i18n.DisposeFailed, pluginName, DescribeException(ex), Environment.NewLine, ex)));
                 }
             }
 
@@ -690,7 +690,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             catch (Exception ex)
             {
                 failures.Add(new InvalidOperationException(
-                    $"插件清理失败: plugin={pluginName}, phase=UnregisterHotkeys",
+                    string.Format(i18n.CleanupPhaseFailed, pluginName, "UnregisterHotkeys"),
                     ex));
             }
         }
@@ -737,7 +737,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
             catch (Exception ex)
             {
-                failures.Add(new InvalidOperationException("插件 registration/context 清理失败。", ex));
+                failures.Add(new InvalidOperationException(i18n.RegistrationContextCleanupFailed, ex));
             }
 
             foreach (var plugin in plugins)
@@ -746,14 +746,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception ex)
                 {
                     failures.Add(new InvalidOperationException(
-                        $"插件清理失败: plugin={InternalName(plugin)}, phase=HostEvents",
+                        string.Format(i18n.CleanupPhaseFailed, InternalName(plugin), "HostEvents"),
                         ex));
                 }
             }
             if (clearAll)
             {
                 try { ClearHostEventSubscriptions(); }
-                catch (Exception ex) { failures.Add(new InvalidOperationException("插件 HostEvents 清理失败。", ex)); }
+                catch (Exception ex) { failures.Add(new InvalidOperationException(i18n.HostEventsCleanupFailed, ex)); }
             }
 
             var contexts = pendingUnloads
@@ -767,7 +767,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 catch (Exception ex)
                 {
                     failures.Add(new InvalidOperationException(
-                        $"插件 ALC 清理失败: context={context!.Name}",
+                        string.Format(i18n.LoadContextCleanupFailed, context!.Name),
                         ex));
                 }
             }
@@ -779,7 +779,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             generations.Clear();
 
             if (failures.Count != 0)
-                throw new AggregateException("插件清理失败。", failures);
+                throw new AggregateException(i18n.CleanupFailed, failures);
         }
 
     }

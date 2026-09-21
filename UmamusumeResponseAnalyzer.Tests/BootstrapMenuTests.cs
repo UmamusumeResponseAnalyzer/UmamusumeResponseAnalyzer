@@ -1,3 +1,4 @@
+using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 using System.Drawing;
 using Terminal.Gui.Input;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -18,7 +19,7 @@ public sealed class BootstrapMenuTests(PluginRuntimeFixture fixture)
         try
         {
             bootstrap.ShowPreparingMenu("启动菜单测试", ["开始测试", "选项测试"]);
-            await terminal.WaitForScreenAsync("正在准备启动");
+            await terminal.WaitForScreenAsync(I18N_PreparingStartup);
             var preparingView = await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
                 .OfType<BootstrapMenuView>().Single());
             Assert.False(await terminal.InvokeAsync(() => Descendants(preparingView).OfType<Terminal.Gui.Views.Menu>().Single().Enabled));
@@ -34,7 +35,7 @@ public sealed class BootstrapMenuTests(PluginRuntimeFixture fixture)
                 .OfType<BootstrapMenuView>().Single()));
             Assert.False(await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
                 .OfType<CommandModeView>().Single().IsOpen));
-            Assert.Contains("正在准备启动", await terminal.CaptureScreenAsync());
+            Assert.Contains(I18N_PreparingStartup, await terminal.CaptureScreenAsync());
 
             var menu = bootstrap.ShowMenuAsync("启动菜单测试", ["开始测试", "选项测试"], TestContext.Current.CancellationToken);
             await terminal.WaitForScreenAsync("启动菜单测试");
@@ -51,7 +52,7 @@ public sealed class BootstrapMenuTests(PluginRuntimeFixture fixture)
                 .OfType<BootstrapMenuView>().Single()));
             await terminal.InjectAsync(Key.Enter);
             Assert.Equal("选项测试", await menu.WaitAsync(TimeSpan.FromSeconds(5)));
-            await terminal.WaitForScreenAsync("正在执行");
+            await terminal.WaitForScreenAsync(string.Format(I18N_Running, "选项测试"));
             await terminal.InjectAsync(Key.Enter);
             await terminal.InjectAsync(Key.Enter);
             Assert.False(await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)

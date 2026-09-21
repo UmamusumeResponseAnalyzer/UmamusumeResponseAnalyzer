@@ -129,4 +129,181 @@
   <data name="I18N_UnknownSkillUpgradeConditionType" xml:space="preserve">
     <value>未知的技能进化条件类型，将视为无法进化: conditionId={0}, type={1}</value>
   </data>
+  <data name="I18N_NotLoaded" xml:space="preserve">
+    <value>游戏数据尚未完整加载。请先更新数据文件并重新启动。</value>
+  </data>
+  <data name="I18N_InvalidSnapshot" xml:space="preserve">
+    <value>游戏数据无法组成完整快照: {0}</value>
+  </data>
+  <data name="I18N_SkillMissing" xml:space="preserve">
+    <value>技能数据不存在: skillId={0}</value>
+  </data>
+  <data name="I18N_SkillManagerSourceMissing" xml:space="preserve">
+    <value>该 SkillManager 不是由 Database.Skills.Apply 创建，无法计算进化技能。</value>
+  </data>
+  <data name="I18N_UpgradeConditionMissing" xml:space="preserve">
+    <value>缺少技能进化条件记录: conditionId={0}</value>
+  </data>
+  <data name="I18N_UnknownAptitudeRequirement" xml:space="preserve">
+    <value>未知的技能适性进化条件: conditionId={0}, requirement={1}</value>
+  </data>
+  <data name="ClimaxItem_1001" xml:space="preserve">
+    <value>速+3</value>
+  </data>
+  <data name="ClimaxItem_1002" xml:space="preserve">
+    <value>耐+3</value>
+  </data>
+  <data name="ClimaxItem_1003" xml:space="preserve">
+    <value>力+3</value>
+  </data>
+  <data name="ClimaxItem_1004" xml:space="preserve">
+    <value>根+3</value>
+  </data>
+  <data name="ClimaxItem_1005" xml:space="preserve">
+    <value>智+3</value>
+  </data>
+  <data name="ClimaxItem_1101" xml:space="preserve">
+    <value>速+7</value>
+  </data>
+  <data name="ClimaxItem_1102" xml:space="preserve">
+    <value>耐+7</value>
+  </data>
+  <data name="ClimaxItem_1103" xml:space="preserve">
+    <value>力+7</value>
+  </data>
+  <data name="ClimaxItem_1104" xml:space="preserve">
+    <value>根+7</value>
+  </data>
+  <data name="ClimaxItem_1105" xml:space="preserve">
+    <value>智+7</value>
+  </data>
+  <data name="ClimaxItem_1201" xml:space="preserve">
+    <value>速+15</value>
+  </data>
+  <data name="ClimaxItem_1202" xml:space="preserve">
+    <value>耐+15</value>
+  </data>
+  <data name="ClimaxItem_1203" xml:space="preserve">
+    <value>力+15</value>
+  </data>
+  <data name="ClimaxItem_1204" xml:space="preserve">
+    <value>根+15</value>
+  </data>
+  <data name="ClimaxItem_1205" xml:space="preserve">
+    <value>智+15</value>
+  </data>
+  <data name="ClimaxItem_2001" xml:space="preserve">
+    <value>体力+20</value>
+  </data>
+  <data name="ClimaxItem_2002" xml:space="preserve">
+    <value>体力+40</value>
+  </data>
+  <data name="ClimaxItem_2003" xml:space="preserve">
+    <value>体力+65</value>
+  </data>
+  <data name="ClimaxItem_2101" xml:space="preserve">
+    <value>苦茶</value>
+  </data>
+  <data name="ClimaxItem_2201" xml:space="preserve">
+    <value>体力上限+4</value>
+  </data>
+  <data name="ClimaxItem_2202" xml:space="preserve">
+    <value>体力上限+8</value>
+  </data>
+  <data name="ClimaxItem_2301" xml:space="preserve">
+    <value>干劲+1</value>
+  </data>
+  <data name="ClimaxItem_2302" xml:space="preserve">
+    <value>干劲+2</value>
+  </data>
+  <data name="ClimaxItem_3001" xml:space="preserve">
+    <value>猫罐头</value>
+  </data>
+  <data name="ClimaxItem_3101" xml:space="preserve">
+    <value>BBQ</value>
+  </data>
+  <data name="ClimaxItem_4001" xml:space="preserve">
+    <value>爱娇</value>
+  </data>
+  <data name="ClimaxItem_4002" xml:space="preserve">
+    <value>注目株</value>
+  </data>
+  <data name="ClimaxItem_4003" xml:space="preserve">
+    <value>练习上手</value>
+  </data>
+  <data name="ClimaxItem_4004" xml:space="preserve">
+    <value>切者</value>
+  </data>
+  <data name="ClimaxItem_4101" xml:space="preserve">
+    <value>解寝不足</value>
+  </data>
+  <data name="ClimaxItem_4102" xml:space="preserve">
+    <value>解摸鱼癖</value>
+  </data>
+  <data name="ClimaxItem_4103" xml:space="preserve">
+    <value>解肌荒</value>
+  </data>
+  <data name="ClimaxItem_4104" xml:space="preserve">
+    <value>解发胖</value>
+  </data>
+  <data name="ClimaxItem_4105" xml:space="preserve">
+    <value>解头痛</value>
+  </data>
+  <data name="ClimaxItem_4106" xml:space="preserve">
+    <value>解练习下手</value>
+  </data>
+  <data name="ClimaxItem_4201" xml:space="preserve">
+    <value>解全DB</value>
+  </data>
+  <data name="ClimaxItem_5001" xml:space="preserve">
+    <value>速请愿书</value>
+  </data>
+  <data name="ClimaxItem_5002" xml:space="preserve">
+    <value>耐请愿书</value>
+  </data>
+  <data name="ClimaxItem_5003" xml:space="preserve">
+    <value>力请愿书</value>
+  </data>
+  <data name="ClimaxItem_5004" xml:space="preserve">
+    <value>根请愿书</value>
+  </data>
+  <data name="ClimaxItem_5005" xml:space="preserve">
+    <value>智请愿书</value>
+  </data>
+  <data name="ClimaxItem_7001" xml:space="preserve">
+    <value>哨子</value>
+  </data>
+  <data name="ClimaxItem_8001" xml:space="preserve">
+    <value>20%喇叭</value>
+  </data>
+  <data name="ClimaxItem_8002" xml:space="preserve">
+    <value>40%喇叭</value>
+  </data>
+  <data name="ClimaxItem_8003" xml:space="preserve">
+    <value>60%喇叭</value>
+  </data>
+  <data name="ClimaxItem_9001" xml:space="preserve">
+    <value>速负重脚环</value>
+  </data>
+  <data name="ClimaxItem_9002" xml:space="preserve">
+    <value>耐负重脚环</value>
+  </data>
+  <data name="ClimaxItem_9003" xml:space="preserve">
+    <value>力负重脚环</value>
+  </data>
+  <data name="ClimaxItem_9004" xml:space="preserve">
+    <value>根负重脚环</value>
+  </data>
+  <data name="ClimaxItem_10001" xml:space="preserve">
+    <value>御守</value>
+  </data>
+  <data name="ClimaxItem_11001" xml:space="preserve">
+    <value>蹄铁・匠</value>
+  </data>
+  <data name="ClimaxItem_11002" xml:space="preserve">
+    <value>蹄铁・極</value>
+  </data>
+  <data name="ClimaxItem_11003" xml:space="preserve">
+    <value>荧光棒</value>
+  </data>
 </root>

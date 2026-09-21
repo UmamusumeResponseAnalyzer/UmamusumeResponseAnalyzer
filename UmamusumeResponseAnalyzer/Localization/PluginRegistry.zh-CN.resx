@@ -1,0 +1,375 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Empty" xml:space="preserve">
+    <value>插件仓库没有可用版本。</value>
+  </data>
+  <data name="SelectPlugins" xml:space="preserve">
+    <value>选择要安装的插件</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>已取消安装。</value>
+  </data>
+  <data name="InstalledNotLoaded" xml:space="preserve">
+    <value>ZIP 已保存，但加载未成功。</value>
+  </data>
+  <data name="ExecutionWarning" xml:space="preserve">
+    <value>该插件将在本机执行代码。</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>插件仓库操作失败: {0}</value>
+  </data>
+  <data name="InstalledLoadFailed" xml:space="preserve">
+    <value>插件安装完成，但加载失败：{0}</value>
+  </data>
+  <data name="InstalledAndLoaded" xml:space="preserve">
+    <value>插件已安装并生效：{0}</value>
+  </data>
+  <data name="DuplicateSelection" xml:space="preserve">
+    <value>已选插件 InternalName 重复。</value>
+  </data>
+  <data name="Downloading" xml:space="preserve">
+    <value>[{0} v{1}] 正在下载</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>[{0}] 安装完成</value>
+  </data>
+  <data name="InstallFailed" xml:space="preserve">
+    <value>[{0}] 安装失败: {1}</value>
+  </data>
+  <data name="AmbiguousSource" xml:space="preserve">
+    <value>插件 InternalName 对应多个来源，无法判断更新: {0}</value>
+  </data>
+  <data name="LoadedVersionMissing" xml:space="preserve">
+    <value>已加载插件缺少版本: {0}</value>
+  </data>
+  <data name="InvalidDownloadReference" xml:space="preserve">
+    <value>插件下载引用无效。</value>
+  </data>
+  <data name="ManifestMissing" xml:space="preserve">
+    <value>插件 manifest 缺失。</value>
+  </data>
+  <data name="InvalidSourceId" xml:space="preserve">
+    <value>非法的插件来源 ID。</value>
+  </data>
+  <data name="DownloadReferenceMismatch" xml:space="preserve">
+    <value>插件下载引用与请求不匹配。</value>
+  </data>
+  <data name="PackageTooLarge" xml:space="preserve">
+    <value>插件 ZIP 超过 64 MiB。</value>
+  </data>
+  <data name="EmptyJson" xml:space="preserve">
+    <value>URACloud 返回了空 JSON。</value>
+  </data>
+  <data name="PackageAuthorMismatch" xml:space="preserve">
+    <value>下载包 Author 与请求不匹配: expected={0}, actual={1}</value>
+  </data>
+  <data name="PackageInternalNameMismatch" xml:space="preserve">
+    <value>下载包 InternalName 与请求不匹配: expected={0}, actual={1}</value>
+  </data>
+  <data name="PackageVersionMismatch" xml:space="preserve">
+    <value>下载包 Version 与请求不匹配: expected={0}, actual={1}</value>
+  </data>
+  <data name="InstallConfirmation" xml:space="preserve">
+    <value>确认安装插件 {0} v{1}
+{2}/{3}
+{4}
+该插件将在本机执行代码。</value>
+  </data>
+  <data name="RootManifestRequired" xml:space="preserve">
+    <value>ZIP 根目录必须且只能包含一个 manifest.json。</value>
+  </data>
+  <data name="StrictJsonRequired" xml:space="preserve">
+    <value>manifest.json 不是严格 JSON。</value>
+  </data>
+  <data name="PackageNameMismatch" xml:space="preserve">
+    <value>ZIP 文件名必须等于 manifest InternalName: zip={0}, manifest={1}</value>
+  </data>
+  <data name="RootAssemblyRequired" xml:space="preserve">
+    <value>ZIP 根目录必须且只能包含一个主程序集 {0}。</value>
+  </data>
+  <data name="DuplicateAssembly" xml:space="preserve">
+    <value>ZIP 根目录程序集名重复: {0}</value>
+  </data>
+  <data name="ManifestObjectRequired" xml:space="preserve">
+    <value>manifest.json 根节点必须是 object。</value>
+  </data>
+  <data name="DuplicateManifestField" xml:space="preserve">
+    <value>manifest 包含重复字段: {0}</value>
+  </data>
+  <data name="ManifestSchemaMismatch" xml:space="preserve">
+    <value>manifest schema 不匹配: missing=[{0}], unexpected=[{1}]</value>
+  </data>
+  <data name="ManifestTypeInvalid" xml:space="preserve">
+    <value>manifest {0} 类型无效: expected={1}, actual={2}</value>
+  </data>
+  <data name="ManifestStringsRequired" xml:space="preserve">
+    <value>manifest {0} 只能包含字符串。</value>
+  </data>
+  <data name="ClrMetadataMissing" xml:space="preserve">
+    <value>主程序集没有 CLR metadata。</value>
+  </data>
+  <data name="InvalidManagedAssembly" xml:space="preserve">
+    <value>主程序集不是有效的 managed assembly: {0}</value>
+  </data>
+  <data name="AssemblyIdentityMismatch" xml:space="preserve">
+    <value>主程序集名称必须等于 manifest InternalName: assembly={0}, manifest={1}</value>
+  </data>
+  <data name="ManifestFieldEmpty" xml:space="preserve">
+    <value>manifest {0} 不能为空。</value>
+  </data>
+  <data name="InvalidInternalName" xml:space="preserve">
+    <value>manifest InternalName 不是有效文件名: {0}</value>
+  </data>
+  <data name="InvalidVersion" xml:space="preserve">
+    <value>manifest Version 无效: {0}</value>
+  </data>
+  <data name="ManifestFieldNull" xml:space="preserve">
+    <value>manifest {0} 不能为 null。</value>
+  </data>
+  <data name="SelfDependency" xml:space="preserve">
+    <value>插件不能依赖自身: {0}</value>
+  </data>
+  <data name="EmptyManifestName" xml:space="preserve">
+    <value>manifest {0} 不能包含空名称。</value>
+  </data>
+  <data name="DuplicateManifestName" xml:space="preserve">
+    <value>manifest {0} 包含重复名称: {1}</value>
+  </data>
+  <data name="CallbackUnavailable" xml:space="preserve">
+    <value>插件已卸载或 generation 已关闭，拒绝启动回调: {0}</value>
+  </data>
+  <data name="ConfigurationUnavailable" xml:space="preserve">
+    <value>插件已卸载或 generation 已关闭，拒绝打开设置: {0}</value>
+  </data>
+  <data name="NotificationDiagnosticsFailed" xml:space="preserve">
+    <value>插件错误及 notification diagnostics 失败。</value>
+  </data>
+  <data name="CallbackLifecycleReentry" xml:space="preserve">
+    <value>插件 callback 内禁止启动 lifecycle 操作；请在 callback 返回后再调用。</value>
+  </data>
+  <data name="LifecyclePhaseInvalid" xml:space="preserve">
+    <value>当前 phase={0}，不允许执行插件 {1}。</value>
+  </data>
+  <data name="GenerationMissing" xml:space="preserve">
+    <value>插件缺少 runtime generation: {0}</value>
+  </data>
+  <data name="InitializationTransactionBusy" xml:space="preserve">
+    <value>已有插件 lifecycle 事务正在运行，无法重新初始化。</value>
+  </data>
+  <data name="RuntimeStateNotEmpty" xml:space="preserve">
+    <value>当前 phase={0}，插件 runtime state 非空，无法执行 Init。</value>
+  </data>
+  <data name="FailedGroupContextMissing" xml:space="preserve">
+    <value>初始化失败的插件组缺少 context: {0}</value>
+  </data>
+  <data name="InitializationFailed" xml:space="preserve">
+    <value>插件 {0} 初始化失败</value>
+  </data>
+  <data name="InitializationCleanupFailed" xml:space="preserve">
+    <value>插件初始化及清理失败。</value>
+  </data>
+  <data name="InternalNameConflict" xml:space="preserve">
+    <value>插件 InternalName 冲突（OrdinalIgnoreCase）: {0}</value>
+  </data>
+  <data name="InternalNamePackageConflict" xml:space="preserve">
+    <value>插件 InternalName 冲突（OrdinalIgnoreCase）: {0} ({1}) / {2} ({3})</value>
+  </data>
+  <data name="InvalidPackage" xml:space="preserve">
+    <value>插件包无效: package={0}</value>
+  </data>
+  <data name="DependencyNotInstalled" xml:space="preserve">
+    <value>插件依赖图包含未安装插件: {0}</value>
+  </data>
+  <data name="DependencyCycle" xml:space="preserve">
+    <value>插件 manifest Dependencies 存在循环: {0}</value>
+  </data>
+  <data name="ReadAssembly" xml:space="preserve">
+    <value>读取插件程序集</value>
+  </data>
+  <data name="ReadExportedTypes" xml:space="preserve">
+    <value>读取插件导出类型</value>
+  </data>
+  <data name="PluginTypeMissing" xml:space="preserve">
+    <value>未找到实现 {0} 的公开具体类型。</value>
+  </data>
+  <data name="CreatePluginInstance" xml:space="preserve">
+    <value>创建插件实例</value>
+  </data>
+  <data name="CannotCreatePluginInstance" xml:space="preserve">
+    <value>无法创建插件实例: type={0}</value>
+  </data>
+  <data name="LoadingCleanupFailed" xml:space="preserve">
+    <value>插件加载及清理失败。</value>
+  </data>
+  <data name="LoadingFailed" xml:space="preserve">
+    <value>插件加载失败: plugin={0}, phase={1}</value>
+  </data>
+  <data name="SharedAssemblyUnavailable" xml:space="preserve">
+    <value>shared ABI assembly {0} 必须由 Default ALC 加载，但宿主无法加载。</value>
+  </data>
+  <data name="HostUpdateRequired" xml:space="preserve">
+    <value>插件依赖的宿主 ABI 版本更高，请更新 UmamusumeResponseAnalyzer: 插件请求 {0}，当前宿主 {1}。</value>
+  </data>
+  <data name="SharedAssemblyVersionMismatch" xml:space="preserve">
+    <value>shared ABI assembly 版本不一致: 插件请求 {0}，宿主 Default ALC 已加载 {1}。</value>
+  </data>
+  <data name="PackageEntryMissing" xml:space="preserve">
+    <value>插件包缺少条目: package={0}, entry={1}</value>
+  </data>
+  <data name="AssemblyCaseConflict" xml:space="preserve">
+    <value>插件组程序集名称存在大小写冲突: {0} / {1}, context={2}</value>
+  </data>
+  <data name="AssemblyContentConflict" xml:space="preserve">
+    <value>插件组包含内容不同的同名程序集 {0}: context={1}</value>
+  </data>
+  <data name="PluginNotFound" xml:space="preserve">
+    <value>插件 {0} 不存在，无法加载。</value>
+  </data>
+  <data name="UnloadFailed" xml:space="preserve">
+    <value>插件卸载失败: plugin={0}</value>
+  </data>
+  <data name="BatchUnloadFailed" xml:space="preserve">
+    <value>插件批量卸载失败。</value>
+  </data>
+  <data name="LifecycleTransactionBusy" xml:space="preserve">
+    <value>已有插件 lifecycle 事务正在运行，拒绝并发或重入操作。</value>
+  </data>
+  <data name="MissingFileUnloaded" xml:space="preserve">
+    <value>插件 {0} 的文件已不存在，已卸载。</value>
+  </data>
+  <data name="PluginReloaded" xml:space="preserve">
+    <value>插件 {0} 已重载。</value>
+  </data>
+  <data name="ContextGroupMissing" xml:space="preserve">
+    <value>已加载插件缺少 context group: {0}</value>
+  </data>
+  <data name="PluginNotLoaded" xml:space="preserve">
+    <value>插件 {0} 未加载。</value>
+  </data>
+  <data name="RelatedReloadFailed" xml:space="preserve">
+    <value>插件 {0} 已卸载，但关联插件重新加载失败: {1}</value>
+  </data>
+  <data name="PluginUnloaded" xml:space="preserve">
+    <value>插件 {0} 已卸载。</value>
+  </data>
+  <data name="GroupInitializationCleanupFailed" xml:space="preserve">
+    <value>插件组初始化及清理失败。</value>
+  </data>
+  <data name="GroupLoadingCleanupFailed" xml:space="preserve">
+    <value>插件组加载及清理失败。</value>
+  </data>
+  <data name="StagedGroupCommitCleanupFailed" xml:space="preserve">
+    <value>插件 staged group 提交及清理失败。</value>
+  </data>
+  <data name="CleanupPhaseFailed" xml:space="preserve">
+    <value>插件清理失败: plugin={0}, phase={1}</value>
+  </data>
+  <data name="DisposeFailed" xml:space="preserve">
+    <value>插件清理失败: plugin={0}, phase=Dispose, {1}{2}{3}</value>
+  </data>
+  <data name="RegistrationContextCleanupFailed" xml:space="preserve">
+    <value>插件 registration/context 清理失败。</value>
+  </data>
+  <data name="HostEventsCleanupFailed" xml:space="preserve">
+    <value>插件 HostEvents 清理失败。</value>
+  </data>
+  <data name="LoadContextCleanupFailed" xml:space="preserve">
+    <value>插件 ALC 清理失败: context={0}</value>
+  </data>
+  <data name="CleanupFailed" xml:space="preserve">
+    <value>插件清理失败。</value>
+  </data>
+  <data name="GenerationAlreadyRunning" xml:space="preserve">
+    <value>插件 generation 已在初始化或运行: {0}</value>
+  </data>
+  <data name="GenerationNotInitializing" xml:space="preserve">
+    <value>插件 generation 未在初始化: {0}</value>
+  </data>
+  <data name="GenerationStillInitializing" xml:space="preserve">
+    <value>插件 generation 仍在初始化: {0}</value>
+  </data>
+  <data name="InitializationRegistrationCommitted" xml:space="preserve">
+    <value>插件 initialization registration 已提交: {0}</value>
+  </data>
+  <data name="InitializationRegistrationNotCommitted" xml:space="preserve">
+    <value>插件 initialization registration 尚未提交: {0}</value>
+  </data>
+  <data name="GenerationCloseFailed" xml:space="preserve">
+    <value>插件 generation 关闭失败。</value>
+  </data>
+  <data name="BackgroundOperationFailed" xml:space="preserve">
+    <value>插件后台操作失败: plugin={0}, {1}</value>
+  </data>
+  <data name="GenerationUnavailable" xml:space="preserve">
+    <value>插件 generation 已关闭或未开放: {0}</value>
+  </data>
+  <data name="EventHandlerFailed" xml:space="preserve">
+    <value>插件事件处理错误: plugin={0}, {1}</value>
+  </data>
+  <data name="RegistrationAlreadyCommitted" xml:space="preserve">
+    <value>插件 registration stage 已提交: {0}</value>
+  </data>
+  <data name="NestedRegistration" xml:space="preserve">
+    <value>插件 registration stage 不允许嵌套。</value>
+  </data>
+  <data name="CatalogEndpoint" xml:space="preserve">
+    <value>目录中的 endpoint</value>
+  </data>
+  <data name="EndpointOutsideCatalog" xml:space="preserve">
+    <value>endpoint 类型不在 GameEndpointCatalog 中</value>
+  </data>
+  <data name="EndpointPatternRequired" xml:space="preserve">
+    <value>Analyzer 至少需要一个 endpoint pattern。</value>
+  </data>
+  <data name="ProgrammaticAnalyzer" xml:space="preserve">
+    <value>程序注册的 {0} analyzer</value>
+  </data>
+  <data name="RegistrationPhaseInvalid" xml:space="preserve">
+    <value>Analyzer 与 background operation 只能在 Initialize 或 Host 执行的 OnStarted 回调中注册: plugin={0}</value>
+  </data>
+  <data name="ConcreteHostPayloadRequired" xml:space="preserve">
+    <value>Analyzer payload 必须是 Host 中现有的闭合具体 Gallop DTO: {0}</value>
+  </data>
+  <data name="PayloadDirectionMismatch" xml:space="preserve">
+    <value>Analyzer payload 不是当前方向的 Host Gallop DTO: kind={0}, payload={1}</value>
+  </data>
+  <data name="EndpointPatternUnmatched" xml:space="preserve">
+    <value>Endpoint pattern 未命中当前 catalog: kind={0}, pattern={1}</value>
+  </data>
+  <data name="UnknownEndpointPatternKind" xml:space="preserve">
+    <value>未知 endpoint pattern 类型。</value>
+  </data>
+  <data name="WildcardRequired" xml:space="preserve">
+    <value>Wildcard endpoint pattern 必须包含 *: {0}</value>
+  </data>
+  <data name="CanonicalAbsolutePathRequired" xml:space="preserve">
+    <value>Endpoint pattern 必须是 canonical absolute path: {0}</value>
+  </data>
+  <data name="NonCanonicalPathSegment" xml:space="preserve">
+    <value>Endpoint pattern 包含非 canonical path segment: {0}</value>
+  </data>
+  <data name="ExactWildcardForbidden" xml:space="preserve">
+    <value>Exact endpoint pattern 不能包含 *: {0}</value>
+  </data>
+  <data name="AdjacentWildcardsForbidden" xml:space="preserve">
+    <value>Wildcard endpoint pattern 不支持相邻 **: {0}</value>
+  </data>
+  <data name="AnalyzerSignatureInvalid" xml:space="preserve">
+    <value>插件 analyzer 签名无效: plugin={0}, method={1}.{2}, endpoint={3}, kind={4}, expected={5}, actual={6}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>、</value>
+  </data>
+</root>

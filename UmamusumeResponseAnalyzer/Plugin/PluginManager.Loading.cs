@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -31,7 +32,7 @@ internal static partial class PluginManager
                 var metadata = ReadPluginPackage(zip.FullName, LanguageConfig.GetCulture());
                 if (conflictedNames.Contains(metadata.PluginName))
                     throw new InvalidDataException(
-                        $"插件 InternalName 冲突（OrdinalIgnoreCase）: {metadata.PluginName}");
+                        string.Format(i18n.InternalNameConflict, metadata.PluginName));
                 if (scanned.TryGetValue(metadata.PluginName, out var existing))
                 {
                     scanned.Remove(metadata.PluginName);
@@ -39,9 +40,8 @@ internal static partial class PluginManager
                     if (reportFailures && !LifecycleFailedPlugins.Contains(existing.FilePath))
                         LifecycleFailedPlugins.Add(existing.FilePath);
                     throw new InvalidDataException(
-                        $"插件 InternalName 冲突（OrdinalIgnoreCase）: " +
-                        $"{existing.PluginName} ({existing.FilePath}) / " +
-                        $"{metadata.PluginName} ({metadata.FilePath})");
+                        string.Format(i18n.InternalNamePackageConflict, existing.PluginName, existing.FilePath,
+                            metadata.PluginName, metadata.FilePath));
                 }
                 scanned.Add(metadata.PluginName, metadata);
             }
@@ -50,7 +50,7 @@ internal static partial class PluginManager
                 if (!reportFailures)
                     continue;
 
-                ReportPluginDiagnostic(new InvalidDataException($"插件包无效: package={zip.FullName}", ex));
+                ReportPluginDiagnostic(new InvalidDataException(string.Format(i18n.InvalidPackage, zip.FullName), ex));
                 if (!LifecycleFailedPlugins.Contains(zip.FullName))
                     LifecycleFailedPlugins.Add(zip.FullName);
             }
@@ -138,7 +138,7 @@ internal static partial class PluginManager
         foreach (var name in scope)
         {
             if (!source.TryGetValue(name, out var metadata))
-                throw new InvalidDataException($"插件依赖图包含未安装插件: {name}");
+                throw new InvalidDataException(string.Format(i18n.DependencyNotInstalled, name));
         }
 
         var state = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -152,13 +152,13 @@ internal static partial class PluginManager
                     return;
                 if (current == 1)
                     throw new InvalidDataException(
-                        $"插件 manifest Dependencies 存在循环: {string.Join(" -> ", [.. path, name])}");
+                        string.Format(i18n.DependencyCycle, string.Join(" -> ", [.. path, name])));
             }
 
             state[name] = 1;
             path.Add(name);
             if (!source.TryGetValue(name, out var metadata))
-                throw new InvalidDataException($"插件依赖图包含未安装插件: {name}");
+                throw new InvalidDataException(string.Format(i18n.DependencyNotInstalled, name));
 
             foreach (var dependency in metadata.Dependencies.Where(scope.Contains))
                 Visit(dependency, path);
@@ -191,7 +191,7 @@ internal static partial class PluginManager
         List<IPlugin> plugins)
     {
         IPlugin? plugin = null;
-        var phase = "读取插件程序集";
+        var phase = i18n.ReadAssembly;
         try
         {
             using var stream = CreateStream(metadata);
@@ -202,15 +202,15 @@ internal static partial class PluginManager
             if (!ShouldLoadPluginForCurrentTargets(metadata))
                 return null;
 
-            phase = "读取插件导出类型";
+            phase = i18n.ReadExportedTypes;
             var type = assembly.GetExportedTypes().FirstOrDefault(candidate =>
                 typeof(IPlugin).IsAssignableFrom(candidate) && !candidate.IsAbstract);
             if (type is null)
-                throw new InvalidDataException($"未找到实现 {nameof(IPlugin)} 的公开具体类型。");
+                throw new InvalidDataException(string.Format(i18n.PluginTypeMissing, nameof(IPlugin)));
 
-            phase = "创建插件实例";
+            phase = i18n.CreatePluginInstance;
             plugin = Activator.CreateInstance(type) as IPlugin
-                     ?? throw new InvalidDataException($"无法创建插件实例: type={type.FullName ?? type.Name}");
+                     ?? throw new InvalidDataException(string.Format(i18n.CannotCreatePluginInstance, type.FullName ?? type.Name));
             _ = GenerationFor(plugin);
 
             plugins.Add(plugin);
@@ -225,7 +225,7 @@ internal static partial class PluginManager
                 catch (Exception cleanupEx)
                 {
                     failure = new AggregateException(
-                        "插件加载及清理失败。",
+                        i18n.LoadingCleanupFailed,
                         failure,
                         cleanupEx);
                 }
@@ -241,7 +241,7 @@ internal static partial class PluginManager
            Config.Repository.Targets.Count == 0;
 
     static InvalidOperationException PluginLoadException(PluginMetadata metadata, string phase, Exception inner)
-        => new($"插件加载失败: plugin={metadata.PluginName}, phase={phase}", inner);
+        => new(string.Format(i18n.LoadingFailed, metadata.PluginName, phase), inner);
 
     internal static Assembly? ResolveSharedAssembly(AssemblyName requested)
     {
@@ -259,7 +259,7 @@ internal static partial class PluginManager
             catch (Exception ex)
             {
                 throw new FileLoadException(
-                    $"shared ABI assembly {requested.FullName} 必须由 Default ALC 加载，但宿主无法加载。",
+                    string.Format(i18n.SharedAssemblyUnavailable, requested.FullName),
                     requested.FullName,
                     ex);
             }
@@ -278,14 +278,14 @@ internal static partial class PluginManager
         {
             if (actual.Version is not null && requested.Version > actual.Version)
                 ReportPluginDiagnostic(
-                    $"插件依赖的宿主 ABI 版本更高，请更新 UmamusumeResponseAnalyzer: 插件请求 {requested.FullName}，当前宿主 {actual.FullName}。",
+                    string.Format(i18n.HostUpdateRequired, requested.FullName, actual.FullName),
                     UiSeverity.Warning);
             return;
         }
 
         if (actual.Version != requested.Version)
             throw new FileLoadException(
-                $"shared ABI assembly 版本不一致: 插件请求 {requested.FullName}，宿主 Default ALC 已加载 {actual.FullName}。",
+                string.Format(i18n.SharedAssemblyVersionMismatch, requested.FullName, actual.FullName),
                 requested.FullName);
     }
 
@@ -296,7 +296,7 @@ internal static partial class PluginManager
     {
         using var archive = ZipFile.OpenRead(packagePath);
         var entry = archive.GetEntry(entryName)
-                    ?? throw new InvalidDataException($"插件包缺少条目: package={packagePath}, entry={entryName}");
+                    ?? throw new InvalidDataException(string.Format(i18n.PackageEntryMissing, packagePath, entryName));
         var stream = new MemoryStream();
         using (var source = entry.Open())
             source.CopyTo(stream);
@@ -322,10 +322,10 @@ internal static partial class PluginManager
                             string.Equals(candidate, assemblyName, StringComparison.OrdinalIgnoreCase));
                         if (!string.Equals(existingName, assemblyName, StringComparison.Ordinal))
                             throw new InvalidDataException(
-                                $"插件组程序集名称存在大小写冲突: {existingName} / {assemblyName}, context={name}");
+                                string.Format(i18n.AssemblyCaseConflict, existingName, assemblyName, name));
                         if (!SameAssemblyBytes(existing, (package.PackagePath, entry)))
                             throw new InvalidDataException(
-                                $"插件组包含内容不同的同名程序集 {assemblyName}: context={name}");
+                                string.Format(i18n.AssemblyContentConflict, assemblyName, name));
                     }
                     else
                     {

@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -14,7 +15,7 @@ public sealed class WorkspaceContent
     }
 
     public View CreateView()
-        => createView() ?? throw new InvalidOperationException("WorkspaceContent factory 返回了 null。");
+        => createView() ?? throw new InvalidOperationException(i18n.Workspace_ContentFactoryNull);
 
     public static WorkspaceContent Text(string text)
     {

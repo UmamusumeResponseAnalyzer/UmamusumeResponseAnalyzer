@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Input;
 using UmamusumeResponseAnalyzer.Commands;
 using UmamusumeResponseAnalyzer.Plugin;
@@ -206,7 +207,7 @@ internal sealed class UiHostSession
             if (modifiers.HasFlag(ConsoleModifiers.Control) &&
                 key is ConsoleKey.S or ConsoleKey.Q or ConsoleKey.Z)
             {
-                throw new InvalidOperationException($"Ctrl+{key} 由终端保留，不能注册为热键。");
+                throw new InvalidOperationException(string.Format(i18n.Hotkey_Reserved, key));
             }
 
             pendingWorkspaceHotkeys.Add(entry);
@@ -276,7 +277,7 @@ internal sealed class UiHostSession
         lock (gate)
         {
             if (runClaimed || lifecycle == Lifecycle.Stopped)
-                throw new InvalidOperationException("UiHost.RunAsync 只能调用一次。");
+                throw new InvalidOperationException(i18n.Host_RunOnce);
 
             runClaimed = true;
             if (lifecycle == Lifecycle.Created)
@@ -446,14 +447,13 @@ internal sealed class UiHostSession
     {
         if (lifecycle >= Lifecycle.Stopping)
         {
-            var state = lifecycle == Lifecycle.Stopped ? "stopped" : "stopping";
             throw new InvalidOperationException(
-                $"UiHost is {state}; new UI operations are not accepted.");
+                lifecycle == Lifecycle.Stopped ? i18n.Host_Stopped : i18n.Host_Stopping);
         }
         if (rootCreationFailure is not null)
         {
             throw new InvalidOperationException(
-                "UiHost root creation failed; new UI operations are not accepted.",
+                i18n.Host_RootCreationFailed,
                 rootCreationFailure);
         }
     }

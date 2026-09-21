@@ -1,12 +1,375 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <data name="Empty" xml:space="preserve"><value>插件仓库没有可用版本。</value></data>
-  <data name="SelectPlugins" xml:space="preserve"><value>选择要安装的插件</value></data>
-  <data name="Cancelled" xml:space="preserve"><value>已取消安装。</value></data>
-  <data name="Failed" xml:space="preserve"><value>插件仓库操作失败</value></data>
-  <data name="InstalledNotLoaded" xml:space="preserve"><value>ZIP 已保存，但加载未成功。</value></data>
-  <data name="Confirm" xml:space="preserve"><value>确认安装插件</value></data>
-  <data name="ExecutionWarning" xml:space="preserve"><value>该插件将在本机执行代码。</value></data>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Empty" xml:space="preserve">
+    <value>No available versions in the plugin registry.</value>
+  </data>
+  <data name="SelectPlugins" xml:space="preserve">
+    <value>Select plugins to install</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Installation cancelled.</value>
+  </data>
+  <data name="InstalledNotLoaded" xml:space="preserve">
+    <value>ZIP saved, but loading did not succeed.</value>
+  </data>
+  <data name="ExecutionWarning" xml:space="preserve">
+    <value>This plugin will execute code on this computer.</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>Plugin registry operation failed: {0}</value>
+  </data>
+  <data name="InstalledLoadFailed" xml:space="preserve">
+    <value>Plugins were installed, but loading failed: {0}</value>
+  </data>
+  <data name="InstalledAndLoaded" xml:space="preserve">
+    <value>Plugins installed and loaded: {0}</value>
+  </data>
+  <data name="DuplicateSelection" xml:space="preserve">
+    <value>Selected plugins share an InternalName.</value>
+  </data>
+  <data name="Downloading" xml:space="preserve">
+    <value>[{0} v{1}] Downloading</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>[{0}] Installation complete</value>
+  </data>
+  <data name="InstallFailed" xml:space="preserve">
+    <value>[{0}] Installation failed: {1}</value>
+  </data>
+  <data name="AmbiguousSource" xml:space="preserve">
+    <value>Multiple sources share the plugin InternalName; cannot determine updates: {0}</value>
+  </data>
+  <data name="LoadedVersionMissing" xml:space="preserve">
+    <value>Loaded plugin has no version: {0}</value>
+  </data>
+  <data name="InvalidDownloadReference" xml:space="preserve">
+    <value>Invalid plugin download reference.</value>
+  </data>
+  <data name="ManifestMissing" xml:space="preserve">
+    <value>Missing plugin manifest.</value>
+  </data>
+  <data name="InvalidSourceId" xml:space="preserve">
+    <value>Invalid plugin source ID.</value>
+  </data>
+  <data name="DownloadReferenceMismatch" xml:space="preserve">
+    <value>Plugin download reference does not match the request.</value>
+  </data>
+  <data name="PackageTooLarge" xml:space="preserve">
+    <value>Plugin ZIP exceeds 64 MiB.</value>
+  </data>
+  <data name="EmptyJson" xml:space="preserve">
+    <value>URACloud returned empty JSON.</value>
+  </data>
+  <data name="PackageAuthorMismatch" xml:space="preserve">
+    <value>Downloaded package Author does not match the request: expected={0}, actual={1}</value>
+  </data>
+  <data name="PackageInternalNameMismatch" xml:space="preserve">
+    <value>Downloaded package InternalName does not match the request: expected={0}, actual={1}</value>
+  </data>
+  <data name="PackageVersionMismatch" xml:space="preserve">
+    <value>Downloaded package Version does not match the request: expected={0}, actual={1}</value>
+  </data>
+  <data name="InstallConfirmation" xml:space="preserve">
+    <value>Confirm installation of plugin {0} v{1}
+{2}/{3}
+{4}
+This plugin will execute code on this computer.</value>
+  </data>
+  <data name="RootManifestRequired" xml:space="preserve">
+    <value>The ZIP root must contain exactly one manifest.json.</value>
+  </data>
+  <data name="StrictJsonRequired" xml:space="preserve">
+    <value>manifest.json is not strict JSON.</value>
+  </data>
+  <data name="PackageNameMismatch" xml:space="preserve">
+    <value>ZIP filename must match manifest InternalName: zip={0}, manifest={1}</value>
+  </data>
+  <data name="RootAssemblyRequired" xml:space="preserve">
+    <value>The ZIP root must contain exactly one main assembly {0}.</value>
+  </data>
+  <data name="DuplicateAssembly" xml:space="preserve">
+    <value>Duplicate assembly name in ZIP root: {0}</value>
+  </data>
+  <data name="ManifestObjectRequired" xml:space="preserve">
+    <value>The root of manifest.json must be an object.</value>
+  </data>
+  <data name="DuplicateManifestField" xml:space="preserve">
+    <value>Duplicate manifest field: {0}</value>
+  </data>
+  <data name="ManifestSchemaMismatch" xml:space="preserve">
+    <value>Manifest schema mismatch: missing=[{0}], unexpected=[{1}]</value>
+  </data>
+  <data name="ManifestTypeInvalid" xml:space="preserve">
+    <value>Invalid manifest {0} type: expected={1}, actual={2}</value>
+  </data>
+  <data name="ManifestStringsRequired" xml:space="preserve">
+    <value>Manifest {0} must contain only strings.</value>
+  </data>
+  <data name="ClrMetadataMissing" xml:space="preserve">
+    <value>The main assembly has no CLR metadata.</value>
+  </data>
+  <data name="InvalidManagedAssembly" xml:space="preserve">
+    <value>The main assembly is not a valid managed assembly: {0}</value>
+  </data>
+  <data name="AssemblyIdentityMismatch" xml:space="preserve">
+    <value>Main assembly name must match manifest InternalName: assembly={0}, manifest={1}</value>
+  </data>
+  <data name="ManifestFieldEmpty" xml:space="preserve">
+    <value>Manifest {0} must not be empty.</value>
+  </data>
+  <data name="InvalidInternalName" xml:space="preserve">
+    <value>Manifest InternalName is not a valid filename: {0}</value>
+  </data>
+  <data name="InvalidVersion" xml:space="preserve">
+    <value>Invalid manifest Version: {0}</value>
+  </data>
+  <data name="ManifestFieldNull" xml:space="preserve">
+    <value>Manifest {0} must not be null.</value>
+  </data>
+  <data name="SelfDependency" xml:space="preserve">
+    <value>A plugin cannot depend on itself: {0}</value>
+  </data>
+  <data name="EmptyManifestName" xml:space="preserve">
+    <value>Manifest {0} must not contain empty names.</value>
+  </data>
+  <data name="DuplicateManifestName" xml:space="preserve">
+    <value>Manifest {0} contains a duplicate name: {1}</value>
+  </data>
+  <data name="CallbackUnavailable" xml:space="preserve">
+    <value>Plugin is unloaded or its generation is closed; cannot start callback: {0}</value>
+  </data>
+  <data name="ConfigurationUnavailable" xml:space="preserve">
+    <value>Plugin is unloaded or its generation is closed; cannot open settings: {0}</value>
+  </data>
+  <data name="NotificationDiagnosticsFailed" xml:space="preserve">
+    <value>Plugin error and notification diagnostics failed.</value>
+  </data>
+  <data name="CallbackLifecycleReentry" xml:space="preserve">
+    <value>Lifecycle operations cannot start inside a plugin callback; call after the callback returns.</value>
+  </data>
+  <data name="LifecyclePhaseInvalid" xml:space="preserve">
+    <value>Plugin operation {1} is not allowed in phase={0}.</value>
+  </data>
+  <data name="GenerationMissing" xml:space="preserve">
+    <value>Plugin has no runtime generation: {0}</value>
+  </data>
+  <data name="InitializationTransactionBusy" xml:space="preserve">
+    <value>A plugin lifecycle transaction is running; cannot initialize again.</value>
+  </data>
+  <data name="RuntimeStateNotEmpty" xml:space="preserve">
+    <value>Plugin runtime state is not empty in phase={0}; cannot run Init.</value>
+  </data>
+  <data name="FailedGroupContextMissing" xml:space="preserve">
+    <value>Plugin group that failed initialization has no context: {0}</value>
+  </data>
+  <data name="InitializationFailed" xml:space="preserve">
+    <value>Plugin {0} initialization failed</value>
+  </data>
+  <data name="InitializationCleanupFailed" xml:space="preserve">
+    <value>Plugin initialization and cleanup failed.</value>
+  </data>
+  <data name="InternalNameConflict" xml:space="preserve">
+    <value>Plugin InternalName conflict (OrdinalIgnoreCase): {0}</value>
+  </data>
+  <data name="InternalNamePackageConflict" xml:space="preserve">
+    <value>Plugin InternalName conflict (OrdinalIgnoreCase): {0} ({1}) / {2} ({3})</value>
+  </data>
+  <data name="InvalidPackage" xml:space="preserve">
+    <value>Invalid plugin package: package={0}</value>
+  </data>
+  <data name="DependencyNotInstalled" xml:space="preserve">
+    <value>Plugin dependency graph contains an uninstalled plugin: {0}</value>
+  </data>
+  <data name="DependencyCycle" xml:space="preserve">
+    <value>Cycle in plugin manifest Dependencies: {0}</value>
+  </data>
+  <data name="ReadAssembly" xml:space="preserve">
+    <value>Reading plugin assembly</value>
+  </data>
+  <data name="ReadExportedTypes" xml:space="preserve">
+    <value>Reading plugin exported types</value>
+  </data>
+  <data name="PluginTypeMissing" xml:space="preserve">
+    <value>No public concrete type implementing {0} was found.</value>
+  </data>
+  <data name="CreatePluginInstance" xml:space="preserve">
+    <value>Creating plugin instance</value>
+  </data>
+  <data name="CannotCreatePluginInstance" xml:space="preserve">
+    <value>Cannot create plugin instance: type={0}</value>
+  </data>
+  <data name="LoadingCleanupFailed" xml:space="preserve">
+    <value>Plugin loading and cleanup failed.</value>
+  </data>
+  <data name="LoadingFailed" xml:space="preserve">
+    <value>Plugin loading failed: plugin={0}, phase={1}</value>
+  </data>
+  <data name="SharedAssemblyUnavailable" xml:space="preserve">
+    <value>Shared ABI assembly {0} must be loaded by the Default ALC, but the host cannot load it.</value>
+  </data>
+  <data name="HostUpdateRequired" xml:space="preserve">
+    <value>The plugin requires a newer host ABI; update UmamusumeResponseAnalyzer: requested {0}, current host {1}.</value>
+  </data>
+  <data name="SharedAssemblyVersionMismatch" xml:space="preserve">
+    <value>Shared ABI assembly version mismatch: plugin requested {0}, host Default ALC loaded {1}.</value>
+  </data>
+  <data name="PackageEntryMissing" xml:space="preserve">
+    <value>Plugin package entry is missing: package={0}, entry={1}</value>
+  </data>
+  <data name="AssemblyCaseConflict" xml:space="preserve">
+    <value>Assembly names in the plugin group differ only by case: {0} / {1}, context={2}</value>
+  </data>
+  <data name="AssemblyContentConflict" xml:space="preserve">
+    <value>Plugin group contains assemblies with the same name but different contents: {0}, context={1}</value>
+  </data>
+  <data name="PluginNotFound" xml:space="preserve">
+    <value>Plugin {0} does not exist and cannot be loaded.</value>
+  </data>
+  <data name="UnloadFailed" xml:space="preserve">
+    <value>Plugin unload failed: plugin={0}</value>
+  </data>
+  <data name="BatchUnloadFailed" xml:space="preserve">
+    <value>Batch plugin unload failed.</value>
+  </data>
+  <data name="LifecycleTransactionBusy" xml:space="preserve">
+    <value>A plugin lifecycle transaction is running; concurrent or reentrant operations are rejected.</value>
+  </data>
+  <data name="MissingFileUnloaded" xml:space="preserve">
+    <value>Plugin {0} was unloaded because its file no longer exists.</value>
+  </data>
+  <data name="PluginReloaded" xml:space="preserve">
+    <value>Plugin {0} reloaded.</value>
+  </data>
+  <data name="ContextGroupMissing" xml:space="preserve">
+    <value>Loaded plugin has no context group: {0}</value>
+  </data>
+  <data name="PluginNotLoaded" xml:space="preserve">
+    <value>Plugin {0} is not loaded.</value>
+  </data>
+  <data name="RelatedReloadFailed" xml:space="preserve">
+    <value>Plugin {0} was unloaded, but related plugins failed to reload: {1}</value>
+  </data>
+  <data name="PluginUnloaded" xml:space="preserve">
+    <value>Plugin {0} unloaded.</value>
+  </data>
+  <data name="GroupInitializationCleanupFailed" xml:space="preserve">
+    <value>Plugin group initialization and cleanup failed.</value>
+  </data>
+  <data name="GroupLoadingCleanupFailed" xml:space="preserve">
+    <value>Plugin group loading and cleanup failed.</value>
+  </data>
+  <data name="StagedGroupCommitCleanupFailed" xml:space="preserve">
+    <value>Staged plugin group commit and cleanup failed.</value>
+  </data>
+  <data name="CleanupPhaseFailed" xml:space="preserve">
+    <value>Plugin cleanup failed: plugin={0}, phase={1}</value>
+  </data>
+  <data name="DisposeFailed" xml:space="preserve">
+    <value>Plugin cleanup failed: plugin={0}, phase=Dispose, {1}{2}{3}</value>
+  </data>
+  <data name="RegistrationContextCleanupFailed" xml:space="preserve">
+    <value>Plugin registration/context cleanup failed.</value>
+  </data>
+  <data name="HostEventsCleanupFailed" xml:space="preserve">
+    <value>Plugin HostEvents cleanup failed.</value>
+  </data>
+  <data name="LoadContextCleanupFailed" xml:space="preserve">
+    <value>Plugin ALC cleanup failed: context={0}</value>
+  </data>
+  <data name="CleanupFailed" xml:space="preserve">
+    <value>Plugin cleanup failed.</value>
+  </data>
+  <data name="GenerationAlreadyRunning" xml:space="preserve">
+    <value>Plugin generation is already initializing or running: {0}</value>
+  </data>
+  <data name="GenerationNotInitializing" xml:space="preserve">
+    <value>Plugin generation is not initializing: {0}</value>
+  </data>
+  <data name="GenerationStillInitializing" xml:space="preserve">
+    <value>Plugin generation is still initializing: {0}</value>
+  </data>
+  <data name="InitializationRegistrationCommitted" xml:space="preserve">
+    <value>Plugin initialization registration is already committed: {0}</value>
+  </data>
+  <data name="InitializationRegistrationNotCommitted" xml:space="preserve">
+    <value>Plugin initialization registration is not committed yet: {0}</value>
+  </data>
+  <data name="GenerationCloseFailed" xml:space="preserve">
+    <value>Plugin generation failed to close.</value>
+  </data>
+  <data name="BackgroundOperationFailed" xml:space="preserve">
+    <value>Plugin background operation failed: plugin={0}, {1}</value>
+  </data>
+  <data name="GenerationUnavailable" xml:space="preserve">
+    <value>Plugin generation is closed or not open: {0}</value>
+  </data>
+  <data name="EventHandlerFailed" xml:space="preserve">
+    <value>Plugin event handler failed: plugin={0}, {1}</value>
+  </data>
+  <data name="RegistrationAlreadyCommitted" xml:space="preserve">
+    <value>Plugin registration stage is already committed: {0}</value>
+  </data>
+  <data name="NestedRegistration" xml:space="preserve">
+    <value>Plugin registration stages cannot be nested.</value>
+  </data>
+  <data name="CatalogEndpoint" xml:space="preserve">
+    <value>catalog endpoint</value>
+  </data>
+  <data name="EndpointOutsideCatalog" xml:space="preserve">
+    <value>endpoint type is not in GameEndpointCatalog</value>
+  </data>
+  <data name="EndpointPatternRequired" xml:space="preserve">
+    <value>An analyzer requires at least one endpoint pattern.</value>
+  </data>
+  <data name="ProgrammaticAnalyzer" xml:space="preserve">
+    <value>programmatic {0} analyzer</value>
+  </data>
+  <data name="RegistrationPhaseInvalid" xml:space="preserve">
+    <value>Analyzers and background operations can only be registered in Initialize or an OnStarted callback invoked by the host: plugin={0}</value>
+  </data>
+  <data name="ConcreteHostPayloadRequired" xml:space="preserve">
+    <value>Analyzer payload must be an existing closed concrete Gallop DTO in the Host: {0}</value>
+  </data>
+  <data name="PayloadDirectionMismatch" xml:space="preserve">
+    <value>Analyzer payload is not a Host Gallop DTO for this direction: kind={0}, payload={1}</value>
+  </data>
+  <data name="EndpointPatternUnmatched" xml:space="preserve">
+    <value>Endpoint pattern does not match the current catalog: kind={0}, pattern={1}</value>
+  </data>
+  <data name="UnknownEndpointPatternKind" xml:space="preserve">
+    <value>Unknown endpoint pattern kind.</value>
+  </data>
+  <data name="WildcardRequired" xml:space="preserve">
+    <value>A wildcard endpoint pattern must contain *: {0}</value>
+  </data>
+  <data name="CanonicalAbsolutePathRequired" xml:space="preserve">
+    <value>Endpoint pattern must be a canonical absolute path: {0}</value>
+  </data>
+  <data name="NonCanonicalPathSegment" xml:space="preserve">
+    <value>Endpoint pattern contains a noncanonical path segment: {0}</value>
+  </data>
+  <data name="ExactWildcardForbidden" xml:space="preserve">
+    <value>An exact endpoint pattern must not contain *: {0}</value>
+  </data>
+  <data name="AdjacentWildcardsForbidden" xml:space="preserve">
+    <value>A wildcard endpoint pattern does not support adjacent **: {0}</value>
+  </data>
+  <data name="AnalyzerSignatureInvalid" xml:space="preserve">
+    <value>Invalid plugin analyzer signature: plugin={0}, method={1}.{2}, endpoint={3}, kind={4}, expected={5}, actual={6}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
 </root>

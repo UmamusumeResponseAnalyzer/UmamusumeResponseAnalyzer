@@ -127,6 +127,30 @@
     <value>Server started at http://*:4693</value>
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
-    <value>You may try connecting via http://{0}:4693</value>
+    <value>You may try connecting via http://{0}:{1}</value>
+  </data>
+  <data name="I18N_ProjectionNull" xml:space="preserve">
+    <value>Gallop DTO deserialization returned null: endpoint={0}, path={1}, dto={2}</value>
+  </data>
+  <data name="I18N_ProjectionFailed" xml:space="preserve">
+    <value>Gallop DTO projection failed: endpoint={0}, path={1}, dto={2}</value>
+  </data>
+  <data name="I18N_CanonicalHeaderMissing" xml:space="preserve">
+    <value>Missing canonical URL header: {0}</value>
+  </data>
+  <data name="I18N_CanonicalPathRequired" xml:space="preserve">
+    <value>The canonical URL must contain an absolute path: {0}</value>
+  </data>
+  <data name="I18N_DebugCleanupFailed" xml:space="preserve">
+    <value>Failed to clean up an old debug packet; skipped {0}: {1}</value>
+  </data>
+  <data name="I18N_RequestAnalyzeFail" xml:space="preserve">
+    <value>Request analysis failed</value>
+  </data>
+  <data name="I18N_RequestPluginFailed" xml:space="preserve">
+    <value>Request analyzer plugin failed: plugin={0}, {1}</value>
+  </data>
+  <data name="I18N_ResponsePluginFailed" xml:space="preserve">
+    <value>Response analyzer plugin failed: plugin={0}, {1}</value>
   </data>
 </root>

@@ -97,3 +97,13 @@ Host **1.15.0.0** uses repository and release IDs to address URACloud downloads.
 * Host 在面板或布局拆除前释放其中控件（含子控件及已有 adornment）的鼠标捕获。面板结构重建会结束其中正在进行的拖拽；普通重绘、滚动和尺寸调整保持捕获。其它窗口及任务栏的捕获不受影响；待移除控件的捕获若未能释放，Host 会报错并中止拆除，保留原界面层级。
 * 热重载按 manifest `InternalName` 应用；热安装软联动目标时重载 Consumer 并合并共享组，热卸载目标时重建仍安装的关联插件，不把整组保持为卸载状态。
 * 插件配置由插件自行维护。宿主不预创建插件数据目录，不自动读写配置文件，也不提供通用属性编辑器；菜单入口调用 `ConfigPromptAsync(IApplication application, CancellationToken cancellationToken = default)`，其中 `application` 与 `context.Application` 为同一个宿主实例。该方法可能在插件实例已加载、但 `Initialize` 尚未执行时调用，因此不得依赖 `Initialize` 产生的状态。插件需要配置或数据目录时，应在插件代码中创建目录、读取/校验自己的文件，用户取消时不得写入 draft，错误直接抛出明确异常。
+
+## 本地化维护
+
+Host 的界面、日志、异常和游戏展示文本位于 `UmamusumeResponseAnalyzer/Localization`。默认 `.resx` 与 `en-US` 使用英语，`zh-CN`、`ja-JP` 提供完整对应资源；新增文本同步维护四份文件，完整句子使用 `{0}` 等占位符。语言设置保存后重启生效，安装子进程通过内部 `--culture` 参数接收所选语言。
+
+修改 `.resx` 后用 Visual Studio 的资源生成器或 Windows SDK 的 ResGen 重新生成对应 Designer；`Game` 使用 `PublicResXFileCodeGenerator`，其他强类型资源使用 `ResXFileCodeGenerator`，HachimiEdge 直接使用 ResourceManager。Designer 由工具生成，公开的 `Game` 资源属性属于插件 API。`LocalizationTests` 检查语言资源、占位符和资源属性的一致性。
+
+协议字段、错误码、命令、路径、稳定身份和第三方原文保持原值。内置工作区的 `Title` 和排序配置键为“启动”，界面标题按语言显示；`/workspace list` 同时列出不同的稳定身份，`/workspace switch` 与补全使用该身份。
+
+`Database.ClimaxItem`、支援卡简称、干劲和半月名称是本地化展示值。业务判断使用道具 ID、支援卡 `Type`／`IsFriendCard` 等领域字段。此次 Host 变更需要与 OldScenarioAnalyzer、OnsenScenarioAnalyzer、PioneerScenarioAnalyzer、UAFScenarioAnalyzer 的对应修复配套更新；其余插件的自有文案由插件维护。

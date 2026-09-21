@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Terminal.Gui.Input;
@@ -11,6 +12,60 @@ namespace UmamusumeResponseAnalyzer.Tests;
 [Collection("HotkeyManager")]
 public sealed class WorkspaceViewTests
 {
+    [Theory]
+    [InlineData("en-US", "Startup")]
+    [InlineData("zh-CN", "启动")]
+    [InlineData("ja-JP", "起動")]
+    public async Task TaskbarLocalizesBootstrapAndPersistsStableTitles(string culture, string displayTitle)
+    {
+        var originalCulture = i18n.Culture;
+        i18n.Culture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            using var terminal = new TerminalGuiTestApp(width: 60, height: 10);
+            var bootstrap = new Workspace(Workspace.BootstrapTitle);
+            var other = new Workspace("Other");
+            Workspace? switched = null;
+            string[]? saved = null;
+            using var taskbar = new WorkspaceTaskbarView(
+                bootstrap, () => false, workspace => switched = workspace,
+                [other.Title, Workspace.BootstrapTitle], order => saved = [.. order]);
+            taskbar.Refresh([bootstrap, other], bootstrap);
+            using var window = WindowWith(taskbar.BottomEdgeTrigger, taskbar);
+            window.MouseEvent += (_, mouse) => taskbar.HandleMousePosition(mouse);
+            var run = await StartAsync(terminal, window);
+            try
+            {
+                await terminal.MoveMouseAsync(new Point(0, 9));
+                await terminal.WaitForScreenAsync(displayTitle);
+                var screen = await terminal.CaptureScreenAsync();
+                Assert.True(screen.IndexOf("Other", StringComparison.Ordinal) < screen.IndexOf(displayTitle, StringComparison.Ordinal));
+                if (culture != "zh-CN")
+                    Assert.DoesNotContain("启动", screen, StringComparison.Ordinal);
+                var bootstrapPoint = FindText(screen, displayTitle);
+                await terminal.ClickAsync(bootstrapPoint);
+                await terminal.WaitForAsync(() => ReferenceEquals(switched, bootstrap));
+
+                var otherPoint = FindText(screen, "Other");
+                var target = otherPoint with { X = otherPoint.X - 2 };
+                await terminal.InjectAsync(MouseAt(terminal, bootstrapPoint, MouseFlags.LeftButtonPressed));
+                await terminal.InjectAsync(MouseAt(terminal, target, MouseFlags.LeftButtonPressed | MouseFlags.PositionReport));
+                await terminal.InjectAsync(MouseAt(terminal, target, MouseFlags.LeftButtonReleased));
+                await terminal.WaitForAsync(() => saved is not null);
+                Assert.NotNull(saved);
+                Assert.Equal(["启动", "Other"], saved);
+            }
+            finally
+            {
+                await StopAsync(terminal, run);
+            }
+        }
+        finally
+        {
+            i18n.Culture = originalCulture;
+        }
+    }
+
     [Theory]
     [InlineData("", 3, 1)]
     [InlineData("\r\n\r\n", 3, 3)]
@@ -426,7 +481,7 @@ public sealed class WorkspaceViewTests
                 try
                 {
                     var error = Assert.Throws<InvalidOperationException>(change);
-                    Assert.Contains("鼠标捕获", error.Message);
+                    Assert.Equal(string.Format(i18n.Workspace_MouseCaptureReleaseFailed, workspace.Title), error.Message);
                     Assert.Same(parent, panel.SuperView);
                     Assert.Equal(layoutViews, viewport.SubViews);
                     Assert.Same(terminal.Application, child.App);
@@ -852,10 +907,10 @@ public sealed class WorkspaceViewTests
         {
             var screen = await terminal.CaptureScreenAsync();
 
-            Assert.Contains("运行环境", screen);
-            Assert.Contains("初始化结果", screen);
-            Assert.Contains("插件摘要", screen);
-            Assert.Contains("最近日志", screen);
+            Assert.Contains(Localization.LaunchMenu.I18N_Environment, screen);
+            Assert.Contains(Localization.LaunchMenu.I18N_InitializationResults, screen);
+            Assert.Contains(Localization.LaunchMenu.I18N_PluginSummary, screen);
+            Assert.Contains(Localization.LaunchMenu.I18N_RecentLogs, screen);
             Assert.Contains("M1-test", screen);
             Assert.Contains("ExamplePlugin", screen);
             Assert.Contains($"WARN {logText}", screen);

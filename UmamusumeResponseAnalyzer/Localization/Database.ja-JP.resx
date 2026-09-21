@@ -121,12 +121,189 @@
     <value>データファイル{0}の読み込み時にエラーが発生しました。プログラムを更新してからデータを更新してください</value>
   </data>
   <data name="I18N_LoadFail" xml:space="preserve">
-    <value> {0} の読み込み中にエラーが発生しました。データの再更新をお試しください。</value>
+    <value>{0} の読み込み中にエラーが発生しました。データの再更新をお試しください。</value>
   </data>
   <data name="I18N_NotExist" xml:space="preserve">
     <value>データファイル{0}が存在しません。データを再更新してみてください</value>
   </data>
   <data name="I18N_UnknownSkillUpgradeConditionType" xml:space="preserve">
     <value>不明なスキル進化条件タイプです。進化不可として扱います: conditionId={0}, type={1}</value>
+  </data>
+  <data name="I18N_NotLoaded" xml:space="preserve">
+    <value>ゲームデータが完全に読み込まれていません。データファイルを更新して再起動してください。</value>
+  </data>
+  <data name="I18N_InvalidSnapshot" xml:space="preserve">
+    <value>ゲームデータから完全なスナップショットを作成できません: {0}</value>
+  </data>
+  <data name="I18N_SkillMissing" xml:space="preserve">
+    <value>スキルデータが存在しません: skillId={0}</value>
+  </data>
+  <data name="I18N_SkillManagerSourceMissing" xml:space="preserve">
+    <value>この SkillManager は Database.Skills.Apply で作成されていないため、スキル進化を計算できません。</value>
+  </data>
+  <data name="I18N_UpgradeConditionMissing" xml:space="preserve">
+    <value>スキル進化条件のレコードがありません: conditionId={0}</value>
+  </data>
+  <data name="I18N_UnknownAptitudeRequirement" xml:space="preserve">
+    <value>不明なスキル適性進化条件です: conditionId={0}, requirement={1}</value>
+  </data>
+  <data name="ClimaxItem_1001" xml:space="preserve">
+    <value>速+3</value>
+  </data>
+  <data name="ClimaxItem_1002" xml:space="preserve">
+    <value>耐+3</value>
+  </data>
+  <data name="ClimaxItem_1003" xml:space="preserve">
+    <value>力+3</value>
+  </data>
+  <data name="ClimaxItem_1004" xml:space="preserve">
+    <value>根+3</value>
+  </data>
+  <data name="ClimaxItem_1005" xml:space="preserve">
+    <value>賢+3</value>
+  </data>
+  <data name="ClimaxItem_1101" xml:space="preserve">
+    <value>速+7</value>
+  </data>
+  <data name="ClimaxItem_1102" xml:space="preserve">
+    <value>耐+7</value>
+  </data>
+  <data name="ClimaxItem_1103" xml:space="preserve">
+    <value>力+7</value>
+  </data>
+  <data name="ClimaxItem_1104" xml:space="preserve">
+    <value>根+7</value>
+  </data>
+  <data name="ClimaxItem_1105" xml:space="preserve">
+    <value>賢+7</value>
+  </data>
+  <data name="ClimaxItem_1201" xml:space="preserve">
+    <value>速+15</value>
+  </data>
+  <data name="ClimaxItem_1202" xml:space="preserve">
+    <value>耐+15</value>
+  </data>
+  <data name="ClimaxItem_1203" xml:space="preserve">
+    <value>力+15</value>
+  </data>
+  <data name="ClimaxItem_1204" xml:space="preserve">
+    <value>根+15</value>
+  </data>
+  <data name="ClimaxItem_1205" xml:space="preserve">
+    <value>賢+15</value>
+  </data>
+  <data name="ClimaxItem_2001" xml:space="preserve">
+    <value>体力+20</value>
+  </data>
+  <data name="ClimaxItem_2002" xml:space="preserve">
+    <value>体力+40</value>
+  </data>
+  <data name="ClimaxItem_2003" xml:space="preserve">
+    <value>体力+65</value>
+  </data>
+  <data name="ClimaxItem_2101" xml:space="preserve">
+    <value>苦いお茶</value>
+  </data>
+  <data name="ClimaxItem_2201" xml:space="preserve">
+    <value>体力上限+4</value>
+  </data>
+  <data name="ClimaxItem_2202" xml:space="preserve">
+    <value>体力上限+8</value>
+  </data>
+  <data name="ClimaxItem_2301" xml:space="preserve">
+    <value>やる気+1</value>
+  </data>
+  <data name="ClimaxItem_2302" xml:space="preserve">
+    <value>やる気+2</value>
+  </data>
+  <data name="ClimaxItem_3001" xml:space="preserve">
+    <value>猫缶</value>
+  </data>
+  <data name="ClimaxItem_3101" xml:space="preserve">
+    <value>BBQ</value>
+  </data>
+  <data name="ClimaxItem_4001" xml:space="preserve">
+    <value>愛嬌</value>
+  </data>
+  <data name="ClimaxItem_4002" xml:space="preserve">
+    <value>注目株</value>
+  </data>
+  <data name="ClimaxItem_4003" xml:space="preserve">
+    <value>練習上手</value>
+  </data>
+  <data name="ClimaxItem_4004" xml:space="preserve">
+    <value>切れ者</value>
+  </data>
+  <data name="ClimaxItem_4101" xml:space="preserve">
+    <value>寝不足解消</value>
+  </data>
+  <data name="ClimaxItem_4102" xml:space="preserve">
+    <value>なまけ癖解消</value>
+  </data>
+  <data name="ClimaxItem_4103" xml:space="preserve">
+    <value>肌あれ解消</value>
+  </data>
+  <data name="ClimaxItem_4104" xml:space="preserve">
+    <value>太り気味解消</value>
+  </data>
+  <data name="ClimaxItem_4105" xml:space="preserve">
+    <value>片頭痛解消</value>
+  </data>
+  <data name="ClimaxItem_4106" xml:space="preserve">
+    <value>練習ベタ解消</value>
+  </data>
+  <data name="ClimaxItem_4201" xml:space="preserve">
+    <value>全バッドコンディション解消</value>
+  </data>
+  <data name="ClimaxItem_5001" xml:space="preserve">
+    <value>スピード嘆願書</value>
+  </data>
+  <data name="ClimaxItem_5002" xml:space="preserve">
+    <value>スタミナ嘆願書</value>
+  </data>
+  <data name="ClimaxItem_5003" xml:space="preserve">
+    <value>パワー嘆願書</value>
+  </data>
+  <data name="ClimaxItem_5004" xml:space="preserve">
+    <value>根性嘆願書</value>
+  </data>
+  <data name="ClimaxItem_5005" xml:space="preserve">
+    <value>賢さ嘆願書</value>
+  </data>
+  <data name="ClimaxItem_7001" xml:space="preserve">
+    <value>ホイッスル</value>
+  </data>
+  <data name="ClimaxItem_8001" xml:space="preserve">
+    <value>20%メガホン</value>
+  </data>
+  <data name="ClimaxItem_8002" xml:space="preserve">
+    <value>40%メガホン</value>
+  </data>
+  <data name="ClimaxItem_8003" xml:space="preserve">
+    <value>60%メガホン</value>
+  </data>
+  <data name="ClimaxItem_9001" xml:space="preserve">
+    <value>スピードアンクル</value>
+  </data>
+  <data name="ClimaxItem_9002" xml:space="preserve">
+    <value>スタミナアンクル</value>
+  </data>
+  <data name="ClimaxItem_9003" xml:space="preserve">
+    <value>パワーアンクル</value>
+  </data>
+  <data name="ClimaxItem_9004" xml:space="preserve">
+    <value>根性アンクル</value>
+  </data>
+  <data name="ClimaxItem_10001" xml:space="preserve">
+    <value>お守り</value>
+  </data>
+  <data name="ClimaxItem_11001" xml:space="preserve">
+    <value>蹄鉄・匠</value>
+  </data>
+  <data name="ClimaxItem_11002" xml:space="preserve">
+    <value>蹄鉄・極</value>
+  </data>
+  <data name="ClimaxItem_11003" xml:space="preserve">
+    <value>ペンライト</value>
   </data>
 </root>

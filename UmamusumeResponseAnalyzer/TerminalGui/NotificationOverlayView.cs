@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Collections.Immutable;
 using System.Drawing;
 using Terminal.Gui.Drawing;
@@ -105,7 +106,7 @@ internal sealed class NotificationOverlayView : View
         if (remaining > 0)
         {
             result.Add(new(Top(width)));
-            result.Add(new(Content($"还有 {remaining} 条通知", width)));
+            result.Add(new(Content(string.Format(i18n.Notification_Remaining, remaining), width)));
             result.Add(new(Bottom(width)));
         }
         return result.ToImmutable();
@@ -141,11 +142,11 @@ internal sealed class NotificationOverlayView : View
     static string SeverityText(UiSeverity severity)
         => severity switch
         {
-            UiSeverity.Trace => "TRACE",
-            UiSeverity.Info => "INFO",
-            UiSeverity.Success => "OK",
-            UiSeverity.Warning => "WARN",
-            UiSeverity.Error => "ERROR",
+            UiSeverity.Trace => i18n.Severity_Trace,
+            UiSeverity.Info => i18n.Severity_Info,
+            UiSeverity.Success => i18n.Severity_Success,
+            UiSeverity.Warning => i18n.Severity_Warning,
+            UiSeverity.Error => i18n.Severity_Error,
             _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
         };
 
@@ -155,7 +156,7 @@ internal sealed class NotificationOverlayView : View
         var seconds = remaining <= TimeSpan.Zero
             ? 0
             : Math.Max(1, (long)Math.Ceiling(remaining.TotalSeconds));
-        return $"{seconds}s";
+        return string.Format(i18n.Notification_Countdown, seconds);
     }
 
     static string Top(int width) => FrameBorder('┌', '┐', width);

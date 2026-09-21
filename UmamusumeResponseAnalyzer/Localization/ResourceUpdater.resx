@@ -159,4 +159,16 @@
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}: Unable to connect to the update server, please try enabling "Force use GitHub for updates" in settings and try again</value>
   </data>
+  <data name="I18N_ProcessPathMissing" xml:space="preserve">
+    <value>Cannot determine the current program path; the update cannot be installed.</value>
+  </data>
+  <data name="I18N_DownloadPathRequired" xml:space="preserve">
+    <value>The download destination path must not be empty.</value>
+  </data>
+  <data name="I18N_DownloadLengthMismatch" xml:space="preserve">
+    <value>Download length mismatch: expected {0}, received {1}.</value>
+  </data>
+  <data name="I18N_DownloadTooLarge" xml:space="preserve">
+    <value>Download exceeds the expected {0} bytes.</value>
+  </data>
 </root>

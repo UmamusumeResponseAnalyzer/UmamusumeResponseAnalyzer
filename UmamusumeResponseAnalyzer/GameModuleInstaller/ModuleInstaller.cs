@@ -4,12 +4,12 @@ internal enum HachimiEdgePlatform { Dmm, Taiwan, SteamJapan, SteamGlobal }
 
 internal sealed record HachimiEdgeGame(string Executable, HachimiEdgePlatform Platform, string Client, string Label)
 {
-    static readonly (string Exe, HachimiEdgePlatform Platform, string Client, string Label)[] Clients =
+    static readonly (string Exe, HachimiEdgePlatform Platform, string Client, string LabelKey)[] Clients =
     [
-        ("umamusume.exe", HachimiEdgePlatform.Dmm, "dmm", "DMM · JP"),
-        ("komoeumamusume.exe", HachimiEdgePlatform.Taiwan, "taiwan", "Komoe · TW"),
-        ("UmamusumePrettyDerby_Jpn.exe", HachimiEdgePlatform.SteamJapan, "steamJapan", "Steam · JP"),
-        ("UmamusumePrettyDerby.exe", HachimiEdgePlatform.SteamGlobal, "steamGlobal", "Steam · Global")
+        ("umamusume.exe", HachimiEdgePlatform.Dmm, "dmm", "PlatformDmm"),
+        ("komoeumamusume.exe", HachimiEdgePlatform.Taiwan, "taiwan", "PlatformTaiwan"),
+        ("UmamusumePrettyDerby_Jpn.exe", HachimiEdgePlatform.SteamJapan, "steamJapan", "PlatformSteamJapan"),
+        ("UmamusumePrettyDerby.exe", HachimiEdgePlatform.SteamGlobal, "steamGlobal", "PlatformSteamGlobal")
     ];
     internal static readonly string[] ExecutableNames = [.. Clients.Select(c => c.Exe)];
 
@@ -20,9 +20,9 @@ internal sealed record HachimiEdgeGame(string Executable, HachimiEdgePlatform Pl
         var fullPath = Path.GetFullPath(path);
         var index = Array.FindIndex(ExecutableNames, name => name.Equals(Path.GetFileName(fullPath), StringComparison.OrdinalIgnoreCase));
         if (index < 0 || !File.Exists(fullPath))
-            throw new InvalidDataException($"请选择受支持的游戏 EXE。 / Select a supported game executable: {string.Join(", ", ExecutableNames)}\n{fullPath}");
+            throw new InvalidDataException(HachimiEdgeInstaller.Text("UnsupportedExecutable", string.Join(", ", ExecutableNames), fullPath));
         var client = Clients[index];
-        return new(fullPath, client.Platform, client.Client, client.Label);
+        return new(fullPath, client.Platform, client.Client, HachimiEdgeInstaller.Text(client.LabelKey));
     }
 
     internal (string Component, string RelativePath)[] Binaries => Platform switch

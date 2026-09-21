@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.IO.Compression;
 using System.Reflection;
 using Gallop;
@@ -82,10 +83,10 @@ namespace UmamusumeResponseAnalyzer.Tests
                 using (PluginManager.EnterPluginCallback(sameOwner ? first : second))
                 {
                     await Task.Yield();
-                    Assert.Contains("插件 callback 内禁止启动 lifecycle 操作",
+                    Assert.Equal(i18n.CallbackLifecycleReentry,
                         Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins).Message);
                 }
-                Assert.Contains("插件 callback 内禁止启动 lifecycle 操作",
+                Assert.Equal(i18n.CallbackLifecycleReentry,
                     Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins).Message);
             }
 
@@ -468,8 +469,8 @@ namespace UmamusumeResponseAnalyzer.Tests
                     _ => ValueTask.CompletedTask));
             var eventError = Assert.Throws<InvalidOperationException>(() =>
                 context.Events.OnStarted(_ => ValueTask.CompletedTask));
-            Assert.Contains("只能在 Initialize", analyzerError.Message, StringComparison.Ordinal);
-            Assert.Contains("只能在 Initialize", eventError.Message, StringComparison.Ordinal);
+            Assert.Equal(string.Format(i18n.RegistrationPhaseInvalid, PluginManager.InternalName(plugin)), analyzerError.Message);
+            Assert.Equal(string.Format(i18n.RegistrationPhaseInvalid, PluginManager.InternalName(plugin)), eventError.Message);
         }
 
         [Fact]
@@ -482,7 +483,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => PluginConfigPrompt.RunAsync(stale));
 
-            Assert.Contains("插件已卸载", ex.Message, StringComparison.Ordinal);
+            Assert.Equal(string.Format(i18n.ConfigurationUnavailable, PluginManager.InternalName(stale)), ex.Message);
             Assert.Equal(0, stale.ConfigPromptCalls);
         }
 

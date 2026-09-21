@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="SelectGame" xml:space="preserve">
+    <value>ゲームのインストール先を選択</value>
+  </data>
+  <data name="Browse" xml:space="preserve">
+    <value>ゲーム EXE を参照…</value>
+  </data>
+  <data name="SelectExecutable" xml:space="preserve">
+    <value>ゲームの実行ファイルを選択</value>
+  </data>
+  <data name="Applying" xml:space="preserve">
+    <value>ファイルを適用しています。完了するまでお待ちください</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>{0} にインストールしました。
+URA で開始を選択し、ゲームを起動してデータの受信を確認してください。</value>
+  </data>
+  <data name="RestartWindows" xml:space="preserve">
+    <value>DLL redirection を有効にするには Windows を再起動してください。</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Hachimi-Edge のインストールに失敗しました</value>
+  </data>
+  <data name="PlatformDmm" xml:space="preserve">
+    <value>DMM · JP</value>
+  </data>
+  <data name="PlatformTaiwan" xml:space="preserve">
+    <value>Komoe · TW</value>
+  </data>
+  <data name="PlatformSteamJapan" xml:space="preserve">
+    <value>Steam · JP</value>
+  </data>
+  <data name="PlatformSteamGlobal" xml:space="preserve">
+    <value>Steam · グローバル</value>
+  </data>
+  <data name="UnsupportedExecutable" xml:space="preserve">
+    <value>対応するゲームの実行ファイルを選択してください: {0}
+{1}</value>
+  </data>
+  <data name="EmptyComponentConfiguration" xml:space="preserve">
+    <value>URACloud から空のコンポーネント構成が返されました。</value>
+  </data>
+  <data name="ClientMismatch" xml:space="preserve">
+    <value>URACloud のクライアントが一致しません: 期待値 {0}、受信値 {1}。</value>
+  </data>
+  <data name="InvalidComponentList" xml:space="preserve">
+    <value>URACloud のコンポーネント一覧が不完全、または重複しています。</value>
+  </data>
+  <data name="InvalidComponentMetadata" xml:space="preserve">
+    <value>URACloud のコンポーネントメタデータが無効です: {0}</value>
+  </data>
+  <data name="ComponentMismatch" xml:space="preserve">
+    <value>コンポーネントの長さまたは SHA-256 が一致しません: {0}</value>
+  </data>
+  <data name="InvalidPortableExecutable" xml:space="preserve">
+    <value>Windows x64 PE ファイルが必要です: {0}</value>
+  </data>
+  <data name="InvalidLoadLibraries" xml:space="preserve">
+    <value>hachimi/config.json: load_libraries は文字列の配列である必要があります。</value>
+  </data>
+  <data name="InvalidNotifierHost" xml:space="preserve">
+    <value>httpforward.json: notifier_host は文字列である必要があります。</value>
+  </data>
+  <data name="InvalidNotifierTimeout" xml:space="preserve">
+    <value>httpforward.json: notifier_timeout_ms は正の整数である必要があります。</value>
+  </data>
+  <data name="ExpectedJsonObject" xml:space="preserve">
+    <value>JSON オブジェクトが必要です。</value>
+  </data>
+  <data name="InvalidConfiguration" xml:space="preserve">
+    <value>設定ファイルを解析できません: {0}
+{1}</value>
+  </data>
+  <data name="InvalidNotifierUrl" xml:space="preserve">
+    <value>転送先には、認証情報、クエリ、フラグメントを含まない HTTP(S) URL が必要です。</value>
+  </data>
+  <data name="GameStillRunning" xml:space="preserve">
+    <value>インストール前にゲームを終了してください: {0} (PID {1})</value>
+  </data>
+  <data name="TargetIsDirectory" xml:space="preserve">
+    <value>対象ファイルのパスにディレクトリが存在します: {0}</value>
+  </data>
+  <data name="UnsupportedLink" xml:space="preserve">
+    <value>このパスではファイルシステムリンクを使用できません: {0}</value>
+  </data>
+  <data name="RequiresWindows" xml:space="preserve">
+    <value>Hachimi-Edge のインストールには Windows が必要です。</value>
+  </data>
+  <data name="ElevationCancelled" xml:space="preserve">
+    <value>管理者権限への昇格がキャンセルされました。</value>
+  </data>
+  <data name="InstallerExited" xml:space="preserve">
+    <value>インストールプロセスが予期せず終了しました ({0})。再度インストールしてください。</value>
+  </data>
+  <data name="ExecutableNotFound" xml:space="preserve">
+    <value>URA の実行ファイルを特定できません。</value>
+  </data>
+  <data name="InstallerStartFailed" xml:space="preserve">
+    <value>インストールプロセスを起動できません。</value>
+  </data>
+  <data name="InvalidStagingPath" xml:space="preserve">
+    <value>インストールの一時保存パスが無効です。</value>
+  </data>
+  <data name="EmptyInstallationRequest" xml:space="preserve">
+    <value>インストール要求が空です。</value>
+  </data>
+  <data name="InvalidInstallationComponents" xml:space="preserve">
+    <value>インストールするコンポーネントが無効です。</value>
+  </data>
+  <data name="DllRedirectionChanged" xml:space="preserve">
+    <value>DLL redirection の設定が変更されました。再度インストールしてください。</value>
+  </data>
+  <data name="InvalidDllRedirectionType" xml:space="preserve">
+    <value>DevOverrideEnable は DWORD である必要があります。</value>
+  </data>
+  <data name="RegistryVerificationFailed" xml:space="preserve">
+    <value>DLL redirection のレジストリ書き込み検証に失敗しました。</value>
+  </data>
+  <data name="InvalidOwnedDirectory" xml:space="preserve">
+    <value>管理対象ディレクトリの名前が無効です。</value>
+  </data>
+  <data name="DirectoryOutsideParent" xml:space="preserve">
+    <value>ディレクトリが親ディレクトリの外にあります。</value>
+  </data>
+  <data name="KomoeRegistryFailure" xml:space="preserve">
+    <value>Komoe レジストリ: {0}</value>
+  </data>
+  <data name="DllRedirectionEnabled" xml:space="preserve">
+    <value>DLL redirection を有効にしました。反映するには Windows を再起動してください。</value>
+  </data>
+  <data name="DllRedirectionAlreadyEnabled" xml:space="preserve">
+    <value>レジストリで DLL redirection は既に有効です。変更は行っていません。</value>
+  </data>
+</root>

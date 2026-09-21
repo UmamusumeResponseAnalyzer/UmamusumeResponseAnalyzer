@@ -298,8 +298,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                             action();
                         }
                         catch (InvalidOperationException exception)
-                            when (exception.Message.Contains(title, StringComparison.OrdinalIgnoreCase) &&
-                                  exception.Message.Contains("removed", StringComparison.OrdinalIgnoreCase))
+                            when (exception.Message.Contains(title, StringComparison.OrdinalIgnoreCase))
                         {
                             return;
                         }

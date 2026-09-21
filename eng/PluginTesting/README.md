@@ -10,11 +10,11 @@
 | `PluginRuntimeSmoke` | 默认遍历 22 个插件；配置了面板探针的插件检查 framebuffer、更新、历史按键和 Dispose，另检查 EventLogger 继承/剧本输出、DMM 空 token 失败提示、采集器永久上传失败 |
 | `PluginWorkspaceLifecycleSmoke` | 22 个插件初始化及未使用时 Dispose 的工作区稳定性、共享标题/面板、已移除工作区对迟到回调的拒绝 |
 | `AnalyzerHistoryConfigSmoke` | 10 个分析插件的 `historyLimit` 默认值、严格配置读取、保存/取消/关闭/token 取消、重建后的持久化结果 |
-| `PluginReplaySmoke` | `--self-test` 测试 HTTP 捕获解析；`--corpus` 将真实捕获依次送入 EventLogger、EventResponseAnalyzer、GamePacketCollector、RamenScenarioAnalyzer |
+| `PluginReplaySmoke` | `--self-test` 测试 HTTP 捕获解析与三语言可见 Error 判定；`--corpus` 将真实捕获依次送入 EventLogger、EventResponseAnalyzer、GamePacketCollector、RamenScenarioAnalyzer |
 
 这些项目为可执行程序，验收应使用 `dotnet run` 或直接执行构建产物。
 
-从 Host 仓库根目录执行以下 PowerShell。`UraTestPluginSourcesRoot` 指定包含各插件检出的目录，`Tests/Directory.Build.props` 从自身位置确定 Host 根目录；`URA_TEST_PLUGINS_ROOT` 供默认 `PluginSmokeTests` 检查插件源码。`DisableRealDriverIO` 用于无真实终端输入输出的测试运行。
+从 Host 仓库根目录执行以下 PowerShell。`UraTestPluginSourcesRoot` 指定包含各插件检出的目录，`Tests/Directory.Build.props` 从自身位置确定 Host 根目录；`URA_TEST_PLUGINS_ROOT` 供默认 `PluginSmokeTests` 检查插件源码。`DisableRealDriverIO` 用于无真实终端输入输出的测试运行。可选的 `URA_TEST_UI_CULTURE` 仅供测试，接受 `zh-CN`、`en-US`、`ja-JP`；设置后在共用 smoke Host 初始化配置前应用，其他值直接失败，未设置时沿用运行环境的语言。
 
 ```powershell
 $pluginSources = 'K:\repos\URA-Plugins'
@@ -38,6 +38,28 @@ dotnet run --project .\eng\PluginTesting\Tests\PluginReplaySmoke @smokeBuild -- 
 ```
 
 使用本地 Host 引用包时，在 `$smokeBuild` 中追加相同的 `RestoreConfigFile` 和 `RestorePackagesPath`。`PluginRuntimeSmoke` 可在 `--` 后传一个或多个插件名，例如 `-- EventLoggerPlugin GamePacketCollector`；不区分大小写，未知名称返回退出码 2，执行失败返回 1。未指定名称时运行全部 22 个。
+
+沿用上述构建参数和七个 ZIP，可按三种界面语言验证通知、日志与 ZIP 加载；`--self-test` 每次都覆盖三语言 Error 判定：
+
+```powershell
+$previousCulture = $env:URA_TEST_UI_CULTURE
+try {
+    foreach ($culture in 'zh-CN', 'en-US', 'ja-JP') {
+        $env:URA_TEST_UI_CULTURE = $culture
+        dotnet run --project .\eng\PluginTesting\Tests\PluginSmokeTests @smokeBuild -- --package-load
+        dotnet run --project .\eng\PluginTesting\Tests\PluginRuntimeSmoke @smokeBuild -- SkillTipsResponseAnalyzer EventLoggerPlugin DMMPlugin GamePacketCollector
+    }
+} finally {
+    $env:URA_TEST_UI_CULTURE = $previousCulture
+}
+dotnet run --project .\eng\PluginTesting\Tests\PluginReplaySmoke @smokeBuild -- --self-test
+```
+
+OldScenarioAnalyzer、OnsenScenarioAnalyzer、PioneerScenarioAnalyzer、UAFScenarioAnalyzer 还会分别以 `zh-CN`、`en-US`、`ja-JP` 检查真实训练面板的友人优先级、属性匹配、羁绊阈值和特殊卡 30241；后三者同时检查彩圈标记。OldScenarioAnalyzer 的道具高亮与 L'Arc 充能规则通过真实 Free/Arc DTO 调用现有分析核心验证：它的已注册回调只接受 URA DTO，因此这两项不代表 Free/Arc endpoint 分发验证。可定向运行：
+
+```powershell
+dotnet run --project .\eng\PluginTesting\Tests\PluginRuntimeSmoke @smokeBuild -- OldScenarioAnalyzer OnsenScenarioAnalyzer PioneerScenarioAnalyzer UAFScenarioAnalyzer
+```
 
 ## 七个 ZIP 与实际加载
 
@@ -72,7 +94,7 @@ dotnet run --project .\eng\PluginTesting\Tests\PluginReplaySmoke @smokeBuild -- 
 
 回放读取目录顶层的 `*.txt`，文件名必须以 `[整数序号]` 开头，按序号、文件名排序。每个文件包含 `/notify/request` 或 `/notify/response` 的 HTTP 请求行、`x-hachimi-game-url`、`content-length` 和原始二进制 body；支持 CRLF 或 LF 的头/体分隔，长度必须与 body 字节数一致。可选 `x-hachimi-*` 头保留为 `GameHttpHeaders`。请求与紧随其后的响应必须有相同 URL 和 sid。
 
-可用首个位置参数传语料目录；无参数时默认 `F:\Desktop\ramen_full_game`，目录不存在直接失败。空语料、缺 request/response/配对/有效分发、解析错误、配对错误、未知 endpoint、分发异常、可见 ERR 或 Dispose 错误均使验收失败，不能记为跳过或通过。`--self-test` 不读取语料，仅覆盖头分隔和 body 长度检查。
+可用首个位置参数传语料目录；无参数时默认 `F:\Desktop\ramen_full_game`，目录不存在直接失败。空语料、缺 request/response/配对/有效分发、解析错误、配对错误、未知 endpoint、分发异常、可见 Error 或 Dispose 错误均使验收失败，不能记为跳过或通过。可见 Error 判定检查当前 framebuffer 中包含 Bootstrap 当前语言 Error 标签及其后空格的行，不检查屏幕外历史或其他工作区。`--self-test` 不读取语料，覆盖头分隔、body 长度，以及三语言 Error 命中、Warning/Info 不命中。
 
 回放将数据库 fixture、插件配置和结果写入 `%TEMP%\ura-plugin-replay-<guid>`，结束后保留该目录并在摘要输出路径。采集器配置为 `enabled=false`、loopback 地址。摘要分别列出 request、response、配对、分发、忽略、异常和工作区结果；捕获数据和含账号标识的结果目录不要提交到仓库。
 

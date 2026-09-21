@@ -57,4 +57,4 @@ pwsh -NoProfile -File .\eng\tests\VerifyUraPluginBuildTargets.ps1 -MSBuildPath '
 
 `PluginSmokeTests` 默认执行源码实例并验证 ZIP 结构；`--package-load` 通过 `PluginManager` 运行七个 ZIP 的业务回调、输出与卸载检查。二者都要求 `URA_PLUGIN_SMOKE_PACKAGE_ROOT` 指向仅含本次七个 ZIP 的目录。
 
-`RandomDtoGenerator` 提供 Protocol / Analyzer 两种固定 seed 生成策略，`RandomDtoFactory` 补充插件所需剧本状态。Host 语料测试使用 `URA_PACKET_CORPUS`；`PluginReplaySmoke --self-test` 仅测试 HTTP 解析器，真实回放使用 `--corpus`。缺少真实捕获时不能把解析器自测或合成 DTO 结果记为真实语料通过。
+`RandomDtoGenerator` 提供 Protocol / Analyzer 两种固定 seed 生成策略，`RandomDtoFactory` 补充插件所需剧本状态。Host 语料测试使用 `URA_PACKET_CORPUS`；`PluginReplaySmoke --self-test` 测试 HTTP 解析器及三语言可见 Error 行识别，真实回放使用 `--corpus`。缺少真实捕获时不能把自测或合成 DTO 结果记为真实语料通过。

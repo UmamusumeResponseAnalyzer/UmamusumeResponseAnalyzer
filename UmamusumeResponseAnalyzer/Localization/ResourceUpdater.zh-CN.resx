@@ -123,6 +123,9 @@
   <data name="I18N_BeginUpdateProgramInstruction" xml:space="preserve">
     <value>敲回车开始更新主程序</value>
   </data>
+  <data name="I18N_DownloadTalentSkillInstruction" xml:space="preserve">
+    <value>正在从GitHub下载最新的talentskillsets.br</value>
+  </data>
   <data name="I18N_DownloadedInstruction" xml:space="preserve">
     <value>下载完成</value>
   </data>
@@ -144,9 +147,6 @@
   <data name="I18N_DownloadSkillUpgradeSpecialityInstruction" xml:space="preserve">
     <value>正在从GitHub下载最新的skill_upgrade_speciality.br</value>
   </data>
-  <data name="I18N_DownloadTalentSkillInstruction" xml:space="preserve">
-    <value>正在从GitHub下载最新的talentskillsets.br</value>
-  </data>
   <data name="I18N_UpdatedFileCorrupted" xml:space="preserve">
     <value>更新文件受损，主程序更新失败</value>
   </data>
@@ -158,5 +158,17 @@
   </data>
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}: 无法连接到更新服务器，请尝试在设置中启用"强制使用GitHub更新"后再试</value>
+  </data>
+  <data name="I18N_ProcessPathMissing" xml:space="preserve">
+    <value>无法确定当前程序路径，不能安装更新。</value>
+  </data>
+  <data name="I18N_DownloadPathRequired" xml:space="preserve">
+    <value>下载目标路径不能为空。</value>
+  </data>
+  <data name="I18N_DownloadLengthMismatch" xml:space="preserve">
+    <value>下载长度不符：预期 {0}，实际 {1}。</value>
+  </data>
+  <data name="I18N_DownloadTooLarge" xml:space="preserve">
+    <value>下载超过预期的 {0} 字节。</value>
   </data>
 </root>

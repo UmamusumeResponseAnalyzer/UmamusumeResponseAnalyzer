@@ -10,8 +10,8 @@
 
 namespace UmamusumeResponseAnalyzer.Localization {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -19,19 +19,19 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LaunchMenu {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal LaunchMenu() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,10 +45,10 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性，对
-        ///   使用此强类型资源类的所有资源查找执行重写。
+        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Globalization.CultureInfo Culture {
@@ -59,7 +59,223 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 resourceCulture = value;
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 The Terminal.Gui application is already bound. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_AlreadyBound {
+            get {
+                return ResourceManager.GetString("I18N_AlreadyBound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The Terminal.Gui application binding state is inconsistent. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_BindingMismatch {
+            get {
+                return ResourceManager.GetString("I18N_BindingMismatch", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The Terminal.Gui application must be bound on its owner thread. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_BindOwnerThread {
+            get {
+                return ResourceManager.GetString("I18N_BindOwnerThread", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Configuration file 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ConfigFile {
+            get {
+                return ResourceManager.GetString("I18N_ConfigFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Read {0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ConfigLoaded {
+            get {
+                return ResourceManager.GetString("I18N_ConfigLoaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Copy full backtrace 的本地化字符串。
+        /// </summary>
+        internal static string I18N_CopyBacktrace {
+            get {
+                return ResourceManager.GetString("I18N_CopyBacktrace", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Failed to copy the full backtrace: the system clipboard is unavailable. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_CopyBacktraceFailed {
+            get {
+                return ResourceManager.GetString("I18N_CopyBacktraceFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Japan (Cygames) 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Cygames {
+            get {
+                return ResourceManager.GetString("I18N_Cygames", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Bootstrap dashboard must be attached before showing its context menu. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DashboardNotAttached {
+            get {
+                return ResourceManager.GetString("I18N_DashboardNotAttached", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Loaded the complete data snapshot. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DatabaseLoaded {
+            get {
+                return ResourceManager.GetString("I18N_DatabaseLoaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Data files are incomplete or damaged; update all data files and restart. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DatabaseUnavailable {
+            get {
+                return ResourceManager.GetString("I18N_DatabaseUnavailable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Data language 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DataLanguage {
+            get {
+                return ResourceManager.GetString("I18N_DataLanguage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 SynchronizationContext must be drained on its owner thread. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DrainOwnerThread {
+            get {
+                return ResourceManager.GetString("I18N_DrainOwnerThread", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Environment 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Environment {
+            get {
+                return ResourceManager.GetString("I18N_Environment", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 URA will accept requests from other devices; allow access through Windows Firewall when the listener first starts. Choose the UM:PD version you use. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ExternalNetworkNotice {
+            get {
+                return ResourceManager.GetString("I18N_ExternalNetworkNotice", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Female 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Female {
+            get {
+                return ResourceManager.GetString("I18N_Female", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Initial setup is complete. Update the data files and install the required plugins from the plugin repository before starting. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_FirstRunComplete {
+            get {
+                return ResourceManager.GetString("I18N_FirstRunComplete", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Choose the event data language. Translations use content released in the corresponding client. This does not change effects or the total database size. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_FirstRunDataLanguage {
+            get {
+                return ResourceManager.GetString("I18N_FirstRunDataLanguage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 First setup: choose the device running UM:PD. Windows Terminal with an initial size of 120 columns by 35 rows is recommended. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_FirstRunDevice {
+            get {
+                return ResourceManager.GetString("I18N_FirstRunDevice", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Choose the trainer gender to display the matching event choices. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_FirstRunTrainerGender {
+            get {
+                return ResourceManager.GetString("I18N_FirstRunTrainerGender", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Host cleanup failed. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_HostCleanupFailed {
+            get {
+                return ResourceManager.GetString("I18N_HostCleanupFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Initialization results 的本地化字符串。
+        /// </summary>
+        internal static string I18N_InitializationResults {
+            get {
+                return ResourceManager.GetString("I18N_InitializationResults", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Initialized 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Initialized {
+            get {
+                return ResourceManager.GetString("I18N_Initialized", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Calling plugin Initialize. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_InitializingPlugins {
+            get {
+                return ResourceManager.GetString("I18N_InitializingPlugins", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Install Hachimi-Edge 的本地化字符串。
         /// </summary>
@@ -68,7 +284,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_InstallUraCore", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Boot menu (use ↑ and ↓ to switch options, press Enter to confirm) 的本地化字符串。
         /// </summary>
@@ -77,7 +293,43 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_Instruction", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Invalid installation command or missing confirmation. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_InvalidInstallCommand {
+            get {
+                return ResourceManager.GetString("I18N_InvalidInstallCommand", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Item 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Item {
+            get {
+                return ResourceManager.GetString("I18N_Item", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Japanese 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Japanese {
+            get {
+                return ResourceManager.GetString("I18N_Japanese", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Traditional Chinese (Komoe) 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Komoe {
+            get {
+                return ResourceManager.GetString("I18N_Komoe", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 URA launch failed, press Enter to exit the program 的本地化字符串。
         /// </summary>
@@ -86,7 +338,115 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_LaunchFail", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Listen address 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ListenAddress {
+            get {
+                return ResourceManager.GetString("I18N_ListenAddress", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Listening on http://{0}:{1} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Listening {
+            get {
+                return ResourceManager.GetString("I18N_Listening", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Load failed 的本地化字符串。
+        /// </summary>
+        internal static string I18N_LoadFailed {
+            get {
+                return ResourceManager.GetString("I18N_LoadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Loading event, skill and name data. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_LoadingDatabase {
+            get {
+                return ResourceManager.GetString("I18N_LoadingDatabase", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Load or initialization failed 的本地化字符串。
+        /// </summary>
+        internal static string I18N_LoadOrInitializeFailed {
+            get {
+                return ResourceManager.GetString("I18N_LoadOrInitializeFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 URA will only accept local requests; for emulator access, change the address to 0.0.0.0 in Options → Core and allow access through the firewall. Choose the UM:PD version you use. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_LocalNetworkNotice {
+            get {
+                return ResourceManager.GetString("I18N_LocalNetworkNotice", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The Terminal.Gui application MainThreadId does not match the UI owner thread. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_MainThreadMismatch {
+            get {
+                return ResourceManager.GetString("I18N_MainThreadMismatch", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Male 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Male {
+            get {
+                return ResourceManager.GetString("I18N_Male", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The bootstrap menu is already waiting for a selection. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_MenuPending {
+            get {
+                return ResourceManager.GetString("I18N_MenuPending", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Phone/emulator and this computer 的本地化字符串。
+        /// </summary>
+        internal static string I18N_MobileAndPc {
+            get {
+                return ResourceManager.GetString("I18N_MobileAndPc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 (No plugins loaded) 的本地化字符串。
+        /// </summary>
+        internal static string I18N_NoPlugins {
+            get {
+                return ResourceManager.GetString("I18N_NoPlugins", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 No plugins are loaded. Install plugins from the plugin repository. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_NoPluginsHint {
+            get {
+                return ResourceManager.GetString("I18N_NoPluginsHint", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Options 的本地化字符串。
         /// </summary>
@@ -95,7 +455,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_Options", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Press any key to return to the main menu 的本地化字符串。
         /// </summary>
@@ -104,7 +464,322 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_Options_BackToMenuInstruction", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Configuration 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PhaseConfig {
+            get {
+                return ResourceManager.GetString("I18N_PhaseConfig", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Data files 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PhaseDatabase {
+            get {
+                return ResourceManager.GetString("I18N_PhaseDatabase", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Host 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PhaseHost {
+            get {
+                return ResourceManager.GetString("I18N_PhaseHost", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin initialization 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PhasePluginInit {
+            get {
+                return ResourceManager.GetString("I18N_PhasePluginInit", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin scan 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PhasePluginScan {
+            get {
+                return ResourceManager.GetString("I18N_PhasePluginScan", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 HTTP server 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PhaseServer {
+            get {
+                return ResourceManager.GetString("I18N_PhaseServer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 {0} v{1}  by {2} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginAuthor {
+            get {
+                return ResourceManager.GetString("I18N_PluginAuthor", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin list 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginList {
+            get {
+                return ResourceManager.GetString("I18N_PluginList", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Failed to load plugin {0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginLoadFailed {
+            get {
+                return ResourceManager.GetString("I18N_PluginLoadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin name 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginName {
+            get {
+                return ResourceManager.GetString("I18N_PluginName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin repository 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginRepository {
+            get {
+                return ResourceManager.GetString("I18N_PluginRepository", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Found {0} available plugins. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginsFound {
+            get {
+                return ResourceManager.GetString("I18N_PluginsFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Found {0} available plugins; {1} plugins failed. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginsFoundWithFailures {
+            get {
+                return ResourceManager.GetString("I18N_PluginsFoundWithFailures", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Initialized {0} plugins. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginsInitialized {
+            get {
+                return ResourceManager.GetString("I18N_PluginsInitialized", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Initialized {0} plugins; {1} plugins failed. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginsInitializedWithFailures {
+            get {
+                return ResourceManager.GetString("I18N_PluginsInitializedWithFailures", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Loaded {0} plugins. Press P to view the plugin list. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginsLoaded {
+            get {
+                return ResourceManager.GetString("I18N_PluginsLoaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Data is unavailable; plugins were not initialized. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginsSkipped {
+            get {
+                return ResourceManager.GetString("I18N_PluginsSkipped", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin summary 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginSummary {
+            get {
+                return ResourceManager.GetString("I18N_PluginSummary", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin {0} has an update: {1} -&gt; {2} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginUpdate {
+            get {
+                return ResourceManager.GetString("I18N_PluginUpdate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 {0} plugins have updates: {1}. Install them from the plugin repository menu. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginUpdates {
+            get {
+                return ResourceManager.GetString("I18N_PluginUpdates", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 {0} plugins have updates, including {1}. Install them from the plugin repository menu. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PluginUpdatesMore {
+            get {
+                return ResourceManager.GetString("I18N_PluginUpdatesMore", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Preparing startup… 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PreparingStartup {
+            get {
+                return ResourceManager.GetString("I18N_PreparingStartup", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The SynchronizationContext pump must run on its owner thread. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_PumpOwnerThread {
+            get {
+                return ResourceManager.GetString("I18N_PumpOwnerThread", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Join the QQ group (channel messages may be filtered after an account ban) 的本地化字符串。
+        /// </summary>
+        internal static string I18N_QqGroup {
+            get {
+                return ResourceManager.GetString("I18N_QqGroup", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Opened the QQ group link: https://qm.qq.com/q/4z6xHQ908w 的本地化字符串。
+        /// </summary>
+        internal static string I18N_QqOpened {
+            get {
+                return ResourceManager.GetString("I18N_QqOpened", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Recent logs 的本地化字符串。
+        /// </summary>
+        internal static string I18N_RecentLogs {
+            get {
+                return ResourceManager.GetString("I18N_RecentLogs", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cannot start the interactive UI: stdin or stdout is redirected. Run URA directly in an interactive terminal such as Windows Terminal. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_RedirectedConsole {
+            get {
+                return ResourceManager.GetString("I18N_RedirectedConsole", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Registry change refused: confirmation is missing. Start this operation from the URA mod installer. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_RegistryConfirmationRequired {
+            get {
+                return ResourceManager.GetString("I18N_RegistryConfirmationRequired", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Result 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Result {
+            get {
+                return ResourceManager.GetString("I18N_Result", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Running: {0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Running {
+            get {
+                return ResourceManager.GetString("I18N_Running", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Scan or load failed 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ScanLoadFailed {
+            get {
+                return ResourceManager.GetString("I18N_ScanLoadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Scanned; waiting for initialization 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Scanned {
+            get {
+                return ResourceManager.GetString("I18N_Scanned", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Scanning Plugins/. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ScanningPlugins {
+            get {
+                return ResourceManager.GetString("I18N_ScanningPlugins", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Data is unavailable; the listener was not started. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ServerSkipped {
+            get {
+                return ResourceManager.GetString("I18N_ServerSkipped", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Server targets 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ServerTargets {
+            get {
+                return ResourceManager.GetString("I18N_ServerTargets", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Start! 的本地化字符串。
         /// </summary>
@@ -113,7 +788,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_Start", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Launched 的本地化字符串。
         /// </summary>
@@ -122,7 +797,115 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_Start_Started", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Starting the listener. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_StartingListener {
+            get {
+                return ResourceManager.GetString("I18N_StartingListener", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Startup information 的本地化字符串。
+        /// </summary>
+        internal static string I18N_StartupInformation {
+            get {
+                return ResourceManager.GetString("I18N_StartupInformation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Startup status 的本地化字符串。
+        /// </summary>
+        internal static string I18N_StartupStatus {
+            get {
+                return ResourceManager.GetString("I18N_StartupStatus", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Status 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Status {
+            get {
+                return ResourceManager.GetString("I18N_Status", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 This computer 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ThisPc {
+            get {
+                return ResourceManager.GetString("I18N_ThisPc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Traditional Chinese 的本地化字符串。
+        /// </summary>
+        internal static string I18N_TraditionalChinese {
+            get {
+                return ResourceManager.GetString("I18N_TraditionalChinese", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Trainer gender 的本地化字符串。
+        /// </summary>
+        internal static string I18N_TrainerGender {
+            get {
+                return ResourceManager.GetString("I18N_TrainerGender", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The Terminal.Gui application must be unbound on its owner thread. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_UnbindOwnerThread {
+            get {
+                return ResourceManager.GetString("I18N_UnbindOwnerThread", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Unknown 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Unknown {
+            get {
+                return ResourceManager.GetString("I18N_Unknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Unknown command-line options: {0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_UnknownArguments {
+            get {
+                return ResourceManager.GetString("I18N_UnknownArguments", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Not loaded 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Unloaded {
+            get {
+                return ResourceManager.GetString("I18N_Unloaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Unrestricted 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Unrestricted {
+            get {
+                return ResourceManager.GetString("I18N_Unrestricted", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Update data files 的本地化字符串。
         /// </summary>
@@ -131,7 +914,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_UpdateAssets", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 [URA] Plugin update check failed: {0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_UpdateCheckFailed {
+            get {
+                return ResourceManager.GetString("I18N_UpdateCheckFailed", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Update program 的本地化字符串。
         /// </summary>
@@ -140,13 +932,58 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_UpdateProgram", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Update source 的本地化字符串。
+        /// </summary>
+        internal static string I18N_UpdateSource {
+            get {
+                return ResourceManager.GetString("I18N_UpdateSource", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Found valid game directory: {0} 的本地化字符串。
         /// </summary>
         internal static string I18N_UraCoreHelper_FoundAvailablePath {
             get {
                 return ResourceManager.GetString("I18N_UraCoreHelper_FoundAvailablePath", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Value 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Value {
+            get {
+                return ResourceManager.GetString("I18N_Value", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Version 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Version {
+            get {
+                return ResourceManager.GetString("I18N_Version", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Waiting 的本地化字符串。
+        /// </summary>
+        internal static string I18N_Waiting {
+            get {
+                return ResourceManager.GetString("I18N_Waiting", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Working directory 的本地化字符串。
+        /// </summary>
+        internal static string I18N_WorkingDirectory {
+            get {
+                return ResourceManager.GetString("I18N_WorkingDirectory", resourceCulture);
             }
         }
     }

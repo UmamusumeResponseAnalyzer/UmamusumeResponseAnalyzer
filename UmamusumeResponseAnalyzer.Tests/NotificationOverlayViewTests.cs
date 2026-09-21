@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Drawing;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Text;
@@ -8,85 +9,99 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
+[Collection("HotkeyManager")]
 public sealed class NotificationOverlayViewTests
 {
-    [Fact]
-    public async Task Snapshot_RendersFramebufferBoundsAttributesAndPhysicalLineOrder()
+    [Theory]
+    [InlineData("en-US", "INFO", "2s")]
+    [InlineData("zh-CN", "信息", "2秒")]
+    [InlineData("ja-JP", "情報", "2秒")]
+    public async Task Snapshot_RendersFramebufferBoundsAttributesAndPhysicalLineOrder(
+        string culture, string info, string countdown)
     {
-        using var terminal = new TerminalGuiTestApp(width: 90, height: 24);
-        using var overlay = new NotificationOverlayView();
-        var now = new DateTimeOffset(2026, 7, 31, 12, 0, 0, TimeSpan.Zero);
-        var available = new Rectangle(5, 2, 80, 20);
-        overlay.UpdateSnapshot(new(
-            [
-                new("trace", UiSeverity.Trace, now.AddMilliseconds(1001)),
-                new("first-line\nsecond-line", UiSeverity.Info, now.AddSeconds(3)),
-                new("success", UiSeverity.Success, now.AddSeconds(4)),
-                new("warning", UiSeverity.Warning, now.AddSeconds(5))
-            ],
-            now,
-            available));
-
-        Assert.Equal(new Rectangle(50, 3, 34, 17), overlay.Frame);
-        Assert.Equal(1, available.Right - overlay.Frame.Right);
-        Assert.True(overlay.Frame.Bottom <= available.Bottom);
-
-        using var window = WindowWith(overlay);
-        var run = await StartAsync(terminal, window);
+        var originalCulture = i18n.Culture;
+        i18n.Culture = System.Globalization.CultureInfo.GetCultureInfo(culture);
         try
         {
-            await terminal.WaitForScreenAsync("second-line");
-            var screen = await terminal.CaptureScreenAsync();
-            var rows = screen.ReplaceLineEndings("\n").Split('\n');
-            var firstRow = Array.FindIndex(rows, row => row.Contains("first-line", StringComparison.Ordinal));
-            var secondRow = Array.FindIndex(rows, row => row.Contains("second-line", StringComparison.Ordinal));
-            var successRow = Array.FindIndex(rows, row => row.Contains("OK", StringComparison.Ordinal));
-            Assert.Contains("TRACE", screen, StringComparison.Ordinal);
-            Assert.Contains("INFO", screen, StringComparison.Ordinal);
-            Assert.Contains("WARN", screen, StringComparison.Ordinal);
-            Assert.Contains("2s", screen, StringComparison.Ordinal);
-            Assert.Equal(firstRow + 1, secondRow);
-            Assert.True(secondRow < successRow);
-
-            var expectedAttribute = await terminal.InvokeAsync(
-                () => overlay.GetAttributeForRole(VisualRole.Normal));
-            Assert.Equal(
-                expectedAttribute,
-                await terminal.CaptureAttributeAsync(overlay.Frame.Location));
-            var severityAttributes = new[]
-            {
-                await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 1)),
-                await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 5)),
-                await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 10)),
-                await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 14))
-            };
-            Assert.Equal(
+            using var terminal = new TerminalGuiTestApp(width: 90, height: 24);
+            using var overlay = new NotificationOverlayView();
+            var now = new DateTimeOffset(2026, 7, 31, 12, 0, 0, TimeSpan.Zero);
+            var available = new Rectangle(5, 2, 80, 20);
+            overlay.UpdateSnapshot(new(
                 [
-                    new Terminal.Gui.Drawing.Attribute(StandardColor.Gray, Terminal.Gui.Drawing.Color.None).Foreground,
-                    new Terminal.Gui.Drawing.Attribute(StandardColor.Cyan, Terminal.Gui.Drawing.Color.None).Foreground,
-                    new Terminal.Gui.Drawing.Attribute(StandardColor.BrightGreen, Terminal.Gui.Drawing.Color.None).Foreground,
-                    new Terminal.Gui.Drawing.Attribute(StandardColor.BrightYellow, Terminal.Gui.Drawing.Color.None).Foreground
+                    new("trace", UiSeverity.Trace, now.AddMilliseconds(1001)),
+                    new("first-line\nsecond-line", UiSeverity.Info, now.AddSeconds(3)),
+                    new("success", UiSeverity.Success, now.AddSeconds(4)),
+                    new("warning", UiSeverity.Warning, now.AddSeconds(5))
                 ],
-                severityAttributes.Select(attribute => attribute!.Value.Foreground));
-
-            await terminal.InvokeAsync(() => overlay.UpdateSnapshot(new(
-                [new("error", UiSeverity.Error, now.AddSeconds(1))],
                 now,
-                available)));
-            await terminal.WaitForScreenAsync("ERROR");
-            Assert.Equal(
-                new Terminal.Gui.Drawing.Attribute(StandardColor.BrightRed, Terminal.Gui.Drawing.Color.None).Foreground,
-                (await terminal.CaptureAttributeAsync(
-                    new(overlay.Frame.X + 2, overlay.Frame.Y + 1)))!.Value.Foreground);
+                available));
 
-            await terminal.InvokeAsync(() => overlay.UpdateSnapshot(new([], now, available)));
-            await terminal.WaitForAsync(async () =>
-                !(await terminal.CaptureScreenAsync()).Contains("ERROR", StringComparison.Ordinal));
-            Assert.False(overlay.Visible);
+            Assert.Equal(new Rectangle(50, 3, 34, 17), overlay.Frame);
+            Assert.Equal(1, available.Right - overlay.Frame.Right);
+            Assert.True(overlay.Frame.Bottom <= available.Bottom);
+
+            using var window = WindowWith(overlay);
+            var run = await StartAsync(terminal, window);
+            try
+            {
+                await terminal.WaitForScreenAsync("second-line");
+                var screen = await terminal.CaptureScreenAsync();
+                var rows = screen.ReplaceLineEndings("\n").Split('\n');
+                var firstRow = Array.FindIndex(rows, row => row.Contains("first-line", StringComparison.Ordinal));
+                var secondRow = Array.FindIndex(rows, row => row.Contains("second-line", StringComparison.Ordinal));
+                var successRow = Array.FindIndex(rows, row => row.Contains(i18n.Severity_Success, StringComparison.Ordinal));
+                Assert.Contains(i18n.Severity_Trace, screen, StringComparison.Ordinal);
+                Assert.Contains(info, screen, StringComparison.Ordinal);
+                Assert.Contains(i18n.Severity_Warning, screen, StringComparison.Ordinal);
+                Assert.Contains(countdown, screen, StringComparison.Ordinal);
+                Assert.Equal(firstRow + 1, secondRow);
+                Assert.True(secondRow < successRow);
+
+                var expectedAttribute = await terminal.InvokeAsync(
+                    () => overlay.GetAttributeForRole(VisualRole.Normal));
+                Assert.Equal(
+                    expectedAttribute,
+                    await terminal.CaptureAttributeAsync(overlay.Frame.Location));
+                var severityAttributes = new[]
+                {
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 1)),
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 5)),
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 10)),
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 14))
+                };
+                Assert.Equal(
+                    [
+                        new Terminal.Gui.Drawing.Attribute(StandardColor.Gray, Terminal.Gui.Drawing.Color.None).Foreground,
+                        new Terminal.Gui.Drawing.Attribute(StandardColor.Cyan, Terminal.Gui.Drawing.Color.None).Foreground,
+                        new Terminal.Gui.Drawing.Attribute(StandardColor.BrightGreen, Terminal.Gui.Drawing.Color.None).Foreground,
+                        new Terminal.Gui.Drawing.Attribute(StandardColor.BrightYellow, Terminal.Gui.Drawing.Color.None).Foreground
+                    ],
+                    severityAttributes.Select(attribute => attribute!.Value.Foreground));
+
+                await terminal.InvokeAsync(() => overlay.UpdateSnapshot(new(
+                    [new("error", UiSeverity.Error, now.AddSeconds(1))],
+                    now,
+                    available)));
+                await terminal.WaitForScreenAsync(i18n.Severity_Error);
+                Assert.Equal(
+                    new Terminal.Gui.Drawing.Attribute(StandardColor.BrightRed, Terminal.Gui.Drawing.Color.None).Foreground,
+                    (await terminal.CaptureAttributeAsync(
+                        new(overlay.Frame.X + 2, overlay.Frame.Y + 1)))!.Value.Foreground);
+
+                await terminal.InvokeAsync(() => overlay.UpdateSnapshot(new([], now, available)));
+                await terminal.WaitForAsync(async () =>
+                    !(await terminal.CaptureScreenAsync()).Contains(i18n.Severity_Error, StringComparison.Ordinal));
+                Assert.False(overlay.Visible);
+            }
+            finally
+            {
+                await StopAsync(terminal, run);
+            }
         }
         finally
         {
-            await StopAsync(terminal, run);
+            i18n.Culture = originalCulture;
         }
     }
 
@@ -113,7 +128,7 @@ public sealed class NotificationOverlayViewTests
         var run = await StartAsync(terminal, window);
         try
         {
-            await terminal.WaitForScreenAsync("还有 5 条通知");
+            await terminal.WaitForScreenAsync(string.Format(i18n.Notification_Remaining, 5));
             var screen = await terminal.CaptureScreenAsync();
             Assert.Contains("first", screen, StringComparison.Ordinal);
             Assert.DoesNotContain("second", screen, StringComparison.Ordinal);

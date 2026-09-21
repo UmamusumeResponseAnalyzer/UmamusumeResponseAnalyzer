@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Runtime.CompilerServices;
 using UmamusumeResponseAnalyzer.Commands;
 using UmamusumeResponseAnalyzer.Plugin;
@@ -6,13 +7,62 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
+[Collection("HotkeyManager")]
 public sealed class HostCommandsTests
 {
-    const string WorkspaceUsage =
-        "用法: /workspace | /workspace switch [<title>|\"<title>\"] | /workspace list";
-    const string PluginUsage =
-        "用法: /plugin [list] | /plugin load <InternalName> | " +
-        "/plugin unload <InternalName> | /plugin reload <InternalName>";
+    [Theory]
+    [InlineData("en-US", "Startup", "Usage:")]
+    [InlineData("zh-CN", "启动", "用法:")]
+    [InlineData("ja-JP", "起動", "使用方法:")]
+    public async Task LocalizedWorkspaceNamesPreserveCommandIdentity(
+        string culture, string displayTitle, string usagePrefix)
+    {
+        var originalCulture = i18n.Culture;
+        i18n.Culture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            var registry = new WorkspaceRegistry();
+            var (ordinary, _) = registry.Create("Startup");
+            var snapshot = new HostCommands.Snapshot(
+                registry.SnapshotRegistrationOrder().Select(workspace => new HostCommands.WorkspaceItem(workspace)).ToArray(),
+                registry.Bootstrap,
+                []);
+
+            Assert.Equal("启动", registry.Bootstrap.Title);
+            Assert.Equal(displayTitle, registry.Bootstrap.DisplayTitle);
+            Assert.Same(registry.Bootstrap, registry.Create("启动").Workspace);
+            Assert.NotSame(registry.Bootstrap, ordinary);
+            Assert.Equal("Startup", ordinary.DisplayTitle);
+
+            var list = Assert.IsType<HostCommands.Result>(await HostCommands.ExecuteAsync("/workspace list", snapshot));
+            var expected = displayTitle == "启动" ? "* 启动" : $"* {displayTitle} (启动)";
+            Assert.Equal([expected, "  Startup"], list.Display!.Items.Select(item => item.Text));
+            Assert.Contains("/workspace switch 启动", HostCommands.Complete("/workspace switch ", snapshot));
+            Assert.Same(registry.Bootstrap,
+                (await HostCommands.ExecuteAsync("/workspace switch 启动", snapshot))!.SwitchWorkspace);
+            Assert.Same(ordinary,
+                (await HostCommands.ExecuteAsync("/workspace switch Startup", snapshot))!.SwitchWorkspace);
+
+            var workspaceHelp = Assert.IsType<HostCommands.Result>(
+                await HostCommands.ExecuteAsync("/workspace unknown", snapshot));
+            var pluginHelp = Assert.IsType<HostCommands.Result>(
+                await HostCommands.ExecuteAsync("/plugin reload", snapshot));
+            Assert.Equal((i18n.Command_WorkspaceUsage, UiSeverity.Warning),
+                (workspaceHelp.Message, workspaceHelp.Severity));
+            Assert.Equal((i18n.Command_PluginUsage, UiSeverity.Warning),
+                (pluginHelp.Message, pluginHelp.Severity));
+            Assert.StartsWith(usagePrefix, workspaceHelp.Message!);
+            Assert.StartsWith(usagePrefix, pluginHelp.Message!);
+            var parseError = Assert.Throws<FormatException>(() =>
+                HostCommands.ParseWorkspaceTitle("\"title\\n\""));
+            Assert.Equal(string.Format(i18n.Command_QuotedTitleUnsupportedEscape, "n"), parseError.Message);
+            Assert.Contains("\\n", parseError.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            i18n.Culture = originalCulture;
+        }
+    }
 
     static HostCommands.Snapshot BootstrapOnlySnapshot()
     {
@@ -42,16 +92,16 @@ public sealed class HostCommandsTests
     }
 
     [Theory]
-    [InlineData("\"title\" trailing", "Quoted workspace title 的结束双引号后不能有其它内容。")]
-    [InlineData("\"   \"", "Quoted workspace title 不能为空或仅包含空白。")]
-    [InlineData("\"title\\", "Quoted workspace title 不能以反斜杠结尾。")]
-    [InlineData("\"title\\n\"", "Quoted workspace title 不支持转义 \\n；仅支持 \\\" 与 \\\\。")]
-    [InlineData("\"unterminated", "Quoted workspace title 缺少结束双引号。")]
-    public void ParseWorkspaceTitle_RejectsMalformedQuotes(string value, string message)
+    [InlineData("\"title\" trailing", nameof(i18n.Command_QuotedTitleTrailingContent))]
+    [InlineData("\"   \"", nameof(i18n.Command_QuotedTitleEmpty))]
+    [InlineData("\"title\\", nameof(i18n.Command_QuotedTitleTrailingSlash))]
+    [InlineData("\"title\\n\"", nameof(i18n.Command_QuotedTitleUnsupportedEscape))]
+    [InlineData("\"unterminated", nameof(i18n.Command_QuotedTitleUnclosed))]
+    public void ParseWorkspaceTitle_RejectsMalformedQuotes(string value, string resourceKey)
     {
         var error = Assert.Throws<FormatException>(() => HostCommands.ParseWorkspaceTitle(value));
 
-        Assert.Equal(message, error.Message);
+        Assert.Equal(string.Format(i18n.ResourceManager.GetString(resourceKey, i18n.Culture)!, "n"), error.Message);
     }
 
     [Fact]
@@ -68,10 +118,10 @@ public sealed class HostCommandsTests
         var pluginUsage = Assert.IsType<HostCommands.Result>(
             await HostCommands.ExecuteAsync("/plugin reload", BootstrapOnlySnapshot()));
 
-        Assert.Equal(("命令为空。", UiSeverity.Warning), (empty.Message, empty.Severity));
-        Assert.Equal(("未知命令: /missing", UiSeverity.Warning), (unknown.Message, unknown.Severity));
-        Assert.Equal((WorkspaceUsage, UiSeverity.Warning), (workspaceUsage.Message, workspaceUsage.Severity));
-        Assert.Equal((PluginUsage, UiSeverity.Warning), (pluginUsage.Message, pluginUsage.Severity));
+        Assert.Equal((i18n.Command_Empty, UiSeverity.Warning), (empty.Message, empty.Severity));
+        Assert.Equal((string.Format(i18n.Command_Unknown, "missing"), UiSeverity.Warning), (unknown.Message, unknown.Severity));
+        Assert.Equal((i18n.Command_WorkspaceUsage, UiSeverity.Warning), (workspaceUsage.Message, workspaceUsage.Severity));
+        Assert.Equal((i18n.Command_PluginUsage, UiSeverity.Warning), (pluginUsage.Message, pluginUsage.Severity));
     }
 
     [Fact]
@@ -107,9 +157,12 @@ public sealed class HostCommandsTests
         Assert.Same(second, alias);
         var listDisplay = Assert.IsType<HostCommands.Display>(list.Display);
         var selectorDisplay = Assert.IsType<HostCommands.Display>(selector.Display);
-        Assert.Equal("Workspaces", listDisplay.Title);
+        Assert.Equal(i18n.Command_WorkspacesTitle, listDisplay.Title);
         Assert.Null(listDisplay.SelectedIndex);
-        Assert.Equal(["  启动", "  First [Ctrl+1]", "* Second \"Workspace\""],
+        var bootstrapLabel = registry.Bootstrap.DisplayTitle == Workspace.BootstrapTitle
+            ? registry.Bootstrap.DisplayTitle
+            : $"{registry.Bootstrap.DisplayTitle} ({Workspace.BootstrapTitle})";
+        Assert.Equal([$"  {bootstrapLabel}", "  First [Ctrl+1]", "* Second \"Workspace\""],
             listDisplay.Items.Select(item => item.Text).ToArray());
         Assert.Same(registry.Bootstrap, listDisplay.Items[0].Workspace);
         Assert.Same(first, listDisplay.Items[1].Workspace);
@@ -118,9 +171,9 @@ public sealed class HostCommandsTests
         Assert.Same(second, switched.SwitchWorkspace);
         Assert.Null(switched.Message);
         var bootstrapOnly = Assert.IsType<HostCommands.Display>(empty.Display);
-        Assert.Equal(["* 启动"], bootstrapOnly.Items.Select(item => item.Text).ToArray());
+        Assert.Equal([$"* {bootstrapLabel}"], bootstrapOnly.Items.Select(item => item.Text).ToArray());
         Assert.Equal(0, bootstrapOnly.SelectedIndex);
-        Assert.Equal(("workspace 不存在: Missing", UiSeverity.Warning),
+        Assert.Equal((string.Format(i18n.Command_WorkspaceNotFound, "Missing"), UiSeverity.Warning),
             (missing.Message, missing.Severity));
     }
 
@@ -153,7 +206,7 @@ public sealed class HostCommandsTests
 
         var error = Assert.Throws<InvalidOperationException>(() =>
             registry.Remove(bootstrap, out _));
-        Assert.Equal("Bootstrap workspace '启动' 不能移除。", error.Message);
+        Assert.Equal(string.Format(i18n.Workspace_BootstrapCannotRemove, Workspace.BootstrapTitle), error.Message);
         Assert.Same(bootstrap, registry.Current);
         Assert.Equal([bootstrap], registry.SnapshotRegistrationOrder());
 
@@ -194,7 +247,7 @@ public sealed class HostCommandsTests
 
         Assert.Same(workspace, switched.SwitchWorkspace);
         Assert.Equal(
-            ("Quoted workspace title 缺少结束双引号。", UiSeverity.Error),
+            (i18n.Command_QuotedTitleUnclosed, UiSeverity.Error),
             (malformed.Message, malformed.Severity));
     }
 
@@ -218,15 +271,15 @@ public sealed class HostCommandsTests
             await HostCommands.ExecuteAsync("/plugin reload Missing", snapshot));
 
         var display = Assert.IsType<HostCommands.Display>(list.Display);
-        Assert.Equal("Plugins", display.Title);
+        Assert.Equal(i18n.Command_PluginsTitle, display.Title);
         Assert.Equal(
             [
-                "loaded Internal (显示名) v1.2.3 by Author",
-                "unloaded Plain",
-                "failed Broken"
+                $"{i18n.Command_PluginStateLoaded} Internal (显示名) v1.2.3 {string.Format(i18n.Command_PluginAuthor, "Author")}",
+                $"{i18n.Command_PluginStateUnloaded} Plain",
+                $"{i18n.Command_PluginStateFailed} Broken"
             ],
             display.Items.Select(item => item.Text).ToArray());
-        Assert.Equal(("插件不存在: Missing", UiSeverity.Warning),
+        Assert.Equal((string.Format(i18n.Command_PluginNotFound, "Missing"), UiSeverity.Warning),
             (missing.Message, missing.Severity));
     }
 

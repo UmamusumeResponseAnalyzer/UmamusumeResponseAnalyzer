@@ -10,8 +10,8 @@
 
 namespace UmamusumeResponseAnalyzer.Localization {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -19,19 +19,19 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Server {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Server() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,10 +45,10 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性，对
-        ///   使用此强类型资源类的所有资源查找执行重写。
+        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Globalization.CultureInfo Culture {
@@ -59,34 +59,43 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 You may try connecting via http://{0}:4693 的本地化字符串。
+        ///   查找类似 You may try connecting via http://{0}:{1} 的本地化字符串。
         /// </summary>
         internal static string I18N_AvailableEndpointTip {
             get {
                 return ResourceManager.GetString("I18N_AvailableEndpointTip", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Detected a login request for account with ViewerID {0} 的本地化字符串。
+        ///   查找类似 Missing canonical URL header: {0} 的本地化字符串。
         /// </summary>
-        internal static string I18N_LoginRequestDetected {
+        internal static string I18N_CanonicalHeaderMissing {
             get {
-                return ResourceManager.GetString("I18N_LoginRequestDetected", resourceCulture);
+                return ResourceManager.GetString("I18N_CanonicalHeaderMissing", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Server started at http://127.0.0.1:4693, to connect via emulator/phone please run as administrator 的本地化字符串。
+        ///   查找类似 The canonical URL must contain an absolute path: {0} 的本地化字符串。
         /// </summary>
-        internal static string I18N_NormalServerStarted {
+        internal static string I18N_CanonicalPathRequired {
             get {
-                return ResourceManager.GetString("I18N_NormalServerStarted", resourceCulture);
+                return ResourceManager.GetString("I18N_CanonicalPathRequired", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Failed to clean up an old debug packet; skipped {0}: {1} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DebugCleanupFailed {
+            get {
+                return ResourceManager.GetString("I18N_DebugCleanupFailed", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Detected a request from the game, configuration is correct 的本地化字符串。
         /// </summary>
@@ -95,7 +104,43 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_PingReceived", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Gallop DTO projection failed: endpoint={0}, path={1}, dto={2} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ProjectionFailed {
+            get {
+                return ResourceManager.GetString("I18N_ProjectionFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Gallop DTO deserialization returned null: endpoint={0}, path={1}, dto={2} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ProjectionNull {
+            get {
+                return ResourceManager.GetString("I18N_ProjectionNull", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Request analysis failed 的本地化字符串。
+        /// </summary>
+        internal static string I18N_RequestAnalyzeFail {
+            get {
+                return ResourceManager.GetString("I18N_RequestAnalyzeFail", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Request analyzer plugin failed: plugin={0}, {1} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_RequestPluginFailed {
+            get {
+                return ResourceManager.GetString("I18N_RequestPluginFailed", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Error parsing Response: (If the program runs normally, this can be ignored) 的本地化字符串。
         /// </summary>
@@ -104,25 +149,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_ResponseAnalyzeFail", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Server startup failed, please check if another URA instance is running 的本地化字符串。
+        ///   查找类似 Response analyzer plugin failed: plugin={0}, {1} 的本地化字符串。
         /// </summary>
-        internal static string I18N_ServerStartFail {
+        internal static string I18N_ResponsePluginFailed {
             get {
-                return ResourceManager.GetString("I18N_ServerStartFail", resourceCulture);
+                return ResourceManager.GetString("I18N_ResponsePluginFailed", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Training failed! 的本地化字符串。
-        /// </summary>
-        internal static string I18N_TrainingFailed {
-            get {
-                return ResourceManager.GetString("I18N_TrainingFailed", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 Server started at http://*:4693 的本地化字符串。
         /// </summary>

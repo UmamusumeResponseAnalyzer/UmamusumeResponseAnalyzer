@@ -159,4 +159,16 @@
   <data name="I18N_AccessMirrorFail" xml:space="preserve">
     <value>{0}:更新サーバーに接続できませんでした。「GitHubを使用した強制アップデート」を設定で有効にしてから再試行してください</value>
   </data>
+  <data name="I18N_ProcessPathMissing" xml:space="preserve">
+    <value>現在のプログラムのパスを特定できないため、更新をインストールできません。</value>
+  </data>
+  <data name="I18N_DownloadPathRequired" xml:space="preserve">
+    <value>ダウンロード先のパスを空にすることはできません。</value>
+  </data>
+  <data name="I18N_DownloadLengthMismatch" xml:space="preserve">
+    <value>ダウンロードサイズが一致しません：expected={0}, actual={1}。</value>
+  </data>
+  <data name="I18N_DownloadTooLarge" xml:space="preserve">
+    <value>ダウンロードが予定の {0} バイトを超えています。</value>
+  </data>
 </root>

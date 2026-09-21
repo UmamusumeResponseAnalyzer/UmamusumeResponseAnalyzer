@@ -126,4 +126,13 @@
   <data name="I18N_CastToUmaNameFail" xml:space="preserve">
     <value>Unable to convert from {0} to UmaName</value>
   </data>
+  <data name="I18N_RSupportCardMissing" xml:space="preserve">
+    <value>R support card data does not exist: charaId={0}</value>
+  </data>
+  <data name="I18N_RSupportCardAmbiguous" xml:space="preserve">
+    <value>R support card data is not unique: charaId={0}</value>
+  </data>
+  <data name="I18N_NameMissing" xml:space="preserve">
+    <value>Name data is missing or has the wrong type: id={0}, expected={1}</value>
+  </data>
 </root>

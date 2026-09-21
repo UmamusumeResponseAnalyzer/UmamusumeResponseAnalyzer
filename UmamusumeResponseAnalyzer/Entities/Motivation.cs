@@ -9,13 +9,13 @@ namespace UmamusumeResponseAnalyzer.Entities
         public static Motivation Worst => new(1);
 
         private readonly int motivation = m;
-        private readonly string enumString = m switch
+        private string enumString => motivation switch
         {
-            1 => "绝不调",
-            2 => "不调",
-            3 => "普通",
-            4 => "好调",
-            5 => "绝好调"
+            1 => Localization.Game.I18N_MotivationWorst,
+            2 => Localization.Game.I18N_MotivationBad,
+            3 => Localization.Game.I18N_MotivationNormal,
+            4 => Localization.Game.I18N_MotivationGood,
+            5 => Localization.Game.I18N_MotivationBest
         };
 
         public static implicit operator int(Motivation m) => m.motivation;

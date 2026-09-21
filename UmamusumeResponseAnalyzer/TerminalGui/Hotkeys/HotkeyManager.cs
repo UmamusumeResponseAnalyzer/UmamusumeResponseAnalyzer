@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Input;
 
 namespace UmamusumeResponseAnalyzer.TerminalGui;
@@ -92,7 +93,7 @@ public static class HotkeyManager
         if (modifiers.HasFlag(ConsoleModifiers.Control) &&
             key is ConsoleKey.S or ConsoleKey.Q or ConsoleKey.Z)
         {
-            throw new InvalidOperationException($"Ctrl+{key} 由终端保留，不能注册为热键。");
+            throw new InvalidOperationException(string.Format(i18n.Hotkey_Reserved, key));
         }
 
         var entry = new HotkeyEntry(description, handler, registrationOwner.Value);

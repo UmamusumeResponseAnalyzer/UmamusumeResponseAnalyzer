@@ -108,7 +108,7 @@ namespace UmamusumeResponseAnalyzer
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(savePath);
             var processPath = Environment.ProcessPath
-                ?? throw new InvalidOperationException("无法确定当前程序路径，不能安装更新。");
+                ?? throw new InvalidOperationException(I18N_ProcessPathMissing);
             var fullSavePath = Path.GetFullPath(savePath);
             File.Copy(processPath, fullSavePath, true);
             UmamusumeResponseAnalyzer.StartAfterTerminalCleanup(new ProcessStartInfo
@@ -161,7 +161,7 @@ namespace UmamusumeResponseAnalyzer
             long? expectedLength = null)
         {
             if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentException("下载目标路径不能为空。", nameof(path));
+                throw new ArgumentException(I18N_DownloadPathRequired, nameof(path));
 
             var downloadURL = downloadUrl ?? GetDownloadUrl(path);
             var fullPath = Path.GetFullPath(path);
@@ -175,7 +175,7 @@ namespace UmamusumeResponseAnalyzer
                     cancellationToken);
                 response.EnsureSuccessStatusCode();
                 if (expectedLength is { } expected && response.Content.Headers.ContentLength is { } actual && actual != expected)
-                    throw new InvalidDataException($"Download length mismatch: expected {expected}, received {actual}.");
+                    throw new InvalidDataException(string.Format(I18N_DownloadLengthMismatch, expected, actual));
                 var total = expectedLength ?? response.Content.Headers.ContentLength ?? 0;
                 long completed = 0;
                 progress?.Report(new(
@@ -195,7 +195,7 @@ namespace UmamusumeResponseAnalyzer
                             break;
                         completed += read;
                         if (expectedLength is { } limit && completed > limit)
-                            throw new InvalidDataException($"Download exceeds the expected {limit} bytes.");
+                            throw new InvalidDataException(string.Format(I18N_DownloadTooLarge, limit));
                         progress?.Report(new(
                             fullPath,
                             instruction ?? Path.GetFileName(path),
@@ -206,7 +206,7 @@ namespace UmamusumeResponseAnalyzer
                 }
 
                 if (expectedLength is { } length && completed != length)
-                    throw new InvalidDataException($"Download length mismatch: expected {length}, received {completed}.");
+                    throw new InvalidDataException(string.Format(I18N_DownloadLengthMismatch, length, completed));
                 File.Move(tempPath, fullPath, overwrite: true);
             }
             catch (OperationCanceledException)

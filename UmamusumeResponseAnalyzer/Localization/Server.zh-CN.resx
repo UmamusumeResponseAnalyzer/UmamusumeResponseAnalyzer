@@ -127,6 +127,30 @@
     <value>服务器已于http://*:4693启动</value>
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
-    <value>可尝试通过http://{0}:{1}连接</value>
+    <value>你可以尝试连接 http://{0}:{1}</value>
+  </data>
+  <data name="I18N_ProjectionNull" xml:space="preserve">
+    <value>Gallop DTO 反序列化返回 null: endpoint={0}, path={1}, dto={2}</value>
+  </data>
+  <data name="I18N_ProjectionFailed" xml:space="preserve">
+    <value>Gallop DTO 投影失败: endpoint={0}, path={1}, dto={2}</value>
+  </data>
+  <data name="I18N_CanonicalHeaderMissing" xml:space="preserve">
+    <value>缺少 canonical URL header: {0}</value>
+  </data>
+  <data name="I18N_CanonicalPathRequired" xml:space="preserve">
+    <value>canonical URL 必须包含绝对 path: {0}</value>
+  </data>
+  <data name="I18N_DebugCleanupFailed" xml:space="preserve">
+    <value>debug packet 旧文件清理失败，已跳过 {0}: {1}</value>
+  </data>
+  <data name="I18N_RequestAnalyzeFail" xml:space="preserve">
+    <value>请求分析失败</value>
+  </data>
+  <data name="I18N_RequestPluginFailed" xml:space="preserve">
+    <value>请求分析插件处理失败: plugin={0}, {1}</value>
+  </data>
+  <data name="I18N_ResponsePluginFailed" xml:space="preserve">
+    <value>响应分析插件处理失败: plugin={0}, {1}</value>
   </data>
 </root>

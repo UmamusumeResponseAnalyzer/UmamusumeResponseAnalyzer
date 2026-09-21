@@ -62,6 +62,16 @@
 	</Target>
 
 	<ItemGroup>
+		<Compile Update="Localization\PluginRegistry.Designer.cs">
+		  <DependentUpon>PluginRegistry.resx</DependentUpon>
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Localization\TerminalGui.Designer.cs">
+		  <DependentUpon>TerminalGui.resx</DependentUpon>
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		</Compile>
 		<Compile Update="Localization\Dmm.Designer.cs">
 		  <DependentUpon>Dmm.resx</DependentUpon>
 		  <DesignTime>True</DesignTime>
@@ -115,8 +125,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Update="Localization\CommandInfo\Cook.zh-CN.resx">
-		  <LastGenOutput>Cook.zh-CN.Designer.cs</LastGenOutput>
+		<EmbeddedResource Update="Localization\PluginRegistry.resx">
+		  <LastGenOutput>PluginRegistry.Designer.cs</LastGenOutput>
+		  <Generator>ResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localization\TerminalGui.resx">
+		  <LastGenOutput>TerminalGui.Designer.cs</LastGenOutput>
 		  <Generator>ResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Localization\CommandInfo\Cook.resx">

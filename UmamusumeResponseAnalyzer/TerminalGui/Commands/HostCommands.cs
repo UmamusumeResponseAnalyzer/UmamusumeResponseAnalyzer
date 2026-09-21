@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Diagnostics;
 using System.Text;
 using UmamusumeResponseAnalyzer.Plugin;
@@ -7,12 +8,6 @@ namespace UmamusumeResponseAnalyzer.Commands;
 
 internal static class HostCommands
 {
-    const string WorkspaceUsage =
-        "用法: /workspace | /workspace switch [<title>|\"<title>\"] | /workspace list";
-    const string PluginUsage =
-        "用法: /plugin [list] | /plugin load <InternalName> | " +
-        "/plugin unload <InternalName> | /plugin reload <InternalName>";
-
     internal sealed record WorkspaceItem(
         Workspace Handle,
         string? ShortcutText = null);
@@ -49,14 +44,14 @@ internal static class HostCommands
 
         var (name, arguments) = Tokenize(command[1..]);
         if (name.Length == 0)
-            return Warning("命令为空。");
+            return Warning(i18n.Command_Empty);
 
         if (name.Equals("workspace", StringComparison.OrdinalIgnoreCase))
             return RunWorkspaceCommand(arguments, snapshot);
         if (name.Equals("plugin", StringComparison.OrdinalIgnoreCase))
             return await RunPluginCommandAsync(arguments, snapshot, cancellationToken);
 
-        return Warning($"未知命令: /{name}");
+        return Warning(string.Format(i18n.Command_Unknown, name));
     }
 
     internal static IReadOnlyList<string> Complete(string input, Snapshot snapshot)
@@ -109,21 +104,21 @@ internal static class HostCommands
                     if (i != value.Length - 1)
                     {
                         throw new FormatException(
-                            "Quoted workspace title 的结束双引号后不能有其它内容。");
+                            i18n.Command_QuotedTitleTrailingContent);
                     }
                     if (string.IsNullOrWhiteSpace(title.ToString()))
                     {
                         throw new FormatException(
-                            "Quoted workspace title 不能为空或仅包含空白。");
+                            i18n.Command_QuotedTitleEmpty);
                     }
                     return title.ToString();
                 case '\\':
                     if (++i >= value.Length)
-                        throw new FormatException("Quoted workspace title 不能以反斜杠结尾。");
+                        throw new FormatException(i18n.Command_QuotedTitleTrailingSlash);
                     if (value[i] is not ('"' or '\\'))
                     {
                         throw new FormatException(
-                            $"Quoted workspace title 不支持转义 \\{value[i]}；仅支持 \\\" 与 \\\\。");
+                            string.Format(i18n.Command_QuotedTitleUnsupportedEscape, value[i]));
                     }
                     title.Append(value[i]);
                     break;
@@ -133,7 +128,7 @@ internal static class HostCommands
             }
         }
 
-        throw new FormatException("Quoted workspace title 缺少结束双引号。");
+        throw new FormatException(i18n.Command_QuotedTitleUnclosed);
     }
 
     static Result RunWorkspaceCommand(string arguments, Snapshot snapshot)
@@ -146,7 +141,7 @@ internal static class HostCommands
         {
             return remainder.Length == 0
                 ? ShowWorkspaces(snapshot, selectable: false)
-                : Warning(WorkspaceUsage);
+                : Warning(i18n.Command_WorkspaceUsage);
         }
 
         if (subcommand.Equals("switch", StringComparison.OrdinalIgnoreCase))
@@ -162,7 +157,7 @@ internal static class HostCommands
                     .FirstOrDefault(candidate =>
                         candidate.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
                 return workspace is null
-                    ? Warning($"workspace 不存在: {title}")
+                    ? Warning(string.Format(i18n.Command_WorkspaceNotFound, title))
                     : new(SwitchWorkspace: workspace);
             }
             catch (FormatException ex)
@@ -171,7 +166,7 @@ internal static class HostCommands
             }
         }
 
-        return Warning(WorkspaceUsage);
+        return Warning(i18n.Command_WorkspaceUsage);
     }
 
     static async Task<Result> RunPluginCommandAsync(
@@ -187,21 +182,21 @@ internal static class HostCommands
         {
             return remainder.Length == 0
                 ? ShowPlugins(snapshot.Plugins)
-                : Warning(PluginUsage);
+                : Warning(i18n.Command_PluginUsage);
         }
 
         var action = subcommand.ToLowerInvariant();
         if (action is not ("load" or "unload" or "reload"))
-            return Warning(PluginUsage);
+            return Warning(i18n.Command_PluginUsage);
 
         var (pluginName, extra) = Tokenize(remainder);
         if (pluginName.Length == 0 || extra.Length != 0)
-            return Warning(PluginUsage);
+            return Warning(i18n.Command_PluginUsage);
 
         var plugin = snapshot.Plugins.FirstOrDefault(status =>
             status.InternalName.Equals(pluginName, StringComparison.OrdinalIgnoreCase));
         if (plugin is null)
-            return Warning($"插件不存在: {pluginName}");
+            return Warning(string.Format(i18n.Command_PluginNotFound, pluginName));
 
         cancellationToken.ThrowIfCancellationRequested();
         var result = (action switch
@@ -212,25 +207,24 @@ internal static class HostCommands
             _ => throw new UnreachableException()
         }).Single();
 
-        var localizedAction = action switch
+        var failed = result.Outcome == PluginManager.PluginLifecycleOutcome.Failed;
+        var message = string.Format((action, failed) switch
         {
-            "load" => "加载",
-            "unload" => "卸载",
-            "reload" => "重载",
+            ("load", true) => i18n.Command_PluginLoadFailed,
+            ("unload", true) => i18n.Command_PluginUnloadFailed,
+            ("reload", true) => i18n.Command_PluginReloadFailed,
+            ("load", false) => i18n.Command_PluginLoaded,
+            ("unload", false) => i18n.Command_PluginUnloaded,
+            ("reload", false) => i18n.Command_PluginReloaded,
             _ => throw new UnreachableException()
-        };
-        if (result.Outcome == PluginManager.PluginLifecycleOutcome.Failed)
-        {
-            return new(
-                $"插件 {plugin.InternalName} {localizedAction}失败。",
-                UiSeverity.Error);
-        }
+        }, plugin.InternalName);
+        if (failed)
+            return new(message, UiSeverity.Error);
 
-        var message = $"插件 {plugin.InternalName} 已{localizedAction}。";
         return new(
             message,
             UiSeverity.Success,
-            new("Plugin command", [new($"{plugin.InternalName} 已{localizedAction}。")]));
+            new(i18n.Command_PluginTitle, [new(message)]));
     }
 
     static Result ShowWorkspaces(Snapshot snapshot, bool selectable)
@@ -241,8 +235,11 @@ internal static class HostCommands
             var shortcut = string.IsNullOrEmpty(item.ShortcutText)
                 ? string.Empty
                 : $" [{item.ShortcutText}]";
+            var title = item.Handle.DisplayTitle == item.Handle.Title
+                ? item.Handle.DisplayTitle
+                : $"{item.Handle.DisplayTitle} ({item.Handle.Title})";
             return new DisplayItem(
-                $"{marker} {item.Handle.Title}{shortcut}",
+                $"{marker} {title}{shortcut}",
                 item.Handle);
         }).ToArray();
         int? selectedIndex = selectable
@@ -250,28 +247,28 @@ internal static class HostCommands
                 items,
                 item => ReferenceEquals(item.Workspace, snapshot.CurrentWorkspace)))
             : null;
-        return new(Display: new("Workspaces", items, selectedIndex));
+        return new(Display: new(i18n.Command_WorkspacesTitle, items, selectedIndex));
     }
 
     static Result ShowPlugins(IReadOnlyList<PluginManager.PluginRuntimeStatus> plugins)
     {
         if (plugins.Count == 0)
-            return new(Display: new("Plugins", [new("（没有已知插件）")]));
+            return new(Display: new(i18n.Command_PluginsTitle, [new(i18n.Command_NoPlugins)]));
 
         return new(Display: new(
-            "Plugins",
+            i18n.Command_PluginsTitle,
             plugins.Select(plugin =>
             {
                 var state = plugin.IsLoaded
-                    ? "loaded"
-                    : plugin.IsAvailable ? "unloaded" : "failed";
+                    ? i18n.Command_PluginStateLoaded
+                    : plugin.IsAvailable ? i18n.Command_PluginStateUnloaded : i18n.Command_PluginStateFailed;
                 var displayName = plugin.DisplayName == plugin.InternalName
                     ? string.Empty
                     : $" ({plugin.DisplayName})";
                 var version = plugin.Version is null ? string.Empty : $" v{plugin.Version}";
                 var author = string.IsNullOrWhiteSpace(plugin.Author)
                     ? string.Empty
-                    : $" by {plugin.Author}";
+                    : " " + string.Format(i18n.Command_PluginAuthor, plugin.Author);
                 return new DisplayItem(
                     $"{state} {plugin.InternalName}{displayName}{version}{author}");
             }).ToArray()));

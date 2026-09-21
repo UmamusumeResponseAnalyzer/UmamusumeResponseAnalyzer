@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
@@ -11,6 +12,7 @@ using UmamusumeResponseAnalyzer;
 using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using UmamusumeResponseAnalyzer.Plugin;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 if (args.Contains("--self-test", StringComparer.OrdinalIgnoreCase))
 {
@@ -61,7 +63,25 @@ static class SelfTests
             () => HttpMessageEnvelope.Parse("bad-length.txt", Encoding.ASCII.GetBytes(headerText.Replace($"content-length: {body.Length}", "content-length: 999", StringComparison.Ordinal)).Concat(body).ToArray()));
         AssertThrows<FormatException>(
             () => HttpMessageEnvelope.Parse("no-separator.txt", Encoding.ASCII.GetBytes(headerText.TrimEnd('\r', '\n'))));
-        Console.WriteLine("PASS parser self-test");
+        var originalCulture = UiText.Culture;
+        try
+        {
+            foreach (var cultureName in new[] { "zh-CN", "en-US", "ja-JP" })
+            {
+                UiText.Culture = CultureInfo.GetCultureInfo(cultureName);
+                var error = $"│{BootstrapWorkspace.SeverityLabel(UiSeverity.Error)} [plugin] failure";
+                var warning = $"│{BootstrapWorkspace.SeverityLabel(UiSeverity.Warning)} [plugin] warning";
+                var info = $"│{BootstrapWorkspace.SeverityLabel(UiSeverity.Info)} [plugin] info";
+                var errors = ReplayHarness.VisibleErrors(string.Join('\n', error, warning, info));
+                AssertEqual(1, errors.Length);
+                AssertEqual(error, errors[0]);
+            }
+        }
+        finally
+        {
+            UiText.Culture = originalCulture;
+        }
+        Console.WriteLine("PASS parser and localized visible-error self-test");
     }
 
     static void AssertEqual<T>(T expected, T actual)
@@ -360,10 +380,10 @@ sealed class ReplayHarness(string corpusPath, WorkspaceSmokeSession ui)
         }
     }
 
-    static string[] VisibleErrors(string screen)
+    internal static string[] VisibleErrors(string screen)
         => [.. screen.ReplaceLineEndings("\n")
             .Split('\n')
-            .Where(line => line.Contains("ERR ", StringComparison.Ordinal))];
+            .Where(line => line.Contains($"{BootstrapWorkspace.SeverityLabel(UiSeverity.Error)} ", StringComparison.Ordinal))];
 
     void TrackPair(CorpusFile file, HttpMessageEnvelope message)
     {

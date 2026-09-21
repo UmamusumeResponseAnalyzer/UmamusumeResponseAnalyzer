@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -16,11 +17,14 @@ namespace UmamusumeResponseAnalyzer
     {
         public static bool Started => Server.IsRunning;
         static readonly string PORTABLE_WORKING_DIRECTORY = Path.Combine(AppContext.BaseDirectory, ".portable");
-        const string PluginRepositoryMenuItem = "插件仓库";
-        const string QqGroupMenuItem = "加入QQ群（号被封过之后在频道里说话会概率被夹";
         public readonly static string WORKING_DIRECTORY = Directory.Exists(PORTABLE_WORKING_DIRECTORY) ? PORTABLE_WORKING_DIRECTORY : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UmamusumeResponseAnalyzer");
         public static void Main(string[] args)
         {
+            var culture = CultureInfo.GetCultureInfo(LanguageConfig.AutoDetectCulture(CultureInfo.CurrentCulture.Name));
+            if (args.Length == 0)
+                ApplyResourceCulture(culture);
+            else
+                ApplyCultureInfo(culture);
             Console.Title = $"UmamusumeResponseAnalyzer v{Assembly.GetExecutingAssembly().GetName().Version}";
             Console.OutputEncoding = Encoding.UTF8;
             Environment.SetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6", "true");
@@ -35,7 +39,7 @@ namespace UmamusumeResponseAnalyzer
                 if (Console.IsInputRedirected || Console.IsOutputRedirected)
                 {
                     Console.Error.WriteLine(
-                        "无法启动交互界面：stdin 或 stdout 已被重定向。请在 Windows Terminal 等交互式终端中直接运行 URA。");
+                        I18N_RedirectedConsole);
                     Environment.ExitCode = 1;
                     return;
                 }
@@ -122,20 +126,20 @@ namespace UmamusumeResponseAnalyzer
                             : Config.Updater.CustomDatabaseRepository;
                         bootstrap.SetSettings(
                             [
-                                ("版本", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"),
-                                ("工作目录", Directory.GetCurrentDirectory()),
-                                ("配置文件", Path.GetFullPath(Config.CONFIG_FILEPATH)),
-                                ("监听地址", $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
-                                ("服务器目标", Config.Repository.Targets.Count == 0 ? "未限制" : string.Join(", ", Config.Repository.Targets)),
-                                ("数据语言", Config.Updater.DatabaseLanguage),
-                                ("训练员性别", Config.Updater.TrainerIsMale ? "男" : "女"),
-                                ("更新源", updateSource)
+                                (I18N_Version, Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? I18N_Unknown),
+                                (I18N_WorkingDirectory, Directory.GetCurrentDirectory()),
+                                (I18N_ConfigFile, Path.GetFullPath(Config.CONFIG_FILEPATH)),
+                                (I18N_ListenAddress, $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
+                                (I18N_ServerTargets, Config.Repository.Targets.Count == 0 ? I18N_Unrestricted : string.Join(", ", Config.Repository.Targets)),
+                                (I18N_DataLanguage, Config.Updater.DatabaseLanguage),
+                                (I18N_TrainerGender, Config.Updater.TrainerIsMale ? I18N_Male : I18N_Female),
+                                (I18N_UpdateSource, updateSource)
                             ]);
                         bootstrap.SetPhase(
                             "config",
-                            "配置",
+                            I18N_PhaseConfig,
                             UiSeverity.Success,
-                            $"已读取 {Config.CONFIG_FILEPATH}");
+                            string.Format(I18N_ConfigLoaded, Config.CONFIG_FILEPATH));
 
                         await StartPluginInitializationAsync(bootstrap, lifetimeToken);
                         try
@@ -154,60 +158,60 @@ namespace UmamusumeResponseAnalyzer
 
                         var serverStarted = await Task.Run(async () =>
                         {
-                            bootstrap.SetPhase("database", "数据文件", UiSeverity.Info, "正在加载事件、技能、名称等数据。");
+                            bootstrap.SetPhase("database", I18N_PhaseDatabase, UiSeverity.Info, I18N_LoadingDatabase);
                             var databaseAvailability = await Database.Initialize();
                             if (databaseAvailability != DatabaseAvailability.Ready)
                             {
-                                const string message = "数据文件不完整或损坏；请更新全部数据文件后重新启动。";
-                                bootstrap.SetPhase("database", "数据文件", UiSeverity.Error, message);
-                                bootstrap.SetPhase("plugin-init", "插件初始化", UiSeverity.Error, "数据不可用，未初始化插件。");
-                                bootstrap.SetPhase("server", "HTTP server", UiSeverity.Error, "数据不可用，未启动监听。");
+                                var message = I18N_DatabaseUnavailable;
+                                bootstrap.SetPhase("database", I18N_PhaseDatabase, UiSeverity.Error, message);
+                                bootstrap.SetPhase("plugin-init", I18N_PhasePluginInit, UiSeverity.Error, I18N_PluginsSkipped);
+                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Error, I18N_ServerSkipped);
                                 bootstrap.Log("Database", message, UiSeverity.Error);
                                 Environment.ExitCode = 1;
                                 return false;
                             }
-                            bootstrap.SetPhase("database", "数据文件", UiSeverity.Success, "已加载完整数据快照。");
+                            bootstrap.SetPhase("database", I18N_PhaseDatabase, UiSeverity.Success, I18N_DatabaseLoaded);
 
                             lifetimeToken.ThrowIfCancellationRequested();
-                            bootstrap.SetPhase("plugin-init", "插件初始化", UiSeverity.Info, "正在调用插件 Initialize。");
+                            bootstrap.SetPhase("plugin-init", I18N_PhasePluginInit, UiSeverity.Info, I18N_InitializingPlugins);
                             PluginManager.InitializeLoadedPlugins();
                             bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true));
                             var loadedPluginCount = PluginManager.SnapshotPluginStatuses().Count(plugin => plugin.IsLoaded);
                             var failedPluginCount = PluginManager.FailedPlugins.Count;
                             bootstrap.SetPhase(
                                 "plugin-init",
-                                "插件初始化",
+                                I18N_PhasePluginInit,
                                 failedPluginCount == 0 ? UiSeverity.Success : UiSeverity.Warning,
                                 failedPluginCount == 0
-                                    ? $"已初始化 {loadedPluginCount} 个插件。"
-                                    : $"已初始化 {loadedPluginCount} 个插件，{failedPluginCount} 个插件失败。");
+                                    ? string.Format(I18N_PluginsInitialized, loadedPluginCount)
+                                    : string.Format(I18N_PluginsInitializedWithFailures, loadedPluginCount, failedPluginCount));
 
                             lifetimeToken.ThrowIfCancellationRequested();
-                            bootstrap.SetPhase("server", "HTTP server", UiSeverity.Info, "正在启动监听。");
+                            bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Info, I18N_StartingListener);
                             try
                             {
                                 Server.Start(lifetimeToken); //启动HTTP服务器
-                                bootstrap.SetPhase("server", "HTTP server", UiSeverity.Success, $"监听 http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}");
+                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Success, string.Format(I18N_Listening, Config.Core.ListenAddress, Config.Core.ListenPort));
                             }
                             catch (Exception ex)
                             {
-                                bootstrap.SetPhase("server", "HTTP server", UiSeverity.Error, ex.Message);
+                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Error, ex.Message);
                                 throw;
                             }
 
                             bootstrap.Log(
                                 "Plugin",
                                 loadedPluginCount == 0
-                                    ? "没有加载任何插件。可从插件仓库安装插件。"
-                                    : $"已加载 {loadedPluginCount} 个插件。按 P 查看插件列表。",
+                                    ? I18N_NoPluginsHint
+                                    : string.Format(I18N_PluginsLoaded, loadedPluginCount),
                                 loadedPluginCount == 0 ? UiSeverity.Warning : UiSeverity.Success);
                             foreach (var plugin in PluginManager.FailedPlugins)
                             {
-                                var message = $"插件 {Path.GetFileName(plugin)} 加载失败";
+                                var message = string.Format(I18N_PluginLoadFailed, Path.GetFileName(plugin));
                                 bootstrap.Log("Plugin", message, UiSeverity.Warning);
                             }
 
-                            bootstrap.Log("Server", $"监听 http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}", UiSeverity.Success);
+                            bootstrap.Log("Server", string.Format(I18N_Listening, Config.Core.ListenAddress, Config.Core.ListenPort), UiSeverity.Success);
                             if (Config.Core.ListenAddress == "0.0.0.0")
                             {
                                 var interfaces = NetworkInterface.GetAllNetworkInterfaces()
@@ -228,7 +232,7 @@ namespace UmamusumeResponseAnalyzer
                             }
                             if (!Server.IsRunning)
                             {
-                                bootstrap.SetPhase("server", "HTTP server", UiSeverity.Error, I18N_LaunchFail);
+                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Error, I18N_LaunchFail);
                                 Console.Error.WriteLine(I18N_LaunchFail);
                                 Environment.ExitCode = 1;
                                 return false;
@@ -236,22 +240,22 @@ namespace UmamusumeResponseAnalyzer
 
                             var startedMessage = I18N_Start_Started;
                             bootstrap.Log("URA", startedMessage, UiSeverity.Success);
-                            bootstrap.SetPhase("host", "宿主", UiSeverity.Success, startedMessage);
+                            bootstrap.SetPhase("host", I18N_PhaseHost, UiSeverity.Success, startedMessage);
                             return true;
                         }, lifetimeToken);
 
                         if (!serverStarted)
                             return;
 
-                        HotkeyManager.Register(ConsoleKey.P, "插件列表", ctx =>
+                        HotkeyManager.Register(ConsoleKey.P, I18N_PluginList, ctx =>
                         {
                             var plugins = PluginManager.SnapshotPluginStatuses()
                                 .Where(plugin => plugin.IsLoaded)
                                 .ToArray();
                             foreach (var plugin in plugins)
-                                ctx.AddLine($"{plugin.DisplayName} v{plugin.Version}  by {plugin.Author}");
+                                ctx.AddLine(string.Format(I18N_PluginAuthor, plugin.DisplayName, plugin.Version, plugin.Author));
                             if (plugins.Length == 0)
-                                ctx.AddLine("（没有加载任何插件）");
+                                ctx.AddLine(I18N_NoPlugins);
                             return Task.CompletedTask;
                         });
                         await PluginManager.TriggerStartedAsync(lifetimeToken);
@@ -274,7 +278,7 @@ namespace UmamusumeResponseAnalyzer
                         try
                         {
                             bootstrap.ShowInformation();
-                            bootstrap.SetPhase("host", "宿主", UiSeverity.Error, ex.Message);
+                            bootstrap.SetPhase("host", I18N_PhaseHost, UiSeverity.Error, ex.Message);
                             TerminalUi.LogException("URA", ex);
                             await uiHost.FlushAsync();
                         }
@@ -338,7 +342,7 @@ namespace UmamusumeResponseAnalyzer
         internal static async Task RunCleanupAsync(
             ExceptionDispatchInfo? workflowFailure,
             IReadOnlyList<Func<ValueTask>> cleanupActions,
-            string aggregateMessage = "Host cleanup 失败。")
+            string? aggregateMessage = null)
         {
             List<Exception>? cleanupFailures = null;
             foreach (var cleanup in cleanupActions)
@@ -357,20 +361,20 @@ namespace UmamusumeResponseAnalyzer
             if (cleanupFailures is [var cleanupFailure])
                 ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
             if (cleanupFailures is { Count: > 1 })
-                throw new AggregateException(aggregateMessage, cleanupFailures);
+                throw new AggregateException(aggregateMessage ?? I18N_HostCleanupFailed, cleanupFailures);
         }
 
         static async Task StartPluginInitializationAsync(BootstrapWorkspace bootstrap, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            bootstrap.SetPhase("plugin-scan", "插件扫描", UiSeverity.Info, "正在扫描 Plugins/。");
+            bootstrap.SetPhase("plugin-scan", I18N_PhasePluginScan, UiSeverity.Info, I18N_ScanningPlugins);
             try
             {
                 await Task.Run(() => PluginManager.Init(cancellationToken), cancellationToken);
             }
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
-                bootstrap.SetPhase("plugin-scan", "插件扫描", UiSeverity.Error, ex.Message);
+                bootstrap.SetPhase("plugin-scan", I18N_PhasePluginScan, UiSeverity.Error, ex.Message);
                 TerminalUi.LogException("Plugin", ex);
                 throw;
             }
@@ -380,11 +384,11 @@ namespace UmamusumeResponseAnalyzer
             var failedPluginCount = PluginManager.FailedPlugins.Count;
             bootstrap.SetPhase(
                 "plugin-scan",
-                "插件扫描",
+                I18N_PhasePluginScan,
                 failedPluginCount == 0 ? UiSeverity.Success : UiSeverity.Warning,
                 failedPluginCount == 0
-                    ? $"发现 {loadedPluginCount} 个可用插件。"
-                    : $"发现 {loadedPluginCount} 个可用插件，{failedPluginCount} 个插件失败。");
+                    ? string.Format(I18N_PluginsFound, loadedPluginCount)
+                    : string.Format(I18N_PluginsFoundWithFailures, loadedPluginCount, failedPluginCount));
             bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
         }
 
@@ -420,7 +424,7 @@ namespace UmamusumeResponseAnalyzer
                 var name = pluginNamesByPath.GetValueOrDefault(failedPath)
                     ?? Path.GetFileNameWithoutExtension(failedPath);
                 if (knownNames.Add(name))
-                    rows.Add((name, new(name, string.Empty, "ERR", "扫描或加载失败")));
+                    rows.Add((name, new(name, string.Empty, BootstrapWorkspace.SeverityLabel(UiSeverity.Error), I18N_ScanLoadFailed)));
             }
 
             return
@@ -449,8 +453,7 @@ namespace UmamusumeResponseAnalyzer
                 foreach (var update in updates)
                 {
                     uiHost.Log(
-                        $"[URA] 插件 {update.DisplayName} 有新版本可用: " +
-                        $"{update.CurrentVersion} -> {update.LatestVersion}",
+                        $"[URA] {string.Format(I18N_PluginUpdate, update.DisplayName, update.CurrentVersion, update.LatestVersion)}",
                         UiSeverity.Info);
                 }
             }
@@ -460,7 +463,7 @@ namespace UmamusumeResponseAnalyzer
                 TerminalUi.LogException("URA", ex, UiSeverity.Warning);
                 uiHost.Notify(
                     null,
-                    $"[URA] 插件更新检查失败: {ex.Message}",
+                    string.Format(I18N_UpdateCheckFailed, ex.Message),
                     UiSeverity.Warning,
                     ttl: null,
                     []);
@@ -472,63 +475,38 @@ namespace UmamusumeResponseAnalyzer
             if (updates.Count == 1)
             {
                 var update = updates[0];
-                return $"插件 {update.DisplayName} 有新版本: {update.CurrentVersion} -> {update.LatestVersion}";
+                return string.Format(I18N_PluginUpdate, update.DisplayName, update.CurrentVersion, update.LatestVersion);
             }
 
-            var names = string.Join("、", updates.Take(3).Select(x => x.DisplayName));
-            var more = updates.Count > 3 ? " 等" : string.Empty;
-            return $"{updates.Count} 个插件可更新：{names}{more}。到「插件仓库」菜单里手动安装。";
+            var names = string.Join(CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ", updates.Take(3).Select(x => x.DisplayName));
+            return string.Format(updates.Count > 3 ? I18N_PluginUpdatesMore : I18N_PluginUpdates, updates.Count, names);
         }
 
         static void ShowFirstLaunchPrompt(CancellationToken cancellationToken)
         {
-            var mobileOrPc = ModalDialogs.Select(
-                "首次设置：请选择运行 UM:PD 的设备。推荐使用 Windows Terminal，并将启动大小设置为 120 列、35 行。",
-                new[] { "手机/模拟器以及此计算机", "此计算机" },
-                cancellationToken: cancellationToken);
-            string networkNotice;
-            if (mobileOrPc == "手机/模拟器以及此计算机")
-            {
-                Config.Core.ListenAddress = "0.0.0.0";
-                networkNotice = "URA 将接受其它设备的请求；首次监听时请允许 Windows 防火墙放行。";
-            }
-            else
-            {
-                networkNotice = "URA 将仅接受本机请求；模拟器接入时需在「选项 → 核心」改为 0.0.0.0 并放行防火墙。";
-            }
-
-            var targets = ModalDialogs.MultiSelect(
-                $"{networkNotice} 请选择所使用的 UM:PD 版本。",
-                new[] { "日服(Cygames)", "繁中服(Komoe)" },
-                cancellationToken: cancellationToken);
-            foreach (var target in targets)
-            {
-                switch (target)
-                {
-                    case "日服(Cygames)":
-                        Config.Repository.Targets.Add("Cygames");
-                        break;
-                    case "繁中服(Komoe)":
-                        Config.Repository.Targets.Add("Komoe");
-                        break;
-                }
-            }
-
-            var dbLang = ModalDialogs.Select(
-                "请选择事件数据语言，选择繁中等将会使用对应客户端已实装的内容翻译。不会影响实际效果及数据库总大小。",
-                new[] { "日文", "繁中" },
-                cancellationToken: cancellationToken);
-            Config.Updater.DatabaseLanguage = dbLang == "繁中" ? "zh-TW" : "ja-JP";
-
-            var trainerGender = ModalDialogs.Select(
-                "请选择训练员性别，用于精确显示事件选项。",
-                new[] { "男", "女" },
-                cancellationToken: cancellationToken);
-            Config.Updater.TrainerIsMale = trainerGender == "男";
-
-            ModalDialogs.Acknowledge(
-                "首次设置完成。启动前请更新数据文件，并从「插件仓库」安装所需插件。",
+            var allowOtherDevices = ModalDialogs.Select(
+                I18N_FirstRunDevice,
+                new[] { true, false },
+                value => value ? I18N_MobileAndPc : I18N_ThisPc,
                 cancellationToken);
+            if (allowOtherDevices)
+                Config.Core.ListenAddress = "0.0.0.0";
+            Config.Repository.Targets.AddRange(ModalDialogs.MultiSelect(
+                allowOtherDevices ? I18N_ExternalNetworkNotice : I18N_LocalNetworkNotice,
+                new[] { "Cygames", "Komoe" },
+                converter: value => value == "Cygames" ? I18N_Cygames : I18N_Komoe,
+                cancellationToken: cancellationToken));
+            Config.Updater.DatabaseLanguage = ModalDialogs.Select(
+                I18N_FirstRunDataLanguage,
+                new[] { "ja-JP", "zh-TW" },
+                value => value == "ja-JP" ? I18N_Japanese : I18N_TraditionalChinese,
+                cancellationToken);
+            Config.Updater.TrainerIsMale = ModalDialogs.Select(
+                I18N_FirstRunTrainerGender,
+                new[] { true, false },
+                value => value ? I18N_Male : I18N_Female,
+                cancellationToken);
+            ModalDialogs.Acknowledge(I18N_FirstRunComplete, cancellationToken);
         }
         static List<string> BuildStartupMenuChoices()
         {
@@ -536,10 +514,10 @@ namespace UmamusumeResponseAnalyzer
             {
                 I18N_Start,
                 I18N_Options,
-                PluginRepositoryMenuItem,
+                I18N_PluginRepository,
                 I18N_UpdateAssets,
                 I18N_UpdateProgram,
-                QqGroupMenuItem
+                I18N_QqGroup
             };
             if (OperatingSystem.IsWindows())
                 selections.Add(I18N_InstallUraCore);
@@ -563,7 +541,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         await Config.PromptAsync(cancellationToken);
                     }
-                    else if (selected == PluginRepositoryMenuItem)
+                    else if (selected == I18N_PluginRepository)
                     {
                         await PluginRepository.ShowMenuAsync(cancellationToken);
                     }
@@ -579,7 +557,7 @@ namespace UmamusumeResponseAnalyzer
                     {
                         await HachimiEdgeInstaller.ShowAsync(cancellationToken);
                     }
-                    else if (selected == QqGroupMenuItem)
+                    else if (selected == I18N_QqGroup)
                     {
                         Process.Start(new ProcessStartInfo
                         {
@@ -587,7 +565,7 @@ namespace UmamusumeResponseAnalyzer
                             UseShellExecute = true
                         });
                         ModalDialogs.Acknowledge(
-                            "已打开 QQ 群链接：https://qm.qq.com/q/4z6xHQ908w",
+                            I18N_QqOpened,
                             cancellationToken);
                     }
                 }
@@ -608,11 +586,12 @@ namespace UmamusumeResponseAnalyzer
                 case ["--update", var savePath]:
                     ResourceUpdater.InstallProgramUpdate(savePath);
                     return true;
-                case ["--apply-hachimi-edge", var requestPath, "--confirmed"]:
+                case ["--apply-hachimi-edge", var requestPath, "--confirmed", "--culture", "zh-CN" or "en-US" or "ja-JP"]:
+                    ApplyCultureInfo(CultureInfo.GetCultureInfo(args[4]));
                     Environment.ExitCode = HachimiEdgeInstallation.RunApplyCommand(requestPath);
                     return true;
                 case ["--apply-hachimi-edge", ..]:
-                    Console.Error.WriteLine("无效的安装命令或缺少确认参数。 / Invalid installation command or missing confirmation.");
+                    Console.Error.WriteLine(I18N_InvalidInstallCommand);
                     Environment.ExitCode = 1;
                     return true;
                 case ["--enable-dll-redirection", "--confirmed"]:
@@ -620,27 +599,34 @@ namespace UmamusumeResponseAnalyzer
                     return true;
                 case ["--enable-dll-redirection"]:
                     Console.Error.WriteLine(
-                        "拒绝修改注册表：缺少确认参数。请从 URA 的 Mod 安装流程发起该操作。");
+                        I18N_RegistryConfirmationRequired);
                     Environment.ExitCode = 1;
                     return true;
                 case []:
                     return false;
                 default:
-                    Console.Error.WriteLine($"未知命令行选项: {string.Join(' ', args)}");
+                    Console.Error.WriteLine(string.Format(I18N_UnknownArguments, string.Join(' ', args)));
                     Environment.ExitCode = 2;
                     return true;
             }
         }
-        internal static void ApplyCultureInfo()
+        internal static void ApplyCultureInfo(CultureInfo? culture = null)
         {
-            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
-            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
+            culture ??= CultureInfo.GetCultureInfo(LanguageConfig.GetCulture());
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            ApplyResourceCulture(culture);
+        }
+
+        internal static void ApplyResourceCulture(CultureInfo culture)
+        {
             foreach (var i in Assembly.GetExecutingAssembly().GetTypes().Where(x => x.IsClass && x.Namespace?.StartsWith("UmamusumeResponseAnalyzer.Localization") == true))
             {
                 var rc = i?.GetField("resourceCulture", BindingFlags.NonPublic | BindingFlags.Static);
                 if (rc == null) continue;
-                rc.SetValue(null, Thread.CurrentThread.CurrentUICulture);
+                rc.SetValue(null, culture);
             }
+            Database.RefreshLocalizedText();
         }
         internal static void Restart()
         {
@@ -673,11 +659,11 @@ namespace UmamusumeResponseAnalyzer
             {
                 ArgumentNullException.ThrowIfNull(value);
                 if (Environment.CurrentManagedThreadId != ownerThreadId)
-                    throw new InvalidOperationException("Terminal.Gui application 必须在 owner thread 绑定。");
+                    throw new InvalidOperationException(I18N_BindOwnerThread);
                 if (application is not null)
-                    throw new InvalidOperationException("Terminal.Gui application 已绑定。");
+                    throw new InvalidOperationException(I18N_AlreadyBound);
                 if (value.MainThreadId != ownerThreadId)
-                    throw new InvalidOperationException("Terminal.Gui application 的 MainThreadId 与 UI owner thread 不一致。");
+                    throw new InvalidOperationException(I18N_MainThreadMismatch);
 
                 application = value;
                 value.Iteration += ApplicationIteration;
@@ -686,9 +672,9 @@ namespace UmamusumeResponseAnalyzer
             public void Unbind(IApplication value)
             {
                 if (Environment.CurrentManagedThreadId != ownerThreadId)
-                    throw new InvalidOperationException("Terminal.Gui application 必须在 owner thread 解绑。");
+                    throw new InvalidOperationException(I18N_UnbindOwnerThread);
                 if (!ReferenceEquals(application, value))
-                    throw new InvalidOperationException("Terminal.Gui application 绑定状态不一致。");
+                    throw new InvalidOperationException(I18N_BindingMismatch);
 
                 value.Iteration -= ApplicationIteration;
                 application = null;
@@ -769,7 +755,7 @@ namespace UmamusumeResponseAnalyzer
             void DrainAvailableOnOwner()
             {
                 if (Environment.CurrentManagedThreadId != ownerThreadId)
-                    throw new InvalidOperationException("SynchronizationContext 必须在 owner thread drain。");
+                    throw new InvalidOperationException(I18N_DrainOwnerThread);
 
                 while (workItems.TryTake(out var workItem))
                     workItem.Callback(workItem.State);
@@ -782,7 +768,7 @@ namespace UmamusumeResponseAnalyzer
             {
                 ArgumentNullException.ThrowIfNull(task);
                 if (Environment.CurrentManagedThreadId != ownerThreadId)
-                    throw new InvalidOperationException("SynchronizationContext pump 必须在 owner thread 运行。");
+                    throw new InvalidOperationException(I18N_PumpOwnerThread);
 
                 _ = task.ContinueWith(
                     static (_, state) =>

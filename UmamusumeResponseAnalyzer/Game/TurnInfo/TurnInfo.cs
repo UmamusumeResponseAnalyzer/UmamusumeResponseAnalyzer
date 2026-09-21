@@ -37,7 +37,7 @@ namespace UmamusumeResponseAnalyzer.Game.TurnInfo
         public IReadOnlyDictionary<int, int> SupportCards => CharaInfo.support_card_array.ToDictionary(x => x.position, x => x.support_card_id);
         public IReadOnlyDictionary<int, EvaluationInfo> Evaluations => CharaInfo.evaluation_info_array.ToDictionary(x => x.target_id, x => x);
         public int Month => ((Turn - 1) % 24) / 2 + 1;
-        public string HalfMonth => (Turn % 2 == 0) ? "后半" : "前半";
+        public string HalfMonth => (Turn % 2 == 0) ? Localization.Game.I18N_SecondHalf : Localization.Game.I18N_FirstHalf;
         public int TotalTurns = 78;
         public bool IsFreeContinueAvailable => resp.home_info.free_continue_time < DateTimeOffset.Now.ToUnixTimeSeconds();
         public bool IsGoldenSuccession => resp.unchecked_event_array.Any(x => x.succession_event_info.effect_type == 2);

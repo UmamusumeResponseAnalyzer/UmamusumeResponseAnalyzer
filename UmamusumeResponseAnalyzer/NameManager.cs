@@ -80,8 +80,8 @@ namespace UmamusumeResponseAnalyzer
             return matches.Length switch
             {
                 1 => matches[0].Type,
-                0 => throw new KeyNotFoundException($"R 支援卡数据不存在: charaId={charaId}"),
-                _ => throw new InvalidDataException($"R 支援卡数据不唯一: charaId={charaId}")
+                0 => throw new KeyNotFoundException(string.Format(I18N_RSupportCardMissing, charaId)),
+                _ => throw new InvalidDataException(string.Format(I18N_RSupportCardAmbiguous, charaId))
             };
         }
 
@@ -93,6 +93,6 @@ namespace UmamusumeResponseAnalyzer
         };
 
         private static Exception Missing(int id, string expectedType)
-            => new KeyNotFoundException($"名称数据不存在或类型不符: id={id}, expected={expectedType}");
+            => new KeyNotFoundException(string.Format(I18N_NameMissing, id, expectedType));
     }
 }

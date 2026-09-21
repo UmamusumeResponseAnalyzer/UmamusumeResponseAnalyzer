@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using static UmamusumeResponseAnalyzer.HachimiEdgeInstaller;
 using System.Security.Principal;
 using System.Text.Json;
 using Microsoft.Win32;
@@ -19,7 +21,7 @@ internal static class HachimiEdgeInstallation
             using (process)
             {
                 if (!process.HasExited)
-                    throw new IOException($"请先关闭游戏。 / Close the game before installing: {Path.GetFileName(game.Executable)} (PID {process.Id})");
+                    throw new IOException(Text("GameStillRunning", Path.GetFileName(game.Executable), process.Id));
             }
         }
     }
@@ -31,7 +33,7 @@ internal static class HachimiEdgeInstallation
         {
             var path = Path.Combine(game.Directory, relative);
             RejectLinks(path, allowFileLink: true);
-            if (Directory.Exists(path)) throw new IOException($"目标文件被目录占用。 / A directory occupies the target file: {path}");
+            if (Directory.Exists(path)) throw new IOException(Text("TargetIsDirectory", path));
         }
         RejectLinks(Path.Combine(game.Directory, LockFileName));
     }
@@ -43,12 +45,12 @@ internal static class HachimiEdgeInstallation
             path = Path.GetDirectoryName(Path.GetFullPath(path))!;
         for (var current = Path.GetFullPath(path); current is not null; current = Path.GetDirectoryName(current))
             if ((File.Exists(current) || Directory.Exists(current)) && (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
-                throw new IOException($"此路径不支持文件系统链接。 / Filesystem links are not supported at this path: {current}");
+                throw new IOException(Text("UnsupportedLink", current));
     }
 
     internal static bool RequiresElevation(HachimiEdgeGame game, bool registryChange)
     {
-        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Hachimi-Edge installation requires Windows.");
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException(Text("RequiresWindows"));
         using var identity = WindowsIdentity.GetCurrent();
         if (new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator)) return false;
         if (game.Platform == HachimiEdgePlatform.Dmm && registryChange) return true;
@@ -87,18 +89,18 @@ internal static class HachimiEdgeInstallation
         try { exitCode = await (runElevated ?? StartAndWaitAsync)(start); }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
         {
-            throw new OperationCanceledException("用户取消了提权。 / Elevation was cancelled.", ex);
+            throw new OperationCanceledException(Text("ElevationCancelled"), ex);
         }
         if (exitCode == 0) return;
         var errorPath = Path.Combine(Path.GetDirectoryName(requestPath)!, "error.json");
         var error = File.Exists(errorPath)
             ? JsonSerializer.Deserialize<string>(File.ReadAllText(errorPath), HachimiEdgeInstaller.JsonOptions) : null;
-        throw new IOException(error ?? $"安装进程异常退出，请重新安装。 / Installer exited unexpectedly ({exitCode}); run the installation again.");
+        throw new IOException(error ?? Text("InstallerExited", exitCode));
     }
 
     internal static ProcessStartInfo CreateElevationStartInfo(string path)
     {
-        var executable = Environment.ProcessPath ?? throw new InvalidOperationException("Cannot locate the URA executable.");
+        var executable = Environment.ProcessPath ?? throw new InvalidOperationException(Text("ExecutableNotFound"));
         var start = new ProcessStartInfo(executable)
         {
             UseShellExecute = true,
@@ -111,12 +113,14 @@ internal static class HachimiEdgeInstallation
         start.ArgumentList.Add("--apply-hachimi-edge");
         start.ArgumentList.Add(Path.GetFullPath(path));
         start.ArgumentList.Add("--confirmed");
+        start.ArgumentList.Add("--culture");
+        start.ArgumentList.Add(CultureInfo.CurrentUICulture.Name);
         return start;
     }
 
     static async Task<int> StartAndWaitAsync(ProcessStartInfo start)
     {
-        using var process = Process.Start(start) ?? throw new IOException("无法启动安装进程。 / Could not start the installer.");
+        using var process = Process.Start(start) ?? throw new IOException(Text("InstallerStartFailed"));
         // Closing the progress dialog must not leave a child writing files in the background.
         await process.WaitForExitAsync(CancellationToken.None);
         return process.ExitCode;
@@ -147,7 +151,7 @@ internal static class HachimiEdgeInstallation
         var name = Path.GetFileName(directory);
         if (Path.GetFileName(requestPath) != "request.json" || !name.StartsWith("ura-hachimi-edge-", StringComparison.Ordinal) ||
             !Guid.TryParseExact(name["ura-hachimi-edge-".Length..], "N", out _))
-            throw new InvalidDataException("无效的安装暂存路径。 / Invalid installer staging path.");
+            throw new InvalidDataException(Text("InvalidStagingPath"));
         RejectLinks(requestPath);
     }
 
@@ -155,11 +159,11 @@ internal static class HachimiEdgeInstallation
     {
         ValidateRequestPath(requestPath);
         var request = JsonSerializer.Deserialize<HachimiEdgeRequest>(File.ReadAllText(requestPath), HachimiEdgeInstaller.JsonOptions)
-            ?? throw new InvalidDataException("Empty installation request.");
+            ?? throw new InvalidDataException(Text("EmptyInstallationRequest"));
         var game = HachimiEdgeGame.FromExecutable(request.Executable);
         ValidateTargetPaths(game);
         if (request.Components is null || !request.Components.Select(c => c?.Name).SequenceEqual(game.Binaries.Select(b => b.Component)))
-            throw new InvalidDataException("无效的安装组件。 / Invalid installation components.");
+            throw new InvalidDataException(Text("InvalidInstallationComponents"));
         HachimiEdgeInstaller.NormalizeNotifier(request.NotifierHost);
         EnsureGameStopped(game);
         var staging = Path.GetDirectoryName(requestPath)!;
@@ -172,7 +176,7 @@ internal static class HachimiEdgeInstallation
         using var installLock = new FileStream(Path.Combine(game.Directory, LockFileName), FileMode.OpenOrCreate,
             FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose);
         if (game.Platform == HachimiEdgePlatform.Dmm && ReadDllRedirection(registry) != request.DllRedirectionBefore)
-            throw new IOException("DLL redirection 设置已改变，请重新安装。 / DLL redirection changed; start again.");
+            throw new IOException(Text("DllRedirectionChanged"));
         var merged = HachimiEdgeInstaller.MergeConfigurations(game.Directory, request.NotifierHost);
         var completed = 0;
         foreach (var (binary, component) in game.Binaries.Zip(request.Components))
@@ -198,7 +202,7 @@ internal static class HachimiEdgeInstallation
         var value = target?.GetValue("DevOverrideEnable");
         if (value is null) return null;
         if (value is not int number || target!.GetValueKind("DevOverrideEnable") != RegistryValueKind.DWord)
-            throw new InvalidDataException("DevOverrideEnable 必须为 DWORD。 / DevOverrideEnable must be a DWORD.");
+            throw new InvalidDataException(Text("InvalidDllRedirectionType"));
         return number;
     }
 
@@ -211,7 +215,7 @@ internal static class HachimiEdgeInstallation
         var target = key ?? opened!;
         target.SetValue("DevOverrideEnable", 1, RegistryValueKind.DWord);
         target.Flush();
-        if (ReadDllRedirection(key) != 1) throw new IOException("DLL redirection 注册表写入验证失败。 / Registry write verification failed.");
+        if (ReadDllRedirection(key) != 1) throw new IOException(Text("RegistryVerificationFailed"));
         return true;
     }
 
@@ -250,10 +254,10 @@ internal static class HachimiEdgeInstallation
     internal static void DeleteOwnedDirectory(string parent, string name)
     {
         var id = name.StartsWith("ura-hachimi-edge-", StringComparison.Ordinal) ? name["ura-hachimi-edge-".Length..] : name;
-        if (!Guid.TryParseExact(id, "N", out _)) throw new InvalidDataException("Invalid owned directory name.");
+        if (!Guid.TryParseExact(id, "N", out _)) throw new InvalidDataException(Text("InvalidOwnedDirectory"));
         var root = Path.GetFullPath(parent).TrimEnd(Path.DirectorySeparatorChar);
         var target = Path.GetFullPath(Path.Combine(root, name));
-        if (!Path.GetDirectoryName(target)!.Equals(root, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("Directory left its parent.");
+        if (!Path.GetDirectoryName(target)!.Equals(root, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException(Text("DirectoryOutsideParent"));
         RejectLinks(target);
         if (Directory.Exists(target)) Directory.Delete(target, true);
     }

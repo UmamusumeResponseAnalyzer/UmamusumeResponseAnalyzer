@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Rectangle = System.Drawing.Rectangle;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 using Terminal.Gui.Drivers;
@@ -43,7 +44,7 @@ internal sealed class CommandModeView : FrameView
 
         title = new Label
         {
-            Text = " Command Mode ",
+            Text = i18n.CommandMode_Title,
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
@@ -76,7 +77,7 @@ internal sealed class CommandModeView : FrameView
         input.KeyBindings.Remove(Key.CursorDown);
         footer = new Label
         {
-            Text = "Tab 补全 · ↑↓ 历史 · Esc 取消",
+            Text = i18n.CommandMode_Help,
             X = 0,
             Width = Dim.Fill(),
             Height = 1,
@@ -224,7 +225,7 @@ internal sealed class CommandModeView : FrameView
         return
         [
             .. completionCandidates.Take(Math.Max(0, visibleCount - 1)).Select(x => $"  {x}"),
-            $"  +{completionCandidates.Count - Math.Max(0, visibleCount - 1)} more"
+            "  " + string.Format(i18n.CommandMode_MoreCandidates, completionCandidates.Count - Math.Max(0, visibleCount - 1))
         ];
     }
 
@@ -242,7 +243,7 @@ internal sealed class CommandModeView : FrameView
         }
         catch (Exception ex)
         {
-            TerminalUi.Notify("Keyboard", $"命令补全失败: {ex.Message}", UiSeverity.Error);
+            TerminalUi.Notify("Keyboard", string.Format(i18n.CommandMode_CompletionFailed, ex.Message), UiSeverity.Error);
             TerminalUi.LogException("Keyboard", ex);
             completionCandidates = [];
             SetNeedsLayout();

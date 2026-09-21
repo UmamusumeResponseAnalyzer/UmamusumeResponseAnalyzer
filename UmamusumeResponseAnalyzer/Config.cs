@@ -6,6 +6,7 @@ using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization.NodeDeserializers;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using i18n = UmamusumeResponseAnalyzer.Localization.Config;
 
 namespace UmamusumeResponseAnalyzer
@@ -61,7 +62,7 @@ namespace UmamusumeResponseAnalyzer
             try
             {
                 var config = _deserializer.Deserialize<YamlConfig>(yaml)
-                    ?? throw Invalid(sourcePath, "$", "内容不能为 null");
+                    ?? throw Invalid(sourcePath, "$", i18n.InvalidNullContent);
                 config.Updater.CustomDatabaseRepository ??= string.Empty;
                 foreach (var (values, path) in new[]
                          {
@@ -70,20 +71,20 @@ namespace UmamusumeResponseAnalyzer
                          })
                     for (var index = 0; index < values.Count; index++)
                         if (values[index] is null)
-                            throw Invalid(sourcePath, $"{path}[{index}]", "不能为空");
+                            throw Invalid(sourcePath, $"{path}[{index}]", i18n.InvalidNullValue);
                 return config;
             }
             catch (YamlException exception)
             {
                 var detail = exception.InnerException?.Message ?? exception.Message;
                 throw new InvalidDataException(
-                    $"配置文件“{sourcePath}”不符合当前 schema（{exception.Start.Line}:{exception.Start.Column}）：{detail}",
+                    string.Format(i18n.InvalidSchema, sourcePath, exception.Start.Line, exception.Start.Column, detail),
                     exception);
             }
         }
 
         private static InvalidDataException Invalid(string sourcePath, string fieldPath, string reason) =>
-            new($"配置文件“{sourcePath}”中的 {fieldPath} {reason}。");
+            new(string.Format(i18n.InvalidField, sourcePath, fieldPath, reason));
 
         private sealed class RequiredValueNodeDeserializer(INodeDeserializer inner) : INodeDeserializer
         {
@@ -93,7 +94,7 @@ namespace UmamusumeResponseAnalyzer
                 var node = parser.Current!;
                 var handled = inner.Deserialize(parser, expectedType, nestedObjectDeserializer, out value, rootDeserializer);
                 if (handled && value is null && expectedType.IsValueType && Nullable.GetUnderlyingType(expectedType) is null)
-                    throw new YamlException(node.Start, node.End, $"null 不能赋给 {expectedType.Name}。");
+                    throw new YamlException(node.Start, node.End, string.Format(i18n.NullAssignment, expectedType.Name));
                 return handled;
             }
         }
@@ -108,7 +109,7 @@ namespace UmamusumeResponseAnalyzer
                     var result = nestedObjectDeserializer(nestedParser, type);
                     // 已解析的别名绕过 NullNodeDeserializer，必须在赋值转换前检查。
                     if (result is null && type.IsValueType && Nullable.GetUnderlyingType(type) is null)
-                        throw new YamlException(node.Start, node.End, $"null 不能赋给 {type.Name}。");
+                        throw new YamlException(node.Start, node.End, string.Format(i18n.NullAssignment, type.Name));
                     return result;
                 }, out value, rootDeserializer);
         }
@@ -176,15 +177,12 @@ namespace UmamusumeResponseAnalyzer
 
         internal void Prompt(CancellationToken cancellationToken)
         {
-            var firstRunTitle = i18n.ResourceManager.GetString(
-                    "Tabs_Core_ShowFirstRunPrompt",
-                    i18n.Culture)
-                ?? nameof(ShowFirstRunPrompt);
+            var firstRunTitle = i18n.Tabs_Core_ShowFirstRunPrompt;
             while (true)
             {
                 var addressItem = $"{i18n.Tabs_Core_ListenAddress}: {ListenAddress}";
                 var portItem = $"{i18n.Tabs_Core_ListenPort}: {ListenPort}";
-                var firstRunItem = $"{firstRunTitle}: {ShowFirstRunPrompt}";
+                var firstRunItem = $"{firstRunTitle}: {(ShowFirstRunPrompt ? UiText.Button_Yes : UiText.Button_No)}";
                 var selected = ModalDialogs.Menu(
                     i18n.Tabs_Core_Title,
                     new[] { addressItem, portItem, firstRunItem, i18n.Return },
@@ -278,7 +276,7 @@ namespace UmamusumeResponseAnalyzer
                 if (selected.InternalName is null)
                     return;
                 var plugin = PluginManager.FindLoadedPlugin(selected.InternalName)
-                    ?? throw new InvalidOperationException($"插件已卸载，无法打开设置: {selected.InternalName}");
+                    ?? throw new InvalidOperationException(string.Format(i18n.PluginUnloaded, selected.InternalName));
                 await PluginConfigPrompt.RunAsync(plugin, cancellationToken);
             }
         }
@@ -320,18 +318,14 @@ namespace UmamusumeResponseAnalyzer
 
         internal void Prompt(CancellationToken cancellationToken)
         {
-            string Label(string property) =>
-                i18n.ResourceManager.GetString($"Tabs_Updater_{property}", i18n.Culture)
-                ?? property;
-
             while (true)
             {
-                var trainerItem = $"{Label(nameof(TrainerIsMale))}: {TrainerIsMale}";
-                var languageItem = $"{Label(nameof(DatabaseLanguage))}: {DatabaseLanguage}";
+                var trainerItem = $"{i18n.Tabs_Updater_TrainerIsMale}: {(TrainerIsMale ? UiText.Button_Yes : UiText.Button_No)}";
+                var languageItem = $"{i18n.Tabs_Updater_DatabaseLanguage}: {DatabaseLanguage}";
                 var repositoryItem =
-                    $"{Label(nameof(CustomDatabaseRepository))}: {CustomDatabaseRepository}";
+                    $"{i18n.Tabs_Updater_CustomDatabaseRepository}: {CustomDatabaseRepository}";
                 var forceGithubItem =
-                    $"{i18n.Tabs_Updater_ForceUseGithubToUpdate}: {ForceUseGithubToUpdate}";
+                    $"{i18n.Tabs_Updater_ForceUseGithubToUpdate}: {(ForceUseGithubToUpdate ? UiText.Button_Yes : UiText.Button_No)}";
                 var selected = ModalDialogs.Menu(
                     i18n.Tabs_Updater_Title,
                     new[]
@@ -353,7 +347,7 @@ namespace UmamusumeResponseAnalyzer
                 else if (selected == languageItem)
                 {
                     DatabaseLanguage = ModalDialogs.Menu(
-                        nameof(DatabaseLanguage),
+                        i18n.Tabs_Updater_DatabaseLanguage,
                         new[] { "ja-JP", "zh-TW", "zh-CN" },
                         cancellationToken: cancellationToken);
                 }
@@ -388,17 +382,18 @@ namespace UmamusumeResponseAnalyzer
 
         internal void Prompt(CancellationToken cancellationToken)
         {
-            var choices = Enum.GetValues<Language>()
-                .ToDictionary(
-                    language => i18n.ResourceManager.GetString(
-                            $"Tabs_Language_{language}",
-                            i18n.Culture)
-                        ?? language.ToString());
-            var selected = ModalDialogs.Menu(
+            Selected = ModalDialogs.Select(
                 i18n.Tabs_Language_Title,
-                choices.Keys,
-                cancellationToken: cancellationToken);
-            Selected = choices[selected];
+                Enum.GetValues<Language>(),
+                language => language switch
+                {
+                    Language.AutoDetect => i18n.Tabs_Language_AutoDetect,
+                    Language.SimplifiedChinese => i18n.Tabs_Language_SimplifiedChinese,
+                    Language.Japanese => i18n.Tabs_Language_Japanese,
+                    Language.English => i18n.Tabs_Language_English,
+                    _ => throw new ArgumentOutOfRangeException(nameof(language), language, null)
+                },
+                cancellationToken);
             Config.Save();
             UmamusumeResponseAnalyzer.Restart();
         }
@@ -441,10 +436,7 @@ namespace UmamusumeResponseAnalyzer
         public bool SaveResponseForDebug { get; set; }
         public void Prompt(CancellationToken cancellationToken)
         {
-            var label = i18n.ResourceManager.GetString(
-                    $"Tabs_Debug_{nameof(SaveResponseForDebug)}",
-                    i18n.Culture)
-                ?? nameof(SaveResponseForDebug);
+            var label = i18n.Tabs_Debug_SaveResponseForDebug;
             var selected = ModalDialogs.MultiSelect(
                 i18n.Tabs_Debug_Title,
                 [label],

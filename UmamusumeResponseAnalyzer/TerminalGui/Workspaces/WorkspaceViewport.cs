@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -109,7 +110,7 @@ internal sealed class WorkspaceViewport : View
             !workspacePanels.ContainsKey(key))
         {
             throw new InvalidOperationException(
-                $"Workspace panel '{key}' is not registered.");
+                string.Format(i18n.Workspace_PanelNotRegistered, key));
         }
         invalidatedPanels.Add((workspace, key));
         dirty = true;
@@ -226,7 +227,7 @@ internal sealed class WorkspaceViewport : View
             selected = [latestFullBleed];
         if (selected.Length == 0)
         {
-            AddMessage($"{activeWorkspace.Title} 还没有输出。");
+            AddMessage(string.Format(i18n.Workspace_NoOutput, activeWorkspace.DisplayTitle));
             return;
         }
 
@@ -288,17 +289,17 @@ internal sealed class WorkspaceViewport : View
         if (releasedViews.TryGetValue(view, out _))
         {
             throw new InvalidOperationException(
-                $"Workspace panel '{panel.Key}' factory 返回了已由 viewport 释放的 View。");
+                string.Format(i18n.Workspace_PanelViewDisposed, panel.Key));
         }
         if (view.SuperView is not null)
         {
             throw new InvalidOperationException(
-                $"Workspace panel '{panel.Key}' factory 返回了已挂载的 View。");
+                string.Format(i18n.Workspace_PanelViewAttached, panel.Key));
         }
         if (!ownedViews.Add(view))
         {
             throw new InvalidOperationException(
-                $"Workspace panel '{panel.Key}' factory 返回了已由 viewport 持有的 View。");
+                string.Format(i18n.Workspace_PanelViewOwned, panel.Key));
         }
 
         var realized = new RealizedPanel(
@@ -382,8 +383,7 @@ internal sealed class WorkspaceViewport : View
         if (HasRemovingCapture())
         {
             throw new InvalidOperationException(
-                $"Workspace '{activeWorkspace.Title}' 无法解除待移除控件的鼠标捕获；已中止界面拆除。" +
-                " / Mouse capture remains in the view hierarchy; detachment aborted.");
+                string.Format(i18n.Workspace_MouseCaptureReleaseFailed, activeWorkspace.Title));
         }
     }
 

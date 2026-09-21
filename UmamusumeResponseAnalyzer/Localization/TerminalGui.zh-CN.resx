@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="CommandMode_Title" xml:space="preserve">
+    <value>命令模式</value>
+  </data>
+  <data name="CommandMode_Help" xml:space="preserve">
+    <value>Tab 补全 · ↑↓ 历史 · Esc 取消</value>
+  </data>
+  <data name="CommandMode_MoreCandidates" xml:space="preserve">
+    <value>还有 {0} 项</value>
+  </data>
+  <data name="CommandMode_CompletionFailed" xml:space="preserve">
+    <value>命令补全失败: {0}</value>
+  </data>
+  <data name="Dialog_GameExecutable" xml:space="preserve">
+    <value>游戏可执行文件</value>
+  </data>
+  <data name="Dialog_FileSelectionCanceled" xml:space="preserve">
+    <value>文件选择已取消。</value>
+  </data>
+  <data name="Dialog_Processing" xml:space="preserve">
+    <value>正在处理</value>
+  </data>
+  <data name="Button_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Button_OK" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="Button_Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Button_No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="Dialog_OperationCanceled" xml:space="preserve">
+    <value>操作已取消。</value>
+  </data>
+  <data name="Dialog_SelectionEmpty" xml:space="preserve">
+    <value>选择列表不能为空。</value>
+  </data>
+  <data name="Dialog_MenuEmpty" xml:space="preserve">
+    <value>菜单不能为空。</value>
+  </data>
+  <data name="Dialog_MenuCanceled" xml:space="preserve">
+    <value>菜单已取消。</value>
+  </data>
+  <data name="Dialog_MultiSelectionEmpty" xml:space="preserve">
+    <value>多选列表不能为空。</value>
+  </data>
+  <data name="Dialog_MultiSelectionCanceled" xml:space="preserve">
+    <value>多选已取消。</value>
+  </data>
+  <data name="Dialog_InputCanceled" xml:space="preserve">
+    <value>输入已取消。</value>
+  </data>
+  <data name="Dialog_ReturnPrompt" xml:space="preserve">
+    <value>按 Enter 返回</value>
+  </data>
+  <data name="Dialog_SelectionCanceled" xml:space="preserve">
+    <value>选择已取消。</value>
+  </data>
+  <data name="Dialog_RequiresOwnerThread" xml:space="preserve">
+    <value>Terminal.Gui dialog 必须在 UI owner thread 运行。</value>
+  </data>
+  <data name="Notification_Remaining" xml:space="preserve">
+    <value>还有 {0} 条通知</value>
+  </data>
+  <data name="Notification_Countdown" xml:space="preserve">
+    <value>{0}秒</value>
+  </data>
+  <data name="Severity_Trace" xml:space="preserve">
+    <value>跟踪</value>
+  </data>
+  <data name="Severity_Info" xml:space="preserve">
+    <value>信息</value>
+  </data>
+  <data name="Severity_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="Severity_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Workspace_BootstrapTitle" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="Workspace_TitleEmpty" xml:space="preserve">
+    <value>Workspace title 不能为空。</value>
+  </data>
+  <data name="Workspace_NoOutput" xml:space="preserve">
+    <value>{0} 还没有输出。</value>
+  </data>
+  <data name="Workspace_SwitchDescription" xml:space="preserve">
+    <value>切换到 {0}</value>
+  </data>
+  <data name="Workspace_PanelNotRegistered" xml:space="preserve">
+    <value>Workspace panel '{0}' 未注册。</value>
+  </data>
+  <data name="Workspace_PanelViewDisposed" xml:space="preserve">
+    <value>Workspace panel '{0}' factory 返回了已由 viewport 释放的 View。</value>
+  </data>
+  <data name="Workspace_PanelViewAttached" xml:space="preserve">
+    <value>Workspace panel '{0}' factory 返回了已挂载的 View。</value>
+  </data>
+  <data name="Workspace_PanelViewOwned" xml:space="preserve">
+    <value>Workspace panel '{0}' factory 返回了已由 viewport 持有的 View。</value>
+  </data>
+  <data name="Workspace_MouseCaptureReleaseFailed" xml:space="preserve">
+    <value>Workspace '{0}' 无法解除待移除控件的鼠标捕获；已中止界面拆除。</value>
+  </data>
+  <data name="Workspace_GenerationNotActive" xml:space="preserve">
+    <value>Workspace '{0}' 不是当前已注册的有效代。</value>
+  </data>
+  <data name="Workspace_BootstrapCannotRemove" xml:space="preserve">
+    <value>Bootstrap workspace '{0}' 不能移除。</value>
+  </data>
+  <data name="Workspace_Removed" xml:space="preserve">
+    <value>Workspace '{0}' 已移除，不能继续使用此句柄。</value>
+  </data>
+  <data name="Workspace_ContentFactoryNull" xml:space="preserve">
+    <value>WorkspaceContent factory 返回了 null。</value>
+  </data>
+  <data name="Host_UnknownIngressEvent" xml:space="preserve">
+    <value>未知 UiHost ingress event: {0}</value>
+  </data>
+  <data name="Host_NavigationAbandoned" xml:space="preserve">
+    <value>UiHost 在已接受的导航事件应用前停止。</value>
+  </data>
+  <data name="Host_FlushAbandoned" xml:space="preserve">
+    <value>UiHost 在已接受的刷新事件应用前停止。</value>
+  </data>
+  <data name="Hotkey_Reserved" xml:space="preserve">
+    <value>Ctrl+{0} 由终端保留，不能注册为热键。</value>
+  </data>
+  <data name="Host_RunOnce" xml:space="preserve">
+    <value>UiHost.RunAsync 只能调用一次。</value>
+  </data>
+  <data name="Host_Stopped" xml:space="preserve">
+    <value>UiHost 已停止；不接受新的 UI 操作。</value>
+  </data>
+  <data name="Host_Stopping" xml:space="preserve">
+    <value>UiHost 正在停止；不接受新的 UI 操作。</value>
+  </data>
+  <data name="Host_RootCreationFailed" xml:space="preserve">
+    <value>UiHost 根视图创建失败；不接受新的 UI 操作。</value>
+  </data>
+  <data name="Host_TaskbarOrderNull" xml:space="preserve">
+    <value>Config.WorkspaceTaskbarTitleOrder 不能为 null。</value>
+  </data>
+  <data name="Host_WindowNotCreated" xml:space="preserve">
+    <value>UiHost window 尚未创建。</value>
+  </data>
+  <data name="Host_ViewportNotCreated" xml:space="preserve">
+    <value>UiHost workspace viewport 尚未创建。</value>
+  </data>
+  <data name="Host_AlreadyInitialized" xml:space="preserve">
+    <value>TerminalUi 已初始化；进程内不允许替换 UiHost。</value>
+  </data>
+  <data name="Host_NotInitialized" xml:space="preserve">
+    <value>TerminalUi 尚未初始化。</value>
+  </data>
+  <data name="Hotkey_HandlerFailed" xml:space="preserve">
+    <value>热键处理失败: {0}</value>
+  </data>
+  <data name="Hotkey_InputSinkAlreadyBound" xml:space="preserve">
+    <value>UI input sink 已绑定，不能替换 Host。</value>
+  </data>
+  <data name="Hotkey_PopupRequiresInputSink" xml:space="preserve">
+    <value>Hotkey popup 需要先绑定 UI input sink。</value>
+  </data>
+  <data name="Command_WorkspaceUsage" xml:space="preserve">
+    <value>用法: /workspace | /workspace switch [&lt;title&gt;|"&lt;title&gt;"] | /workspace list</value>
+  </data>
+  <data name="Command_PluginUsage" xml:space="preserve">
+    <value>用法: /plugin [list] | /plugin load &lt;InternalName&gt; | /plugin unload &lt;InternalName&gt; | /plugin reload &lt;InternalName&gt;</value>
+  </data>
+  <data name="Command_Empty" xml:space="preserve">
+    <value>命令为空。</value>
+  </data>
+  <data name="Command_Unknown" xml:space="preserve">
+    <value>未知命令: /{0}</value>
+  </data>
+  <data name="Command_QuotedTitleTrailingContent" xml:space="preserve">
+    <value>Quoted workspace title 的结束双引号后不能有其它内容。</value>
+  </data>
+  <data name="Command_QuotedTitleEmpty" xml:space="preserve">
+    <value>Quoted workspace title 不能为空或仅包含空白。</value>
+  </data>
+  <data name="Command_QuotedTitleTrailingSlash" xml:space="preserve">
+    <value>Quoted workspace title 不能以反斜杠结尾。</value>
+  </data>
+  <data name="Command_QuotedTitleUnsupportedEscape" xml:space="preserve">
+    <value>Quoted workspace title 不支持转义 \{0}；仅支持 \" 与 \\。</value>
+  </data>
+  <data name="Command_QuotedTitleUnclosed" xml:space="preserve">
+    <value>Quoted workspace title 缺少结束双引号。</value>
+  </data>
+  <data name="Command_WorkspaceNotFound" xml:space="preserve">
+    <value>workspace 不存在: {0}</value>
+  </data>
+  <data name="Command_PluginNotFound" xml:space="preserve">
+    <value>插件不存在: {0}</value>
+  </data>
+  <data name="Command_PluginLoadFailed" xml:space="preserve">
+    <value>插件 {0} 加载失败。</value>
+  </data>
+  <data name="Command_PluginUnloadFailed" xml:space="preserve">
+    <value>插件 {0} 卸载失败。</value>
+  </data>
+  <data name="Command_PluginReloadFailed" xml:space="preserve">
+    <value>插件 {0} 重载失败。</value>
+  </data>
+  <data name="Command_PluginLoaded" xml:space="preserve">
+    <value>插件 {0} 已加载。</value>
+  </data>
+  <data name="Command_PluginUnloaded" xml:space="preserve">
+    <value>插件 {0} 已卸载。</value>
+  </data>
+  <data name="Command_PluginReloaded" xml:space="preserve">
+    <value>插件 {0} 已重载。</value>
+  </data>
+  <data name="Command_PluginTitle" xml:space="preserve">
+    <value>插件命令</value>
+  </data>
+  <data name="Command_WorkspacesTitle" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+  <data name="Command_PluginsTitle" xml:space="preserve">
+    <value>插件</value>
+  </data>
+  <data name="Command_NoPlugins" xml:space="preserve">
+    <value>（没有已知插件）</value>
+  </data>
+  <data name="Command_PluginStateLoaded" xml:space="preserve">
+    <value>已加载</value>
+  </data>
+  <data name="Command_PluginStateUnloaded" xml:space="preserve">
+    <value>未加载</value>
+  </data>
+  <data name="Command_PluginStateFailed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="Command_PluginAuthor" xml:space="preserve">
+    <value>作者：{0}</value>
+  </data>
+</root>

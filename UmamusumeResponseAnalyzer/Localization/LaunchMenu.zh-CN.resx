@@ -123,9 +123,6 @@
   <data name="I18N_Instruction" xml:space="preserve">
     <value>启动菜单(用↑和↓切换选项,回车确认)</value>
   </data>
-  <data name="I18N_LaunchFail" xml:space="preserve">
-    <value>URA启动失败，按回车键退出程序</value>
-  </data>
   <data name="I18N_Options" xml:space="preserve">
     <value>选项</value>
   </data>
@@ -141,10 +138,292 @@
   <data name="I18N_UpdateProgram" xml:space="preserve">
     <value>更新程序</value>
   </data>
+  <data name="I18N_LaunchFail" xml:space="preserve">
+    <value>URA启动失败，按回车键退出程序</value>
+  </data>
   <data name="I18N_UraCoreHelper_FoundAvailablePath" xml:space="preserve">
     <value>发现有效的游戏目录:{0}</value>
   </data>
   <data name="I18N_Start_Started" xml:space="preserve">
     <value>已启动</value>
+  </data>
+  <data name="I18N_PluginRepository" xml:space="preserve">
+    <value>插件仓库</value>
+  </data>
+  <data name="I18N_QqGroup" xml:space="preserve">
+    <value>加入QQ群（号被封过之后在频道里说话会概率被夹</value>
+  </data>
+  <data name="I18N_RedirectedConsole" xml:space="preserve">
+    <value>无法启动交互界面：stdin 或 stdout 已被重定向。请在 Windows Terminal 等交互式终端中直接运行 URA。</value>
+  </data>
+  <data name="I18N_Version" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="I18N_Unknown" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="I18N_WorkingDirectory" xml:space="preserve">
+    <value>工作目录</value>
+  </data>
+  <data name="I18N_ConfigFile" xml:space="preserve">
+    <value>配置文件</value>
+  </data>
+  <data name="I18N_ListenAddress" xml:space="preserve">
+    <value>监听地址</value>
+  </data>
+  <data name="I18N_ServerTargets" xml:space="preserve">
+    <value>服务器目标</value>
+  </data>
+  <data name="I18N_Unrestricted" xml:space="preserve">
+    <value>未限制</value>
+  </data>
+  <data name="I18N_DataLanguage" xml:space="preserve">
+    <value>数据语言</value>
+  </data>
+  <data name="I18N_TrainerGender" xml:space="preserve">
+    <value>训练员性别</value>
+  </data>
+  <data name="I18N_Male" xml:space="preserve">
+    <value>男</value>
+  </data>
+  <data name="I18N_Female" xml:space="preserve">
+    <value>女</value>
+  </data>
+  <data name="I18N_UpdateSource" xml:space="preserve">
+    <value>更新源</value>
+  </data>
+  <data name="I18N_PhaseConfig" xml:space="preserve">
+    <value>配置</value>
+  </data>
+  <data name="I18N_PhaseDatabase" xml:space="preserve">
+    <value>数据文件</value>
+  </data>
+  <data name="I18N_LoadingDatabase" xml:space="preserve">
+    <value>正在加载事件、技能、名称等数据。</value>
+  </data>
+  <data name="I18N_DatabaseUnavailable" xml:space="preserve">
+    <value>数据文件不完整或损坏；请更新全部数据文件后重新启动。</value>
+  </data>
+  <data name="I18N_PhasePluginInit" xml:space="preserve">
+    <value>插件初始化</value>
+  </data>
+  <data name="I18N_PluginsSkipped" xml:space="preserve">
+    <value>数据不可用，未初始化插件。</value>
+  </data>
+  <data name="I18N_PhaseServer" xml:space="preserve">
+    <value>HTTP server</value>
+  </data>
+  <data name="I18N_ServerSkipped" xml:space="preserve">
+    <value>数据不可用，未启动监听。</value>
+  </data>
+  <data name="I18N_DatabaseLoaded" xml:space="preserve">
+    <value>已加载完整数据快照。</value>
+  </data>
+  <data name="I18N_InitializingPlugins" xml:space="preserve">
+    <value>正在调用插件 Initialize。</value>
+  </data>
+  <data name="I18N_StartingListener" xml:space="preserve">
+    <value>正在启动监听。</value>
+  </data>
+  <data name="I18N_NoPluginsHint" xml:space="preserve">
+    <value>没有加载任何插件。可从插件仓库安装插件。</value>
+  </data>
+  <data name="I18N_PhaseHost" xml:space="preserve">
+    <value>宿主</value>
+  </data>
+  <data name="I18N_PluginList" xml:space="preserve">
+    <value>插件列表</value>
+  </data>
+  <data name="I18N_NoPlugins" xml:space="preserve">
+    <value>（没有加载任何插件）</value>
+  </data>
+  <data name="I18N_HostCleanupFailed" xml:space="preserve">
+    <value>Host cleanup 失败。</value>
+  </data>
+  <data name="I18N_PhasePluginScan" xml:space="preserve">
+    <value>插件扫描</value>
+  </data>
+  <data name="I18N_ScanningPlugins" xml:space="preserve">
+    <value>正在扫描 Plugins/。</value>
+  </data>
+  <data name="I18N_ScanLoadFailed" xml:space="preserve">
+    <value>扫描或加载失败</value>
+  </data>
+  <data name="I18N_QqOpened" xml:space="preserve">
+    <value>已打开 QQ 群链接：https://qm.qq.com/q/4z6xHQ908w</value>
+  </data>
+  <data name="I18N_InvalidInstallCommand" xml:space="preserve">
+    <value>无效的安装命令或缺少确认参数。 / Invalid installation command or missing confirmation.</value>
+  </data>
+  <data name="I18N_RegistryConfirmationRequired" xml:space="preserve">
+    <value>拒绝修改注册表：缺少确认参数。请从 URA 的 Mod 安装流程发起该操作。</value>
+  </data>
+  <data name="I18N_BindOwnerThread" xml:space="preserve">
+    <value>Terminal.Gui application 必须在 owner thread 绑定。</value>
+  </data>
+  <data name="I18N_AlreadyBound" xml:space="preserve">
+    <value>Terminal.Gui application 已绑定。</value>
+  </data>
+  <data name="I18N_MainThreadMismatch" xml:space="preserve">
+    <value>Terminal.Gui application 的 MainThreadId 与 UI owner thread 不一致。</value>
+  </data>
+  <data name="I18N_UnbindOwnerThread" xml:space="preserve">
+    <value>Terminal.Gui application 必须在 owner thread 解绑。</value>
+  </data>
+  <data name="I18N_BindingMismatch" xml:space="preserve">
+    <value>Terminal.Gui application 绑定状态不一致。</value>
+  </data>
+  <data name="I18N_DrainOwnerThread" xml:space="preserve">
+    <value>SynchronizationContext 必须在 owner thread drain。</value>
+  </data>
+  <data name="I18N_PumpOwnerThread" xml:space="preserve">
+    <value>SynchronizationContext pump 必须在 owner thread 运行。</value>
+  </data>
+  <data name="I18N_ConfigLoaded" xml:space="preserve">
+    <value>已读取 {0}</value>
+  </data>
+  <data name="I18N_PluginsInitialized" xml:space="preserve">
+    <value>已初始化 {0} 个插件。</value>
+  </data>
+  <data name="I18N_PluginsInitializedWithFailures" xml:space="preserve">
+    <value>已初始化 {0} 个插件，{1} 个插件失败。</value>
+  </data>
+  <data name="I18N_Listening" xml:space="preserve">
+    <value>监听 http://{0}:{1}</value>
+  </data>
+  <data name="I18N_PluginsLoaded" xml:space="preserve">
+    <value>已加载 {0} 个插件。按 P 查看插件列表。</value>
+  </data>
+  <data name="I18N_PluginLoadFailed" xml:space="preserve">
+    <value>插件 {0} 加载失败</value>
+  </data>
+  <data name="I18N_PluginAuthor" xml:space="preserve">
+    <value>{0} v{1}  作者 {2}</value>
+  </data>
+  <data name="I18N_PluginsFound" xml:space="preserve">
+    <value>发现 {0} 个可用插件。</value>
+  </data>
+  <data name="I18N_PluginsFoundWithFailures" xml:space="preserve">
+    <value>发现 {0} 个可用插件，{1} 个插件失败。</value>
+  </data>
+  <data name="I18N_UpdateCheckFailed" xml:space="preserve">
+    <value>[URA] 插件更新检查失败: {0}</value>
+  </data>
+  <data name="I18N_PluginUpdate" xml:space="preserve">
+    <value>插件 {0} 有新版本: {1} -&gt; {2}</value>
+  </data>
+  <data name="I18N_UnknownArguments" xml:space="preserve">
+    <value>未知命令行选项: {0}</value>
+  </data>
+  <data name="I18N_PluginUpdates" xml:space="preserve">
+    <value>{0} 个插件可更新：{1}。到「插件仓库」菜单里手动安装。</value>
+  </data>
+  <data name="I18N_PluginUpdatesMore" xml:space="preserve">
+    <value>{0} 个插件可更新：{1} 等。到「插件仓库」菜单里手动安装。</value>
+  </data>
+  <data name="I18N_FirstRunDevice" xml:space="preserve">
+    <value>首次设置：请选择运行 UM:PD 的设备。推荐使用 Windows Terminal，并将启动大小设置为 120 列、35 行。</value>
+  </data>
+  <data name="I18N_MobileAndPc" xml:space="preserve">
+    <value>手机/模拟器以及此计算机</value>
+  </data>
+  <data name="I18N_ThisPc" xml:space="preserve">
+    <value>此计算机</value>
+  </data>
+  <data name="I18N_ExternalNetworkNotice" xml:space="preserve">
+    <value>URA 将接受其它设备的请求；首次监听时请允许 Windows 防火墙放行。请选择所使用的 UM:PD 版本。</value>
+  </data>
+  <data name="I18N_LocalNetworkNotice" xml:space="preserve">
+    <value>URA 将仅接受本机请求；模拟器接入时需在「选项 → 核心」改为 0.0.0.0 并放行防火墙。请选择所使用的 UM:PD 版本。</value>
+  </data>
+  <data name="I18N_Cygames" xml:space="preserve">
+    <value>日服(Cygames)</value>
+  </data>
+  <data name="I18N_Komoe" xml:space="preserve">
+    <value>繁中服(Komoe)</value>
+  </data>
+  <data name="I18N_FirstRunDataLanguage" xml:space="preserve">
+    <value>请选择事件数据语言，选择繁中等将会使用对应客户端已实装的内容翻译。不会影响实际效果及数据库总大小。</value>
+  </data>
+  <data name="I18N_Japanese" xml:space="preserve">
+    <value>日文</value>
+  </data>
+  <data name="I18N_TraditionalChinese" xml:space="preserve">
+    <value>繁中</value>
+  </data>
+  <data name="I18N_FirstRunTrainerGender" xml:space="preserve">
+    <value>请选择训练员性别，用于精确显示事件选项。</value>
+  </data>
+  <data name="I18N_FirstRunComplete" xml:space="preserve">
+    <value>首次设置完成。启动前请更新数据文件，并从「插件仓库」安装所需插件。</value>
+  </data>
+  <data name="I18N_Waiting" xml:space="preserve">
+    <value>等待</value>
+  </data>
+  <data name="I18N_StartupInformation" xml:space="preserve">
+    <value>启动信息</value>
+  </data>
+  <data name="I18N_MenuPending" xml:space="preserve">
+    <value>Bootstrap 启动菜单正在等待选择。</value>
+  </data>
+  <data name="I18N_StartupStatus" xml:space="preserve">
+    <value>启动状态</value>
+  </data>
+  <data name="I18N_PreparingStartup" xml:space="preserve">
+    <value>正在准备启动…</value>
+  </data>
+  <data name="I18N_Initialized" xml:space="preserve">
+    <value>初始化完成</value>
+  </data>
+  <data name="I18N_Scanned" xml:space="preserve">
+    <value>扫描完成，等待初始化</value>
+  </data>
+  <data name="I18N_LoadOrInitializeFailed" xml:space="preserve">
+    <value>加载或初始化失败</value>
+  </data>
+  <data name="I18N_LoadFailed" xml:space="preserve">
+    <value>加载失败</value>
+  </data>
+  <data name="I18N_Unloaded" xml:space="preserve">
+    <value>未加载</value>
+  </data>
+  <data name="I18N_Environment" xml:space="preserve">
+    <value>运行环境</value>
+  </data>
+  <data name="I18N_Item" xml:space="preserve">
+    <value>项目</value>
+  </data>
+  <data name="I18N_Value" xml:space="preserve">
+    <value>值</value>
+  </data>
+  <data name="I18N_InitializationResults" xml:space="preserve">
+    <value>初始化结果</value>
+  </data>
+  <data name="I18N_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="I18N_PluginSummary" xml:space="preserve">
+    <value>插件摘要</value>
+  </data>
+  <data name="I18N_PluginName" xml:space="preserve">
+    <value>插件名</value>
+  </data>
+  <data name="I18N_Result" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="I18N_RecentLogs" xml:space="preserve">
+    <value>最近日志</value>
+  </data>
+  <data name="I18N_CopyBacktrace" xml:space="preserve">
+    <value>复制完整 backtrace</value>
+  </data>
+  <data name="I18N_DashboardNotAttached" xml:space="preserve">
+    <value>显示上下文菜单前必须挂载启动面板。</value>
+  </data>
+  <data name="I18N_CopyBacktraceFailed" xml:space="preserve">
+    <value>复制完整 backtrace 失败：系统 clipboard 不可用。</value>
+  </data>
+  <data name="I18N_Running" xml:space="preserve">
+    <value>正在执行：{0}</value>
   </data>
 </root>

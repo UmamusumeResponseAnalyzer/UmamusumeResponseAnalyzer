@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using Gallop.Endpoints;
 using System.Collections.Immutable;
 using System.Reflection;
@@ -56,7 +57,7 @@ internal sealed class PluginRegistrationStage(
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (committed)
-            throw new InvalidOperationException($"插件 registration stage 已提交: {PluginManager.InternalName(Plugin)}");
+            throw new InvalidOperationException(string.Format(i18n.RegistrationAlreadyCommitted, PluginManager.InternalName(Plugin)));
 
         PluginManager.CommitRegistrationStage(Plugin, analyzers, backgroundOperations);
         committed = true;
@@ -81,7 +82,7 @@ internal static partial class PluginManager
         bool includeAttributeAnalyzers = false)
     {
         if (ActiveRegistrationStage.Value is not null)
-            throw new InvalidOperationException("插件 registration stage 不允许嵌套。");
+            throw new InvalidOperationException(i18n.NestedRegistration);
 
         var stage = new PluginRegistrationStage(
             plugin,
@@ -157,8 +158,8 @@ internal static partial class PluginManager
                 method,
                 analyzer.EndpointType,
                 analyzer.Kind,
-                "catalog endpoint",
-                "endpoint type is not in GameEndpointCatalog");
+                i18n.CatalogEndpoint,
+                i18n.EndpointOutsideCatalog);
 
         var payloadType = parameters[0].ParameterType;
         var expected = analyzer.Kind == AnalyzerKind.Request ? endpoint.RequestType : endpoint.ResponseType;
@@ -210,7 +211,7 @@ internal static partial class PluginManager
         if (!Enum.IsDefined(kind))
             throw new ArgumentOutOfRangeException(nameof(kind));
         if (patterns.Count == 0)
-            throw new ArgumentException("Analyzer 至少需要一个 endpoint pattern。", nameof(patterns));
+            throw new ArgumentException(i18n.EndpointPatternRequired, nameof(patterns));
 
         var payloadType = typeof(TPayload);
         ValidateProgrammaticPayload(kind, payloadType);
@@ -224,7 +225,7 @@ internal static partial class PluginManager
             payloadType == typeof(ReadOnlyMemory<byte>)
                 ? context => handler(new(endpoint, (TPayload)(object)context.Payload, context.Headers))
                 : context => handler(new(endpoint, (TPayload)context.GetDto(payloadType), context.Headers)),
-            $"programmatic {payloadType.FullName} analyzer")).ToList();
+            string.Format(i18n.ProgrammaticAnalyzer, payloadType.FullName))).ToList();
 
         RequireRegistrationStage(plugin).Add(registrations);
     }
@@ -234,7 +235,7 @@ internal static partial class PluginManager
         var stage = ActiveRegistrationStage.Value;
         if (stage is null || !ReferenceEquals(stage.Plugin, plugin))
             throw new InvalidOperationException(
-                $"Analyzer 与 background operation 只能在 Initialize 或 Host 执行的 OnStarted 回调中注册: plugin={InternalName(plugin)}");
+                string.Format(i18n.RegistrationPhaseInvalid, InternalName(plugin)));
         return stage;
     }
 
@@ -245,13 +246,13 @@ internal static partial class PluginManager
 
         if (payloadType == typeof(object) || payloadType == typeof(byte[]) || payloadType.IsInterface ||
             payloadType.IsAbstract || payloadType.ContainsGenericParameters)
-            throw new InvalidOperationException($"Analyzer payload 必须是 Host 中现有的闭合具体 Gallop DTO: {payloadType.FullName}");
+            throw new InvalidOperationException(string.Format(i18n.ConcreteHostPayloadRequired, payloadType.FullName));
 
         var known = GameEndpointCatalog.ByEndpointType.Values.Any(endpoint =>
             (kind == AnalyzerKind.Request ? endpoint.RequestType : endpoint.ResponseType) == payloadType);
         if (!known)
             throw new InvalidOperationException(
-                $"Analyzer payload 不是当前方向的 Host Gallop DTO: kind={kind}, payload={payloadType.FullName}");
+                string.Format(i18n.PayloadDirectionMismatch, kind, payloadType.FullName));
     }
 
     internal static IReadOnlyList<GameEndpointDescriptor> ExpandEndpointPatterns(
@@ -267,7 +268,7 @@ internal static partial class PluginManager
                 .ToList();
             if (matches.Count == 0)
                 throw new InvalidOperationException(
-                    $"Endpoint pattern 未命中当前 catalog: kind={pattern.Kind}, pattern={pattern.Pattern}");
+                    string.Format(i18n.EndpointPatternUnmatched, pattern.Kind, pattern.Pattern));
 
             foreach (var endpoint in matches)
                 endpoints.TryAdd(endpoint.EndpointType, endpoint);
@@ -284,7 +285,7 @@ internal static partial class PluginManager
             EndpointPatternKind.Exact => CreateExactMatcher(pattern.Pattern),
             EndpointPatternKind.Wildcard => CreateWildcardMatcher(pattern.Pattern),
             EndpointPatternKind.Regex => CreateRegexMatcher(pattern.Pattern),
-            _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern.Kind, "未知 endpoint pattern 类型。"),
+            _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern.Kind, i18n.UnknownEndpointPatternKind),
         };
     }
 
@@ -298,7 +299,7 @@ internal static partial class PluginManager
     {
         ValidateCanonicalPathPattern(pattern, allowWildcard: true);
         if (!pattern.Contains('*', StringComparison.Ordinal))
-            throw new ArgumentException($"Wildcard endpoint pattern 必须包含 *: {pattern}", nameof(pattern));
+            throw new ArgumentException(string.Format(i18n.WildcardRequired, pattern), nameof(pattern));
 
         return CreateRegexMatcher(
             Regex.Escape(pattern).Replace("\\*", "[^/]*", StringComparison.Ordinal));
@@ -310,16 +311,16 @@ internal static partial class PluginManager
             pattern.Contains('\\', StringComparison.Ordinal) ||
             pattern.Contains('?', StringComparison.Ordinal) ||
             pattern.Contains('#', StringComparison.Ordinal))
-            throw new ArgumentException($"Endpoint pattern 必须是 canonical absolute path: {pattern}", nameof(pattern));
+            throw new ArgumentException(string.Format(i18n.CanonicalAbsolutePathRequired, pattern), nameof(pattern));
 
         foreach (var segment in pattern[1..].Split('/'))
         {
             if (segment.Length == 0 || segment is "." or "..")
-                throw new ArgumentException($"Endpoint pattern 包含非 canonical path segment: {pattern}", nameof(pattern));
+                throw new ArgumentException(string.Format(i18n.NonCanonicalPathSegment, pattern), nameof(pattern));
             if (!allowWildcard && segment.Contains('*', StringComparison.Ordinal))
-                throw new ArgumentException($"Exact endpoint pattern 不能包含 *: {pattern}", nameof(pattern));
+                throw new ArgumentException(string.Format(i18n.ExactWildcardForbidden, pattern), nameof(pattern));
             if (allowWildcard && segment.Contains("**", StringComparison.Ordinal))
-                throw new ArgumentException($"Wildcard endpoint pattern 不支持相邻 **: {pattern}", nameof(pattern));
+                throw new ArgumentException(string.Format(i18n.AdjacentWildcardsForbidden, pattern), nameof(pattern));
         }
     }
 
@@ -424,7 +425,6 @@ internal static partial class PluginManager
         string expected,
         string actual)
         => new(
-            $"插件 analyzer 签名无效: plugin={InternalName(plugin)}, " +
-            $"method={method.DeclaringType?.FullName}.{method.Name}, endpoint={endpointType.FullName}, " +
-            $"kind={kind}, expected={expected}, actual={actual}");
+            string.Format(i18n.AnalyzerSignatureInvalid, InternalName(plugin),
+                method.DeclaringType?.FullName, method.Name, endpointType.FullName, kind, expected, actual));
 }

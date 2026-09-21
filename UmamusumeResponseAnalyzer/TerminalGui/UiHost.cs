@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Runtime.ExceptionServices;
 using Terminal.Gui.App;
 using Terminal.Gui.Input;
@@ -143,7 +144,7 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         string? description)
     {
         var entry = HotkeyManager.CaptureTracked(
-            description ?? $"切换到 {workspace.Title}",
+            description ?? string.Format(i18n.Workspace_SwitchDescription, workspace.DisplayTitle),
             () =>
             {
                 SwitchWorkspace(workspace);
@@ -540,7 +541,7 @@ internal sealed class UiHost : IUiInputSink, IDisposable
                 return UiChange.None;
             default:
                 throw new InvalidOperationException(
-                    $"未知 UiHost ingress event: {uiEvent.GetType().FullName}");
+                    string.Format(i18n.Host_UnknownIngressEvent, uiEvent.GetType().FullName));
         }
     }
 
@@ -794,11 +795,11 @@ internal sealed class UiHost : IUiInputSink, IDisposable
                 break;
             case NavigateWorkspaceIngress navigate:
                 navigate.Completion.TrySetException(failure ?? new InvalidOperationException(
-                    "UiHost stopped before the accepted navigation event was applied."));
+                    i18n.Host_NavigationAbandoned));
                 break;
             case FlushIngress flush:
                 flush.Completion.TrySetException(failure ?? new InvalidOperationException(
-                    "UiHost stopped before the accepted flush event was applied."));
+                    i18n.Host_FlushAbandoned));
                 break;
             case BindWorkspaceHotkeyIngress bindHotkey:
                 session.CancelPendingWorkspaceHotkey(bindHotkey.Entry);

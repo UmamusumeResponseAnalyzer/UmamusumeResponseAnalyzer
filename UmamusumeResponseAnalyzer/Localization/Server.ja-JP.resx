@@ -127,6 +127,30 @@
     <value>サーバーはhttp://*:4693で起動しました</value>
   </data>
   <data name="I18N_AvailableEndpointTip" xml:space="preserve">
-    <value>http://{0}:{1}から接続を試みることができます</value>
+    <value>http://{0}:{1} への接続を試してください</value>
+  </data>
+  <data name="I18N_ProjectionNull" xml:space="preserve">
+    <value>Gallop DTO の逆シリアル化が null を返しました: endpoint={0}, path={1}, dto={2}</value>
+  </data>
+  <data name="I18N_ProjectionFailed" xml:space="preserve">
+    <value>Gallop DTO の投影に失敗しました: endpoint={0}, path={1}, dto={2}</value>
+  </data>
+  <data name="I18N_CanonicalHeaderMissing" xml:space="preserve">
+    <value>canonical URL header がありません: {0}</value>
+  </data>
+  <data name="I18N_CanonicalPathRequired" xml:space="preserve">
+    <value>canonical URL には絶対パスが必要です: {0}</value>
+  </data>
+  <data name="I18N_DebugCleanupFailed" xml:space="preserve">
+    <value>古い debug packet ファイルを削除できなかったため、{0} をスキップしました: {1}</value>
+  </data>
+  <data name="I18N_RequestAnalyzeFail" xml:space="preserve">
+    <value>リクエストの解析に失敗しました</value>
+  </data>
+  <data name="I18N_RequestPluginFailed" xml:space="preserve">
+    <value>リクエスト解析プラグインの処理に失敗しました: plugin={0}, {1}</value>
+  </data>
+  <data name="I18N_ResponsePluginFailed" xml:space="preserve">
+    <value>レスポンス解析プラグインの処理に失敗しました: plugin={0}, {1}</value>
   </data>
 </root>

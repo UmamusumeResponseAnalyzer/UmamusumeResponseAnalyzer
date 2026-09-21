@@ -409,14 +409,14 @@ namespace UmamusumeResponseAnalyzer.Tests
                     await terminal.WaitForScreenAsync("canonical URL");
 
                     await PostResponseAsync(AccountIndexPath, [0xC1], MissingHeaders);
-                    await terminal.WaitForScreenAsync("Gallop DTO 投影失败");
+                    await terminal.WaitForScreenAsync(Localization.Server.I18N_ProjectionFailed.Split("{0}", StringSplitOptions.None)[0]);
 
                     LoadTestPlugin(new ThrowingResponsePlugin());
                     await PostResponseAsync(
                         AccountIndexPath,
                         MessagePackSerializer.Serialize(new DataLinkIndexResponse()),
                         MissingHeaders);
-                    await terminal.WaitForScreenAsync("响应分析插件处理失败");
+                    await terminal.WaitForScreenAsync(Localization.Server.I18N_ResponsePluginFailed.Split("{0}", StringSplitOptions.None)[0]);
                     await terminal.WaitForScreenAsync("analyzer failed");
                 }
                 finally
@@ -888,7 +888,8 @@ namespace UmamusumeResponseAnalyzer.Tests
                 };
                 Assert.Same(typeof(Server).Assembly, ctx.LoadFromAssemblyName(futureHostVersion));
                 await host.FlushAsync();
-                await runtime.Terminal.WaitForScreenAsync("插件依赖的宿主 ABI 版本更高");
+                await runtime.Terminal.WaitForScreenAsync(Localization.PluginRegistry.HostUpdateRequired
+                    .Split("UmamusumeResponseAnalyzer", StringSplitOptions.None)[0].Trim());
 
                 var wrongTerminalGuiVersion = new AssemblyName(typeof(View).Assembly.GetName().Name!)
                 {

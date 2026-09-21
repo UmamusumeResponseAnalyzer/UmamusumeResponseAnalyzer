@@ -125,7 +125,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
             {
-                warnings?.Add($"Komoe registry: {ex.Message}");
+                warnings?.Add(HachimiEdgeInstaller.Text("KomoeRegistryFailure", ex.Message));
             }
 
             return Array.AsReadOnly(paths
@@ -193,8 +193,8 @@ namespace UmamusumeResponseAnalyzer
             Environment.ExitCode = 1;
             var changed = HachimiEdgeInstallation.EnableDllRedirection();
             Console.WriteLine(changed
-                ? "已启用 DLL redirection，请手动重启 Windows 使其生效。"
-                : "注册表已启用 DLL redirection，没有做任何改动。");
+                ? HachimiEdgeInstaller.Text("DllRedirectionEnabled")
+                : HachimiEdgeInstaller.Text("DllRedirectionAlreadyEnabled"));
             Environment.ExitCode = 0;
         }
     }

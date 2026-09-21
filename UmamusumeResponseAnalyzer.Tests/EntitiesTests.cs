@@ -60,18 +60,20 @@ namespace UmamusumeResponseAnalyzer.Tests
         // ---------- SupportCardName.TypeName 映射 ----------
         // 101=>[速] 102=>[力] 103=>[根] 105=>[耐] 106=>[智] 0=>[友]，其它显式显示类型 ID。
         [Theory]
-        [InlineData(101, "[速]")]
-        [InlineData(102, "[力]")]
-        [InlineData(103, "[根]")]
-        [InlineData(105, "[耐]")]
-        [InlineData(106, "[智]")]
-        [InlineData(0, "[友]")]
+        [InlineData(101, "I18N_SpeedSimple")]
+        [InlineData(102, "I18N_PowerSimple")]
+        [InlineData(103, "I18N_NutsSimple")]
+        [InlineData(105, "I18N_StaminaSimple")]
+        [InlineData(106, "I18N_WizSimple")]
+        [InlineData(0, "I18N_FriendSimple")]
         [InlineData(104, "[104]")]
         [InlineData(999, "[999]")]
         public void SupportCardName_TypeName_MapsByType(int type, string expected)
         {
             var card = new SupportCardName(10001, "卡名", "简称", type, 1004);
-            Assert.Equal(expected, card.TypeName);
+            Assert.Equal(expected.StartsWith("I18N_", StringComparison.Ordinal)
+                ? $"[{Localization.Game.ResourceManager.GetString(expected, Localization.Game.Culture)}]"
+                : expected, card.TypeName);
         }
 
         [Theory]
@@ -104,18 +106,19 @@ namespace UmamusumeResponseAnalyzer.Tests
         // ---------- Motivation 隐式转换 ----------
         // implicit int => motivation 数值；implicit string => enumString
         [Theory]
-        [InlineData(1, "绝不调")]
-        [InlineData(2, "不调")]
-        [InlineData(3, "普通")]
-        [InlineData(4, "好调")]
-        [InlineData(5, "绝好调")]
+        [InlineData(1, "I18N_MotivationWorst")]
+        [InlineData(2, "I18N_MotivationBad")]
+        [InlineData(3, "I18N_MotivationNormal")]
+        [InlineData(4, "I18N_MotivationGood")]
+        [InlineData(5, "I18N_MotivationBest")]
         public void Motivation_ImplicitConversions(int value, string expectedString)
         {
             var m = new Motivation(value);
             int asInt = m;
             string asString = m;
             Assert.Equal(value, asInt);
-            Assert.Equal(expectedString, asString);
+            Assert.Equal(Localization.Game.ResourceManager.GetString(expectedString, Localization.Game.Culture), asString);
+            Assert.Equal(asString, m.ToString());
         }
 
         [Fact]
@@ -138,8 +141,8 @@ namespace UmamusumeResponseAnalyzer.Tests
             var source = new SupportCardName(30001, "卡名", "波旁", 101, 1001);
             var names = new NameManager([source, new BaseName(1001, "美浦波旁", "波旁")]);
 
-            Assert.Equal("[速]美浦波旁", names.DisplayName(30001));
-            Assert.Equal("[速]波旁", names.DisplayNickname(30001));
+            Assert.Equal($"[{Localization.Game.I18N_SpeedSimple}]美浦波旁", names.DisplayName(30001));
+            Assert.Equal($"[{Localization.Game.I18N_SpeedSimple}]波旁", names.DisplayNickname(30001));
             Assert.Equal("波旁", source.Nickname);
             Assert.NotSame(source, names.GetRequiredSupportCard(30001));
             Assert.Contains("9999", names.DisplayName(9999), StringComparison.Ordinal);
@@ -239,7 +242,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             // SimpleName = TypeName + CharacterName，例如 [智]美浦波旁
             var card = new SupportCardName(20001, "[ミッション]", "波旁", 106, 1004);
-            Assert.Equal("[智]美浦波旁", card.SimpleName);
+            Assert.Equal($"[{Localization.Game.I18N_WizSimple}]美浦波旁", card.SimpleName);
         }
     }
 }

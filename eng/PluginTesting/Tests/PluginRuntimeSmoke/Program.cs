@@ -27,6 +27,8 @@ void RunPluginCase(PluginCase pluginCase)
     try
     {
         pluginCase.Run(ui);
+        if (pluginCase.Id is "OldScenarioAnalyzer" or "OnsenScenarioAnalyzer" or "PioneerScenarioAnalyzer" or "UAFScenarioAnalyzer")
+            PluginCases.VerifyLocalizedTraining(pluginCase, ui);
         Console.WriteLine($"PASS {pluginCase.Id}");
     }
     catch (Exception ex)

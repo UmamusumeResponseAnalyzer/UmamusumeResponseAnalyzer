@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Drawing;
 using System.Reflection;
 using Terminal.Gui.Input;
@@ -619,7 +620,7 @@ public sealed class UiHostRenderTests : IDisposable
             host.CompleteCommand("/workspace switch Command S"));
         await host.HandleCommandAsync("/workspace");
         await host.FlushAsync();
-        await terminal.WaitForScreenAsync("Workspaces");
+        await terminal.WaitForScreenAsync(i18n.Command_WorkspacesTitle);
 
         await terminal.InjectAsync(Key.CursorDown);
         await terminal.InjectAsync(Key.Enter);
@@ -657,14 +658,14 @@ public sealed class UiHostRenderTests : IDisposable
         await terminal.InvokeAsync(() => focusTarget!.SetFocus());
 
         await terminal.InjectAsync(new Key('/'));
-        await terminal.WaitForScreenAsync("Command Mode");
+        await terminal.WaitForScreenAsync(i18n.CommandMode_Title);
         await InjectTextAsync("workspace switch Input Second");
         await terminal.InjectAsync(Key.Enter);
 
         await terminal.WaitForScreenAsync("CommandInputResult");
         Assert.Same(second, host.GetCurrentWorkspace());
         Assert.DoesNotContain(
-            "Command Mode",
+            i18n.CommandMode_Title,
             await terminal.CaptureScreenAsync(),
             StringComparison.Ordinal);
     }
@@ -814,7 +815,7 @@ public sealed class UiHostRenderTests : IDisposable
             await terminal.WaitForScreenAsync("global-log-sentinel");
             var bootstrapScreen = await terminal.CaptureScreenAsync();
             Assert.Contains(
-                "Quoted workspace title 缺少结束双引号。",
+                i18n.Command_QuotedTitleUnclosed,
                 bootstrapScreen,
                 StringComparison.Ordinal);
         }
@@ -846,7 +847,7 @@ public sealed class UiHostRenderTests : IDisposable
         try
         {
             var error = Assert.Throws<InvalidOperationException>(bootstrap.Workspace.Remove);
-            Assert.Equal("Bootstrap workspace '启动' 不能移除。", error.Message);
+            Assert.Equal(string.Format(i18n.Workspace_BootstrapCannotRemove, Workspace.BootstrapTitle), error.Message);
             TerminalUi.Log("Bootstrap", "global-after-bootstrap-rejection");
             TerminalUi.LogException(
                 "Bootstrap",
@@ -871,7 +872,7 @@ public sealed class UiHostRenderTests : IDisposable
             await terminal.WaitForScreenAsync("bootstrap-facade-after-rejection");
             await terminal.WaitForScreenAsync("error-after-bootstrap-rejection");
             screen = await terminal.CaptureScreenAsync();
-            Assert.Contains("运行环境", screen, StringComparison.Ordinal);
+            Assert.Contains(Localization.LaunchMenu.I18N_Environment, screen, StringComparison.Ordinal);
         }
         finally
         {
@@ -1078,11 +1079,10 @@ public sealed class UiHostShutdownProcessTests
         if (TerminalUiLifecycleChildProcess.IsChild(scenario))
         {
             await childAction();
-            Assert.Contains(
-                "stopped",
+            Assert.Equal(
+                i18n.Host_Stopped,
                 Assert.Throws<InvalidOperationException>(() =>
-                    TerminalUi.Log("shutdown-test", "late")).Message,
-                StringComparison.Ordinal);
+                    TerminalUi.Log("shutdown-test", "late")).Message);
             TerminalUiLifecycleChildProcess.WriteResult("ok");
             return;
         }
@@ -1134,13 +1134,12 @@ public sealed class UiHostShutdownProcessTests
 
         host.RequestShutdown();
         Assert.False(navigation.IsCompleted);
-        Assert.Contains(
-            "stopping",
+        Assert.Equal(
+            i18n.Host_Stopping,
             Assert.Throws<InvalidOperationException>(() => workspace.SetPanel(
                 "late",
                 "late",
-                WorkspaceContent.Text("late"))).Message,
-            StringComparison.Ordinal);
+                WorkspaceContent.Text("late"))).Message);
 
         var run = await terminal.StartAsync(host);
         await run.WaitAsync(TimeSpan.FromSeconds(5));
@@ -1228,7 +1227,7 @@ public sealed class UiHostShutdownProcessTests
         var flushFailure = await Record.ExceptionAsync(async () => await flush);
 
         Assert.Contains("Config.WorkspaceTaskbarTitleOrder", Assert.IsType<InvalidOperationException>(failure).Message);
-        Assert.Contains("accepted flush event", Assert.IsType<InvalidOperationException>(flushFailure).Message);
+        Assert.Equal(i18n.Host_FlushAbandoned, Assert.IsType<InvalidOperationException>(flushFailure).Message);
     }
 
     static async Task RunAggregatedFailureAsync()

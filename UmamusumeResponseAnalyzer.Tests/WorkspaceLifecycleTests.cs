@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Collections.Concurrent;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
@@ -137,12 +138,12 @@ public sealed class WorkspaceLifecycleProcessTests
                 var visibleFrames = frames.ToArray();
                 Assert.NotEmpty(visibleFrames);
                 var firstFrame = visibleFrames[0];
-                Assert.Contains("运行环境", firstFrame, StringComparison.Ordinal);
-                Assert.Contains("初始化结果", firstFrame, StringComparison.Ordinal);
-                Assert.Contains("插件摘要", firstFrame, StringComparison.Ordinal);
-                Assert.Contains("最近日志", firstFrame, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_Environment, firstFrame, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_InitializationResults, firstFrame, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_PluginSummary, firstFrame, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_RecentLogs, firstFrame, StringComparison.Ordinal);
                 Assert.All(visibleFrames, frame => Assert.DoesNotContain(
-                    "启动 还没有输出。",
+                    string.Format(i18n.Workspace_NoOutput, i18n.Workspace_BootstrapTitle),
                     frame,
                     StringComparison.Ordinal));
 
@@ -150,7 +151,7 @@ public sealed class WorkspaceLifecycleProcessTests
                 emptyWorkspace.SwitchTo();
                 await host.FlushAsync();
                 await terminal.WaitForScreenAsync(
-                    "Ordinary empty workspace 还没有输出。");
+                    string.Format(i18n.Workspace_NoOutput, "Ordinary empty workspace"));
 
                 TerminalUiLifecycleChildProcess.WriteResult(result);
             }
@@ -303,7 +304,7 @@ public sealed class WorkspaceLifecycleProcessTests
                 Assert.Same(bootstrap, Workspace.Current);
                 Assert.Same(bootstrap, Workspace.Create("启动"));
                 var error = Assert.Throws<InvalidOperationException>(bootstrap.Remove);
-                Assert.Equal("Bootstrap workspace '启动' 不能移除。", error.Message);
+                Assert.Equal(string.Format(i18n.Workspace_BootstrapCannotRemove, Workspace.BootstrapTitle), error.Message);
                 Assert.Same(bootstrap, Workspace.Current);
                 Assert.False(bootstrap.IsRemoved);
 
@@ -326,11 +327,11 @@ public sealed class WorkspaceLifecycleProcessTests
                 workspace.Remove();
                 Assert.Same(bootstrap, Workspace.Current);
                 await host.FlushAsync();
-                await terminal.WaitForScreenAsync("运行环境");
+                await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_Environment);
                 var screen = await terminal.CaptureScreenAsync();
-                Assert.Contains("初始化结果", screen, StringComparison.Ordinal);
-                Assert.Contains("插件摘要", screen, StringComparison.Ordinal);
-                Assert.Contains("最近日志", screen, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_InitializationResults, screen, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_PluginSummary, screen, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_RecentLogs, screen, StringComparison.Ordinal);
                 Assert.DoesNotContain("当前没有 workspace。", screen, StringComparison.Ordinal);
 
                 TerminalUiLifecycleChildProcess.WriteResult(result);

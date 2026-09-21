@@ -10,8 +10,8 @@
 
 namespace UmamusumeResponseAnalyzer.Localization {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -19,19 +19,19 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Database {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Database() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,10 +45,10 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性，对
-        ///   使用此强类型资源类的所有资源查找执行重写。
+        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Globalization.CultureInfo Culture {
@@ -59,7 +59,484 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 resourceCulture = value;
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Charm 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_10001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_10001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Spd+3 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Sta+3 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Pow+3 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Gut+3 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1004 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1004", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Wit+3 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1005 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1005", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Horseshoe: Artisan 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_11001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_11001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Horseshoe: Master 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_11002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_11002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Glow stick 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_11003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_11003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Spd+7 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1101 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1101", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Sta+7 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1102 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1102", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Pow+7 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1103 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1103", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Gut+7 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1104 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1104", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Wit+7 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1105 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1105", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Spd+15 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1201 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1201", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Sta+15 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1202 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1202", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Pow+15 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1203 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1203", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Gut+15 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1204 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1204", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Wit+15 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_1205 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_1205", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Energy+20 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Energy+40 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Energy+65 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Bitter tea 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2101 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2101", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Max energy+4 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2201 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2201", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Max energy+8 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2202 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2202", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Mood+1 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2301 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2301", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Mood+2 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_2302 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_2302", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cat food 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_3001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_3001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 BBQ 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_3101 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_3101", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Charming 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Rising star 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Practice perfect 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Fast learner 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4004 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4004", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure insomnia 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4101 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4101", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure slack off 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4102 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4102", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure rough skin 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4103 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4103", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure overweight 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4104 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4104", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure migraine 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4105 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4105", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure practice poor 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4106 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4106", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cure all conditions 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_4201 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_4201", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Spd petition 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_5001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_5001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Sta petition 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_5002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_5002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Pow petition 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_5003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_5003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Gut petition 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_5004 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_5004", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Wit petition 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_5005 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_5005", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Whistle 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_7001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_7001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 20% megaphone 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_8001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_8001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 40% megaphone 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_8002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_8002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 60% megaphone 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_8003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_8003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Spd ankle weights 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_9001 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_9001", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Sta ankle weights 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_9002 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_9002", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Pow ankle weights 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_9003 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_9003", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Gut ankle weights 的本地化字符串。
+        /// </summary>
+        internal static string ClimaxItem_9004 {
+            get {
+                return ResourceManager.GetString("ClimaxItem_9004", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Error reading data file {0}, please update the program before updating data 的本地化字符串。
         /// </summary>
@@ -68,16 +545,25 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DecompressError", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似  An error occurred while loading {0}. Please try updating the data again. If the update fails, try deleting %localappdata%/UmamusumeResponseAnalyzer/.update_record and retry.  的本地化字符串。
+        ///   查找类似 Game data cannot form a complete snapshot: {0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_InvalidSnapshot {
+            get {
+                return ResourceManager.GetString("I18N_InvalidSnapshot", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 An error occurred while loading {0}. Please try updating the data again. 的本地化字符串。
         /// </summary>
         internal static string I18N_LoadFail {
             get {
                 return ResourceManager.GetString("I18N_LoadFail", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Data file {0} does not exist, please try updating the data again 的本地化字符串。
         /// </summary>
@@ -88,11 +574,56 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
 
         /// <summary>
+        ///   查找类似 Game data is not fully loaded. Update the data files and restart. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_NotLoaded {
+            get {
+                return ResourceManager.GetString("I18N_NotLoaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 This SkillManager was not created by Database.Skills.Apply and cannot calculate skill evolution. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_SkillManagerSourceMissing {
+            get {
+                return ResourceManager.GetString("I18N_SkillManagerSourceMissing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Skill data does not exist: skillId={0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_SkillMissing {
+            get {
+                return ResourceManager.GetString("I18N_SkillMissing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Unknown skill aptitude evolution condition: conditionId={0}, requirement={1} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_UnknownAptitudeRequirement {
+            get {
+                return ResourceManager.GetString("I18N_UnknownAptitudeRequirement", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   查找类似 Unknown skill evolution condition type; the skill will be treated as unable to evolve: conditionId={0}, type={1} 的本地化字符串。
         /// </summary>
         internal static string I18N_UnknownSkillUpgradeConditionType {
             get {
                 return ResourceManager.GetString("I18N_UnknownSkillUpgradeConditionType", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Skill evolution condition record is missing: conditionId={0} 的本地化字符串。
+        /// </summary>
+        internal static string I18N_UpgradeConditionMissing {
+            get {
+                return ResourceManager.GetString("I18N_UpgradeConditionMissing", resourceCulture);
             }
         }
     }

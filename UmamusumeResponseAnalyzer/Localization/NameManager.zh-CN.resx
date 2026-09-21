@@ -126,4 +126,13 @@
   <data name="I18N_CastToUmaNameFail" xml:space="preserve">
     <value>无法从{0}转换到UmaName</value>
   </data>
+  <data name="I18N_RSupportCardMissing" xml:space="preserve">
+    <value>R 支援卡数据不存在: charaId={0}</value>
+  </data>
+  <data name="I18N_RSupportCardAmbiguous" xml:space="preserve">
+    <value>R 支援卡数据不唯一: charaId={0}</value>
+  </data>
+  <data name="I18N_NameMissing" xml:space="preserve">
+    <value>名称数据不存在或类型不符: id={0}, expected={1}</value>
+  </data>
 </root>

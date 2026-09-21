@@ -5,9 +5,11 @@ using Gallop.Endpoints;
 using MessagePack;
 using Terminal.Gui.App;
 using Terminal.Gui.Input;
+using Terminal.Gui.Text;
 using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 sealed record PanelProbe(
     Func<object> CreateResponse,
@@ -23,7 +25,8 @@ sealed record PanelProbe(
     string? InitialUpdateText = null,
     string? UpdatedVisibleText = null,
     bool RemovesWorkspaceOnDispose = false,
-    ScenarioHistoryProbe? History = null);
+    ScenarioHistoryProbe? History = null,
+    Action<string>? VerifyFramebuffer = null);
 
 sealed record ScenarioHistoryProbe(
     Func<int, int, int, object> CreateResponse);
@@ -105,8 +108,7 @@ sealed record PluginCase(
                         {
                             publishedWorkspace.SwitchTo();
                         }
-                        catch (InvalidOperationException ex) when (
-                            ex.Message.Contains("removed", StringComparison.OrdinalIgnoreCase))
+                        catch (InvalidOperationException)
                         {
                             removedHandleRejected = true;
                         }
@@ -186,18 +188,20 @@ sealed record PluginCase(
         if (!Panel.FullBleed && !framebuffer.Contains(Panel.Title, StringComparison.Ordinal))
             throw new InvalidOperationException($"{Id}: framebuffer is missing panel title '{Panel.Title}'.");
 
+        Panel.VerifyFramebuffer?.Invoke(framebuffer);
+
         if (Panel.NotificationSeverity is { } severity)
         {
             var visibleSeverity = severity switch
             {
-                UiSeverity.Trace => "TRACE ",
-                UiSeverity.Info => "INFO ",
-                UiSeverity.Success => "OK ",
-                UiSeverity.Warning => "WARN ",
-                UiSeverity.Error => "ERR ",
+                UiSeverity.Trace => UiText.Severity_Trace,
+                UiSeverity.Info => UiText.Severity_Info,
+                UiSeverity.Success => UiText.Severity_Success,
+                UiSeverity.Warning => UiText.Severity_Warning,
+                UiSeverity.Error => UiText.Severity_Error,
                 _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
             };
-            var actual = framebuffer.Split(visibleSeverity, StringSplitOptions.None).Length - 1;
+            var actual = framebuffer.Split(visibleSeverity + " ", StringSplitOptions.None).Length - 1;
             if (actual != Panel.NotificationCount)
             {
                 throw new InvalidOperationException(
@@ -227,7 +231,7 @@ sealed record PluginCase(
             if (Panel.UpdatedVisibleText is { } updatedVisibleText
                 && !refreshed.Contains(updatedVisibleText, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException($"{Id}: later training dispatch did not update its existing panel.");
+                throw new InvalidOperationException($"{Id}: later training dispatch did not render '{updatedVisibleText}'. Framebuffer: {refreshed.Trim()}");
             }
 
             if (Panel.History is { } history)
@@ -406,7 +410,7 @@ sealed record PluginCase(
         RequirePanelText(ui, "61/100", $"config {action} isolates modal arrow keys");
     }
 
-    static string CaptureScrollablePanel(WorkspaceSmokeSession ui)
+    internal static string CaptureScrollablePanel(WorkspaceSmokeSession ui)
     {
         ui.SendKey(Key.Home);
         var pages = new List<string>();
@@ -450,12 +454,13 @@ sealed record PluginCase(
 
     void VerifyDmmRuntime(RuntimePluginContext context, WorkspaceSmokeSession ui, string currentDirectory)
     {
-        const string tokenSemantic = "access token";
+        var tokenSemantic = new System.Resources.ResourceManager("DMMPlugin.i18n.DMM", typeof(DMMPlugin.DMMPlugin).Assembly)
+            .GetString("I18N_Token_CannotGetValid", System.Globalization.CultureInfo.CurrentUICulture)!;
         var settingsPath = Path.Combine(currentDirectory, "PluginData", "DMM插件", "settings.yaml");
         var settingsBefore = File.ReadAllText(settingsPath);
         var linesBefore = ui.CaptureScreen().ReplaceLineEndings("\n").Split('\n');
-        var errorLogsBefore = CountDmmAccessTokenLogs(linesBefore, "ERR", tokenSemantic);
-        var infoLogsBefore = CountDmmAccessTokenLogs(linesBefore, "INFO", tokenSemantic);
+        var errorLogsBefore = CountDmmAccessTokenLogs(linesBefore, UiSeverity.Error, tokenSemantic);
+        var infoLogsBefore = CountDmmAccessTokenLogs(linesBefore, UiSeverity.Info, tokenSemantic);
         var cardsBefore = CountDmmErrorCards(linesBefore);
         var started = context.HostEvents.Subscriptions.Single();
         var ignoreExistingProcess = typeof(DMMPlugin.DMMPlugin).Assembly
@@ -478,8 +483,8 @@ sealed record PluginCase(
         {
             ui.Flush();
             lines = ui.CaptureScreen().ReplaceLineEndings("\n").Split('\n');
-            if (CountDmmAccessTokenLogs(lines, "ERR", tokenSemantic) == errorLogsBefore + 1
-                && CountDmmAccessTokenLogs(lines, "INFO", tokenSemantic) == infoLogsBefore + 1
+            if (CountDmmAccessTokenLogs(lines, UiSeverity.Error, tokenSemantic) == errorLogsBefore + 1
+                && CountDmmAccessTokenLogs(lines, UiSeverity.Info, tokenSemantic) == infoLogsBefore + 1
                 && CountDmmErrorCards(lines) == cardsBefore + 1)
             {
                 break;
@@ -487,8 +492,8 @@ sealed record PluginCase(
             Thread.Sleep(20);
         }
 
-        var errorLogsAfter = CountDmmAccessTokenLogs(lines, "ERR", tokenSemantic);
-        var infoLogsAfter = CountDmmAccessTokenLogs(lines, "INFO", tokenSemantic);
+        var errorLogsAfter = CountDmmAccessTokenLogs(lines, UiSeverity.Error, tokenSemantic);
+        var infoLogsAfter = CountDmmAccessTokenLogs(lines, UiSeverity.Info, tokenSemantic);
         var cardsAfter = CountDmmErrorCards(lines);
         if (errorLogsAfter != errorLogsBefore + 1
             || infoLogsAfter != infoLogsBefore + 1
@@ -498,28 +503,29 @@ sealed record PluginCase(
                 " | ",
                 lines.Where(line => line.Contains("DMMPlugin", StringComparison.Ordinal)
                     || line.Contains(tokenSemantic, StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("ERROR", StringComparison.Ordinal)));
+                    || line.Contains(UiText.Severity_Error, StringComparison.Ordinal)));
             throw new InvalidOperationException(
-                $"{Id}: OnStarted auth failure did not add exactly one access-token ERR log, "
-                + $"one access-token INFO log, and one DMM ERROR card "
-                + $"(ERR {errorLogsBefore}->{errorLogsAfter}, INFO {infoLogsBefore}->{infoLogsAfter}, "
+                $"{Id}: OnStarted auth failure did not add exactly one access-token Error log, "
+                + $"one access-token Info log, and one DMM Error card "
+                + $"(Error {errorLogsBefore}->{errorLogsAfter}, Info {infoLogsBefore}->{infoLogsAfter}, "
                 + $"cards {cardsBefore}->{cardsAfter}). Visible: {visibleDiagnostics}");
         }
         if (!string.Equals(settingsBefore, File.ReadAllText(settingsPath), StringComparison.Ordinal))
             throw new InvalidOperationException($"{Id}: OnStarted failure changed settings.yaml.");
     }
 
-    static int CountDmmAccessTokenLogs(string[] lines, string severity, string tokenSemantic)
+    static int CountDmmAccessTokenLogs(string[] lines, UiSeverity severity, string tokenSemantic)
     {
         var overlayColumn = lines
-            .Select(line => line.IndexOf("│ ERROR", StringComparison.Ordinal))
-            .Where(column => column >= 0)
+            .Select(line => (Line: line, Index: line.IndexOf($"│ {UiText.Severity_Error}", StringComparison.Ordinal)))
+            .Where(item => item.Index >= 0)
+            .Select(item => item.Line[..item.Index].GetColumns())
             .DefaultIfEmpty(int.MaxValue)
             .Min();
         return lines.Count(line =>
         {
-            var logArea = line[..Math.Min(line.Length, overlayColumn)];
-            return logArea.Contains($"{severity} [DMMPlugin]", StringComparison.Ordinal)
+            var logArea = TextFormatter.ClipOrPad(line, Math.Min(line.GetColumns(), overlayColumn));
+            return logArea.Contains($"{BootstrapWorkspace.SeverityLabel(severity)} [DMMPlugin]", StringComparison.Ordinal)
                 && logArea.Contains(tokenSemantic, StringComparison.OrdinalIgnoreCase);
         });
     }
@@ -529,17 +535,19 @@ sealed record PluginCase(
         var count = 0;
         for (var headerRow = 0; headerRow < lines.Length; headerRow++)
         {
-            var cardColumn = lines[headerRow].IndexOf("│ ERROR", StringComparison.Ordinal);
-            if (cardColumn < 0)
+            var headerIndex = lines[headerRow].IndexOf($"│ {UiText.Severity_Error}", StringComparison.Ordinal);
+            if (headerIndex < 0)
                 continue;
+            var cardColumn = lines[headerRow][..headerIndex].GetColumns();
 
             for (var row = headerRow + 1; row < lines.Length; row++)
             {
-                if (lines[row].Length <= cardColumn)
+                if (lines[row].GetColumns() <= cardColumn)
                     continue;
-                if (lines[row][cardColumn] == '└')
+                var card = lines[row][TextFormatter.ClipOrPad(lines[row], cardColumn).Length..];
+                if (card.StartsWith('└'))
                     break;
-                if (lines[row][cardColumn..].Contains("[DMMPlugin]", StringComparison.Ordinal))
+                if (card.Contains("[DMMPlugin]", StringComparison.Ordinal))
                 {
                     count++;
                     break;

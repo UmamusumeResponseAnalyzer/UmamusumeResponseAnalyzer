@@ -216,7 +216,7 @@ namespace UmamusumeResponseAnalyzer
 
         public SkillData GetRequiredById(int id)
             => list.FirstOrDefault(x => x.Id == id)
-                ?? throw new KeyNotFoundException($"技能数据不存在: skillId={id}");
+                ?? throw new KeyNotFoundException(string.Format(Localization.Database.I18N_SkillMissing, id));
 
         public bool TryFindByName(string name, [NotNullWhen(true)] out SkillData? skill)
         {
@@ -229,7 +229,7 @@ namespace UmamusumeResponseAnalyzer
 
         public void Evolve(SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
         {
-            var defaults = source ?? throw new InvalidOperationException("该 SkillManager 不是由 Database.Skills.Apply 创建，无法计算进化技能。");
+            var defaults = source ?? throw new InvalidOperationException(Localization.Database.I18N_SkillManagerSourceMissing);
             list.ForEach(x => x.Upgrades.Clear());
             willLearnSkills ??= [];
             if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))

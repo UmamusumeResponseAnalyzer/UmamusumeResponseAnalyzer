@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -146,5 +146,284 @@
   </data>
   <data name="I18N_Start_Started" xml:space="preserve">
     <value>Launched</value>
+  </data>
+  <data name="I18N_PluginRepository" xml:space="preserve">
+    <value>Plugin repository</value>
+  </data>
+  <data name="I18N_QqGroup" xml:space="preserve">
+    <value>Join the QQ group (channel messages may be filtered after an account ban)</value>
+  </data>
+  <data name="I18N_RedirectedConsole" xml:space="preserve">
+    <value>Cannot start the interactive UI: stdin or stdout is redirected. Run URA directly in an interactive terminal such as Windows Terminal.</value>
+  </data>
+  <data name="I18N_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="I18N_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="I18N_WorkingDirectory" xml:space="preserve">
+    <value>Working directory</value>
+  </data>
+  <data name="I18N_ConfigFile" xml:space="preserve">
+    <value>Configuration file</value>
+  </data>
+  <data name="I18N_ListenAddress" xml:space="preserve">
+    <value>Listen address</value>
+  </data>
+  <data name="I18N_ServerTargets" xml:space="preserve">
+    <value>Server targets</value>
+  </data>
+  <data name="I18N_Unrestricted" xml:space="preserve">
+    <value>Unrestricted</value>
+  </data>
+  <data name="I18N_DataLanguage" xml:space="preserve">
+    <value>Data language</value>
+  </data>
+  <data name="I18N_TrainerGender" xml:space="preserve">
+    <value>Trainer gender</value>
+  </data>
+  <data name="I18N_Male" xml:space="preserve">
+    <value>Male</value>
+  </data>
+  <data name="I18N_Female" xml:space="preserve">
+    <value>Female</value>
+  </data>
+  <data name="I18N_UpdateSource" xml:space="preserve">
+    <value>Update source</value>
+  </data>
+  <data name="I18N_PhaseConfig" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="I18N_PhaseDatabase" xml:space="preserve">
+    <value>Data files</value>
+  </data>
+  <data name="I18N_LoadingDatabase" xml:space="preserve">
+    <value>Loading event, skill and name data.</value>
+  </data>
+  <data name="I18N_DatabaseUnavailable" xml:space="preserve">
+    <value>Data files are incomplete or damaged; update all data files and restart.</value>
+  </data>
+  <data name="I18N_PhasePluginInit" xml:space="preserve">
+    <value>Plugin initialization</value>
+  </data>
+  <data name="I18N_PluginsSkipped" xml:space="preserve">
+    <value>Data is unavailable; plugins were not initialized.</value>
+  </data>
+  <data name="I18N_PhaseServer" xml:space="preserve">
+    <value>HTTP server</value>
+  </data>
+  <data name="I18N_ServerSkipped" xml:space="preserve">
+    <value>Data is unavailable; the listener was not started.</value>
+  </data>
+  <data name="I18N_DatabaseLoaded" xml:space="preserve">
+    <value>Loaded the complete data snapshot.</value>
+  </data>
+  <data name="I18N_InitializingPlugins" xml:space="preserve">
+    <value>Calling plugin Initialize.</value>
+  </data>
+  <data name="I18N_StartingListener" xml:space="preserve">
+    <value>Starting the listener.</value>
+  </data>
+  <data name="I18N_NoPluginsHint" xml:space="preserve">
+    <value>No plugins are loaded. Install plugins from the plugin repository.</value>
+  </data>
+  <data name="I18N_PhaseHost" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="I18N_PluginList" xml:space="preserve">
+    <value>Plugin list</value>
+  </data>
+  <data name="I18N_NoPlugins" xml:space="preserve">
+    <value>(No plugins loaded)</value>
+  </data>
+  <data name="I18N_HostCleanupFailed" xml:space="preserve">
+    <value>Host cleanup failed.</value>
+  </data>
+  <data name="I18N_PhasePluginScan" xml:space="preserve">
+    <value>Plugin scan</value>
+  </data>
+  <data name="I18N_ScanningPlugins" xml:space="preserve">
+    <value>Scanning Plugins/.</value>
+  </data>
+  <data name="I18N_ScanLoadFailed" xml:space="preserve">
+    <value>Scan or load failed</value>
+  </data>
+  <data name="I18N_QqOpened" xml:space="preserve">
+    <value>Opened the QQ group link: https://qm.qq.com/q/4z6xHQ908w</value>
+  </data>
+  <data name="I18N_InvalidInstallCommand" xml:space="preserve">
+    <value>Invalid installation command or missing confirmation.</value>
+  </data>
+  <data name="I18N_RegistryConfirmationRequired" xml:space="preserve">
+    <value>Registry change refused: confirmation is missing. Start this operation from the URA mod installer.</value>
+  </data>
+  <data name="I18N_BindOwnerThread" xml:space="preserve">
+    <value>The Terminal.Gui application must be bound on its owner thread.</value>
+  </data>
+  <data name="I18N_AlreadyBound" xml:space="preserve">
+    <value>The Terminal.Gui application is already bound.</value>
+  </data>
+  <data name="I18N_MainThreadMismatch" xml:space="preserve">
+    <value>The Terminal.Gui application MainThreadId does not match the UI owner thread.</value>
+  </data>
+  <data name="I18N_UnbindOwnerThread" xml:space="preserve">
+    <value>The Terminal.Gui application must be unbound on its owner thread.</value>
+  </data>
+  <data name="I18N_BindingMismatch" xml:space="preserve">
+    <value>The Terminal.Gui application binding state is inconsistent.</value>
+  </data>
+  <data name="I18N_DrainOwnerThread" xml:space="preserve">
+    <value>SynchronizationContext must be drained on its owner thread.</value>
+  </data>
+  <data name="I18N_PumpOwnerThread" xml:space="preserve">
+    <value>The SynchronizationContext pump must run on its owner thread.</value>
+  </data>
+  <data name="I18N_ConfigLoaded" xml:space="preserve">
+    <value>Read {0}</value>
+  </data>
+  <data name="I18N_PluginsInitialized" xml:space="preserve">
+    <value>Initialized {0} plugins.</value>
+  </data>
+  <data name="I18N_PluginsInitializedWithFailures" xml:space="preserve">
+    <value>Initialized {0} plugins; {1} plugins failed.</value>
+  </data>
+  <data name="I18N_Listening" xml:space="preserve">
+    <value>Listening on http://{0}:{1}</value>
+  </data>
+  <data name="I18N_PluginsLoaded" xml:space="preserve">
+    <value>Loaded {0} plugins. Press P to view the plugin list.</value>
+  </data>
+  <data name="I18N_PluginLoadFailed" xml:space="preserve">
+    <value>Failed to load plugin {0}</value>
+  </data>
+  <data name="I18N_PluginAuthor" xml:space="preserve">
+    <value>{0} v{1}  by {2}</value>
+  </data>
+  <data name="I18N_PluginsFound" xml:space="preserve">
+    <value>Found {0} available plugins.</value>
+  </data>
+  <data name="I18N_PluginsFoundWithFailures" xml:space="preserve">
+    <value>Found {0} available plugins; {1} plugins failed.</value>
+  </data>
+  <data name="I18N_UpdateCheckFailed" xml:space="preserve">
+    <value>[URA] Plugin update check failed: {0}</value>
+  </data>
+  <data name="I18N_PluginUpdate" xml:space="preserve">
+    <value>Plugin {0} has an update: {1} -&gt; {2}</value>
+  </data>
+  <data name="I18N_UnknownArguments" xml:space="preserve">
+    <value>Unknown command-line options: {0}</value>
+  </data>
+  <data name="I18N_PluginUpdates" xml:space="preserve">
+    <value>{0} plugins have updates: {1}. Install them from the plugin repository menu.</value>
+  </data>
+  <data name="I18N_PluginUpdatesMore" xml:space="preserve">
+    <value>{0} plugins have updates, including {1}. Install them from the plugin repository menu.</value>
+  </data>
+  <data name="I18N_FirstRunDevice" xml:space="preserve">
+    <value>First setup: choose the device running UM:PD. Windows Terminal with an initial size of 120 columns by 35 rows is recommended.</value>
+  </data>
+  <data name="I18N_MobileAndPc" xml:space="preserve">
+    <value>Phone/emulator and this computer</value>
+  </data>
+  <data name="I18N_ThisPc" xml:space="preserve">
+    <value>This computer</value>
+  </data>
+  <data name="I18N_ExternalNetworkNotice" xml:space="preserve">
+    <value>URA will accept requests from other devices; allow access through Windows Firewall when the listener first starts. Choose the UM:PD version you use.</value>
+  </data>
+  <data name="I18N_LocalNetworkNotice" xml:space="preserve">
+    <value>URA will only accept local requests; for emulator access, change the address to 0.0.0.0 in Options → Core and allow access through the firewall. Choose the UM:PD version you use.</value>
+  </data>
+  <data name="I18N_Cygames" xml:space="preserve">
+    <value>Japan (Cygames)</value>
+  </data>
+  <data name="I18N_Komoe" xml:space="preserve">
+    <value>Traditional Chinese (Komoe)</value>
+  </data>
+  <data name="I18N_FirstRunDataLanguage" xml:space="preserve">
+    <value>Choose the event data language. Translations use content released in the corresponding client. This does not change effects or the total database size.</value>
+  </data>
+  <data name="I18N_Japanese" xml:space="preserve">
+    <value>Japanese</value>
+  </data>
+  <data name="I18N_TraditionalChinese" xml:space="preserve">
+    <value>Traditional Chinese</value>
+  </data>
+  <data name="I18N_FirstRunTrainerGender" xml:space="preserve">
+    <value>Choose the trainer gender to display the matching event choices.</value>
+  </data>
+  <data name="I18N_FirstRunComplete" xml:space="preserve">
+    <value>Initial setup is complete. Update the data files and install the required plugins from the plugin repository before starting.</value>
+  </data>
+  <data name="I18N_Waiting" xml:space="preserve">
+    <value>Waiting</value>
+  </data>
+  <data name="I18N_StartupInformation" xml:space="preserve">
+    <value>Startup information</value>
+  </data>
+  <data name="I18N_MenuPending" xml:space="preserve">
+    <value>The bootstrap menu is already waiting for a selection.</value>
+  </data>
+  <data name="I18N_StartupStatus" xml:space="preserve">
+    <value>Startup status</value>
+  </data>
+  <data name="I18N_PreparingStartup" xml:space="preserve">
+    <value>Preparing startup…</value>
+  </data>
+  <data name="I18N_Initialized" xml:space="preserve">
+    <value>Initialized</value>
+  </data>
+  <data name="I18N_Scanned" xml:space="preserve">
+    <value>Scanned; waiting for initialization</value>
+  </data>
+  <data name="I18N_LoadOrInitializeFailed" xml:space="preserve">
+    <value>Load or initialization failed</value>
+  </data>
+  <data name="I18N_LoadFailed" xml:space="preserve">
+    <value>Load failed</value>
+  </data>
+  <data name="I18N_Unloaded" xml:space="preserve">
+    <value>Not loaded</value>
+  </data>
+  <data name="I18N_Environment" xml:space="preserve">
+    <value>Environment</value>
+  </data>
+  <data name="I18N_Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="I18N_Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="I18N_InitializationResults" xml:space="preserve">
+    <value>Initialization results</value>
+  </data>
+  <data name="I18N_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="I18N_PluginSummary" xml:space="preserve">
+    <value>Plugin summary</value>
+  </data>
+  <data name="I18N_PluginName" xml:space="preserve">
+    <value>Plugin name</value>
+  </data>
+  <data name="I18N_Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="I18N_RecentLogs" xml:space="preserve">
+    <value>Recent logs</value>
+  </data>
+  <data name="I18N_CopyBacktrace" xml:space="preserve">
+    <value>Copy full backtrace</value>
+  </data>
+  <data name="I18N_DashboardNotAttached" xml:space="preserve">
+    <value>Bootstrap dashboard must be attached before showing its context menu.</value>
+  </data>
+  <data name="I18N_CopyBacktraceFailed" xml:space="preserve">
+    <value>Failed to copy the full backtrace: the system clipboard is unavailable.</value>
+  </data>
+  <data name="I18N_Running" xml:space="preserve">
+    <value>Running: {0}</value>
   </data>
 </root>

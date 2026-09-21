@@ -14,6 +14,8 @@ using Terminal.Gui.App;
 using UmamusumeResponseAnalyzer;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
+using GameText = UmamusumeResponseAnalyzer.Localization.Game;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 static class PackageLoadSmoke
 {
@@ -170,7 +172,8 @@ static class PackageLoadSmoke
         var response = PackageLegendFixture.CreateLegendCheckEventResponse(singleModeCharaId: 901, turn: 2);
         PrepareChara(response.data.chara_info, (int)ScenarioType.Legend);
         DispatchResponse(typeof(GameApi.SingleModeLegend.CheckEvent), response);
-        AssertPanel(ui, "LegendScenarioAnalyzer", "速度", "耐力", "力量", "心得等级", "100", "110", "120");
+        AssertPanel(ui, "LegendScenarioAnalyzer", GameText.I18N_Speed, GameText.I18N_Stamina, GameText.I18N_Power,
+            "心得等级", "100", "110", "120");
         var air = PluginManager.LoadedPlugins.Single(plugin => PluginManager.InternalName(plugin) == "AIRedirector");
         var config = Member(air, "config");
         foreach (var scenario in new[] { "UAF", "Cook", "Mecha", "Legend" })
@@ -211,7 +214,7 @@ static class PackageLoadSmoke
                 unchecked_event_array = []
             }
         });
-        AssertPanel(ui, "事件记录", "训练失败！", "WARN");
+        AssertPanel(ui, "事件记录", "训练失败！", UiText.Severity_Warning);
         ui.Bootstrap.SwitchTo();
         Require(!ui.CaptureScreen().Contains("训练失败", StringComparison.Ordinal), "EventLogger warning escaped its workspace.");
         Console.WriteLine("PASS ZIP business EventLoggerPlugin: turn/scenario state and workspace training-failure warning");
@@ -252,7 +255,7 @@ static class PackageLoadSmoke
             expected_check_point_pt = 456
         };
         DispatchResponse(typeof(GameApi.SingleModeRamen.Load), response, ui);
-        AssertPanel(ui, "RamenScenarioAnalyzer", "URAF", "速度", "100", "110");
+        AssertPanel(ui, "RamenScenarioAnalyzer", "URAF", GameText.I18N_Speed, "100", "110");
         var assembly = PluginManager.LoadedPlugins.Single(plugin => PluginManager.InternalName(plugin) == "RamenScenarioAnalyzer").GetType().Assembly;
         var state = assembly.GetType("RamenScenarioAnalyzer.RamenScenarioState", true)!.GetMethod("Snapshot")!.Invoke(null, null)!;
         Require(Equals(Member(state, "loaded"), true) && Equals(Member(state, "single_mode_chara_id"), 904)

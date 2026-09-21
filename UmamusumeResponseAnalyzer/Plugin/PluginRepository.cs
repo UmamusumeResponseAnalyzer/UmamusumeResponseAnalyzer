@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -10,12 +11,7 @@ internal static class PluginRepository
 {
     internal const string PluginApiBase = "https://ura.shuise.net/api/Plugins";
     const long MaxPackageBytes = 64L * 1024 * 1024;
-    static readonly System.Resources.ResourceManager Resources = new(
-        "UmamusumeResponseAnalyzer.Localization.PluginRegistry", typeof(PluginRepository).Assembly);
-    const string UncategorizedLabel = "其他";
-
-    internal static string Text(string name) => Resources.GetString(name,
-        System.Globalization.CultureInfo.GetCultureInfo(LanguageConfig.GetCulture()))!;
+    const string UncategorizedCategory = "其他";
 
     public static async Task ShowMenuAsync(CancellationToken cancellationToken)
     {
@@ -25,15 +21,15 @@ internal static class PluginRepository
                 PluginApiBase, cancellationToken), Config.Repository.Targets);
             if (plugins.Count == 0)
             {
-                ModalDialogs.Acknowledge(Text("Empty"), cancellationToken);
+                ModalDialogs.Acknowledge(i18n.Empty, cancellationToken);
                 return;
             }
             var choices = plugins
-                .OrderBy(p => string.IsNullOrWhiteSpace(p.Category) || p.Category == UncategorizedLabel ? 1 : 0)
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Category) ? UncategorizedLabel : p.Category)
+                .OrderBy(p => string.IsNullOrWhiteSpace(p.Category) || p.Category == UncategorizedCategory ? 1 : 0)
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Category) ? UncategorizedCategory : p.Category)
                 .ThenBy(DisplayLabel, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            var selected = ModalDialogs.MultiSelect(Text("SelectPlugins"), choices,
+            var selected = ModalDialogs.MultiSelect(i18n.SelectPlugins, choices,
                 converter: FormatChoice, cancellationToken: cancellationToken).ToList();
             var installed = await InstallPluginsAsync(selected, cancellationToken);
             if (installed.Count == 0)
@@ -44,12 +40,12 @@ internal static class PluginRepository
             var failed = results.Where(r => r.Outcome == PluginManager.PluginLifecycleOutcome.Failed)
                 .Select(r => r.PluginName).ToArray();
             if (failed.Length > 0)
-                throw new InvalidOperationException($"插件安装完成，但加载失败：{string.Join("、", failed)}");
-            ModalDialogs.Acknowledge($"插件已安装并生效：{string.Join("、", installed)}", cancellationToken);
+                throw new InvalidOperationException(string.Format(i18n.InstalledLoadFailed, string.Join(i18n.ListSeparator, failed)));
+            ModalDialogs.Acknowledge(string.Format(i18n.InstalledAndLoaded, string.Join(i18n.ListSeparator, installed)), cancellationToken);
         }
         catch (global::UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.PostShutdownProcessRequestedException) { throw; }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
-        catch (Exception ex) { ModalDialogs.Acknowledge($"{Text("Failed")}: {ex.Message}", cancellationToken); }
+        catch (Exception ex) { ModalDialogs.Acknowledge(string.Format(i18n.OperationFailed, ex.Message), cancellationToken); }
     }
 
     internal static List<PluginInformation> BuildCatalog(IEnumerable<PluginInformation> raw, IReadOnlyCollection<string> targets) =>
@@ -65,21 +61,21 @@ internal static class PluginRepository
     internal static async Task<List<string>> InstallPluginsAsync(List<PluginInformation> selected, CancellationToken cancellationToken = default)
     {
         if (selected.Select(p => p.InternalName).Distinct(StringComparer.OrdinalIgnoreCase).Count() != selected.Count)
-            throw new InvalidOperationException("已选插件 InternalName 重复。 / Selected plugins share an InternalName.");
+            throw new InvalidOperationException(i18n.DuplicateSelection);
         var installed = new List<string>();
         foreach (var plugin in selected)
         {
             try
             {
-                TerminalUi.Log("URA", $"[{DisplayLabel(plugin)} v{plugin.RawVersion}] 正在下载");
+                TerminalUi.Log("URA", string.Format(i18n.Downloading, DisplayLabel(plugin), plugin.RawVersion));
                 var manifest = await DownloadPluginZipAsync(plugin, cancellationToken);
                 installed.Add(manifest.InternalName);
-                TerminalUi.Log("URA", $"[{DisplayLabel(manifest)}] 安装完成");
+                TerminalUi.Log("URA", string.Format(i18n.Installed, DisplayLabel(manifest)));
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                var message = $"[{DisplayLabel(plugin)}] 安装失败: {ex.Message}";
+                var message = string.Format(i18n.InstallFailed, DisplayLabel(plugin), ex.Message);
                 TerminalUi.Log("URA", message, UiSeverity.Error);
                 TerminalUi.Notify("URA", message, UiSeverity.Error);
             }
@@ -96,12 +92,12 @@ internal static class PluginRepository
         var remoteByName = new Dictionary<string, PluginInformation>(StringComparer.OrdinalIgnoreCase);
         foreach (var plugin in remote)
             if (!remoteByName.TryAdd(plugin.InternalName, plugin))
-                throw new InvalidDataException($"插件 InternalName 对应多个来源，无法判断更新: {plugin.InternalName}");
+                throw new InvalidDataException(string.Format(i18n.AmbiguousSource, plugin.InternalName));
         var updates = new List<PluginUpdateInfo>();
         foreach (var plugin in loaded)
         {
             var version = plugin.Version
-                ?? throw new InvalidOperationException($"已加载插件缺少版本: {plugin.InternalName}");
+                ?? throw new InvalidOperationException(string.Format(i18n.LoadedVersionMissing, plugin.InternalName));
             if (remoteByName.TryGetValue(plugin.InternalName, out var latest) && latest.Version > version)
                 updates.Add(new(DisplayLabel(latest), version, latest.Version));
         }
@@ -118,9 +114,9 @@ internal static class PluginRepository
         var repositoryId = data["source"]?["repositoryId"]?.Value<long>();
         var releaseId = data["releaseId"]?.Value<long>();
         if (repositoryId is not > 0 || releaseId is not > 0)
-            throw new InvalidDataException("插件下载引用无效。 / Invalid plugin download reference.");
+            throw new InvalidDataException(i18n.InvalidDownloadReference);
         var plugin = data["manifest"]?.ToObject<PluginInformation>()
-            ?? throw new InvalidDataException("插件 manifest 缺失。 / Missing plugin manifest.");
+            ?? throw new InvalidDataException(i18n.ManifestMissing);
         PluginPackageValidator.ValidateManifest(plugin);
         plugin.DownloadUrl = $"{PluginApiBase}/{repositoryId}/releases/{releaseId}/download";
         return plugin;
@@ -129,11 +125,11 @@ internal static class PluginRepository
     internal static async Task<PluginInformation> GetPluginAsync(long repositoryId, long releaseId, CancellationToken cancellationToken)
     {
         if (repositoryId <= 0 || releaseId <= 0)
-            throw new ArgumentException("非法的插件来源 ID。 / Invalid plugin source ID.");
+            throw new ArgumentException(i18n.InvalidSourceId);
         var url = $"{PluginApiBase}/{repositoryId}/releases/{releaseId}";
         var plugin = ReadPlugin(await FetchAsync<JObject>(url, cancellationToken));
         if (plugin.DownloadUrl != $"{url}/download")
-            throw new InvalidDataException("插件下载引用与请求不匹配。 / Plugin download reference does not match the request.");
+            throw new InvalidDataException(i18n.DownloadReferenceMismatch);
         return plugin;
     }
 
@@ -141,7 +137,7 @@ internal static class PluginRepository
     {
         using var response = await ResourceUpdater.HttpClient.GetAsync(plugin.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
-        if (response.Content.Headers.ContentLength > MaxPackageBytes) throw new InvalidDataException("插件 ZIP 超过 64 MiB。");
+        if (response.Content.Headers.ContentLength > MaxPackageBytes) throw new InvalidDataException(i18n.PackageTooLarge);
         Directory.CreateDirectory("Plugins");
         var temp = Path.Combine("Plugins", $"plugin-{Guid.NewGuid():N}.tmp");
         try
@@ -154,7 +150,7 @@ internal static class PluginRepository
                 for (var count = await input.ReadAsync(buffer, cancellationToken); count != 0; count = await input.ReadAsync(buffer, cancellationToken))
                 {
                     total += count;
-                    if (total > MaxPackageBytes) throw new InvalidDataException("插件 ZIP 超过 64 MiB。");
+                    if (total > MaxPackageBytes) throw new InvalidDataException(i18n.PackageTooLarge);
                     await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
                 }
                 await output.FlushAsync(cancellationToken);
@@ -176,18 +172,18 @@ internal static class PluginRepository
         response.EnsureSuccessStatusCode();
         return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(cancellationToken),
             new JsonSerializerSettings { DateParseHandling = DateParseHandling.None })
-            ?? throw new InvalidDataException("URACloud 返回了空 JSON。");
+            ?? throw new InvalidDataException(i18n.EmptyJson);
     }
 
     internal static PluginInformation ValidatePackage(string path, string expectedAuthor, string expectedInternalName, string expectedVersion)
     {
         var manifest = PluginPackageValidator.Validate(path, requireMatchingPackageFileName: false).Manifest;
         if (!manifest.Author.Equals(expectedAuthor, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"下载包 Author 与请求不匹配: expected={expectedAuthor}, actual={manifest.Author}");
+            throw new InvalidDataException(string.Format(i18n.PackageAuthorMismatch, expectedAuthor, manifest.Author));
         if (!manifest.InternalName.Equals(expectedInternalName, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"下载包 InternalName 与请求不匹配: expected={expectedInternalName}, actual={manifest.InternalName}");
+            throw new InvalidDataException(string.Format(i18n.PackageInternalNameMismatch, expectedInternalName, manifest.InternalName));
         if (!Version.TryParse(expectedVersion, out var version) || manifest.Version != version)
-            throw new InvalidDataException($"下载包 Version 与请求不匹配: expected={expectedVersion}, actual={manifest.RawVersion}");
+            throw new InvalidDataException(string.Format(i18n.PackageVersionMismatch, expectedVersion, manifest.RawVersion));
         return manifest;
     }
 }

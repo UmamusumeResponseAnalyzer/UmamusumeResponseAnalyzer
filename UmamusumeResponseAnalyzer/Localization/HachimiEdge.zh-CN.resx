@@ -28,4 +28,114 @@
   <data name="Failed" xml:space="preserve">
     <value>Hachimi-Edge 安装失败</value>
   </data>
+  <data name="PlatformDmm" xml:space="preserve">
+    <value>DMM · JP</value>
+  </data>
+  <data name="PlatformTaiwan" xml:space="preserve">
+    <value>Komoe · TW</value>
+  </data>
+  <data name="PlatformSteamJapan" xml:space="preserve">
+    <value>Steam · JP</value>
+  </data>
+  <data name="PlatformSteamGlobal" xml:space="preserve">
+    <value>Steam · 全球</value>
+  </data>
+  <data name="UnsupportedExecutable" xml:space="preserve">
+    <value>请选择受支持的游戏 EXE：{0}
+{1}</value>
+  </data>
+  <data name="EmptyComponentConfiguration" xml:space="preserve">
+    <value>URACloud 返回空组件配置。</value>
+  </data>
+  <data name="ClientMismatch" xml:space="preserve">
+    <value>URACloud 返回的客户端不匹配：预期 {0}，实际 {1}。</value>
+  </data>
+  <data name="InvalidComponentList" xml:space="preserve">
+    <value>URACloud 组件列表不完整或重复。</value>
+  </data>
+  <data name="InvalidComponentMetadata" xml:space="preserve">
+    <value>URACloud 组件元数据无效：{0}</value>
+  </data>
+  <data name="ComponentMismatch" xml:space="preserve">
+    <value>组件长度或 SHA-256 不符：{0}</value>
+  </data>
+  <data name="InvalidPortableExecutable" xml:space="preserve">
+    <value>组件必须是 Windows x64 PE 文件：{0}</value>
+  </data>
+  <data name="InvalidLoadLibraries" xml:space="preserve">
+    <value>hachimi/config.json: load_libraries 必须为字符串数组。</value>
+  </data>
+  <data name="InvalidNotifierHost" xml:space="preserve">
+    <value>httpforward.json: notifier_host 必须是字符串。</value>
+  </data>
+  <data name="InvalidNotifierTimeout" xml:space="preserve">
+    <value>httpforward.json: notifier_timeout_ms 必须是正整数。</value>
+  </data>
+  <data name="ExpectedJsonObject" xml:space="preserve">
+    <value>需要 JSON 对象。</value>
+  </data>
+  <data name="InvalidConfiguration" xml:space="preserve">
+    <value>配置文件无法解析：{0}
+{1}</value>
+  </data>
+  <data name="InvalidNotifierUrl" xml:space="preserve">
+    <value>转发地址必须为 HTTP(S) 地址，且不含凭据、查询或片段。</value>
+  </data>
+  <data name="GameStillRunning" xml:space="preserve">
+    <value>请先关闭游戏：{0}（PID {1}）</value>
+  </data>
+  <data name="TargetIsDirectory" xml:space="preserve">
+    <value>目标文件被目录占用：{0}</value>
+  </data>
+  <data name="UnsupportedLink" xml:space="preserve">
+    <value>此路径不支持文件系统链接：{0}</value>
+  </data>
+  <data name="RequiresWindows" xml:space="preserve">
+    <value>Hachimi-Edge 安装需要 Windows。</value>
+  </data>
+  <data name="ElevationCancelled" xml:space="preserve">
+    <value>用户取消了提权。</value>
+  </data>
+  <data name="InstallerExited" xml:space="preserve">
+    <value>安装进程异常退出（{0}），请重新安装。</value>
+  </data>
+  <data name="ExecutableNotFound" xml:space="preserve">
+    <value>无法定位 URA 可执行文件。</value>
+  </data>
+  <data name="InstallerStartFailed" xml:space="preserve">
+    <value>无法启动安装进程。</value>
+  </data>
+  <data name="InvalidStagingPath" xml:space="preserve">
+    <value>无效的安装暂存路径。</value>
+  </data>
+  <data name="EmptyInstallationRequest" xml:space="preserve">
+    <value>安装请求为空。</value>
+  </data>
+  <data name="InvalidInstallationComponents" xml:space="preserve">
+    <value>无效的安装组件。</value>
+  </data>
+  <data name="DllRedirectionChanged" xml:space="preserve">
+    <value>DLL redirection 设置已改变，请重新安装。</value>
+  </data>
+  <data name="InvalidDllRedirectionType" xml:space="preserve">
+    <value>DevOverrideEnable 必须为 DWORD。</value>
+  </data>
+  <data name="RegistryVerificationFailed" xml:space="preserve">
+    <value>DLL redirection 注册表写入验证失败。</value>
+  </data>
+  <data name="InvalidOwnedDirectory" xml:space="preserve">
+    <value>无效的受管理目录名称。</value>
+  </data>
+  <data name="DirectoryOutsideParent" xml:space="preserve">
+    <value>目录不在其父目录下。</value>
+  </data>
+  <data name="KomoeRegistryFailure" xml:space="preserve">
+    <value>Komoe 注册表：{0}</value>
+  </data>
+  <data name="DllRedirectionEnabled" xml:space="preserve">
+    <value>已启用 DLL redirection，请手动重启 Windows 使其生效。</value>
+  </data>
+  <data name="DllRedirectionAlreadyEnabled" xml:space="preserve">
+    <value>注册表已启用 DLL redirection，没有做任何改动。</value>
+  </data>
 </root>

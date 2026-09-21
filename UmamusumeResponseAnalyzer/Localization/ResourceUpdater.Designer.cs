@@ -10,8 +10,8 @@
 
 namespace UmamusumeResponseAnalyzer.Localization {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -19,19 +19,19 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ResourceUpdater {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal ResourceUpdater() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,10 +45,10 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性，对
-        ///   使用此强类型资源类的所有资源查找执行重写。
+        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Globalization.CultureInfo Culture {
@@ -59,7 +59,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   查找类似 {0}: Unable to connect to GitHub, please try using a proxy 的本地化字符串。
         /// </summary>
@@ -68,7 +68,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_AccessGithubFail", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 {0}: Unable to connect to the update server, please try enabling &quot;Force use GitHub for updates&quot; in settings and try again 的本地化字符串。
         /// </summary>
@@ -77,7 +77,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_AccessMirrorFail", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 No new version of the program found 的本地化字符串。
         /// </summary>
@@ -86,7 +86,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_AlreadyLatestInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Press Enter to start updating the main program 的本地化字符串。
         /// </summary>
@@ -95,16 +95,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_BeginUpdateProgramInstruction", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Extracting cmder.zip 的本地化字符串。
-        /// </summary>
-        internal static string I18N_DecompressCmder {
-            get {
-                return ResourceManager.GetString("I18N_DecompressCmder", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 Download complete 的本地化字符串。
         /// </summary>
@@ -113,7 +104,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadedInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading the latest events.br from GitHub 的本地化字符串。
         /// </summary>
@@ -122,7 +113,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadEventsInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading the latest factor_ids.br from GitHub 的本地化字符串。
         /// </summary>
@@ -131,7 +122,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadFactorIdsInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading cmder.zip 的本地化字符串。
         /// </summary>
@@ -140,16 +131,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadingCmder", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Downloading ura-core.dll 的本地化字符串。
+        ///   查找类似 Download length mismatch: expected {0}, received {1}. 的本地化字符串。
         /// </summary>
-        internal static string I18N_DownloadingUraCore {
+        internal static string I18N_DownloadLengthMismatch {
             get {
-                return ResourceManager.GetString("I18N_DownloadingUraCore", resourceCulture);
+                return ResourceManager.GetString("I18N_DownloadLengthMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading the latest names.br from GitHub 的本地化字符串。
         /// </summary>
@@ -158,7 +149,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadNamesInstruction", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 The download destination path must not be empty. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DownloadPathRequired {
+            get {
+                return ResourceManager.GetString("I18N_DownloadPathRequired", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Downloading the latest main program files from GitHub 的本地化字符串。
         /// </summary>
@@ -167,7 +167,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadProgramInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading the latest skilldata.br from GitHub 的本地化字符串。
         /// </summary>
@@ -176,7 +176,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadSkillDataInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading the latest skill_upgrade_speciality.br from GitHub 的本地化字符串。
         /// </summary>
@@ -185,7 +185,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadSkillUpgradeSpecialityInstruction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloading the latest talentskillsets.br from GitHub 的本地化字符串。
         /// </summary>
@@ -194,7 +194,25 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("I18N_DownloadTalentSkillInstruction", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Download exceeds the expected {0} bytes. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_DownloadTooLarge {
+            get {
+                return ResourceManager.GetString("I18N_DownloadTooLarge", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cannot determine the current program path; the update cannot be installed. 的本地化字符串。
+        /// </summary>
+        internal static string I18N_ProcessPathMissing {
+            get {
+                return ResourceManager.GetString("I18N_ProcessPathMissing", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Update file corrupted, main program update failed 的本地化字符串。
         /// </summary>

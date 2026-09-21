@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using Terminal.Gui.App;
@@ -20,10 +21,10 @@ static class ModalDialogs
         using var picker = new OpenDialog
         {
             Title = title, OpenMode = OpenMode.File, MustExist = true, AllowsMultipleSelection = false,
-            AllowedTypes = [new AllowedType("Game executable", [".exe"])]
+            AllowedTypes = [new AllowedType(i18n.Dialog_GameExecutable, [".exe"])]
         };
         Run(host.Application, picker, linked.Token);
-        return picker.Canceled ? throw new OperationCanceledException("File selection cancelled.") : picker.Path;
+        return picker.Canceled ? throw new OperationCanceledException(i18n.Dialog_FileSelectionCanceled) : picker.Path;
     }
 
     internal static async Task RunProgressAsync(
@@ -55,7 +56,7 @@ static class ModalDialogs
         }
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        using var dialog = CreateDialog("正在处理");
+        using var dialog = CreateDialog(i18n.Dialog_Processing);
         var body = new View
         {
             X = 1,
@@ -98,7 +99,7 @@ static class ModalDialogs
         });
 
         var userCancelled = 0;
-        var cancel = CreateButton("取消", false, () =>
+        var cancel = CreateButton(i18n.Button_Cancel, false, () =>
         {
             Interlocked.Exchange(ref userCancelled, 1);
             linkedCts.Cancel();
@@ -190,7 +191,7 @@ static class ModalDialogs
             runFailure is OperationCanceledException)
         {
             throw new OperationCanceledException(
-                "操作已取消。",
+                i18n.Dialog_OperationCanceled,
                 actionFailure as OperationCanceledException ?? runFailure,
                 cancellationToken.IsCancellationRequested ? cancellationToken : linkedCts.Token);
         }
@@ -211,7 +212,7 @@ static class ModalDialogs
         {
             var values = choices.ToArray();
             if (values.Length == 0)
-                throw new ArgumentException("选择列表不能为空。", nameof(choices));
+                throw new ArgumentException(i18n.Dialog_SelectionEmpty, nameof(choices));
 
             var index = RunList(
                 app,
@@ -230,7 +231,7 @@ static class ModalDialogs
         {
             var values = choices.ToArray();
             if (values.Length == 0)
-                throw new ArgumentException("菜单不能为空。", nameof(choices));
+                throw new ArgumentException(i18n.Dialog_MenuEmpty, nameof(choices));
 
             using var window = new Window
             {
@@ -274,7 +275,7 @@ static class ModalDialogs
             Run(app, window, token);
             return selectedIndex >= 0
                 ? values[selectedIndex]
-                : throw new OperationCanceledException("菜单已取消。");
+                : throw new OperationCanceledException(i18n.Dialog_MenuCanceled);
         }, cancellationToken);
 
     internal static IReadOnlyList<T> MultiSelect<T>(
@@ -287,7 +288,7 @@ static class ModalDialogs
         {
             var values = choices.ToArray();
             if (values.Length == 0)
-                throw new ArgumentException("多选列表不能为空。", nameof(choices));
+                throw new ArgumentException(i18n.Dialog_MultiSelectionEmpty, nameof(choices));
 
             using var dialog = CreateDialog(title);
             var list = CreateList(values.Select(x => converter?.Invoke(x) ?? x?.ToString() ?? string.Empty));
@@ -301,17 +302,17 @@ static class ModalDialogs
             }
 
             var accepted = false;
-            var ok = CreateButton("确定", isDefault: true, () =>
+            var ok = CreateButton(i18n.Button_OK, isDefault: true, () =>
             {
                 accepted = true;
                 app.RequestStop(dialog);
             });
-            var cancel = CreateButton("取消", isDefault: false, () => app.RequestStop(dialog));
+            var cancel = CreateButton(i18n.Button_Cancel, isDefault: false, () => app.RequestStop(dialog));
             Layout(dialog, list, ok, cancel);
             list.SetFocus();
             Run(app, dialog, token);
             if (!accepted)
-                throw new OperationCanceledException("多选已取消。");
+                throw new OperationCanceledException(i18n.Dialog_MultiSelectionCanceled);
             return list.GetAllMarkedItems().Select(x => values[x]).ToArray();
         }, cancellationToken);
 
@@ -332,7 +333,7 @@ static class ModalDialogs
             };
             input.MouseHighlightStates |= MouseState.In;
             var accepted = false;
-            var ok = CreateButton("确定", true, () =>
+            var ok = CreateButton(i18n.Button_OK, true, () =>
             {
                 if (allowEmpty || !string.IsNullOrWhiteSpace(input.Text))
                 {
@@ -340,7 +341,7 @@ static class ModalDialogs
                     app.RequestStop(dialog);
                 }
             });
-            var cancel = CreateButton("取消", false, () => app.RequestStop(dialog));
+            var cancel = CreateButton(i18n.Button_Cancel, false, () => app.RequestStop(dialog));
             ok.X = Pos.Center() - 10;
             ok.Y = Pos.Bottom(input) + 1;
             cancel.X = Pos.Right(ok) + 2;
@@ -350,7 +351,7 @@ static class ModalDialogs
             Run(app, dialog, token);
 
             if (!accepted)
-                throw new OperationCanceledException("输入已取消。");
+                throw new OperationCanceledException(i18n.Dialog_InputCanceled);
             return input.Text;
         }, cancellationToken);
 
@@ -362,12 +363,12 @@ static class ModalDialogs
         {
             using var dialog = CreateDialog(title, height: 9);
             var result = false;
-            var yes = CreateButton("是", defaultValue, () =>
+            var yes = CreateButton(i18n.Button_Yes, defaultValue, () =>
             {
                 result = true;
                 app.RequestStop(dialog);
             });
-            var no = CreateButton("否", !defaultValue, () =>
+            var no = CreateButton(i18n.Button_No, !defaultValue, () =>
             {
                 result = false;
                 app.RequestStop(dialog);
@@ -383,13 +384,13 @@ static class ModalDialogs
         }, cancellationToken);
 
     internal static bool Acknowledge(
-        string title = "按 Enter 返回",
+        string? title = null,
         CancellationToken cancellationToken = default)
         => RunOnOwner((app, token) =>
         {
-            using var dialog = CreateDialog(title, height: 9);
+            using var dialog = CreateDialog(title ?? i18n.Dialog_ReturnPrompt, height: 9);
             var accepted = false;
-            var ok = CreateButton("确定", true, () =>
+            var ok = CreateButton(i18n.Button_OK, true, () =>
             {
                 accepted = true;
                 app.RequestStop(dialog);
@@ -411,12 +412,12 @@ static class ModalDialogs
         using var dialog = CreateDialog(title);
         var list = CreateList(choices);
         var accepted = false;
-        var ok = CreateButton("确定", true, () =>
+        var ok = CreateButton(i18n.Button_OK, true, () =>
         {
             accepted = true;
             app.RequestStop(dialog);
         });
-        var cancel = CreateButton("取消", false, () => app.RequestStop(dialog));
+        var cancel = CreateButton(i18n.Button_Cancel, false, () => app.RequestStop(dialog));
         list.Accepted += (_, _) =>
         {
             accepted = true;
@@ -426,7 +427,7 @@ static class ModalDialogs
         list.SetFocus();
         Run(app, dialog, cancellationToken);
         if (!accepted)
-            throw new OperationCanceledException("选择已取消。");
+            throw new OperationCanceledException(i18n.Dialog_SelectionCanceled);
         return list.SelectedItem ?? 0;
     }
 
@@ -436,7 +437,7 @@ static class ModalDialogs
         CancellationToken cancellationToken)
     {
         if (Environment.CurrentManagedThreadId != app.MainThreadId)
-            throw new InvalidOperationException("Terminal.Gui dialog 必须在 UI owner thread 运行。");
+            throw new InvalidOperationException(i18n.Dialog_RequiresOwnerThread);
 
         cancellationToken.ThrowIfCancellationRequested();
         using var cancellationRegistration = cancellationToken.Register(

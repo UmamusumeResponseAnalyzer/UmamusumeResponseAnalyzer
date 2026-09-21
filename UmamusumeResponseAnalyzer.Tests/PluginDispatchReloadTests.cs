@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -327,10 +328,10 @@ public sealed class PluginDispatchReloadTests : IDisposable
         {
             await WaitUntilAsync(() => File.Exists(constructorEntered));
             var secondInit = Assert.Throws<InvalidOperationException>(() => PluginManager.Init());
-            Assert.Contains("已有插件 lifecycle 事务", secondInit.Message, StringComparison.Ordinal);
+            Assert.Equal(i18n.InitializationTransactionBusy, secondInit.Message);
             var unload = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => PluginManager.UnloadPluginsAsync(pluginName));
-            Assert.Contains("已有插件 lifecycle 事务", unload.Message, StringComparison.Ordinal);
+            Assert.Equal(i18n.LifecycleTransactionBusy, unload.Message);
         }
         finally
         {
@@ -366,7 +367,7 @@ public sealed class PluginDispatchReloadTests : IDisposable
 
         await initialize.WaitAsync(TimeSpan.FromSeconds(5));
         var transactionError = Assert.IsType<InvalidOperationException>(concurrentUnloadError);
-        Assert.Contains("已有插件 lifecycle 事务", transactionError.Message, StringComparison.Ordinal);
+        Assert.Equal(i18n.LifecycleTransactionBusy, transactionError.Message);
 
         AssertLifecycleOutcome(await PluginManager.UnloadPluginsAsync(pluginName), pluginName);
         Assert.Equal(["disposed"], File.ReadAllLines(disposeOutput));
@@ -623,7 +624,7 @@ public sealed class PluginDispatchReloadTests : IDisposable
         var failure = File.ReadAllLines(failureLog);
         Assert.True(failure.Length >= 2, $"callback lifecycle 结果不完整: {string.Join(" | ", failure)}");
         Assert.Equal(typeof(InvalidOperationException).FullName, failure[0]);
-        Assert.Contains("插件 callback 内禁止启动 lifecycle 操作", failure[1], StringComparison.Ordinal);
+        Assert.Equal(i18n.CallbackLifecycleReentry, failure[1]);
         Assert.Contains(
             PluginManager.SnapshotLoadedPlugins(),
             plugin => PluginManager.InternalName(plugin) == CallbackFriendPluginName);
@@ -803,12 +804,12 @@ public sealed class PluginDispatchReloadTests : IDisposable
     }
 
     static void AssertPhaseFailure(InvalidOperationException failure, string phase)
-        => Assert.Contains($"当前 phase={phase}", failure.Message, StringComparison.Ordinal);
+        => Assert.Contains($"phase={phase}", failure.Message, StringComparison.Ordinal);
 
     static void AssertHotLifecyclePhaseFailure(InvalidOperationException failure, string phase)
     {
         AssertPhaseFailure(failure, phase);
-        Assert.Contains("不允许执行插件 load/reload/unload", failure.Message, StringComparison.Ordinal);
+        Assert.Equal(string.Format(i18n.LifecyclePhaseInvalid, phase, "load/reload/unload"), failure.Message);
     }
 
     static (string Name, string Source) NoopPluginSource(string pluginName) => (pluginName, $$"""

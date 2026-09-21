@@ -148,6 +148,8 @@ public sealed class HachimiEdgeTests(PluginRuntimeFixture fixture)
         {
             Assert.Equal("runas", start.Verb);
             Assert.Contains("--confirmed", start.ArgumentList);
+            Assert.Equal(System.Globalization.CultureInfo.CurrentUICulture.Name,
+                start.ArgumentList[start.ArgumentList.IndexOf("--culture") + 1]);
             return child.Task;
         });
         Assert.False(applying.IsCompleted);
@@ -165,7 +167,7 @@ public sealed class HachimiEdgeTests(PluginRuntimeFixture fixture)
         File.WriteAllBytes(Path.Combine(setup.Staging, "edge.bin"), [1, 2, 3]);
         var error = await Assert.ThrowsAsync<IOException>(() => HachimiEdgeInstallation.ApplyAsync(setup.RequestPath, true,
             runElevated: _ => Task.FromResult(HachimiEdgeInstallation.RunApplyCommand(setup.RequestPath))));
-        Assert.Contains("SHA-256 mismatch", error.Message);
+        Assert.Contains(HachimiEdgeInstaller.Text("ComponentMismatch", "edge"), error.Message);
         Assert.DoesNotContain(setup.Game.TargetPaths, p => File.Exists(Path.Combine(setup.Game.Directory, p)));
         await setup.Prepare();
         await HachimiEdgeInstallation.ApplyAsync(setup.RequestPath, true,
@@ -205,7 +207,8 @@ public sealed class HachimiEdgeTests(PluginRuntimeFixture fixture)
     {
         using var setup = new Installation("komoeumamusume.exe");
         setup.Snapshot = setup.Snapshot with { Client = "dmm" };
-        Assert.Contains("client mismatch", (await Assert.ThrowsAsync<InvalidDataException>(() => setup.Prepare())).Message);
+        Assert.Equal(HachimiEdgeInstaller.Text("ClientMismatch", "taiwan", "dmm"),
+            (await Assert.ThrowsAsync<InvalidDataException>(() => setup.Prepare())).Message);
         Assert.Equal(0, setup.Downloads);
         setup.Snapshot = setup.Snapshot with { Client = "taiwan" };
         await setup.Prepare();

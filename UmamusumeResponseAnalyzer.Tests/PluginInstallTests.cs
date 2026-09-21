@@ -1,3 +1,5 @@
+using System.Globalization;
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
@@ -55,42 +57,70 @@ public sealed class PluginInstallTests : IDisposable
         }
     }
 
-    [Fact]
-    public async Task WebCancellationAndInvalidRequestsNeverDownload()
+    [Theory]
+    [InlineData("zh-CN", "manifest Author 不能为空。")]
+    [InlineData("en-US", "Manifest Author must not be empty.")]
+    [InlineData("ja-JP", "manifest Author は空にできません。")]
+    public async Task LocalizedValidationAndWebErrorsPreserveProtocolCodes(string culture, string expectedValidation)
     {
-        WebInstallApi.ConfirmInstall = (_, _) => throw new InvalidOperationException("Must reject before confirmation.");
-        using var server = StartServer(TestContext.Current.CancellationToken, out var port);
-        using var client = new HttpClient();
-        foreach (var (origin, body, expected) in new[]
+        var originalUiCulture = CultureInfo.CurrentUICulture;
+        var originalResourceCulture = i18n.Culture;
+        try
         {
-            ("https://example.com", "{}", HttpStatusCode.Forbidden),
-            ("http://localhost:5173", "{\"repositoryId\":1,\"releaseId\":10}", HttpStatusCode.Forbidden),
-            ("", "{}", HttpStatusCode.Forbidden),
-            ("https://ura.shuise.net", "not json", HttpStatusCode.BadRequest),
-            ("https://ura.shuise.net", "{\"repositoryId\":0,\"releaseId\":10}", HttpStatusCode.BadRequest),
-        })
-        {
-            using var request = WebRequest(port);
-            request.Headers.Remove("Origin");
-            if (origin.Length > 0)
-                request.Headers.Add("Origin", origin);
-            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, TestContext.Current.CancellationToken);
-            Assert.Equal(expected, response.StatusCode);
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
+            i18n.Culture = CultureInfo.CurrentUICulture;
+            var validation = Assert.Throws<InvalidDataException>(() =>
+                PluginPackageValidator.ValidateManifest(new PluginInformation()));
+            Assert.Equal(expectedValidation, validation.Message);
+            var confirmation = WebInstallApi.BuildInstallConfirmation(handler.Manifest);
+            Assert.Contains(i18n.ExecutionWarning, confirmation);
+            Assert.Contains($"{handler.Manifest.Author}/{Name}", confirmation);
+            WebInstallApi.ConfirmInstall = (_, _) => throw new InvalidOperationException("Must reject before confirmation.");
+            using var server = StartServer(TestContext.Current.CancellationToken, out var port);
+            using var client = new HttpClient();
+            foreach (var (origin, body, expected) in new[]
+            {
+                ("https://example.com", "", HttpStatusCode.Forbidden),
+                ("http://localhost:5173", "", HttpStatusCode.Forbidden),
+                ("", "", HttpStatusCode.Forbidden),
+                ("https://ura.shuise.net", "not json", HttpStatusCode.BadRequest),
+                ("https://ura.shuise.net", "{\"repositoryId\":0,\"releaseId\":10}", HttpStatusCode.BadRequest),
+            })
+            {
+                using var request = WebRequest(port);
+                request.Headers.Remove("Origin");
+                if (origin.Length > 0)
+                    request.Headers.Add("Origin", origin);
+                request.Content = new StringContent(body, Encoding.UTF8, "application/json");
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, TestContext.Current.CancellationToken);
+                Assert.Equal(expected, response.StatusCode);
+                Assert.Equal(expected == HttpStatusCode.Forbidden
+                        ? "origin_not_allowed"
+                        : "invalid_repository_or_release_id",
+                    JObject.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Value<string>("error"));
+            }
+            Assert.Equal(0, handler.Requests);
+            handler.Packages[10] = (2, handler.Manifest, package);
+            using var mismatchedRequest = WebRequest(port);
+            using var mismatchedResponse = await client.SendAsync(mismatchedRequest, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.InternalServerError, mismatchedResponse.StatusCode);
+            Assert.Equal(i18n.DownloadReferenceMismatch,
+                JObject.Parse(await mismatchedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Value<string>("error"));
+            handler.Packages[10] = (1, handler.Manifest, package);
+            WebInstallApi.ConfirmInstall = (_, _) => false;
+            using var cancelledRequest = WebRequest(port);
+            using var cancelledResponse = await client.SendAsync(cancelledRequest, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.Conflict, cancelledResponse.StatusCode);
+            Assert.Equal(i18n.Cancelled,
+                JObject.Parse(await cancelledResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Value<string>("error"));
+            Assert.Empty(handler.Downloads);
+            Assert.Empty(Directory.GetFiles("Plugins"));
         }
-        Assert.Equal(0, handler.Requests);
-        handler.Packages[10] = (2, handler.Manifest, package);
-        using var mismatchedRequest = WebRequest(port);
-        using var mismatchedResponse = await client.SendAsync(mismatchedRequest, TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.InternalServerError, mismatchedResponse.StatusCode);
-        Assert.Contains("引用与请求不匹配", await mismatchedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
-        handler.Packages[10] = (1, handler.Manifest, package);
-        WebInstallApi.ConfirmInstall = (_, _) => false;
-        using var cancelledRequest = WebRequest(port);
-        using var cancelledResponse = await client.SendAsync(cancelledRequest, TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Conflict, cancelledResponse.StatusCode);
-        Assert.Empty(handler.Downloads);
-        Assert.Empty(Directory.GetFiles("Plugins"));
+        finally
+        {
+            i18n.Culture = originalResourceCulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
+        }
     }
 
     [Fact]
@@ -115,7 +145,7 @@ public sealed class PluginInstallTests : IDisposable
         Assert.Equal(handler.Manifest.Description, confirmed.Description);
         var message = WebInstallApi.BuildInstallConfirmation(confirmed);
         Assert.Contains($"{confirmed.Author}/{confirmed.InternalName}", message);
-        Assert.Contains(PluginRepository.Text("ExecutionWarning"), message);
+        Assert.Contains(i18n.ExecutionWarning, message);
         Assert.Equal(Name, body.Value<string>("installed"));
         Assert.Equal("existing record is not read or rewritten", File.ReadAllText(sourcePath));
         Assert.Single(Directory.GetFiles("Plugins", "*.source.json"));
@@ -260,7 +290,7 @@ public sealed class PluginInstallTests : IDisposable
         var menu = Task.Run(() => PluginRepository.ShowMenuAsync(cancellation.Token), cancellation.Token);
         try
         {
-            await terminal.WaitForScreenAsync(PluginRepository.Text("SelectPlugins"));
+            await terminal.WaitForScreenAsync(i18n.SelectPlugins);
             var screen = await terminal.CaptureScreenAsync();
             TestContext.Current.TestOutputHelper!.WriteLine(screen);
             Assert.True(screen.IndexOf("Zulu", StringComparison.Ordinal) < screen.IndexOf(Name, StringComparison.Ordinal), screen);
@@ -269,7 +299,7 @@ public sealed class PluginInstallTests : IDisposable
             await terminal.InjectAsync(Key.Space);
             await terminal.InjectAsync(Key.Tab);
             await terminal.InjectAsync(Key.Enter);
-            await terminal.WaitForScreenAsync("插件已安装并生效");
+            await terminal.WaitForScreenAsync(i18n.InstalledAndLoaded.Split("{0}", StringSplitOptions.None)[0]);
             Assert.Equal([20L, 10L], handler.Downloads);
             Assert.Equal(3, handler.Requests);
             Assert.Equal(package, File.ReadAllBytes(PluginRepository.InstallZipPath(Name)));

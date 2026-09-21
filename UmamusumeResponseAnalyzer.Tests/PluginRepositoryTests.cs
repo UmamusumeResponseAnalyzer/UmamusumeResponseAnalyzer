@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.IO.Compression;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -101,7 +102,12 @@ namespace UmamusumeResponseAnalyzer.Tests
                     PluginRepository.ValidatePackage(package, author, internalName, version));
 
                 Assert.Contains(field, error.Message);
-                Assert.Contains("不匹配", error.Message);
+                Assert.Equal(field switch
+                {
+                    "Author" => string.Format(i18n.PackageAuthorMismatch, author, "author"),
+                    "InternalName" => string.Format(i18n.PackageInternalNameMismatch, internalName, PackageInternalName),
+                    _ => string.Format(i18n.PackageVersionMismatch, version, "1.0.0"),
+                }, error.Message);
             }
             finally
             {
@@ -120,7 +126,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Contains("根目录", error.Message);
+                Assert.Equal(string.Format(i18n.RootAssemblyRequired, $"{PackageInternalName}.dll"), error.Message);
                 Assert.Contains($"{PackageInternalName}.dll", error.Message);
             }
             finally
@@ -162,7 +168,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Contains("程序集名重复", error.Message);
+                Assert.Equal(string.Format(i18n.DuplicateAssembly, "dependency"), error.Message);
             }
             finally
             {
@@ -190,12 +196,11 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Theory]
-        [InlineData("LastUpdate", "not-an-integer", "类型无效")]
-        [InlineData("Dependencies", 1, "只能包含字符串")]
+        [InlineData("LastUpdate", "not-an-integer")]
+        [InlineData("Dependencies", 1)]
         public void ValidatePackage_RejectsWrongManifestTokenShape(
             string property,
-            object value,
-            string expectedMessage)
+            object value)
         {
             var package = CreatePackage(Info("author", PackageInternalName), json =>
             {
@@ -209,7 +214,9 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Contains(expectedMessage, error.Message);
+                Assert.Equal(property == "LastUpdate"
+                    ? string.Format(i18n.ManifestTypeInvalid, property, "Integer", "String")
+                    : string.Format(i18n.ManifestStringsRequired, property), error.Message);
             }
             finally
             {
@@ -239,7 +246,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Contains("严格 JSON", error.Message);
+                Assert.Equal(i18n.StrictJsonRequired, error.Message);
             }
             finally
             {
@@ -300,7 +307,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", manifestName, "1.0.0"));
 
-                Assert.Contains("主程序集名称", error.Message);
+                Assert.Equal(string.Format(i18n.AssemblyIdentityMismatch, PackageInternalName, manifestName), error.Message);
                 Assert.Contains(PackageInternalName, error.Message);
                 Assert.Contains(manifestName, error.Message);
             }

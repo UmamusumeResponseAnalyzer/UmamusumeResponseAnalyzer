@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Input;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
@@ -87,22 +88,38 @@ public sealed class ModalDialogsTests(PluginRuntimeFixture fixture)
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
     }
 
-    [Fact]
-    public async Task ConfirmAndAcknowledge_ReturnVisibleUserDecisions()
+    [Theory]
+    [InlineData("en-US", "Yes", "No", "Press Enter to return")]
+    [InlineData("zh-CN", "是", "否", "按 Enter 返回")]
+    [InlineData("ja-JP", "はい", "いいえ", "Enter キーで戻る")]
+    public async Task ConfirmAndAcknowledge_ReturnVisibleUserDecisions(
+        string culture, string yes, string no, string returnPrompt)
     {
-        var confirm = Task.Run(
-            () => ModalDialogs.Confirm("危险操作", defaultValue: true),
-            TestContext.Current.CancellationToken);
-        await terminal.WaitForScreenAsync("危险操作");
-        await terminal.InjectAsync(Key.Esc);
-        Assert.False(await confirm);
+        var originalCulture = i18n.Culture;
+        i18n.Culture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            var confirm = Task.Run(
+                () => ModalDialogs.Confirm("Confirm operation", defaultValue: true),
+                TestContext.Current.CancellationToken);
+            await terminal.WaitForScreenAsync("Confirm operation");
+            var screen = await terminal.CaptureScreenAsync();
+            Assert.Contains(yes, screen, StringComparison.Ordinal);
+            Assert.Contains(no, screen, StringComparison.Ordinal);
+            await terminal.InjectAsync(Key.Esc);
+            Assert.False(await confirm);
 
-        var acknowledge = Task.Run(
-            () => ModalDialogs.Acknowledge("按 Enter 返回"),
-            TestContext.Current.CancellationToken);
-        await terminal.WaitForScreenAsync("按 Enter 返回");
-        await terminal.InjectAsync(Key.Enter);
-        Assert.True(await acknowledge);
+            var acknowledge = Task.Run(
+                () => ModalDialogs.Acknowledge(),
+                TestContext.Current.CancellationToken);
+            await terminal.WaitForScreenAsync(returnPrompt);
+            await terminal.InjectAsync(Key.Enter);
+            Assert.True(await acknowledge);
+        }
+        finally
+        {
+            i18n.Culture = originalCulture;
+        }
     }
 
     [Fact]
@@ -130,7 +147,7 @@ public sealed class ModalDialogsTests(PluginRuntimeFixture fixture)
         var cancelled = ModalDialogs.RunProgressAsync(
             (_, token) => Task.Delay(Timeout.InfiniteTimeSpan, token),
             cancellation.Token);
-        await terminal.WaitForScreenAsync("正在处理");
+        await terminal.WaitForScreenAsync(i18n.Dialog_Processing);
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
     }

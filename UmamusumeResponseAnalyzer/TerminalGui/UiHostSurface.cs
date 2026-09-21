@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Collections.Immutable;
 using Terminal.Gui.App;
 using Terminal.Gui.Drivers;
@@ -48,7 +49,7 @@ internal sealed class UiHostSurface : IDisposable
     {
         var savedTaskbarTitleOrder = Config.WorkspaceTaskbarTitleOrder?.ToArray()
             ?? throw new InvalidOperationException(
-                "Config.WorkspaceTaskbarTitleOrder must not be null.");
+                i18n.Host_TaskbarOrderNull);
         window = new UiHostWindow(host.RequestShutdown)
         {
             Title = "UmamusumeResponseAnalyzer",
@@ -98,7 +99,7 @@ internal sealed class UiHostSurface : IDisposable
 
     internal Task RunAsync()
         => application.RunAsync(
-            window ?? throw new InvalidOperationException("UiHost window 尚未创建。"),
+            window ?? throw new InvalidOperationException(i18n.Host_WindowNotCreated),
             CancellationToken.None);
 
     internal void StartOverlayTimer(Func<bool> callback)
@@ -184,7 +185,7 @@ internal sealed class UiHostSurface : IDisposable
             workspaceTaskbar?.Refresh(renderedWorkspaces, renderedWorkspace);
             if (window is not null)
             {
-                window.Title = $"UmamusumeResponseAnalyzer - {renderedWorkspace.Title}";
+                window.Title = $"UmamusumeResponseAnalyzer - {renderedWorkspace.DisplayTitle}";
                 Volatile.Write(
                     ref popupVisibleLineCount,
                     Math.Max(1, window.Viewport.Height - 2));
@@ -272,7 +273,7 @@ internal sealed class UiHostSurface : IDisposable
 
     WorkspaceViewport Viewport
         => workspaceViewport
-            ?? throw new InvalidOperationException("UiHost workspace viewport 尚未创建。");
+            ?? throw new InvalidOperationException(i18n.Host_ViewportNotCreated);
 
     void WindowInitialized(object? sender, EventArgs e)
         => Reconcile(UiChange.All);

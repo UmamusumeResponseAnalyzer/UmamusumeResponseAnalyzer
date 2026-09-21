@@ -23,7 +23,7 @@ namespace UmamusumeResponseAnalyzer
             : DatabaseAvailability.Ready;
 
         private static DatabaseSnapshot Current => Volatile.Read(ref snapshot)
-            ?? throw new InvalidOperationException("游戏数据尚未完整加载。请先更新数据文件并重新启动。");
+            ?? throw new InvalidOperationException(I18N_NotLoaded);
 
         #region Paths
         internal static string EVENT_NAME_FILEPATH => $"events_{(Config.Updater.TrainerIsMale ? "male" : "female")}.br";
@@ -62,7 +62,66 @@ namespace UmamusumeResponseAnalyzer
         /// <summary>
         /// 巅峰杯道具的ID及其对应名称
         /// </summary>
-        public static NullableIntStringDictionary ClimaxItem { get; private set; } = new() { { 1001, "速+3" }, { 1002, "耐+3" }, { 1003, "力+3" }, { 1004, "根+3" }, { 1005, "智+3" }, { 1101, "速+7" }, { 1102, "耐+7" }, { 1103, "力+7" }, { 1104, "根+7" }, { 1105, "智+7" }, { 1201, "速+15" }, { 1202, "耐+15" }, { 1203, "力+15" }, { 1204, "根+15" }, { 1205, "智+15" }, { 2001, "体力+20" }, { 2002, "体力+40" }, { 2003, "体力+65" }, { 2101, "苦茶" }, { 2201, "体力上限+4" }, { 2202, "体力上限+8" }, { 2301, "干劲+1" }, { 2302, "干劲+2" }, { 3001, "猫罐头" }, { 3101, "BBQ" }, { 4001, "爱娇" }, { 4002, "注目株" }, { 4003, "练习上手" }, { 4004, "切者" }, { 4101, "解寝不足" }, { 4102, "解摸鱼癖" }, { 4103, "解肌荒" }, { 4104, "解发胖" }, { 4105, "解头痛" }, { 4106, "解练习下手" }, { 4201, "解全DB" }, { 5001, "速请愿书" }, { 5002, "耐请愿书" }, { 5003, "力请愿书" }, { 5004, "根请愿书" }, { 5005, "智请愿书" }, { 7001, "哨子" }, { 8001, "20%喇叭" }, { 8002, "40%喇叭" }, { 8003, "60%喇叭" }, { 9001, "速负重脚环" }, { 9002, "耐负重脚环" }, { 9003, "力负重脚环" }, { 9004, "根负重脚环" }, { 10001, "御守" }, { 11001, "蹄铁・匠" }, { 11002, "蹄铁・極" }, { 11003, "荧光棒" } };
+        public static NullableIntStringDictionary ClimaxItem { get; private set; } = null!;
+
+        static Database() => RefreshLocalizedText();
+
+        internal static void RefreshLocalizedText() => ClimaxItem = new()
+        {
+            { 1001, ClimaxItem_1001 },
+            { 1002, ClimaxItem_1002 },
+            { 1003, ClimaxItem_1003 },
+            { 1004, ClimaxItem_1004 },
+            { 1005, ClimaxItem_1005 },
+            { 1101, ClimaxItem_1101 },
+            { 1102, ClimaxItem_1102 },
+            { 1103, ClimaxItem_1103 },
+            { 1104, ClimaxItem_1104 },
+            { 1105, ClimaxItem_1105 },
+            { 1201, ClimaxItem_1201 },
+            { 1202, ClimaxItem_1202 },
+            { 1203, ClimaxItem_1203 },
+            { 1204, ClimaxItem_1204 },
+            { 1205, ClimaxItem_1205 },
+            { 2001, ClimaxItem_2001 },
+            { 2002, ClimaxItem_2002 },
+            { 2003, ClimaxItem_2003 },
+            { 2101, ClimaxItem_2101 },
+            { 2201, ClimaxItem_2201 },
+            { 2202, ClimaxItem_2202 },
+            { 2301, ClimaxItem_2301 },
+            { 2302, ClimaxItem_2302 },
+            { 3001, ClimaxItem_3001 },
+            { 3101, ClimaxItem_3101 },
+            { 4001, ClimaxItem_4001 },
+            { 4002, ClimaxItem_4002 },
+            { 4003, ClimaxItem_4003 },
+            { 4004, ClimaxItem_4004 },
+            { 4101, ClimaxItem_4101 },
+            { 4102, ClimaxItem_4102 },
+            { 4103, ClimaxItem_4103 },
+            { 4104, ClimaxItem_4104 },
+            { 4105, ClimaxItem_4105 },
+            { 4106, ClimaxItem_4106 },
+            { 4201, ClimaxItem_4201 },
+            { 5001, ClimaxItem_5001 },
+            { 5002, ClimaxItem_5002 },
+            { 5003, ClimaxItem_5003 },
+            { 5004, ClimaxItem_5004 },
+            { 5005, ClimaxItem_5005 },
+            { 7001, ClimaxItem_7001 },
+            { 8001, ClimaxItem_8001 },
+            { 8002, ClimaxItem_8002 },
+            { 8003, ClimaxItem_8003 },
+            { 9001, ClimaxItem_9001 },
+            { 9002, ClimaxItem_9002 },
+            { 9003, ClimaxItem_9003 },
+            { 9004, ClimaxItem_9004 },
+            { 10001, ClimaxItem_10001 },
+            { 11001, ClimaxItem_11001 },
+            { 11002, ClimaxItem_11002 },
+            { 11003, ClimaxItem_11003 },
+        };
         /// <summary>
         /// 马娘的天赋技能,Key是CardId
         /// </summary>
@@ -125,7 +184,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception ex)
             {
-                ReportWarning($"游戏数据无法组成完整快照: {ex.Message}");
+                ReportWarning(string.Format(I18N_InvalidSnapshot, ex.Message));
                 return DatabaseAvailability.Unavailable;
             }
         }
@@ -183,7 +242,7 @@ namespace UmamusumeResponseAnalyzer
     {
         public new string this[int key]
         {
-            get => TryGetValue(key, out var val) ? val : "未知";
+            get => TryGetValue(key, out var val) ? val : Localization.NameManager.I18N_Unknown;
             set => base[key] = value;
         }
     }

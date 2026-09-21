@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 using Gallop.Endpoints;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
@@ -29,8 +29,7 @@ namespace UmamusumeResponseAnalyzer
                 {
                     projection = MessagePackSerializer.Deserialize(payloadType, Payload)
                         ?? throw new InvalidOperationException(
-                            $"Gallop DTO 反序列化返回 null: endpoint={Endpoint.EndpointType.FullName}, " +
-                            $"path={Endpoint.Path}, dto={payloadType.FullName}");
+                            string.Format(I18N_ProjectionNull, Endpoint.EndpointType.FullName, Endpoint.Path, payloadType.FullName));
                 }
                 catch (Exception ex)
                 {
@@ -50,7 +49,7 @@ namespace UmamusumeResponseAnalyzer
         GameEndpointDescriptor endpoint,
         Type payloadType,
         Exception innerException) : InvalidOperationException(
-            $"Gallop DTO 投影失败: endpoint={endpoint.EndpointType.FullName}, path={endpoint.Path}, dto={payloadType.FullName}",
+            string.Format(I18N_ProjectionFailed, endpoint.EndpointType.FullName, endpoint.Path, payloadType.FullName),
             innerException)
     {
         int reported;
@@ -133,7 +132,7 @@ namespace UmamusumeResponseAnalyzer
             var buffer = ctx.Request.DataAsBytes;
             var canonicalUrl = ctx.Request.Headers[CanonicalUrlHeaderName];
             if (string.IsNullOrWhiteSpace(canonicalUrl))
-                throw new InvalidOperationException($"缺少 canonical URL header: {CanonicalUrlHeaderName}");
+                throw new InvalidOperationException(string.Format(I18N_CanonicalHeaderMissing, CanonicalUrlHeaderName));
 
             var headers = new GameHttpHeaders(
                 ctx.Request.Headers["X-Hachimi-sid"],
@@ -170,7 +169,7 @@ namespace UmamusumeResponseAnalyzer
             }
 
             if (!value.StartsWith('/'))
-                throw new FormatException($"canonical URL 必须包含绝对 path: {canonicalUrl}");
+                throw new FormatException(string.Format(I18N_CanonicalPathRequired, canonicalUrl));
 
             return value;
         }
@@ -194,7 +193,7 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception e)
             {
-                var label = kind == AnalyzerKind.Request ? "请求分析失败" : I18N_ResponseAnalyzeFail;
+                var label = kind == AnalyzerKind.Request ? I18N_RequestAnalyzeFail : I18N_ResponseAnalyzeFail;
                 TerminalUi.Notify("Server", $"{label}: {e.Message}", UiSeverity.Error);
                 TerminalUi.LogException("Server", e);
                 throw;
@@ -238,7 +237,7 @@ namespace UmamusumeResponseAnalyzer
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    TerminalUi.Log("Server", $"debug packet 旧文件清理失败，已跳过 {Path.GetFileName(i)}: {ex.Message}", UiSeverity.Warning);
+                    TerminalUi.Log("Server", string.Format(I18N_DebugCleanupFailed, Path.GetFileName(i), ex.Message), UiSeverity.Warning);
                 }
             }
         }
@@ -255,10 +254,9 @@ namespace UmamusumeResponseAnalyzer
                 var root = e is TargetInvocationException { InnerException: { } inner } ? inner : e;
                 if (root is AnalyzerProjectionException projection && !projection.TryMarkReported())
                     return;
-                var label = kind == AnalyzerKind.Request ? "请求" : "响应";
-                var failure = new InvalidOperationException(
-                    $"{label}分析插件处理失败: plugin={PluginManager.InternalName(registration.Plugin)}, " +
-                    PluginManager.DescribeException(root));
+                var failure = new InvalidOperationException(string.Format(
+                    kind == AnalyzerKind.Request ? I18N_RequestPluginFailed : I18N_ResponsePluginFailed,
+                    PluginManager.InternalName(registration.Plugin), PluginManager.DescribeException(root)));
                 PluginManager.ReportPluginFailure(
                     registration.Method?.DeclaringType?.Name ?? registration.Source,
                     failure,

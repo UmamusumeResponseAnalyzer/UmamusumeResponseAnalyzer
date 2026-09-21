@@ -36,7 +36,16 @@ namespace UmamusumeResponseAnalyzer.Entities
         /// 支援卡的类型(如[速])
         /// </summary>
         [JsonIgnore]
-        public string TypeName => Type switch { 101 => "[速]", 102 => "[力]", 103 => "[根]", 105 => "[耐]", 106 => "[智]", 0 => "[友]", _ => $"[{Type}]" };
+        public string TypeName => $"[{Type switch
+        {
+            101 => Localization.Game.I18N_SpeedSimple,
+            102 => Localization.Game.I18N_PowerSimple,
+            103 => Localization.Game.I18N_NutsSimple,
+            105 => Localization.Game.I18N_StaminaSimple,
+            106 => Localization.Game.I18N_WizSimple,
+            0 => Localization.Game.I18N_FriendSimple,
+            _ => Type.ToString()
+        }}]";
         [JsonIgnore]
         public bool IsFriendCard => Type == 0;
         public bool CanTriggerFriendshipTraining(int trainingType) => Type == trainingType || Id is 30241;

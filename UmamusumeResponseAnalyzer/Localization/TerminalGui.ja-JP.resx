@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="CommandMode_Title" xml:space="preserve">
+    <value>コマンドモード</value>
+  </data>
+  <data name="CommandMode_Help" xml:space="preserve">
+    <value>Tab 補完 · ↑↓ 履歴 · Esc キャンセル</value>
+  </data>
+  <data name="CommandMode_MoreCandidates" xml:space="preserve">
+    <value>ほか {0} 件</value>
+  </data>
+  <data name="CommandMode_CompletionFailed" xml:space="preserve">
+    <value>コマンドの補完に失敗しました: {0}</value>
+  </data>
+  <data name="Dialog_GameExecutable" xml:space="preserve">
+    <value>ゲームの実行ファイル</value>
+  </data>
+  <data name="Dialog_FileSelectionCanceled" xml:space="preserve">
+    <value>ファイル選択がキャンセルされました。</value>
+  </data>
+  <data name="Dialog_Processing" xml:space="preserve">
+    <value>処理中</value>
+  </data>
+  <data name="Button_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="Button_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Button_Yes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="Button_No" xml:space="preserve">
+    <value>いいえ</value>
+  </data>
+  <data name="Dialog_OperationCanceled" xml:space="preserve">
+    <value>操作がキャンセルされました。</value>
+  </data>
+  <data name="Dialog_SelectionEmpty" xml:space="preserve">
+    <value>選択リストを空にすることはできません。</value>
+  </data>
+  <data name="Dialog_MenuEmpty" xml:space="preserve">
+    <value>メニューを空にすることはできません。</value>
+  </data>
+  <data name="Dialog_MenuCanceled" xml:space="preserve">
+    <value>メニューがキャンセルされました。</value>
+  </data>
+  <data name="Dialog_MultiSelectionEmpty" xml:space="preserve">
+    <value>複数選択リストを空にすることはできません。</value>
+  </data>
+  <data name="Dialog_MultiSelectionCanceled" xml:space="preserve">
+    <value>複数選択がキャンセルされました。</value>
+  </data>
+  <data name="Dialog_InputCanceled" xml:space="preserve">
+    <value>入力がキャンセルされました。</value>
+  </data>
+  <data name="Dialog_ReturnPrompt" xml:space="preserve">
+    <value>Enter キーで戻る</value>
+  </data>
+  <data name="Dialog_SelectionCanceled" xml:space="preserve">
+    <value>選択がキャンセルされました。</value>
+  </data>
+  <data name="Dialog_RequiresOwnerThread" xml:space="preserve">
+    <value>Terminal.Gui のダイアログは UI 所有スレッドで実行する必要があります。</value>
+  </data>
+  <data name="Notification_Remaining" xml:space="preserve">
+    <value>ほか {0} 件の通知</value>
+  </data>
+  <data name="Notification_Countdown" xml:space="preserve">
+    <value>{0}秒</value>
+  </data>
+  <data name="Severity_Trace" xml:space="preserve">
+    <value>トレース</value>
+  </data>
+  <data name="Severity_Info" xml:space="preserve">
+    <value>情報</value>
+  </data>
+  <data name="Severity_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="Severity_Error" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="Workspace_BootstrapTitle" xml:space="preserve">
+    <value>起動</value>
+  </data>
+  <data name="Workspace_TitleEmpty" xml:space="preserve">
+    <value>Workspace のタイトルを空にすることはできません。</value>
+  </data>
+  <data name="Workspace_NoOutput" xml:space="preserve">
+    <value>{0} にはまだ出力がありません。</value>
+  </data>
+  <data name="Workspace_SwitchDescription" xml:space="preserve">
+    <value>{0} に切り替え</value>
+  </data>
+  <data name="Workspace_PanelNotRegistered" xml:space="preserve">
+    <value>Workspace パネル '{0}' は登録されていません。</value>
+  </data>
+  <data name="Workspace_PanelViewDisposed" xml:space="preserve">
+    <value>Workspace パネル '{0}' の factory が、viewport により破棄済みの View を返しました。</value>
+  </data>
+  <data name="Workspace_PanelViewAttached" xml:space="preserve">
+    <value>Workspace パネル '{0}' の factory が、すでに取り付けられた View を返しました。</value>
+  </data>
+  <data name="Workspace_PanelViewOwned" xml:space="preserve">
+    <value>Workspace パネル '{0}' の factory が、viewport がすでに所有する View を返しました。</value>
+  </data>
+  <data name="Workspace_MouseCaptureReleaseFailed" xml:space="preserve">
+    <value>Workspace '{0}' は削除対象のコントロールからマウスキャプチャを解除できませんでした。ビューの取り外しを中止しました。</value>
+  </data>
+  <data name="Workspace_GenerationNotActive" xml:space="preserve">
+    <value>Workspace '{0}' は現在登録されている有効な世代ではありません。</value>
+  </data>
+  <data name="Workspace_BootstrapCannotRemove" xml:space="preserve">
+    <value>起動用 Workspace '{0}' は削除できません。</value>
+  </data>
+  <data name="Workspace_Removed" xml:space="preserve">
+    <value>Workspace '{0}' は削除されており、このハンドルは使用できません。</value>
+  </data>
+  <data name="Workspace_ContentFactoryNull" xml:space="preserve">
+    <value>WorkspaceContent の factory が null を返しました。</value>
+  </data>
+  <data name="Host_UnknownIngressEvent" xml:space="preserve">
+    <value>不明な UiHost ingress event: {0}</value>
+  </data>
+  <data name="Host_NavigationAbandoned" xml:space="preserve">
+    <value>受理済みのナビゲーションイベントが適用される前に UiHost が停止しました。</value>
+  </data>
+  <data name="Host_FlushAbandoned" xml:space="preserve">
+    <value>受理済みのフラッシュイベントが適用される前に UiHost が停止しました。</value>
+  </data>
+  <data name="Hotkey_Reserved" xml:space="preserve">
+    <value>Ctrl+{0} はターミナルに予約されているため、ホットキーとして登録できません。</value>
+  </data>
+  <data name="Host_RunOnce" xml:space="preserve">
+    <value>UiHost.RunAsync は一度しか呼び出せません。</value>
+  </data>
+  <data name="Host_Stopped" xml:space="preserve">
+    <value>UiHost は停止済みです。新しい UI 操作は受け付けません。</value>
+  </data>
+  <data name="Host_Stopping" xml:space="preserve">
+    <value>UiHost は停止中です。新しい UI 操作は受け付けません。</value>
+  </data>
+  <data name="Host_RootCreationFailed" xml:space="preserve">
+    <value>UiHost のルートビューを作成できませんでした。新しい UI 操作は受け付けません。</value>
+  </data>
+  <data name="Host_TaskbarOrderNull" xml:space="preserve">
+    <value>Config.WorkspaceTaskbarTitleOrder を null にすることはできません。</value>
+  </data>
+  <data name="Host_WindowNotCreated" xml:space="preserve">
+    <value>UiHost のウィンドウがまだ作成されていません。</value>
+  </data>
+  <data name="Host_ViewportNotCreated" xml:space="preserve">
+    <value>UiHost の Workspace viewport がまだ作成されていません。</value>
+  </data>
+  <data name="Host_AlreadyInitialized" xml:space="preserve">
+    <value>TerminalUi は初期化済みです。このプロセス内で UiHost を置き換えることはできません。</value>
+  </data>
+  <data name="Host_NotInitialized" xml:space="preserve">
+    <value>TerminalUi はまだ初期化されていません。</value>
+  </data>
+  <data name="Hotkey_HandlerFailed" xml:space="preserve">
+    <value>ホットキーの処理に失敗しました: {0}</value>
+  </data>
+  <data name="Hotkey_InputSinkAlreadyBound" xml:space="preserve">
+    <value>UI input sink はすでにバインドされています。Host を置き換えることはできません。</value>
+  </data>
+  <data name="Hotkey_PopupRequiresInputSink" xml:space="preserve">
+    <value>Hotkey popup を使用するには、先に UI input sink をバインドする必要があります。</value>
+  </data>
+  <data name="Command_WorkspaceUsage" xml:space="preserve">
+    <value>使用方法: /workspace | /workspace switch [&lt;title&gt;|"&lt;title&gt;"] | /workspace list</value>
+  </data>
+  <data name="Command_PluginUsage" xml:space="preserve">
+    <value>使用方法: /plugin [list] | /plugin load &lt;InternalName&gt; | /plugin unload &lt;InternalName&gt; | /plugin reload &lt;InternalName&gt;</value>
+  </data>
+  <data name="Command_Empty" xml:space="preserve">
+    <value>コマンドが空です。</value>
+  </data>
+  <data name="Command_Unknown" xml:space="preserve">
+    <value>不明なコマンド: /{0}</value>
+  </data>
+  <data name="Command_QuotedTitleTrailingContent" xml:space="preserve">
+    <value>引用符で囲んだ Workspace タイトルの終了引用符の後に文字を指定できません。</value>
+  </data>
+  <data name="Command_QuotedTitleEmpty" xml:space="preserve">
+    <value>引用符で囲んだ Workspace タイトルを空または空白のみにすることはできません。</value>
+  </data>
+  <data name="Command_QuotedTitleTrailingSlash" xml:space="preserve">
+    <value>引用符で囲んだ Workspace タイトルをバックスラッシュで終えることはできません。</value>
+  </data>
+  <data name="Command_QuotedTitleUnsupportedEscape" xml:space="preserve">
+    <value>引用符で囲んだ Workspace タイトルでは \{0} をエスケープできません。使用できるのは \" と \\ のみです。</value>
+  </data>
+  <data name="Command_QuotedTitleUnclosed" xml:space="preserve">
+    <value>Workspace タイトルの終了引用符がありません。</value>
+  </data>
+  <data name="Command_WorkspaceNotFound" xml:space="preserve">
+    <value>Workspace が見つかりません: {0}</value>
+  </data>
+  <data name="Command_PluginNotFound" xml:space="preserve">
+    <value>プラグインが見つかりません: {0}</value>
+  </data>
+  <data name="Command_PluginLoadFailed" xml:space="preserve">
+    <value>プラグイン {0} の読み込みに失敗しました。</value>
+  </data>
+  <data name="Command_PluginUnloadFailed" xml:space="preserve">
+    <value>プラグイン {0} のアンロードに失敗しました。</value>
+  </data>
+  <data name="Command_PluginReloadFailed" xml:space="preserve">
+    <value>プラグイン {0} の再読み込みに失敗しました。</value>
+  </data>
+  <data name="Command_PluginLoaded" xml:space="preserve">
+    <value>プラグイン {0} を読み込みました。</value>
+  </data>
+  <data name="Command_PluginUnloaded" xml:space="preserve">
+    <value>プラグイン {0} をアンロードしました。</value>
+  </data>
+  <data name="Command_PluginReloaded" xml:space="preserve">
+    <value>プラグイン {0} を再読み込みました。</value>
+  </data>
+  <data name="Command_PluginTitle" xml:space="preserve">
+    <value>プラグインコマンド</value>
+  </data>
+  <data name="Command_WorkspacesTitle" xml:space="preserve">
+    <value>Workspace 一覧</value>
+  </data>
+  <data name="Command_PluginsTitle" xml:space="preserve">
+    <value>プラグイン一覧</value>
+  </data>
+  <data name="Command_NoPlugins" xml:space="preserve">
+    <value>（既知のプラグインはありません）</value>
+  </data>
+  <data name="Command_PluginStateLoaded" xml:space="preserve">
+    <value>読み込み済み</value>
+  </data>
+  <data name="Command_PluginStateUnloaded" xml:space="preserve">
+    <value>未読み込み</value>
+  </data>
+  <data name="Command_PluginStateFailed" xml:space="preserve">
+    <value>失敗</value>
+  </data>
+  <data name="Command_PluginAuthor" xml:space="preserve">
+    <value>作者：{0}</value>
+  </data>
+</root>

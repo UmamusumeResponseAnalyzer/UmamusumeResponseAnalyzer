@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
 internal sealed class WorkspaceRegistry
@@ -40,7 +41,7 @@ internal sealed class WorkspaceRegistry
             !ReferenceEquals(registered, workspace))
         {
             throw new InvalidOperationException(
-                $"Workspace '{workspace.Title}' is not the active registered generation.");
+                string.Format(i18n.Workspace_GenerationNotActive, workspace.Title));
         }
     }
 
@@ -50,7 +51,7 @@ internal sealed class WorkspaceRegistry
         if (ReferenceEquals(workspace, Bootstrap))
         {
             throw new InvalidOperationException(
-                $"Bootstrap workspace '{Bootstrap.Title}' 不能移除。");
+                string.Format(i18n.Workspace_BootstrapCannotRemove, Bootstrap.Title));
         }
         if (workspace.IsRemoved)
         {
@@ -75,5 +76,5 @@ internal sealed class WorkspaceRegistry
     }
 
     internal static InvalidOperationException RemovedException(Workspace workspace)
-        => new($"Workspace '{workspace.Title}' was removed and this handle cannot be used.");
+        => new(string.Format(i18n.Workspace_Removed, workspace.Title));
 }

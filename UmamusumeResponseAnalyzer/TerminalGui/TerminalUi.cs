@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
 public static class TerminalUi
@@ -9,13 +10,13 @@ public static class TerminalUi
         ArgumentNullException.ThrowIfNull(host);
         host.EnsureAvailable();
         if (Interlocked.CompareExchange(ref uiHost, host, null) is not null)
-            throw new InvalidOperationException("TerminalUi 已初始化；进程内不允许替换 UiHost。");
+            throw new InvalidOperationException(i18n.Host_AlreadyInitialized);
     }
 
     internal static UiHost RequireHost()
     {
         var host = Volatile.Read(ref uiHost)
-            ?? throw new InvalidOperationException("TerminalUi 尚未初始化。");
+            ?? throw new InvalidOperationException(i18n.Host_NotInitialized);
         host.EnsureAvailable();
         return host;
     }

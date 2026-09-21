@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using UmamusumeResponseAnalyzer.Plugin;
@@ -177,7 +178,7 @@ internal sealed class HotkeyInputDispatcher(HotkeyRuntime runtime)
         }
         catch (Exception ex)
         {
-            var failure = new InvalidOperationException($"热键处理失败: {ex.Message}", ex);
+            var failure = new InvalidOperationException(string.Format(i18n.Hotkey_HandlerFailed, ex.Message), ex);
             TerminalUi.Notify("Keyboard", failure.Message, UiSeverity.Error);
             TerminalUi.LogException("Keyboard", failure);
         }

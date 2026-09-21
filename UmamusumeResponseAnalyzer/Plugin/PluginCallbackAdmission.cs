@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.Collections.Immutable;
 
 namespace UmamusumeResponseAnalyzer.Plugin;
@@ -103,7 +104,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
             if (closed)
                 throw Closed();
             if (initializing || accepting)
-                throw new InvalidOperationException($"插件 generation 已在初始化或运行: {PluginManager.InternalName(Plugin)}");
+                throw new InvalidOperationException(string.Format(i18n.GenerationAlreadyRunning, PluginManager.InternalName(Plugin)));
 
             initializing = true;
             return EnterLocked();
@@ -115,7 +116,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
         lock (gate)
         {
             if (!initializing)
-                throw new InvalidOperationException($"插件 generation 未在初始化: {PluginManager.InternalName(Plugin)}");
+                throw new InvalidOperationException(string.Format(i18n.GenerationNotInitializing, PluginManager.InternalName(Plugin)));
 
             initializing = false;
             if (closed)
@@ -139,7 +140,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
             if (closed)
                 throw Closed();
             if (initializing)
-                throw new InvalidOperationException($"插件 generation 仍在初始化: {PluginManager.InternalName(Plugin)}");
+                throw new InvalidOperationException(string.Format(i18n.GenerationStillInitializing, PluginManager.InternalName(Plugin)));
             accepting = true;
         }
     }
@@ -154,7 +155,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
                 return false;
             if (pendingRegistration is not null)
                 throw new InvalidOperationException(
-                    $"插件 initialization registration 已提交: {PluginManager.InternalName(Plugin)}");
+                    string.Format(i18n.InitializationRegistrationCommitted, PluginManager.InternalName(Plugin)));
 
             pendingRegistration = plan;
             return true;
@@ -169,7 +170,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
                 throw Closed();
             var plan = pendingRegistration
                 ?? throw new InvalidOperationException(
-                    $"插件 initialization registration 尚未提交: {PluginManager.InternalName(Plugin)}");
+                    string.Format(i18n.InitializationRegistrationNotCommitted, PluginManager.InternalName(Plugin)));
             pendingRegistration = null;
             return plan;
         }
@@ -241,7 +242,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
                 completion.TrySetException(failures[0]);
             else
                 completion.TrySetException(new AggregateException(
-                    "插件 generation 关闭失败。",
+                    i18n.GenerationCloseFailed,
                     failures));
         }
         catch (Exception ex)
@@ -341,8 +342,8 @@ internal sealed class PluginGeneration(IPlugin plugin)
         catch (Exception ex)
         {
             var failure = new InvalidOperationException(
-                $"插件后台操作失败: plugin={PluginManager.InternalName(Plugin)}, " +
-                PluginManager.DescribeException(ex));
+                string.Format(i18n.BackgroundOperationFailed, PluginManager.InternalName(Plugin),
+                    PluginManager.DescribeException(ex)));
             PluginManager.ReportPluginFailure("Plugin", failure, ex.ToString());
         }
     }
@@ -365,7 +366,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
     }
 
     InvalidOperationException Closed()
-        => new($"插件 generation 已关闭或未开放: {PluginManager.InternalName(Plugin)}");
+        => new(string.Format(i18n.GenerationUnavailable, PluginManager.InternalName(Plugin)));
 
     sealed class Lease(Action release) : IDisposable
     {

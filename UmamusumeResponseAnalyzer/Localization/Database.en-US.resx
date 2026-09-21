@@ -121,12 +121,189 @@
     <value>Error reading data file {0}, please update the program before updating data</value>
   </data>
   <data name="I18N_LoadFail" xml:space="preserve">
-    <value> An error occurred while loading {0}. Please try updating the data again. </value>
+    <value>An error occurred while loading {0}. Please try updating the data again.</value>
   </data>
   <data name="I18N_NotExist" xml:space="preserve">
     <value>Data file {0} does not exist, please try updating the data again</value>
   </data>
   <data name="I18N_UnknownSkillUpgradeConditionType" xml:space="preserve">
     <value>Unknown skill evolution condition type; the skill will be treated as unable to evolve: conditionId={0}, type={1}</value>
+  </data>
+  <data name="I18N_NotLoaded" xml:space="preserve">
+    <value>Game data is not fully loaded. Update the data files and restart.</value>
+  </data>
+  <data name="I18N_InvalidSnapshot" xml:space="preserve">
+    <value>Game data cannot form a complete snapshot: {0}</value>
+  </data>
+  <data name="I18N_SkillMissing" xml:space="preserve">
+    <value>Skill data does not exist: skillId={0}</value>
+  </data>
+  <data name="I18N_SkillManagerSourceMissing" xml:space="preserve">
+    <value>This SkillManager was not created by Database.Skills.Apply and cannot calculate skill evolution.</value>
+  </data>
+  <data name="I18N_UpgradeConditionMissing" xml:space="preserve">
+    <value>Skill evolution condition record is missing: conditionId={0}</value>
+  </data>
+  <data name="I18N_UnknownAptitudeRequirement" xml:space="preserve">
+    <value>Unknown skill aptitude evolution condition: conditionId={0}, requirement={1}</value>
+  </data>
+  <data name="ClimaxItem_1001" xml:space="preserve">
+    <value>Spd+3</value>
+  </data>
+  <data name="ClimaxItem_1002" xml:space="preserve">
+    <value>Sta+3</value>
+  </data>
+  <data name="ClimaxItem_1003" xml:space="preserve">
+    <value>Pow+3</value>
+  </data>
+  <data name="ClimaxItem_1004" xml:space="preserve">
+    <value>Gut+3</value>
+  </data>
+  <data name="ClimaxItem_1005" xml:space="preserve">
+    <value>Wit+3</value>
+  </data>
+  <data name="ClimaxItem_1101" xml:space="preserve">
+    <value>Spd+7</value>
+  </data>
+  <data name="ClimaxItem_1102" xml:space="preserve">
+    <value>Sta+7</value>
+  </data>
+  <data name="ClimaxItem_1103" xml:space="preserve">
+    <value>Pow+7</value>
+  </data>
+  <data name="ClimaxItem_1104" xml:space="preserve">
+    <value>Gut+7</value>
+  </data>
+  <data name="ClimaxItem_1105" xml:space="preserve">
+    <value>Wit+7</value>
+  </data>
+  <data name="ClimaxItem_1201" xml:space="preserve">
+    <value>Spd+15</value>
+  </data>
+  <data name="ClimaxItem_1202" xml:space="preserve">
+    <value>Sta+15</value>
+  </data>
+  <data name="ClimaxItem_1203" xml:space="preserve">
+    <value>Pow+15</value>
+  </data>
+  <data name="ClimaxItem_1204" xml:space="preserve">
+    <value>Gut+15</value>
+  </data>
+  <data name="ClimaxItem_1205" xml:space="preserve">
+    <value>Wit+15</value>
+  </data>
+  <data name="ClimaxItem_2001" xml:space="preserve">
+    <value>Energy+20</value>
+  </data>
+  <data name="ClimaxItem_2002" xml:space="preserve">
+    <value>Energy+40</value>
+  </data>
+  <data name="ClimaxItem_2003" xml:space="preserve">
+    <value>Energy+65</value>
+  </data>
+  <data name="ClimaxItem_2101" xml:space="preserve">
+    <value>Bitter tea</value>
+  </data>
+  <data name="ClimaxItem_2201" xml:space="preserve">
+    <value>Max energy+4</value>
+  </data>
+  <data name="ClimaxItem_2202" xml:space="preserve">
+    <value>Max energy+8</value>
+  </data>
+  <data name="ClimaxItem_2301" xml:space="preserve">
+    <value>Mood+1</value>
+  </data>
+  <data name="ClimaxItem_2302" xml:space="preserve">
+    <value>Mood+2</value>
+  </data>
+  <data name="ClimaxItem_3001" xml:space="preserve">
+    <value>Cat food</value>
+  </data>
+  <data name="ClimaxItem_3101" xml:space="preserve">
+    <value>BBQ</value>
+  </data>
+  <data name="ClimaxItem_4001" xml:space="preserve">
+    <value>Charming</value>
+  </data>
+  <data name="ClimaxItem_4002" xml:space="preserve">
+    <value>Rising star</value>
+  </data>
+  <data name="ClimaxItem_4003" xml:space="preserve">
+    <value>Practice perfect</value>
+  </data>
+  <data name="ClimaxItem_4004" xml:space="preserve">
+    <value>Fast learner</value>
+  </data>
+  <data name="ClimaxItem_4101" xml:space="preserve">
+    <value>Cure insomnia</value>
+  </data>
+  <data name="ClimaxItem_4102" xml:space="preserve">
+    <value>Cure slack off</value>
+  </data>
+  <data name="ClimaxItem_4103" xml:space="preserve">
+    <value>Cure rough skin</value>
+  </data>
+  <data name="ClimaxItem_4104" xml:space="preserve">
+    <value>Cure overweight</value>
+  </data>
+  <data name="ClimaxItem_4105" xml:space="preserve">
+    <value>Cure migraine</value>
+  </data>
+  <data name="ClimaxItem_4106" xml:space="preserve">
+    <value>Cure practice poor</value>
+  </data>
+  <data name="ClimaxItem_4201" xml:space="preserve">
+    <value>Cure all conditions</value>
+  </data>
+  <data name="ClimaxItem_5001" xml:space="preserve">
+    <value>Spd petition</value>
+  </data>
+  <data name="ClimaxItem_5002" xml:space="preserve">
+    <value>Sta petition</value>
+  </data>
+  <data name="ClimaxItem_5003" xml:space="preserve">
+    <value>Pow petition</value>
+  </data>
+  <data name="ClimaxItem_5004" xml:space="preserve">
+    <value>Gut petition</value>
+  </data>
+  <data name="ClimaxItem_5005" xml:space="preserve">
+    <value>Wit petition</value>
+  </data>
+  <data name="ClimaxItem_7001" xml:space="preserve">
+    <value>Whistle</value>
+  </data>
+  <data name="ClimaxItem_8001" xml:space="preserve">
+    <value>20% megaphone</value>
+  </data>
+  <data name="ClimaxItem_8002" xml:space="preserve">
+    <value>40% megaphone</value>
+  </data>
+  <data name="ClimaxItem_8003" xml:space="preserve">
+    <value>60% megaphone</value>
+  </data>
+  <data name="ClimaxItem_9001" xml:space="preserve">
+    <value>Spd ankle weights</value>
+  </data>
+  <data name="ClimaxItem_9002" xml:space="preserve">
+    <value>Sta ankle weights</value>
+  </data>
+  <data name="ClimaxItem_9003" xml:space="preserve">
+    <value>Pow ankle weights</value>
+  </data>
+  <data name="ClimaxItem_9004" xml:space="preserve">
+    <value>Gut ankle weights</value>
+  </data>
+  <data name="ClimaxItem_10001" xml:space="preserve">
+    <value>Charm</value>
+  </data>
+  <data name="ClimaxItem_11001" xml:space="preserve">
+    <value>Horseshoe: Artisan</value>
+  </data>
+  <data name="ClimaxItem_11002" xml:space="preserve">
+    <value>Horseshoe: Master</value>
+  </data>
+  <data name="ClimaxItem_11003" xml:space="preserve">
+    <value>Glow stick</value>
   </data>
 </root>

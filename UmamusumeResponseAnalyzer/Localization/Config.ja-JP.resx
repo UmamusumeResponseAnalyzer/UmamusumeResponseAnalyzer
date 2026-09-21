@@ -123,19 +123,106 @@
   <data name="Settings_Title" xml:space="preserve">
     <value>設定</value>
   </data>
+  <data name="Tabs_Core_ListenAddress" xml:space="preserve">
+    <value>待ち受けアドレス</value>
+  </data>
+  <data name="Tabs_Core_ListenAddressPrompt" xml:space="preserve">
+    <value>待ち受けアドレスを入力してください（既定：127.0.0.1、管理者権限の場合は 0.0.0.0）</value>
+  </data>
+  <data name="Tabs_Core_ListenPort" xml:space="preserve">
+    <value>待ち受けポート</value>
+  </data>
+  <data name="Tabs_Core_ListenPortPrompt" xml:space="preserve">
+    <value>待ち受けポートを入力してください（既定：4693）</value>
+  </data>
+  <data name="Tabs_Core_Title" xml:space="preserve">
+    <value>コア</value>
+  </data>
+  <data name="Tabs_Debug_SaveResponseForDebug" xml:space="preserve">
+    <value>通信ファイルを保存</value>
+  </data>
   <data name="Tabs_Debug_Title" xml:space="preserve">
     <value>デバッグ</value>
+  </data>
+  <data name="Tabs_Language_AutoDetect" xml:space="preserve">
+    <value>自動検出</value>
+  </data>
+  <data name="Tabs_Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Tabs_Language_Japanese" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="Tabs_Language_SimplifiedChinese" xml:space="preserve">
+    <value>简体中文</value>
   </data>
   <data name="Tabs_Language_Title" xml:space="preserve">
     <value>言語</value>
   </data>
+  <data name="Tabs_Localization_InputPath" xml:space="preserve">
+    <value>ローカライズファイルのパスを入力</value>
+  </data>
+  <data name="Tabs_Localization_Path" xml:space="preserve">
+    <value>ローカライズファイルのパス</value>
+  </data>
   <data name="Tabs_Localization_Title" xml:space="preserve">
-    <value>ローカリゼーション</value>
+    <value>ローカライズ</value>
   </data>
   <data name="Tabs_Misc_Title" xml:space="preserve">
     <value>その他</value>
   </data>
+  <data name="Tabs_Misc_WriteAIInfo" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="Tabs_Plugin_Title" xml:space="preserve">
+    <value>プラグイン</value>
+  </data>
+  <data name="Tabs_Repository_Targets" xml:space="preserve">
+    <value>対象サーバー</value>
+  </data>
+  <data name="Tabs_Repository_TargetsPrompt" xml:space="preserve">
+    <value>対象サーバーをカンマ区切りで入力してください。空欄の場合は制限しません（日本版：Cygames、繁体字中国語版：Komoe）。</value>
+  </data>
+  <data name="Tabs_Repository_Title" xml:space="preserve">
+    <value>リポジトリ</value>
+  </data>
+  <data name="Tabs_Updater_CustomDatabaseRepositoryPrompt" xml:space="preserve">
+    <value>カスタムデータベースリポジトリの URL を入力してください: </value>
+  </data>
+  <data name="Tabs_Updater_ForceUseGithubToUpdate" xml:space="preserve">
+    <value>GitHub からの更新を強制</value>
+  </data>
   <data name="Tabs_Updater_Title" xml:space="preserve">
     <value>更新</value>
+  </data>
+  <data name="Tabs_Core_ShowFirstRunPrompt" xml:space="preserve">
+    <value>初期設定を表示</value>
+  </data>
+  <data name="Tabs_Updater_TrainerIsMale" xml:space="preserve">
+    <value>男性トレーナー</value>
+  </data>
+  <data name="Tabs_Updater_DatabaseLanguage" xml:space="preserve">
+    <value>データ言語</value>
+  </data>
+  <data name="Tabs_Updater_CustomDatabaseRepository" xml:space="preserve">
+    <value>カスタムデータベースリポジトリ</value>
+  </data>
+  <data name="InvalidNullContent" xml:space="preserve">
+    <value>内容を null にすることはできません</value>
+  </data>
+  <data name="InvalidNullValue" xml:space="preserve">
+    <value>null にすることはできません</value>
+  </data>
+  <data name="InvalidSchema" xml:space="preserve">
+    <value>設定ファイル「{0}」が現在のスキーマに一致しません（{1}:{2}）：{3}</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>設定ファイル「{0}」の {1} が無効です：{2}。</value>
+  </data>
+  <data name="NullAssignment" xml:space="preserve">
+    <value>{0} に null を代入できません。</value>
+  </data>
+  <data name="PluginUnloaded" xml:space="preserve">
+    <value>プラグインがアンロードされたため、設定を開けません: {0}</value>
   </data>
 </root>

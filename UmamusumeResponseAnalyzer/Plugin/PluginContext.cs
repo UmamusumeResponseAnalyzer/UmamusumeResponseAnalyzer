@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using Terminal.Gui.App;
 using UmamusumeResponseAnalyzer.TerminalGui;
 
@@ -71,8 +72,8 @@ internal sealed class PluginHostEvents
                 catch (Exception ex)
                 {
                     var failure = new InvalidOperationException(
-                        $"插件事件处理错误: plugin={PluginManager.InternalName(plugin)}, " +
-                        PluginManager.DescribeException(ex));
+                        string.Format(i18n.EventHandlerFailed, PluginManager.InternalName(plugin),
+                            PluginManager.DescribeException(ex)));
                     PluginManager.ReportPluginFailure("Plugin", failure, ex.ToString());
                 }
             }

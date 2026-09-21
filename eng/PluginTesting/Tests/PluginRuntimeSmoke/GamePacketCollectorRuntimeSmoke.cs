@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using GamePacketCollector;
 using UmamusumeResponseAnalyzer.TerminalGui;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 static class GamePacketCollectorRuntimeSmoke
 {
@@ -66,7 +67,7 @@ static class GamePacketCollectorRuntimeSmoke
         var lines = framebuffer.ReplaceLineEndings("\n").Split('\n');
         for (var index = 0; index < lines.Length - 1; index++)
         {
-            if (lines[index].Contains("ERROR", StringComparison.Ordinal)
+            if (lines[index].Contains(UiText.Severity_Error, StringComparison.Ordinal)
                 && lines[index + 1].Contains("[GamePacketCollector] 上传失败", StringComparison.Ordinal))
             {
                 return true;

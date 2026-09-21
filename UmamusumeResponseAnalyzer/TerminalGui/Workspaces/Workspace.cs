@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
 public sealed class Workspace
@@ -7,12 +8,14 @@ public sealed class Workspace
     internal Workspace(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Workspace title 不能为空。", nameof(title));
+            throw new ArgumentException(i18n.Workspace_TitleEmpty, nameof(title));
 
         Title = title;
     }
 
     public string Title { get; }
+
+    internal string DisplayTitle => Title == BootstrapTitle ? i18n.Workspace_BootstrapTitle : Title;
 
     internal bool IsRemoved { get; set; }
 

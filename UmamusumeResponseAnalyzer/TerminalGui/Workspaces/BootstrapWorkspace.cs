@@ -6,6 +6,8 @@ using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.Plugin;
+using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
@@ -20,12 +22,12 @@ internal sealed class BootstrapWorkspace : IDisposable
     readonly List<(string Label, string Value)> settings = [];
     readonly Dictionary<string, BootstrapPhase> phases = new()
     {
-        ["config"] = new("配置", UiSeverity.Info, "等待"),
-        ["plugin-scan"] = new("插件扫描", UiSeverity.Info, "等待"),
-        ["database"] = new("数据文件", UiSeverity.Info, "等待"),
-        ["plugin-init"] = new("插件初始化", UiSeverity.Info, "等待"),
-        ["server"] = new("HTTP server", UiSeverity.Info, "等待"),
-        ["host"] = new("宿主", UiSeverity.Info, "等待")
+        ["config"] = new(I18N_PhaseConfig, UiSeverity.Info, I18N_Waiting),
+        ["plugin-scan"] = new(I18N_PhasePluginScan, UiSeverity.Info, I18N_Waiting),
+        ["database"] = new(I18N_PhaseDatabase, UiSeverity.Info, I18N_Waiting),
+        ["plugin-init"] = new(I18N_PhasePluginInit, UiSeverity.Info, I18N_Waiting),
+        ["server"] = new(I18N_PhaseServer, UiSeverity.Info, I18N_Waiting),
+        ["host"] = new(I18N_PhaseHost, UiSeverity.Info, I18N_Waiting)
     };
     readonly List<BootstrapPluginRow> plugins = [];
     readonly List<BootstrapLogRow> logs = [];
@@ -41,7 +43,7 @@ internal sealed class BootstrapWorkspace : IDisposable
             Workspace,
             ConsoleKey.B,
             ConsoleModifiers.Control,
-            "启动信息");
+            I18N_StartupInformation);
         uiHost.LogAdded += OnLogAdded;
         Refresh();
     }
@@ -68,7 +70,7 @@ internal sealed class BootstrapWorkspace : IDisposable
         {
             ThrowIfDisposed();
             if (menuSelection is { Task.IsCompleted: false })
-                throw new InvalidOperationException("Bootstrap 启动菜单正在等待选择。");
+                throw new InvalidOperationException(I18N_MenuPending);
             menuSelection = selection;
             SetMenuPanel(title, choices, selection);
         }
@@ -166,7 +168,7 @@ internal sealed class BootstrapWorkspace : IDisposable
             uiHost.SetPanel(
                 Workspace,
                 PanelKey,
-                "启动状态",
+                I18N_StartupStatus,
                 new WorkspaceContent(() =>
                 {
                     (string Label, string Value)[] settingsSnapshot;
@@ -211,11 +213,11 @@ internal sealed class BootstrapWorkspace : IDisposable
 
     internal static string SeverityLabel(UiSeverity severity) => severity switch
     {
-        UiSeverity.Trace => "INFO",
-        UiSeverity.Info => "INFO",
-        UiSeverity.Success => "OK",
-        UiSeverity.Warning => "WARN",
-        UiSeverity.Error => "ERR",
+        UiSeverity.Trace => UiText.Severity_Info,
+        UiSeverity.Info => UiText.Severity_Info,
+        UiSeverity.Success => UiText.Severity_Success,
+        UiSeverity.Warning => UiText.Severity_Warning,
+        UiSeverity.Error => UiText.Severity_Error,
         _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
     };
 }
@@ -238,7 +240,7 @@ internal sealed class BootstrapMenuView : View
         TabStop = TabBehavior.TabGroup;
         var prompt = new Label
         {
-            Text = selection is null ? "正在准备启动… / Preparing startup…" : title,
+            Text = selection is null ? I18N_PreparingStartup : title,
             Width = Dim.Fill(),
             Height = 3
         };
@@ -251,7 +253,7 @@ internal sealed class BootstrapMenuView : View
                     return;
                 menu!.Enabled = false;
                 SetFocus();
-                prompt.Text = $"正在执行：{value} / Running: {value}";
+                prompt.Text = string.Format(I18N_Running, value);
             }
         }).ToArray();
         menu = new Menu(items)
@@ -318,12 +320,12 @@ internal sealed record BootstrapPluginRow(
                 ? plugin.DisplayName
                 : $"{plugin.DisplayName} ({plugin.InternalName})",
             plugin.Version?.ToString() ?? string.Empty,
-            plugin.IsLoaded ? initialized ? "OK" : "INFO" : failed || !plugin.IsAvailable ? "ERR" : "INFO",
+            plugin.IsLoaded ? initialized ? UiText.Severity_Success : UiText.Severity_Info : failed || !plugin.IsAvailable ? UiText.Severity_Error : UiText.Severity_Info,
             plugin.IsLoaded
-                ? initialized ? "初始化完成" : "扫描完成，等待初始化"
+                ? initialized ? I18N_Initialized : I18N_Scanned
                 : failed || !plugin.IsAvailable
-                    ? initialized ? "加载或初始化失败" : "加载失败"
-                    : "未加载")
+                    ? initialized ? I18N_LoadOrInitializeFailed : I18N_LoadFailed
+                    : I18N_Unloaded)
     {
     }
 }
@@ -362,14 +364,14 @@ internal sealed class BootstrapDashboardView : View
         this.logs = logs;
 
         environmentFrame = CreateFrame(
-            "运行环境",
+            I18N_Environment,
             CreateTable(
-                ["项目", "值"],
+                [I18N_Item, I18N_Value],
                 settings.Select(x => new[] { x.Label, x.Value })));
         phaseFrame = CreateFrame(
-            "初始化结果",
+            I18N_InitializationResults,
             CreateTable(
-                ["状态", "项目", "结果"],
+                [I18N_Status, I18N_Item, I18N_Result],
                 phases.Select(x => new[]
                 {
                     BootstrapWorkspace.SeverityLabel(x.Severity),
@@ -377,9 +379,9 @@ internal sealed class BootstrapDashboardView : View
                     x.Detail
                 })));
         pluginFrame = CreateFrame(
-            "插件摘要",
+            I18N_PluginSummary,
             CreateTable(
-                ["插件名", "版本", "状态", "结果"],
+                [I18N_PluginName, I18N_Version, I18N_Status, I18N_Result],
                 plugins.Select(x => new[] { x.Name, x.Version, x.Status, x.Result })));
 
         logList = new ListView
@@ -403,7 +405,7 @@ internal sealed class BootstrapDashboardView : View
             logs.Select(x => $"{x.Status} {x.Text}")));
         if (logs.Count > 0)
             logList.SelectedItem = logs.Count - 1;
-        logFrame = CreateFrame("最近日志", logList);
+        logFrame = CreateFrame(I18N_RecentLogs, logList);
 
         Add(environmentFrame, phaseFrame, pluginFrame, logFrame);
         ApplyLayout(useWideLayout: false);
@@ -480,10 +482,10 @@ internal sealed class BootstrapDashboardView : View
         if (logContextMenu is null)
         {
             var app = App ?? throw new InvalidOperationException(
-                "Bootstrap dashboard must be attached before showing its context menu.");
+                I18N_DashboardNotAttached);
             logContextMenu = new PopoverMenu(new Menu(new MenuItem[]
             {
-                new("复制完整 backtrace", action: CopyExceptionDetails)
+                new(I18N_CopyBacktrace, action: CopyExceptionDetails)
             }))
             {
                 App = app
@@ -517,7 +519,7 @@ internal sealed class BootstrapDashboardView : View
 
         TerminalUi.Notify(
             "URA",
-            "复制完整 backtrace 失败：系统 clipboard 不可用。",
+            I18N_CopyBacktraceFailed,
             UiSeverity.Error);
     }
 

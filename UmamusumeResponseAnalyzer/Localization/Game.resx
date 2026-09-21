@@ -116,15 +116,99 @@
     <value>Lng</value>
   </data>
   <data name="I18N_Nige" xml:space="preserve">
-    <value>逃</value>
+    <value>Front</value>
   </data>
   <data name="I18N_Senko" xml:space="preserve">
-    <value>先</value>
+    <value>Pace</value>
   </data>
   <data name="I18N_Sashi" xml:space="preserve">
-    <value>差</value>
+    <value>Late</value>
   </data>
   <data name="I18N_Oikomi" xml:space="preserve">
-    <value>追</value>
+    <value>End</value>
+  </data>
+  <data name="I18N_Blue" xml:space="preserve">
+    <value>Blue</value>
+  </data>
+  <data name="I18N_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="I18N_MotivationBad" xml:space="preserve">
+    <value>Bad</value>
+  </data>
+  <data name="I18N_MotivationBest" xml:space="preserve">
+    <value>Great</value>
+  </data>
+  <data name="I18N_MotivationGood" xml:space="preserve">
+    <value>Good</value>
+  </data>
+  <data name="I18N_MotivationNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="I18N_MotivationWorst" xml:space="preserve">
+    <value>Awful</value>
+  </data>
+  <data name="I18N_Nuts" xml:space="preserve">
+    <value>Guts</value>
+  </data>
+  <data name="I18N_NutsSimple" xml:space="preserve">
+    <value>Gut</value>
+  </data>
+  <data name="I18N_Power" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="I18N_PowerSimple" xml:space="preserve">
+    <value>Pow</value>
+  </data>
+  <data name="I18N_Proper" xml:space="preserve">
+    <value>Aptitude</value>
+  </data>
+  <data name="I18N_Red" xml:space="preserve">
+    <value>Red</value>
+  </data>
+  <data name="I18N_Speed" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="I18N_SpeedSimple" xml:space="preserve">
+    <value>Spd</value>
+  </data>
+  <data name="I18N_Stamina" xml:space="preserve">
+    <value>Stamina</value>
+  </data>
+  <data name="I18N_StaminaSimple" xml:space="preserve">
+    <value>Sta</value>
+  </data>
+  <data name="I18N_Stat" xml:space="preserve">
+    <value>Stats</value>
+  </data>
+  <data name="I18N_StatSimple" xml:space="preserve">
+    <value>Stat</value>
+  </data>
+  <data name="I18N_Vital" xml:space="preserve">
+    <value>Energy</value>
+  </data>
+  <data name="I18N_VitalSimple" xml:space="preserve">
+    <value>Ene</value>
+  </data>
+  <data name="I18N_Wiz" xml:space="preserve">
+    <value>Wit</value>
+  </data>
+  <data name="I18N_WizSimple" xml:space="preserve">
+    <value>Wit</value>
+  </data>
+  <data name="I18N_Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="I18N_Yellow" xml:space="preserve">
+    <value>Yellow</value>
+  </data>
+  <data name="I18N_FriendSimple" xml:space="preserve">
+    <value>Pal</value>
+  </data>
+  <data name="I18N_FirstHalf" xml:space="preserve">
+    <value>Early</value>
+  </data>
+  <data name="I18N_SecondHalf" xml:space="preserve">
+    <value>Late</value>
   </data>
 </root>

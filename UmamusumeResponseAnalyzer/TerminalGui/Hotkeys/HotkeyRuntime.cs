@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Collections.Frozen;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
@@ -43,7 +44,7 @@ internal sealed class HotkeyRuntime
                 if (value is not null)
                 {
                     if (overlaySink is not null && !ReferenceEquals(overlaySink, value))
-                        throw new InvalidOperationException("UI input sink 已绑定，不能替换 Host。");
+                        throw new InvalidOperationException(i18n.Hotkey_InputSinkAlreadyBound);
                     overlaySink = value;
                     return;
                 }
@@ -273,7 +274,7 @@ internal sealed class HotkeyRuntime
 
         var snapshot = SnapshotPopup();
         var sink = snapshot.Sink
-            ?? throw new InvalidOperationException("Hotkey popup 需要先绑定 UI input sink。");
+            ?? throw new InvalidOperationException(i18n.Hotkey_PopupRequiresInputSink);
         var shownPopup = NormalizePopupForDisplay(
             popup with { Shortcuts = null },
             Math.Max(0, popup.ScrollOffset),
@@ -471,7 +472,7 @@ internal sealed class HotkeyRuntime
             return;
 
         var sink = overlaySink
-            ?? throw new InvalidOperationException("Hotkey popup 需要先绑定 UI input sink。");
+            ?? throw new InvalidOperationException(i18n.Hotkey_PopupRequiresInputSink);
         CancelAndDispose(popupState.AutoClose);
         var autoClose = popup.ExpiresAt is null ? null : new CancellationTokenSource();
         var generation = unchecked(popupState.Generation + 1);

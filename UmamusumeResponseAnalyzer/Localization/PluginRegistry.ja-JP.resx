@@ -1,0 +1,375 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Empty" xml:space="preserve">
+    <value>プラグインリポジトリに利用可能なバージョンがありません。</value>
+  </data>
+  <data name="SelectPlugins" xml:space="preserve">
+    <value>インストールするプラグインを選択</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>インストールをキャンセルしました。</value>
+  </data>
+  <data name="InstalledNotLoaded" xml:space="preserve">
+    <value>ZIP は保存されましたが、読み込みに失敗しました。</value>
+  </data>
+  <data name="ExecutionWarning" xml:space="preserve">
+    <value>このプラグインは、このコンピューター上でコードを実行します。</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>プラグインリポジトリの操作に失敗しました: {0}</value>
+  </data>
+  <data name="InstalledLoadFailed" xml:space="preserve">
+    <value>プラグインはインストールされましたが、読み込みに失敗しました: {0}</value>
+  </data>
+  <data name="InstalledAndLoaded" xml:space="preserve">
+    <value>プラグインをインストールし、読み込みました: {0}</value>
+  </data>
+  <data name="DuplicateSelection" xml:space="preserve">
+    <value>選択したプラグインの InternalName が重複しています。</value>
+  </data>
+  <data name="Downloading" xml:space="preserve">
+    <value>[{0} v{1}] ダウンロード中</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>[{0}] インストール完了</value>
+  </data>
+  <data name="InstallFailed" xml:space="preserve">
+    <value>[{0}] インストールに失敗しました: {1}</value>
+  </data>
+  <data name="AmbiguousSource" xml:space="preserve">
+    <value>プラグインの InternalName に複数のソースが対応するため、更新を判定できません: {0}</value>
+  </data>
+  <data name="LoadedVersionMissing" xml:space="preserve">
+    <value>読み込まれたプラグインにバージョンがありません: {0}</value>
+  </data>
+  <data name="InvalidDownloadReference" xml:space="preserve">
+    <value>プラグインのダウンロード参照が無効です。</value>
+  </data>
+  <data name="ManifestMissing" xml:space="preserve">
+    <value>プラグインの manifest がありません。</value>
+  </data>
+  <data name="InvalidSourceId" xml:space="preserve">
+    <value>プラグインのソース ID が無効です。</value>
+  </data>
+  <data name="DownloadReferenceMismatch" xml:space="preserve">
+    <value>プラグインのダウンロード参照がリクエストと一致しません。</value>
+  </data>
+  <data name="PackageTooLarge" xml:space="preserve">
+    <value>プラグインの ZIP が 64 MiB を超えています。</value>
+  </data>
+  <data name="EmptyJson" xml:space="preserve">
+    <value>URACloud が空の JSON を返しました。</value>
+  </data>
+  <data name="PackageAuthorMismatch" xml:space="preserve">
+    <value>ダウンロードしたパッケージの Author がリクエストと一致しません: expected={0}, actual={1}</value>
+  </data>
+  <data name="PackageInternalNameMismatch" xml:space="preserve">
+    <value>ダウンロードしたパッケージの InternalName がリクエストと一致しません: expected={0}, actual={1}</value>
+  </data>
+  <data name="PackageVersionMismatch" xml:space="preserve">
+    <value>ダウンロードしたパッケージの Version がリクエストと一致しません: expected={0}, actual={1}</value>
+  </data>
+  <data name="InstallConfirmation" xml:space="preserve">
+    <value>プラグイン {0} v{1} のインストールを確認
+{2}/{3}
+{4}
+このプラグインは、このコンピューター上でコードを実行します。</value>
+  </data>
+  <data name="RootManifestRequired" xml:space="preserve">
+    <value>ZIP のルートには manifest.json が 1 つだけ必要です。</value>
+  </data>
+  <data name="StrictJsonRequired" xml:space="preserve">
+    <value>manifest.json は厳密な JSON 形式ではありません。</value>
+  </data>
+  <data name="PackageNameMismatch" xml:space="preserve">
+    <value>ZIP ファイル名は manifest の InternalName と一致する必要があります: zip={0}, manifest={1}</value>
+  </data>
+  <data name="RootAssemblyRequired" xml:space="preserve">
+    <value>ZIP のルートにはメインアセンブリ {0} が 1 つだけ必要です。</value>
+  </data>
+  <data name="DuplicateAssembly" xml:space="preserve">
+    <value>ZIP のルートでアセンブリ名が重複しています: {0}</value>
+  </data>
+  <data name="ManifestObjectRequired" xml:space="preserve">
+    <value>manifest.json のルートは object である必要があります。</value>
+  </data>
+  <data name="DuplicateManifestField" xml:space="preserve">
+    <value>manifest のフィールドが重複しています: {0}</value>
+  </data>
+  <data name="ManifestSchemaMismatch" xml:space="preserve">
+    <value>manifest のスキーマが一致しません: missing=[{0}], unexpected=[{1}]</value>
+  </data>
+  <data name="ManifestTypeInvalid" xml:space="preserve">
+    <value>manifest {0} の型が無効です: expected={1}, actual={2}</value>
+  </data>
+  <data name="ManifestStringsRequired" xml:space="preserve">
+    <value>manifest {0} には文字列のみを含めることができます。</value>
+  </data>
+  <data name="ClrMetadataMissing" xml:space="preserve">
+    <value>メインアセンブリに CLR メタデータがありません。</value>
+  </data>
+  <data name="InvalidManagedAssembly" xml:space="preserve">
+    <value>メインアセンブリは有効なマネージドアセンブリではありません: {0}</value>
+  </data>
+  <data name="AssemblyIdentityMismatch" xml:space="preserve">
+    <value>メインアセンブリ名は manifest の InternalName と一致する必要があります: assembly={0}, manifest={1}</value>
+  </data>
+  <data name="ManifestFieldEmpty" xml:space="preserve">
+    <value>manifest {0} は空にできません。</value>
+  </data>
+  <data name="InvalidInternalName" xml:space="preserve">
+    <value>manifest の InternalName は有効なファイル名ではありません: {0}</value>
+  </data>
+  <data name="InvalidVersion" xml:space="preserve">
+    <value>manifest の Version が無効です: {0}</value>
+  </data>
+  <data name="ManifestFieldNull" xml:space="preserve">
+    <value>manifest {0} は null にできません。</value>
+  </data>
+  <data name="SelfDependency" xml:space="preserve">
+    <value>プラグインは自分自身に依存できません: {0}</value>
+  </data>
+  <data name="EmptyManifestName" xml:space="preserve">
+    <value>manifest {0} に空の名前を含めることはできません。</value>
+  </data>
+  <data name="DuplicateManifestName" xml:space="preserve">
+    <value>manifest {0} に重複する名前があります: {1}</value>
+  </data>
+  <data name="CallbackUnavailable" xml:space="preserve">
+    <value>プラグインがアンロード済み、または generation が閉じているため、コールバックを開始できません: {0}</value>
+  </data>
+  <data name="ConfigurationUnavailable" xml:space="preserve">
+    <value>プラグインがアンロード済み、または generation が閉じているため、設定を開けません: {0}</value>
+  </data>
+  <data name="NotificationDiagnosticsFailed" xml:space="preserve">
+    <value>プラグインエラーと通知の診断が失敗しました。</value>
+  </data>
+  <data name="CallbackLifecycleReentry" xml:space="preserve">
+    <value>プラグインのコールバック内ではライフサイクル操作を開始できません。コールバックが戻った後に呼び出してください。</value>
+  </data>
+  <data name="LifecyclePhaseInvalid" xml:space="preserve">
+    <value>phase={0} ではプラグイン操作 {1} を実行できません。</value>
+  </data>
+  <data name="GenerationMissing" xml:space="preserve">
+    <value>プラグインに runtime generation がありません: {0}</value>
+  </data>
+  <data name="InitializationTransactionBusy" xml:space="preserve">
+    <value>プラグインのライフサイクルトランザクションが実行中のため、再初期化できません。</value>
+  </data>
+  <data name="RuntimeStateNotEmpty" xml:space="preserve">
+    <value>phase={0} でプラグインの実行時状態が空でないため、Init を実行できません。</value>
+  </data>
+  <data name="FailedGroupContextMissing" xml:space="preserve">
+    <value>初期化に失敗したプラグイングループに context がありません: {0}</value>
+  </data>
+  <data name="InitializationFailed" xml:space="preserve">
+    <value>プラグイン {0} の初期化に失敗しました</value>
+  </data>
+  <data name="InitializationCleanupFailed" xml:space="preserve">
+    <value>プラグインの初期化とクリーンアップに失敗しました。</value>
+  </data>
+  <data name="InternalNameConflict" xml:space="preserve">
+    <value>プラグインの InternalName が競合しています（OrdinalIgnoreCase）: {0}</value>
+  </data>
+  <data name="InternalNamePackageConflict" xml:space="preserve">
+    <value>プラグインの InternalName が競合しています（OrdinalIgnoreCase）: {0} ({1}) / {2} ({3})</value>
+  </data>
+  <data name="InvalidPackage" xml:space="preserve">
+    <value>プラグインパッケージが無効です: package={0}</value>
+  </data>
+  <data name="DependencyNotInstalled" xml:space="preserve">
+    <value>プラグインの依存関係グラフに未インストールのプラグインがあります: {0}</value>
+  </data>
+  <data name="DependencyCycle" xml:space="preserve">
+    <value>プラグインの manifest の Dependencies に循環があります: {0}</value>
+  </data>
+  <data name="ReadAssembly" xml:space="preserve">
+    <value>プラグインアセンブリの読み込み</value>
+  </data>
+  <data name="ReadExportedTypes" xml:space="preserve">
+    <value>プラグインのエクスポートされた型の読み込み</value>
+  </data>
+  <data name="PluginTypeMissing" xml:space="preserve">
+    <value>{0} を実装する公開具象型が見つかりません。</value>
+  </data>
+  <data name="CreatePluginInstance" xml:space="preserve">
+    <value>プラグインインスタンスの作成</value>
+  </data>
+  <data name="CannotCreatePluginInstance" xml:space="preserve">
+    <value>プラグインインスタンスを作成できません: type={0}</value>
+  </data>
+  <data name="LoadingCleanupFailed" xml:space="preserve">
+    <value>プラグインの読み込みとクリーンアップに失敗しました。</value>
+  </data>
+  <data name="LoadingFailed" xml:space="preserve">
+    <value>プラグインの読み込みに失敗しました: plugin={0}, phase={1}</value>
+  </data>
+  <data name="SharedAssemblyUnavailable" xml:space="preserve">
+    <value>共有 ABI アセンブリ {0} は Default ALC で読み込む必要がありますが、ホストは読み込めません。</value>
+  </data>
+  <data name="HostUpdateRequired" xml:space="preserve">
+    <value>プラグインにはより新しいホスト ABI が必要です。UmamusumeResponseAnalyzer を更新してください: 要求 {0}、現在のホスト {1}。</value>
+  </data>
+  <data name="SharedAssemblyVersionMismatch" xml:space="preserve">
+    <value>共有 ABI アセンブリのバージョンが一致しません: プラグインの要求 {0}、ホストの Default ALC の読み込み済み {1}。</value>
+  </data>
+  <data name="PackageEntryMissing" xml:space="preserve">
+    <value>プラグインパッケージにエントリがありません: package={0}, entry={1}</value>
+  </data>
+  <data name="AssemblyCaseConflict" xml:space="preserve">
+    <value>プラグイングループのアセンブリ名に大文字と小文字の競合があります: {0} / {1}, context={2}</value>
+  </data>
+  <data name="AssemblyContentConflict" xml:space="preserve">
+    <value>プラグイングループに同名で内容の異なるアセンブリがあります: {0}, context={1}</value>
+  </data>
+  <data name="PluginNotFound" xml:space="preserve">
+    <value>プラグイン {0} が存在しないため、読み込めません。</value>
+  </data>
+  <data name="UnloadFailed" xml:space="preserve">
+    <value>プラグインのアンロードに失敗しました: plugin={0}</value>
+  </data>
+  <data name="BatchUnloadFailed" xml:space="preserve">
+    <value>プラグインの一括アンロードに失敗しました。</value>
+  </data>
+  <data name="LifecycleTransactionBusy" xml:space="preserve">
+    <value>プラグインのライフサイクルトランザクションが実行中のため、並行操作や再入操作はできません。</value>
+  </data>
+  <data name="MissingFileUnloaded" xml:space="preserve">
+    <value>プラグイン {0} のファイルが存在しないため、アンロードしました。</value>
+  </data>
+  <data name="PluginReloaded" xml:space="preserve">
+    <value>プラグイン {0} を再読み込みしました。</value>
+  </data>
+  <data name="ContextGroupMissing" xml:space="preserve">
+    <value>読み込まれたプラグインに context group がありません: {0}</value>
+  </data>
+  <data name="PluginNotLoaded" xml:space="preserve">
+    <value>プラグイン {0} は読み込まれていません。</value>
+  </data>
+  <data name="RelatedReloadFailed" xml:space="preserve">
+    <value>プラグイン {0} はアンロードされましたが、関連プラグインの再読み込みに失敗しました: {1}</value>
+  </data>
+  <data name="PluginUnloaded" xml:space="preserve">
+    <value>プラグイン {0} をアンロードしました。</value>
+  </data>
+  <data name="GroupInitializationCleanupFailed" xml:space="preserve">
+    <value>プラグイングループの初期化とクリーンアップに失敗しました。</value>
+  </data>
+  <data name="GroupLoadingCleanupFailed" xml:space="preserve">
+    <value>プラグイングループの読み込みとクリーンアップに失敗しました。</value>
+  </data>
+  <data name="StagedGroupCommitCleanupFailed" xml:space="preserve">
+    <value>ステージング済みプラグイングループの確定とクリーンアップに失敗しました。</value>
+  </data>
+  <data name="CleanupPhaseFailed" xml:space="preserve">
+    <value>プラグインのクリーンアップに失敗しました: plugin={0}, phase={1}</value>
+  </data>
+  <data name="DisposeFailed" xml:space="preserve">
+    <value>プラグインのクリーンアップに失敗しました: plugin={0}, phase=Dispose, {1}{2}{3}</value>
+  </data>
+  <data name="RegistrationContextCleanupFailed" xml:space="preserve">
+    <value>プラグインの registration/context のクリーンアップに失敗しました。</value>
+  </data>
+  <data name="HostEventsCleanupFailed" xml:space="preserve">
+    <value>プラグインの HostEvents のクリーンアップに失敗しました。</value>
+  </data>
+  <data name="LoadContextCleanupFailed" xml:space="preserve">
+    <value>プラグインの ALC のクリーンアップに失敗しました: context={0}</value>
+  </data>
+  <data name="CleanupFailed" xml:space="preserve">
+    <value>プラグインのクリーンアップに失敗しました。</value>
+  </data>
+  <data name="GenerationAlreadyRunning" xml:space="preserve">
+    <value>プラグインの generation は既に初期化中、または実行中です: {0}</value>
+  </data>
+  <data name="GenerationNotInitializing" xml:space="preserve">
+    <value>プラグインの generation は初期化中ではありません: {0}</value>
+  </data>
+  <data name="GenerationStillInitializing" xml:space="preserve">
+    <value>プラグインの generation はまだ初期化中です: {0}</value>
+  </data>
+  <data name="InitializationRegistrationCommitted" xml:space="preserve">
+    <value>プラグインの初期化登録は既に確定しています: {0}</value>
+  </data>
+  <data name="InitializationRegistrationNotCommitted" xml:space="preserve">
+    <value>プラグインの初期化登録はまだ確定していません: {0}</value>
+  </data>
+  <data name="GenerationCloseFailed" xml:space="preserve">
+    <value>プラグインの generation を閉じることができませんでした。</value>
+  </data>
+  <data name="BackgroundOperationFailed" xml:space="preserve">
+    <value>プラグインのバックグラウンド操作に失敗しました: plugin={0}, {1}</value>
+  </data>
+  <data name="GenerationUnavailable" xml:space="preserve">
+    <value>プラグインの generation は閉じているか、まだ開かれていません: {0}</value>
+  </data>
+  <data name="EventHandlerFailed" xml:space="preserve">
+    <value>プラグインのイベント処理に失敗しました: plugin={0}, {1}</value>
+  </data>
+  <data name="RegistrationAlreadyCommitted" xml:space="preserve">
+    <value>プラグインの登録ステージは既に確定しています: {0}</value>
+  </data>
+  <data name="NestedRegistration" xml:space="preserve">
+    <value>プラグインの登録ステージはネストできません。</value>
+  </data>
+  <data name="CatalogEndpoint" xml:space="preserve">
+    <value>カタログのエンドポイント</value>
+  </data>
+  <data name="EndpointOutsideCatalog" xml:space="preserve">
+    <value>エンドポイントの型が GameEndpointCatalog にありません</value>
+  </data>
+  <data name="EndpointPatternRequired" xml:space="preserve">
+    <value>Analyzer には少なくとも 1 つの endpoint pattern が必要です。</value>
+  </data>
+  <data name="ProgrammaticAnalyzer" xml:space="preserve">
+    <value>プログラムによる {0} analyzer</value>
+  </data>
+  <data name="RegistrationPhaseInvalid" xml:space="preserve">
+    <value>Analyzer とバックグラウンド操作は Initialize またはホストが実行する OnStarted コールバック内でのみ登録できます: plugin={0}</value>
+  </data>
+  <data name="ConcreteHostPayloadRequired" xml:space="preserve">
+    <value>Analyzer の payload は Host 内に存在する、型パラメーターが確定した具象 Gallop DTO である必要があります: {0}</value>
+  </data>
+  <data name="PayloadDirectionMismatch" xml:space="preserve">
+    <value>Analyzer の payload は現在の方向の Host Gallop DTO ではありません: kind={0}, payload={1}</value>
+  </data>
+  <data name="EndpointPatternUnmatched" xml:space="preserve">
+    <value>Endpoint pattern が現在のカタログに一致しません: kind={0}, pattern={1}</value>
+  </data>
+  <data name="UnknownEndpointPatternKind" xml:space="preserve">
+    <value>不明な endpoint pattern の種類です。</value>
+  </data>
+  <data name="WildcardRequired" xml:space="preserve">
+    <value>Wildcard endpoint pattern には * が必要です: {0}</value>
+  </data>
+  <data name="CanonicalAbsolutePathRequired" xml:space="preserve">
+    <value>Endpoint pattern は正規化された絶対パスである必要があります: {0}</value>
+  </data>
+  <data name="NonCanonicalPathSegment" xml:space="preserve">
+    <value>Endpoint pattern に正規化されていないパスセグメントがあります: {0}</value>
+  </data>
+  <data name="ExactWildcardForbidden" xml:space="preserve">
+    <value>Exact endpoint pattern に * を含めることはできません: {0}</value>
+  </data>
+  <data name="AdjacentWildcardsForbidden" xml:space="preserve">
+    <value>Wildcard endpoint pattern は隣接する ** に対応していません: {0}</value>
+  </data>
+  <data name="AnalyzerSignatureInvalid" xml:space="preserve">
+    <value>プラグインの analyzer のシグネチャが無効です: plugin={0}, method={1}.{2}, endpoint={3}, kind={4}, expected={5}, actual={6}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>、</value>
+  </data>
+</root>

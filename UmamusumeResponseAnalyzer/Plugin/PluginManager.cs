@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
@@ -67,7 +68,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             var callback = TryEnterPluginCallback(plugin, cancellationToken);
             return callback ?? throw new InvalidOperationException(
-                $"插件已卸载或 generation 已关闭，拒绝启动回调: {InternalName(plugin)}");
+                string.Format(i18n.CallbackUnavailable, InternalName(plugin)));
         }
 
         internal static IDisposable? TryEnterPluginCallback(
@@ -89,7 +90,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             cancellationToken.ThrowIfCancellationRequested();
             return TryEnterPluginInspection(plugin) ?? throw new InvalidOperationException(
-                $"插件已卸载或 generation 已关闭，拒绝打开设置: {InternalName(plugin)}");
+                string.Format(i18n.ConfigurationUnavailable, InternalName(plugin)));
         }
 
         static IDisposable? TryEnterPluginInspection(IPlugin plugin)
@@ -129,7 +130,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     source,
                     notificationError is null
                         ? failure
-                        : new AggregateException("插件错误及 notification diagnostics 失败。", failure, notificationError),
+                        : new AggregateException(i18n.NotificationDiagnosticsFailed, failure, notificationError),
                     details: details);
             }
             catch
@@ -169,13 +170,13 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             if (PluginGeneration.HasActiveCallbackFlow)
                 throw new InvalidOperationException(
-                    "插件 callback 内禁止启动 lifecycle 操作；请在 callback 返回后再调用。");
+                    i18n.CallbackLifecycleReentry);
         }
 
         static InvalidOperationException LifecyclePhaseFailure(
             string operation,
             PluginLifecyclePhase? phase = null)
-            => new($"当前 phase={phase ?? Lifecycle.Phase}，不允许执行插件 {operation}。");
+            => new(string.Format(i18n.LifecyclePhaseInvalid, phase ?? Lifecycle.Phase, operation));
 
         static void RequireOperationalLifecyclePhase()
         {
@@ -246,7 +247,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static PluginGeneration RequireGeneration(IPlugin plugin)
             => PluginGenerations.TryGetValue(plugin, out var generation)
                 ? generation
-                : throw new InvalidOperationException($"插件缺少 runtime generation: {InternalName(plugin)}");
+                : throw new InvalidOperationException(string.Format(i18n.GenerationMissing, InternalName(plugin)));
 
         internal static void Init(CancellationToken cancellationToken = default)
         {
@@ -266,7 +267,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (Runtime.ShutdownRequested)
                     throw LifecyclePhaseFailure("Init", PluginLifecyclePhase.ShuttingDown);
                 throw new InvalidOperationException(
-                    "已有插件 lifecycle 事务正在运行，无法重新初始化。");
+                    i18n.InitializationTransactionBusy);
             }
             try
             {
@@ -279,7 +280,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     LifecycleContexts.Count != 0 || Runtime.ReadAnalyzers().Request.Length != 0 ||
                     Runtime.ReadAnalyzers().Response.Length != 0)
                     throw new InvalidOperationException(
-                        $"当前 phase={Lifecycle.Phase}，插件 runtime state 非空，无法执行 Init。");
+                        string.Format(i18n.RuntimeStateNotEmpty, Lifecycle.Phase));
 
                 Runtime.ShutdownRequested = false;
                 Lifecycle.Phase = PluginLifecyclePhase.Created;
@@ -369,7 +370,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 }
 
                 if (!LifecycleContexts.ContainsKey(GroupKey(group)))
-                    throw new InvalidOperationException($"初始化失败的插件组缺少 context: {string.Join("、", group)}");
+                    throw new InvalidOperationException(string.Format(i18n.FailedGroupContextMissing, string.Join(i18n.ListSeparator, group)));
                 var unload = PrepareUnloadGroup(group);
                 CompletePendingUnloadsAsync([unload], clearAll: false).GetAwaiter().GetResult();
             }
@@ -405,7 +406,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 var failedPlugin = LifecycleMetadatas.TryGetValue(internalName, out var metadata)
                     ? metadata.FilePath
                     : internalName;
-                failure = new InvalidOperationException($"插件 {internalName} 初始化失败", ex);
+                failure = new InvalidOperationException(string.Format(i18n.InitializationFailed, internalName), ex);
                 if (!LifecycleFailedPlugins.Contains(failedPlugin))
                     LifecycleFailedPlugins.Add(failedPlugin);
                 if (committed)
@@ -414,7 +415,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     catch (Exception cleanupEx)
                     {
                         failure = new AggregateException(
-                            "插件初始化及清理失败。",
+                            i18n.InitializationCleanupFailed,
                             failure,
                             cleanupEx);
                     }

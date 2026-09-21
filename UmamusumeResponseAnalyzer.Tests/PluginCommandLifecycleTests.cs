@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -57,7 +58,7 @@ public sealed class PluginCommandLifecycleTests : IDisposable
             await HostCommands.ExecuteAsync(
                 $"/plugin unload {pluginName.ToLowerInvariant()}",
                 Snapshot()));
-        AssertLifecycleSuccess(unload, pluginName, "卸载");
+        AssertLifecycleSuccess(unload, pluginName, i18n.Command_PluginUnloaded);
         Assert.DoesNotContain(
             PluginManager.SnapshotLoadedPlugins(),
             plugin => PluginManager.InternalName(plugin) == pluginName);
@@ -65,13 +66,13 @@ public sealed class PluginCommandLifecycleTests : IDisposable
 
         var load = Assert.IsType<HostCommands.Result>(
             await HostCommands.ExecuteAsync($"/plugin load {pluginName}", Snapshot()));
-        AssertLifecycleSuccess(load, pluginName, "加载");
+        AssertLifecycleSuccess(load, pluginName, i18n.Command_PluginLoaded);
         AssertInitializedAndOpen(pluginName);
 
         PackagePlugin(pluginName, version: 2);
         var reload = Assert.IsType<HostCommands.Result>(
             await HostCommands.ExecuteAsync($"/plugin reload {pluginName}", Snapshot()));
-        AssertLifecycleSuccess(reload, pluginName, "重载");
+        AssertLifecycleSuccess(reload, pluginName, i18n.Command_PluginReloaded);
         AssertInitializedAndOpen(pluginName);
         Assert.Equal(
             new Version(2, 0),
@@ -118,7 +119,7 @@ public sealed class PluginCommandLifecycleTests : IDisposable
 
         var load = Assert.IsType<HostCommands.Result>(
             await HostCommands.ExecuteAsync($"/plugin load {pluginName}", Snapshot()));
-        AssertLifecycleSuccess(load, pluginName, "加载");
+        AssertLifecycleSuccess(load, pluginName, i18n.Command_PluginLoaded);
 
         await Assert.ThrowsAsync<AggregateException>(() =>
             HostCommands.ExecuteAsync($"/plugin unload {pluginName}", Snapshot()));
@@ -138,7 +139,7 @@ public sealed class PluginCommandLifecycleTests : IDisposable
         var result = Assert.IsType<HostCommands.Result>(
             await HostCommands.ExecuteAsync($"/plugin load {pluginName}", Snapshot()));
 
-        Assert.Equal($"插件 {pluginName} 加载失败。", result.Message);
+        Assert.Equal(string.Format(i18n.Command_PluginLoadFailed, pluginName), result.Message);
         Assert.Equal(UiSeverity.Error, result.Severity);
         Assert.DoesNotContain(
             PluginManager.SnapshotLoadedPlugins(),
@@ -183,7 +184,7 @@ public sealed class PluginCommandLifecycleTests : IDisposable
             Assert.Same(target, Workspace.Current);
 
             await host.FlushAsync();
-            await terminal.WaitForScreenAsync($"{pluginName} 已卸载");
+            await terminal.WaitForScreenAsync(string.Format(Localization.PluginRegistry.PluginUnloaded, pluginName));
         }
         finally
         {
@@ -247,13 +248,14 @@ public sealed class PluginCommandLifecycleTests : IDisposable
     static void AssertLifecycleSuccess(
         HostCommands.Result result,
         string pluginName,
-        string action)
+        string messageTemplate)
     {
-        Assert.Equal($"插件 {pluginName} 已{action}。", result.Message);
+        var message = string.Format(messageTemplate, pluginName);
+        Assert.Equal(message, result.Message);
         Assert.Equal(UiSeverity.Success, result.Severity);
-        Assert.Equal("Plugin command", result.Display?.Title);
+        Assert.Equal(i18n.Command_PluginTitle, result.Display?.Title);
         Assert.Equal(
-            $"{pluginName} 已{action}。",
+            message,
             Assert.Single(result.Display!.Items).Text);
     }
 

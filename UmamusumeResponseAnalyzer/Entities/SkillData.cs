@@ -244,7 +244,7 @@ namespace UmamusumeResponseAnalyzer.Entities
 
                 // 由服务器保存的条件详情。不变量:服务器对每个进化条件都会下发记录。
                 var serverCondition = chara_info.skill_upgrade_info_array.FirstOrDefault(x => x.condition_id == ConditionId)
-                    ?? throw new InvalidOperationException($"缺少技能进化条件记录: conditionId={ConditionId}");
+                    ?? throw new InvalidOperationException(string.Format(Localization.Database.I18N_UpgradeConditionMissing, ConditionId));
                 // 由服务器确定该条件已满足
                 if (serverCondition.current_count == serverCondition.total_count) return true;
                 var currentCount = serverCondition.current_count;
@@ -282,7 +282,7 @@ namespace UmamusumeResponseAnalyzer.Entities
                                 var properType = SkillProper.GroundType.Dirt;
                                 return currentCount + skills.Count(x => x.Propers.Any(y => y.Ground == properType)) >= AdditionalRequirement;
                             }
-                            throw new InvalidDataException($"未知的技能适性进化条件: conditionId={ConditionId}, requirement={Requirement}");
+                            throw new InvalidDataException(string.Format(Localization.Database.I18N_UnknownAptitudeRequirement, ConditionId, Requirement));
                         }
                     case ConditionType.Specific:
                         return skills.Any(x => x.Id == Requirement);

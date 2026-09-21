@@ -5,6 +5,7 @@ using LegendPlugin = LegendScenarioAnalyzer.LegendScenarioAnalyzer;
 using RamenPlugin = RamenScenarioAnalyzer.RamenScenarioAnalyzer;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
+using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 static partial class EventLoggerRuntimeSmoke
 {
@@ -39,7 +40,7 @@ static partial class EventLoggerRuntimeSmoke
 
             var eventScreen = ui.CaptureScreen();
             if (!eventScreen.Contains("训练失败！", StringComparison.Ordinal)
-                || !eventScreen.Contains("WARN", StringComparison.Ordinal))
+                || !eventScreen.Contains(UiText.Severity_Warning, StringComparison.Ordinal))
                 throw new InvalidOperationException("The scoped training-failure warning is not visible in the EventLogger framebuffer.");
 
             ui.Bootstrap.SwitchTo();

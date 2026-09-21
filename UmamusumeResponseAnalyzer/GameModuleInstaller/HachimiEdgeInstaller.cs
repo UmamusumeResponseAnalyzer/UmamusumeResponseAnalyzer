@@ -85,7 +85,7 @@ internal static class HachimiEdgeInstaller
         HachimiEdgeInstallation.EnsureGameStopped(game);
         notifier = NormalizeNotifier(notifier);
         var snapshot = await ResourceUpdater.HttpClient.GetFromJsonAsync<HachimiEdgeSnapshot>(ApiRoot + "HachimiEdge?client=" + game.Client, JsonOptions, ct)
-            ?? throw new InvalidDataException("URACloud 返回空组件配置。 / URACloud returned an empty component configuration.");
+            ?? throw new InvalidDataException(Text("EmptyComponentConfiguration"));
         ValidateSnapshot(snapshot, game.Client);
         var components = game.Binaries.Select(b => snapshot.Components.Single(c => c.Name == b.Component)).ToArray();
         foreach (var component in components)
@@ -106,27 +106,27 @@ internal static class HachimiEdgeInstaller
     internal static void ValidateSnapshot(HachimiEdgeSnapshot snapshot, string client)
     {
         if (snapshot.Client != client)
-            throw new InvalidDataException($"URACloud 返回的客户端不匹配。 / URACloud client mismatch: expected {client}, received {snapshot.Client}.");
+            throw new InvalidDataException(Text("ClientMismatch", client, snapshot.Client));
         var names = new[] { "edge", "httpforward", "cellar", "funnyhoney" };
         if (snapshot.Components is null || snapshot.Components.Length != 4 ||
             !snapshot.Components.Select(c => c?.Name).Order().SequenceEqual(names.Order()))
-            throw new InvalidDataException("URACloud 组件列表不完整或重复。 / Invalid URACloud component list.");
+            throw new InvalidDataException(Text("InvalidComponentList"));
         foreach (var component in snapshot.Components)
             if (string.IsNullOrWhiteSpace(component.Version) || component.Size is <= 0 or > MaxComponentBytes ||
                 component.Sha256 is not { Length: 64 } || !component.Sha256.All(Uri.IsHexDigit) ||
                 component.DownloadUrl != $"HachimiEdge/components/{component.Sha256}")
-                throw new InvalidDataException($"URACloud 组件元数据无效。 / Invalid component metadata: {component.Name}");
+                throw new InvalidDataException(Text("InvalidComponentMetadata", component.Name));
     }
 
     internal static void ValidateBinary(string path, HachimiEdgeComponent component)
     {
         using var file = File.OpenRead(path);
         if (file.Length != component.Size || !Convert.ToHexStringLower(SHA256.HashData(file)).Equals(component.Sha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"组件长度或 SHA-256 不符。 / Component length or SHA-256 mismatch: {component.Name}");
+            throw new InvalidDataException(Text("ComponentMismatch", component.Name));
         file.Position = 0;
         using var pe = new PEReader(file);
         if (pe.PEHeaders.PEHeader is null || pe.PEHeaders.CoffHeader.Machine != Machine.Amd64)
-            throw new InvalidDataException($"组件必须是 Windows x64 PE 文件。 / Expected a Windows x64 PE file: {component.Name}");
+            throw new InvalidDataException(Text("InvalidPortableExecutable", component.Name));
     }
 
     internal static (string Config, string ForwardConfig) MergeConfigurations(string directory, string notifier)
@@ -135,7 +135,7 @@ internal static class HachimiEdgeInstaller
         JsonArray libraries;
         if (!config.TryGetPropertyValue("load_libraries", out var node)) config["load_libraries"] = libraries = [];
         else if (node is JsonArray list && list.All(n => n is JsonValue value && value.TryGetValue<string>(out _))) libraries = list;
-        else throw new InvalidDataException("hachimi/config.json: load_libraries 必须为字符串数组。 / Expected an array of strings.");
+        else throw new InvalidDataException(Text("InvalidLoadLibraries"));
         const string library = @"hachimi\hachimi_httpforward_plugin.dll";
         if (!libraries.Any(n => n!.GetValue<string>().Replace('/', '\\').Equals(library, StringComparison.OrdinalIgnoreCase)))
             libraries.Add(library);
@@ -143,10 +143,10 @@ internal static class HachimiEdgeInstaller
         var forward = ReadConfiguration(Path.Combine(directory, HachimiEdgeGame.ForwardConfigPath));
         if (forward.TryGetPropertyValue("notifier_host", out var host) &&
             (host is not JsonValue hostValue || !hostValue.TryGetValue<string>(out _)))
-            throw new InvalidDataException("httpforward.json: notifier_host 必须是字符串。 / Expected a string.");
+            throw new InvalidDataException(Text("InvalidNotifierHost"));
         if (!forward.TryGetPropertyValue("notifier_timeout_ms", out var timeout)) forward["notifier_timeout_ms"] = 100;
         else if (timeout is not JsonValue timeoutValue || !timeoutValue.TryGetValue<ulong>(out var milliseconds) || milliseconds == 0)
-            throw new InvalidDataException("httpforward.json: notifier_timeout_ms 必须是正整数。 / Expected a positive integer.");
+            throw new InvalidDataException(Text("InvalidNotifierTimeout"));
         forward["notifier_host"] = NormalizeNotifier(notifier);
         return (config.ToJsonString(JsonOptions), forward.ToJsonString(JsonOptions));
     }
@@ -157,9 +157,9 @@ internal static class HachimiEdgeInstaller
         try
         {
             return JsonNode.Parse(File.ReadAllText(path)) as JsonObject
-                ?? throw new JsonException("Expected a JSON object.");
+                ?? throw new JsonException(Text("ExpectedJsonObject"));
         }
-        catch (JsonException ex) { throw new InvalidDataException($"配置文件无法解析。 / Invalid configuration: {path}\n{ex.Message}", ex); }
+        catch (JsonException ex) { throw new InvalidDataException(Text("InvalidConfiguration", path, ex.Message), ex); }
     }
 
     internal static string DefaultNotifier(string address, int port) => NormalizeNotifier(new UriBuilder("http", address switch
@@ -173,7 +173,7 @@ internal static class HachimiEdgeInstaller
     {
         if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") ||
             uri.Host.Length == 0 || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0)
-            throw new InvalidDataException("转发地址必须为 HTTP(S) 地址，且不含凭据、查询或片段。 / Expected an HTTP(S) URL without credentials, query or fragment.");
+            throw new InvalidDataException(Text("InvalidNotifierUrl"));
         return uri.AbsoluteUri.TrimEnd('/');
     }
 

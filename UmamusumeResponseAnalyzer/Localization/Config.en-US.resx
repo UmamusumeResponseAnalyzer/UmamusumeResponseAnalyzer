@@ -118,16 +118,52 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Return" xml:space="preserve">
-    <value>return</value>
+    <value>Return</value>
   </data>
   <data name="Settings_Title" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="Tabs_Core_ListenAddress" xml:space="preserve">
+    <value>Listen address</value>
+  </data>
+  <data name="Tabs_Core_ListenAddressPrompt" xml:space="preserve">
+    <value>Enter the listen address (default: 127.0.0.1; 0.0.0.0 with administrator privileges)</value>
+  </data>
+  <data name="Tabs_Core_ListenPort" xml:space="preserve">
+    <value>Listen port</value>
+  </data>
+  <data name="Tabs_Core_ListenPortPrompt" xml:space="preserve">
+    <value>Enter the listen port (default: 4693)</value>
+  </data>
+  <data name="Tabs_Core_Title" xml:space="preserve">
+    <value>Core</value>
+  </data>
+  <data name="Tabs_Debug_SaveResponseForDebug" xml:space="preserve">
+    <value>Save communication files</value>
+  </data>
   <data name="Tabs_Debug_Title" xml:space="preserve">
     <value>Debug</value>
   </data>
+  <data name="Tabs_Language_AutoDetect" xml:space="preserve">
+    <value>Auto-detect</value>
+  </data>
+  <data name="Tabs_Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Tabs_Language_Japanese" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="Tabs_Language_SimplifiedChinese" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
   <data name="Tabs_Language_Title" xml:space="preserve">
     <value>Language</value>
+  </data>
+  <data name="Tabs_Localization_InputPath" xml:space="preserve">
+    <value>Enter the localization file path</value>
+  </data>
+  <data name="Tabs_Localization_Path" xml:space="preserve">
+    <value>Localization file path</value>
   </data>
   <data name="Tabs_Localization_Title" xml:space="preserve">
     <value>Localization</value>
@@ -135,7 +171,58 @@
   <data name="Tabs_Misc_Title" xml:space="preserve">
     <value>Miscellaneous</value>
   </data>
+  <data name="Tabs_Misc_WriteAIInfo" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="Tabs_Plugin_Title" xml:space="preserve">
+    <value>Plugins</value>
+  </data>
+  <data name="Tabs_Repository_Targets" xml:space="preserve">
+    <value>Server targets</value>
+  </data>
+  <data name="Tabs_Repository_TargetsPrompt" xml:space="preserve">
+    <value>Enter server targets, separated by commas; leave empty for no restriction. Use Cygames for Japan or Komoe for Traditional Chinese.</value>
+  </data>
+  <data name="Tabs_Repository_Title" xml:space="preserve">
+    <value>Repository</value>
+  </data>
+  <data name="Tabs_Updater_CustomDatabaseRepositoryPrompt" xml:space="preserve">
+    <value>Enter the custom database repository URL: </value>
+  </data>
+  <data name="Tabs_Updater_ForceUseGithubToUpdate" xml:space="preserve">
+    <value>Force updates through GitHub</value>
+  </data>
   <data name="Tabs_Updater_Title" xml:space="preserve">
     <value>Update</value>
+  </data>
+  <data name="Tabs_Core_ShowFirstRunPrompt" xml:space="preserve">
+    <value>Show initial setup</value>
+  </data>
+  <data name="Tabs_Updater_TrainerIsMale" xml:space="preserve">
+    <value>Male trainer</value>
+  </data>
+  <data name="Tabs_Updater_DatabaseLanguage" xml:space="preserve">
+    <value>Data language</value>
+  </data>
+  <data name="Tabs_Updater_CustomDatabaseRepository" xml:space="preserve">
+    <value>Custom database repository</value>
+  </data>
+  <data name="InvalidNullContent" xml:space="preserve">
+    <value>must not contain null content</value>
+  </data>
+  <data name="InvalidNullValue" xml:space="preserve">
+    <value>must not be null</value>
+  </data>
+  <data name="InvalidSchema" xml:space="preserve">
+    <value>Configuration file "{0}" does not match the current schema ({1}:{2}): {3}</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>Invalid configuration file "{0}", field {1}: {2}.</value>
+  </data>
+  <data name="NullAssignment" xml:space="preserve">
+    <value>Cannot assign null to {0}.</value>
+  </data>
+  <data name="PluginUnloaded" xml:space="preserve">
+    <value>Cannot open settings because the plugin was unloaded: {0}</value>
   </data>
 </root>

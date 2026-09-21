@@ -8,7 +8,7 @@ using UmamusumeResponseAnalyzer.Entities;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using HostSkillData = UmamusumeResponseAnalyzer.Entities.SkillData;
 
-static class PluginCases
+static partial class PluginCases
 {
     static readonly int[] BaseTrainingIds = [101, 105, 102, 103, 106];
 
@@ -357,7 +357,7 @@ static class PluginCases
         IReadOnlyList<int> saddleIds)
     {
         WriteBrotliJson(Database.EVENT_NAME_FILEPATH, new List<Story>());
-        WriteBrotliJson(Database.NAMES_FILEPATH, names);
+        WriteBrotliJson(Database.NAMES_FILEPATH, names.ToList(), new() { TypeNameHandling = TypeNameHandling.All });
         WriteBrotliJson(Database.SKILLS_FILEPATH, skills);
         WriteBrotliJson(Database.SKILL_UPGRADE_SPECIALITY_FILEPATH, new List<SkillUpgradeSpeciality>());
         WriteBrotliJson(Database.TALENT_SKILLS_FILEPATH, new Dictionary<int, TalentSkillData[]>());
@@ -369,13 +369,13 @@ static class PluginCases
             throw new InvalidOperationException($"{fixtureName} database fixture did not load atomically.");
     }
 
-    static void WriteBrotliJson<T>(string path, T value)
+    static void WriteBrotliJson<T>(string path, T value, JsonSerializerSettings? settings = null)
     {
         using var file = File.Create(path);
         using var brotli = new BrotliStream(file, CompressionLevel.SmallestSize);
         using var writer = new StreamWriter(brotli, Encoding.UTF8);
         using var json = new JsonTextWriter(writer);
-        JsonSerializer.CreateDefault().Serialize(json, value);
+        JsonSerializer.CreateDefault(settings).Serialize(json, value);
     }
 
     static TeamStadiumOpponentListResponse CreateTeamStadiumOpponentListResponse() => new()

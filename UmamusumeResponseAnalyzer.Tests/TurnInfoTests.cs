@@ -130,7 +130,7 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             Assert.Equal(year, info.Year);
             Assert.Equal(month, info.Month);
-            Assert.Equal(half, info.HalfMonth);
+            Assert.Equal(half == "前半" ? Localization.Game.I18N_FirstHalf : Localization.Game.I18N_SecondHalf, info.HalfMonth);
         }
 
         [Fact]

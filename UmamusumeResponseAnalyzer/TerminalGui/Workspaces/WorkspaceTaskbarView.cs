@@ -243,7 +243,7 @@ internal sealed class WorkspaceTaskbarView : View
         Shortcut? previous = null;
         foreach (var workspace in workspaces)
         {
-            var item = new Shortcut(Key.Empty, workspace.Title, () => switchWorkspace(workspace))
+            var item = new Shortcut(Key.Empty, workspace.DisplayTitle, () => switchWorkspace(workspace))
             {
                 X = previous is null ? 0 : Pos.Right(previous),
                 Y = 0,
@@ -369,7 +369,7 @@ internal sealed class WorkspaceTaskbarView : View
 
         for (var index = 0; index < items.Count; index++)
         {
-            var title = items[index].Workspace.Title;
+            var title = items[index].Workspace.DisplayTitle;
             var visibleTitle = titleBudgets[index] >= fullTitleWidths[index]
                 ? title
                 : ShortenTitle(title, titleBudgets[index]);
@@ -396,7 +396,7 @@ internal sealed class WorkspaceTaskbarView : View
 
         for (var index = 0; index < items.Count; index++)
         {
-            fullTitleWidths[index] = items[index].Workspace.Title.GetColumns();
+            fullTitleWidths[index] = items[index].Workspace.DisplayTitle.GetColumns();
             itemMargins[index] =
                 items[index].Item.CommandView?.Margin.Thickness.Horizontal ?? 0;
         }

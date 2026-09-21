@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="CommandMode_Title" xml:space="preserve">
+    <value>Command mode</value>
+  </data>
+  <data name="CommandMode_Help" xml:space="preserve">
+    <value>Tab complete · ↑↓ history · Esc cancel</value>
+  </data>
+  <data name="CommandMode_MoreCandidates" xml:space="preserve">
+    <value>+{0} more</value>
+  </data>
+  <data name="CommandMode_CompletionFailed" xml:space="preserve">
+    <value>Command completion failed: {0}</value>
+  </data>
+  <data name="Dialog_GameExecutable" xml:space="preserve">
+    <value>Game executable</value>
+  </data>
+  <data name="Dialog_FileSelectionCanceled" xml:space="preserve">
+    <value>File selection canceled.</value>
+  </data>
+  <data name="Dialog_Processing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="Button_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Button_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Button_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Button_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Dialog_OperationCanceled" xml:space="preserve">
+    <value>The operation was canceled.</value>
+  </data>
+  <data name="Dialog_SelectionEmpty" xml:space="preserve">
+    <value>The selection list must not be empty.</value>
+  </data>
+  <data name="Dialog_MenuEmpty" xml:space="preserve">
+    <value>The menu must not be empty.</value>
+  </data>
+  <data name="Dialog_MenuCanceled" xml:space="preserve">
+    <value>The menu was canceled.</value>
+  </data>
+  <data name="Dialog_MultiSelectionEmpty" xml:space="preserve">
+    <value>The multiple-selection list must not be empty.</value>
+  </data>
+  <data name="Dialog_MultiSelectionCanceled" xml:space="preserve">
+    <value>Multiple selection was canceled.</value>
+  </data>
+  <data name="Dialog_InputCanceled" xml:space="preserve">
+    <value>Input was canceled.</value>
+  </data>
+  <data name="Dialog_ReturnPrompt" xml:space="preserve">
+    <value>Press Enter to return</value>
+  </data>
+  <data name="Dialog_SelectionCanceled" xml:space="preserve">
+    <value>Selection was canceled.</value>
+  </data>
+  <data name="Dialog_RequiresOwnerThread" xml:space="preserve">
+    <value>Terminal.Gui dialogs must run on the UI owner thread.</value>
+  </data>
+  <data name="Notification_Remaining" xml:space="preserve">
+    <value>{0} more notifications</value>
+  </data>
+  <data name="Notification_Countdown" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="Severity_Trace" xml:space="preserve">
+    <value>TRACE</value>
+  </data>
+  <data name="Severity_Info" xml:space="preserve">
+    <value>INFO</value>
+  </data>
+  <data name="Severity_Success" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>WARN</value>
+  </data>
+  <data name="Severity_Error" xml:space="preserve">
+    <value>ERROR</value>
+  </data>
+  <data name="Workspace_BootstrapTitle" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="Workspace_TitleEmpty" xml:space="preserve">
+    <value>Workspace title must not be empty.</value>
+  </data>
+  <data name="Workspace_NoOutput" xml:space="preserve">
+    <value>{0} has no output yet.</value>
+  </data>
+  <data name="Workspace_SwitchDescription" xml:space="preserve">
+    <value>Switch to {0}</value>
+  </data>
+  <data name="Workspace_PanelNotRegistered" xml:space="preserve">
+    <value>Workspace panel '{0}' is not registered.</value>
+  </data>
+  <data name="Workspace_PanelViewDisposed" xml:space="preserve">
+    <value>Workspace panel '{0}' factory returned a View already disposed by the viewport.</value>
+  </data>
+  <data name="Workspace_PanelViewAttached" xml:space="preserve">
+    <value>Workspace panel '{0}' factory returned an already attached View.</value>
+  </data>
+  <data name="Workspace_PanelViewOwned" xml:space="preserve">
+    <value>Workspace panel '{0}' factory returned a View already owned by the viewport.</value>
+  </data>
+  <data name="Workspace_MouseCaptureReleaseFailed" xml:space="preserve">
+    <value>Workspace '{0}' could not release mouse capture from the controls being removed; view detachment was aborted.</value>
+  </data>
+  <data name="Workspace_GenerationNotActive" xml:space="preserve">
+    <value>Workspace '{0}' is not the active registered generation.</value>
+  </data>
+  <data name="Workspace_BootstrapCannotRemove" xml:space="preserve">
+    <value>Bootstrap workspace '{0}' cannot be removed.</value>
+  </data>
+  <data name="Workspace_Removed" xml:space="preserve">
+    <value>Workspace '{0}' was removed and this handle cannot be used.</value>
+  </data>
+  <data name="Workspace_ContentFactoryNull" xml:space="preserve">
+    <value>WorkspaceContent factory returned null.</value>
+  </data>
+  <data name="Host_UnknownIngressEvent" xml:space="preserve">
+    <value>Unknown UiHost ingress event: {0}</value>
+  </data>
+  <data name="Host_NavigationAbandoned" xml:space="preserve">
+    <value>UiHost stopped before the accepted navigation event was applied.</value>
+  </data>
+  <data name="Host_FlushAbandoned" xml:space="preserve">
+    <value>UiHost stopped before the accepted flush event was applied.</value>
+  </data>
+  <data name="Hotkey_Reserved" xml:space="preserve">
+    <value>Ctrl+{0} is reserved by the terminal and cannot be registered as a hotkey.</value>
+  </data>
+  <data name="Host_RunOnce" xml:space="preserve">
+    <value>UiHost.RunAsync can only be called once.</value>
+  </data>
+  <data name="Host_Stopped" xml:space="preserve">
+    <value>UiHost is stopped; new UI operations are not accepted.</value>
+  </data>
+  <data name="Host_Stopping" xml:space="preserve">
+    <value>UiHost is stopping; new UI operations are not accepted.</value>
+  </data>
+  <data name="Host_RootCreationFailed" xml:space="preserve">
+    <value>UiHost root creation failed; new UI operations are not accepted.</value>
+  </data>
+  <data name="Host_TaskbarOrderNull" xml:space="preserve">
+    <value>Config.WorkspaceTaskbarTitleOrder must not be null.</value>
+  </data>
+  <data name="Host_WindowNotCreated" xml:space="preserve">
+    <value>UiHost window has not been created.</value>
+  </data>
+  <data name="Host_ViewportNotCreated" xml:space="preserve">
+    <value>UiHost workspace viewport has not been created.</value>
+  </data>
+  <data name="Host_AlreadyInitialized" xml:space="preserve">
+    <value>TerminalUi is already initialized; UiHost cannot be replaced within this process.</value>
+  </data>
+  <data name="Host_NotInitialized" xml:space="preserve">
+    <value>TerminalUi has not been initialized.</value>
+  </data>
+  <data name="Hotkey_HandlerFailed" xml:space="preserve">
+    <value>Hotkey handling failed: {0}</value>
+  </data>
+  <data name="Hotkey_InputSinkAlreadyBound" xml:space="preserve">
+    <value>The UI input sink is already bound; the Host cannot be replaced.</value>
+  </data>
+  <data name="Hotkey_PopupRequiresInputSink" xml:space="preserve">
+    <value>Hotkey popup requires a bound UI input sink.</value>
+  </data>
+  <data name="Command_WorkspaceUsage" xml:space="preserve">
+    <value>Usage: /workspace | /workspace switch [&lt;title&gt;|"&lt;title&gt;"] | /workspace list</value>
+  </data>
+  <data name="Command_PluginUsage" xml:space="preserve">
+    <value>Usage: /plugin [list] | /plugin load &lt;InternalName&gt; | /plugin unload &lt;InternalName&gt; | /plugin reload &lt;InternalName&gt;</value>
+  </data>
+  <data name="Command_Empty" xml:space="preserve">
+    <value>The command is empty.</value>
+  </data>
+  <data name="Command_Unknown" xml:space="preserve">
+    <value>Unknown command: /{0}</value>
+  </data>
+  <data name="Command_QuotedTitleTrailingContent" xml:space="preserve">
+    <value>A quoted workspace title must not have content after the closing quote.</value>
+  </data>
+  <data name="Command_QuotedTitleEmpty" xml:space="preserve">
+    <value>A quoted workspace title must not be empty or contain only whitespace.</value>
+  </data>
+  <data name="Command_QuotedTitleTrailingSlash" xml:space="preserve">
+    <value>A quoted workspace title must not end with a backslash.</value>
+  </data>
+  <data name="Command_QuotedTitleUnsupportedEscape" xml:space="preserve">
+    <value>A quoted workspace title does not support escape \{0}; only \" and \\ are supported.</value>
+  </data>
+  <data name="Command_QuotedTitleUnclosed" xml:space="preserve">
+    <value>The quoted workspace title is missing its closing quote.</value>
+  </data>
+  <data name="Command_WorkspaceNotFound" xml:space="preserve">
+    <value>Workspace not found: {0}</value>
+  </data>
+  <data name="Command_PluginNotFound" xml:space="preserve">
+    <value>Plugin not found: {0}</value>
+  </data>
+  <data name="Command_PluginLoadFailed" xml:space="preserve">
+    <value>Failed to load plugin {0}.</value>
+  </data>
+  <data name="Command_PluginUnloadFailed" xml:space="preserve">
+    <value>Failed to unload plugin {0}.</value>
+  </data>
+  <data name="Command_PluginReloadFailed" xml:space="preserve">
+    <value>Failed to reload plugin {0}.</value>
+  </data>
+  <data name="Command_PluginLoaded" xml:space="preserve">
+    <value>Plugin {0} was loaded.</value>
+  </data>
+  <data name="Command_PluginUnloaded" xml:space="preserve">
+    <value>Plugin {0} was unloaded.</value>
+  </data>
+  <data name="Command_PluginReloaded" xml:space="preserve">
+    <value>Plugin {0} was reloaded.</value>
+  </data>
+  <data name="Command_PluginTitle" xml:space="preserve">
+    <value>Plugin command</value>
+  </data>
+  <data name="Command_WorkspacesTitle" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Command_PluginsTitle" xml:space="preserve">
+    <value>Plugins</value>
+  </data>
+  <data name="Command_NoPlugins" xml:space="preserve">
+    <value>(No known plugins)</value>
+  </data>
+  <data name="Command_PluginStateLoaded" xml:space="preserve">
+    <value>loaded</value>
+  </data>
+  <data name="Command_PluginStateUnloaded" xml:space="preserve">
+    <value>unloaded</value>
+  </data>
+  <data name="Command_PluginStateFailed" xml:space="preserve">
+    <value>failed</value>
+  </data>
+  <data name="Command_PluginAuthor" xml:space="preserve">
+    <value>by {0}</value>
+  </data>
+</root>

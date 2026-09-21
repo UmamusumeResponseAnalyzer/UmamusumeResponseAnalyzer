@@ -1,3 +1,4 @@
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using Gallop;
 using Gallop.Endpoints;
 using MessagePack;
@@ -72,7 +73,7 @@ public sealed class EndpointPatternDispatchTests
         var error = Assert.Throws<InvalidOperationException>(() =>
             PluginManager.ExpandEndpointPatterns([EndpointPattern.Wildcard("/umamusume/*")]));
 
-        Assert.Contains("未命中", error.Message);
+        Assert.Equal(string.Format(i18n.EndpointPatternUnmatched, EndpointPatternKind.Wildcard, "/umamusume/*"), error.Message);
     }
 
     [Fact]

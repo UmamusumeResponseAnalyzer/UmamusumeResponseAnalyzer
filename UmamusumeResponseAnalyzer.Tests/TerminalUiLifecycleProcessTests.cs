@@ -1,8 +1,10 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
+using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
@@ -12,7 +14,7 @@ public sealed class TerminalUiLifecycleProcessTests
     public Task UninitializedHostIsRejected()
         => AssertLifecycleScenarioAsync(
             "uninitialized",
-            "TerminalUi 尚未初始化。",
+            nameof(i18n.Host_NotInitialized),
             TerminalUiLifecycleChildProcess.Uninitialized,
             nameof(UninitializedHostIsRejected));
 
@@ -20,7 +22,7 @@ public sealed class TerminalUiLifecycleProcessTests
     public Task DuplicateInitializeIsRejected()
         => AssertLifecycleScenarioAsync(
             "duplicate-initialize",
-            "TerminalUi 已初始化；进程内不允许替换 UiHost。",
+            nameof(i18n.Host_AlreadyInitialized),
             TerminalUiLifecycleChildProcess.DuplicateInitialize,
             nameof(DuplicateInitializeIsRejected));
 
@@ -28,7 +30,7 @@ public sealed class TerminalUiLifecycleProcessTests
     public Task StoppingHostIsRejected()
         => AssertLifecycleScenarioAsync(
             "stopping",
-            "UiHost is stopping; new UI operations are not accepted.",
+            nameof(i18n.Host_Stopping),
             TerminalUiLifecycleChildProcess.Stopping,
             nameof(StoppingHostIsRejected));
 
@@ -36,24 +38,26 @@ public sealed class TerminalUiLifecycleProcessTests
     public Task StoppedHostIsRejected()
         => AssertLifecycleScenarioAsync(
             "stopped",
-            "UiHost is stopped; new UI operations are not accepted.",
+            nameof(i18n.Host_Stopped),
             TerminalUiLifecycleChildProcess.Stopped,
             nameof(StoppedHostIsRejected));
 
     private static async Task AssertLifecycleScenarioAsync(
         string scenario,
-        string expected,
+        string resourceKey,
         Func<string> childAction,
         string methodName)
     {
+        var culture = CultureInfo.GetCultureInfo("ja-JP");
         if (TerminalUiLifecycleChildProcess.IsChild(scenario))
         {
+            i18n.Culture = culture;
             TerminalUiLifecycleChildProcess.WriteResult(childAction());
             return;
         }
 
         Assert.Equal(
-            expected,
+            i18n.ResourceManager.GetString(resourceKey, culture),
             await RunChildAsync(
                 scenario,
                 typeof(TerminalUiLifecycleProcessTests),
