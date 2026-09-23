@@ -16,4 +16,5 @@ public class PracticeRaceConditionDetail
     [Key("motivation")] public int motivation; // 0x24
     [Key("specified_entry_num")] public int specified_entry_num; // 0x28
     [Key("npc_name")] public string npc_name; // 0x30
+    [Key("recommend_condition_id")] public int recommend_condition_id; // 0x38
 }

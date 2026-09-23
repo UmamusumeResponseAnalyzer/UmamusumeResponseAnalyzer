@@ -28,4 +28,7 @@ public class RaceConditionDetail
     [Key("trained_chara_restriction_upper")] public int trained_chara_restriction_upper; // 0x64
     [Key("trained_chara_restriction_lower")] public int trained_chara_restriction_lower; // 0x68
     [Key("sp_rule_data_id")] public int sp_rule_data_id; // 0x6C
+    [Key("npc_name")] public string npc_name; // 0x70
+    [Key("recommend_condition_id")] public int recommend_condition_id; // 0x78
+    [Key("is_disable_recommend_npc")] public int is_disable_recommend_npc; // 0x7C
 }

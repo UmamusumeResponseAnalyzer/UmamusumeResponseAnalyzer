@@ -34,4 +34,6 @@ public class RoomMatchCreateRoomRequest : RequestBase<RoomMatchCreateRoomRespons
     [Key("trained_chara_restriction_upper")] public int trained_chara_restriction_upper; // 0xFC
     [Key("trained_chara_restriction_lower")] public int trained_chara_restriction_lower; // 0x100
     [Key("sp_rule_data_id")] public int sp_rule_data_id; // 0x104
+    [Key("recommend_condition_id")] public int recommend_condition_id; // 0x108
+    [Key("is_disable_recommend_npc")] public int is_disable_recommend_npc; // 0x10C
 }

@@ -38,4 +38,7 @@ public class RoomMatchSavedRoomInfo
     [Key("trained_chara_restriction_upper")] public int trained_chara_restriction_upper; // 0xA4
     [Key("trained_chara_restriction_lower")] public int trained_chara_restriction_lower; // 0xA8
     [Key("sp_rule_data_id")] public int sp_rule_data_id; // 0xAC
+    [Key("npc_name")] public string npc_name; // 0xB0
+    [Key("recommend_condition_id")] public int recommend_condition_id; // 0xB8
+    [Key("is_disable_recommend_npc")] public int is_disable_recommend_npc; // 0xBC
 }

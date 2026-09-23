@@ -291,6 +291,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.LiveTheater.LiveStart)] = new(typeof(GameApi.LiveTheater.LiveStart), "/umamusume/live_theater/live_start", typeof(LiveTheaterLiveStartRequest), typeof(LiveTheaterLiveStartResponse)),
             [typeof(GameApi.LiveTheaterPerformersPreset.Index)] = new(typeof(GameApi.LiveTheaterPerformersPreset.Index), "/umamusume/live_theater_performers_preset/index", typeof(LiveTheaterPerformersPresetIndexRequest), typeof(LiveTheaterPerformersPresetIndexResponse)),
             [typeof(GameApi.LiveTheaterPerformersPreset.Update)] = new(typeof(GameApi.LiveTheaterPerformersPreset.Update), "/umamusume/live_theater_performers_preset/update", typeof(LiveTheaterPerformersPresetUpdateRequest), typeof(LiveTheaterPerformersPresetUpdateResponse)),
+            [typeof(GameApi.Load.Index)] = new(typeof(GameApi.Load.Index), "/umamusume/load/index", typeof(LoginRequest), typeof(LoginResponse)),
             [typeof(GameApi.MainStory.FirstClear)] = new(typeof(GameApi.MainStory.FirstClear), "/umamusume/main_story/first_clear", typeof(MainStoryFirstClearRequest), typeof(MainStoryFirstClearResponse)),
             [typeof(GameApi.MainStoryRace.GetEntryList)] = new(typeof(GameApi.MainStoryRace.GetEntryList), "/umamusume/main_story_race/get_entry_list", typeof(MainStoryRaceGetEntryListRequest), typeof(MainStoryRaceGetEntryListResponse)),
             [typeof(GameApi.MainStoryRace.GetRaceTable)] = new(typeof(GameApi.MainStoryRace.GetRaceTable), "/umamusume/main_story_race/get_race_table", typeof(MainStoryRaceGetRaceTableRequest), typeof(MainStoryRaceGetRaceTableResponse)),
@@ -310,11 +311,14 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Note.Index)] = new(typeof(GameApi.Note.Index), "/umamusume/note/index", typeof(NoteLoadRequest), typeof(NoteLoadResponse)),
             [typeof(GameApi.Note.SaveCharaData)] = new(typeof(GameApi.Note.SaveCharaData), "/umamusume/note/save_chara_data", typeof(NoteSaveCharaDataRequest), typeof(NoteSaveCharaDataResponse)),
             [typeof(GameApi.Note.SaveNoteData)] = new(typeof(GameApi.Note.SaveNoteData), "/umamusume/note/save_note_data", typeof(NoteSaveNoteDataRequest), typeof(NoteSaveNoteDataResponse)),
+            [typeof(GameApi.Note.SaveVoice)] = new(typeof(GameApi.Note.SaveVoice), "/umamusume/note/save_voice", typeof(NoteSaveVoiceRequest), typeof(NoteSaveVoiceResponse)),
             [typeof(GameApi.Note.TrainerNote)] = new(typeof(GameApi.Note.TrainerNote), "/umamusume/note/trainer_note", typeof(NoteTrainerNoteRequest), typeof(NoteTrainerNoteResponse)),
             [typeof(GameApi.Note.UseGalleryKey)] = new(typeof(GameApi.Note.UseGalleryKey), "/umamusume/note/use_gallery_key", typeof(NoteUseGalleryKeyRequest), typeof(NoteUseGalleryKeyResponse)),
             [typeof(GameApi.Option.ChangeOption)] = new(typeof(GameApi.Option.ChangeOption), "/umamusume/option/change_option", typeof(OptionChangeOptionRequest), typeof(OptionChangeOptionResponse)),
             [typeof(GameApi.Payment.Cancel)] = new(typeof(GameApi.Payment.Cancel), "/umamusume/payment/cancel", typeof(PaymentCancelRequest), typeof(PaymentCancelResponse)),
+            [typeof(GameApi.Payment.Finish)] = new(typeof(GameApi.Payment.Finish), "/umamusume/payment/finish", typeof(PaymentFinishRequest), typeof(PaymentFinishResponse)),
             [typeof(GameApi.Payment.GetCoinBreakDownInfo)] = new(typeof(GameApi.Payment.GetCoinBreakDownInfo), "/umamusume/payment/get_coin_break_down_info", typeof(PaymentGetCoinBreakDownInfoRequest), typeof(PaymentGetCoinBreakDownInfoResponse)),
+            [typeof(GameApi.Payment.ItemList)] = new(typeof(GameApi.Payment.ItemList), "/umamusume/payment/item_list", typeof(PaymentItemListRequest), typeof(PaymentItemListResponse)),
             [typeof(GameApi.Payment.SendLog)] = new(typeof(GameApi.Payment.SendLog), "/umamusume/payment/send_log", typeof(PaymentSendLogRequest), typeof(PaymentSendLogResponse)),
             [typeof(GameApi.Payment.Start)] = new(typeof(GameApi.Payment.Start), "/umamusume/payment/start", typeof(PaymentStartRequest), typeof(PaymentStartResponse)),
             [typeof(GameApi.Payment.SteamMicroTxnInit)] = new(typeof(GameApi.Payment.SteamMicroTxnInit), "/umamusume/payment/steam_micro_txn_init", typeof(PaymentSteamMicroTxnInitRequest), typeof(PaymentSteamMicroTxnInitResponse)),
@@ -843,6 +847,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.SuccessionDeck.UpdateSuccessionDeckSet)] = new(typeof(GameApi.SuccessionDeck.UpdateSuccessionDeckSet), "/umamusume/succession_deck/update_succession_deck_set", typeof(UpdateSuccessionDeckSetRequest), typeof(UpdateSuccessionDeckSetResponse)),
             [typeof(GameApi.SupportCard.ChangeLock)] = new(typeof(GameApi.SupportCard.ChangeLock), "/umamusume/support_card/change_lock", typeof(SupportCardChangeLockRequest), typeof(SupportCardChangeLockResponse)),
             [typeof(GameApi.SupportCard.GetBySkill)] = new(typeof(GameApi.SupportCard.GetBySkill), "/umamusume/support_card/get_by_skill", typeof(SupportCardGetBySkillRequest), typeof(SupportCardGetBySkillResponse)),
+            [typeof(GameApi.SupportCard.GetExtendMasterInfo)] = new(typeof(GameApi.SupportCard.GetExtendMasterInfo), "/umamusume/support_card/get_extend_master_info", typeof(SupportCardGetExtendMasterInfoRequest), typeof(SupportCardGetExtendMasterInfoResponse)),
             [typeof(GameApi.SupportCard.GetSupportCardEventSkill)] = new(typeof(GameApi.SupportCard.GetSupportCardEventSkill), "/umamusume/support_card/get_support_card_event_skill", typeof(SupportCardGetSupportCardEventSkillRequest), typeof(SupportCardGetSupportCardEventSkillResponse)),
             [typeof(GameApi.SupportCard.LimitBreakItem)] = new(typeof(GameApi.SupportCard.LimitBreakItem), "/umamusume/support_card/limit_break_item", typeof(SupportCardLimitBreakItemRequest), typeof(SupportCardLimitBreakItemResponse)),
             [typeof(GameApi.SupportCard.Sell)] = new(typeof(GameApi.SupportCard.Sell), "/umamusume/support_card/sell", typeof(SupportCardSellRequest), typeof(SupportCardSellResponse)),
@@ -885,6 +890,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Tool.PreSignup)] = new(typeof(GameApi.Tool.PreSignup), "/umamusume/tool/pre_signup", typeof(ToolPreSignupRequest), typeof(ToolPreSignupResponse)),
             [typeof(GameApi.Tool.SendLog)] = new(typeof(GameApi.Tool.SendLog), "/umamusume/tool/send_log", typeof(ToolSendLogRequest), typeof(ToolSendLogResponse)),
             [typeof(GameApi.Tool.Signup)] = new(typeof(GameApi.Tool.Signup), "/umamusume/tool/signup", typeof(ToolSignupRequest), typeof(ToolSignupResponse)),
+            [typeof(GameApi.Tool.StartSession)] = new(typeof(GameApi.Tool.StartSession), "/umamusume/tool/start_session", typeof(ToolStartSessionRequest), typeof(ToolStartSessionResponse)),
             [typeof(GameApi.Tool.UpdateForceDisplayStatus)] = new(typeof(GameApi.Tool.UpdateForceDisplayStatus), "/umamusume/tool/update_force_display_status", typeof(UpdateForceDisplayStatusRequest), typeof(UpdateForceDisplayStatusResponse)),
             [typeof(GameApi.TrainedChara.ChangeLockMulti)] = new(typeof(GameApi.TrainedChara.ChangeLockMulti), "/umamusume/trained_chara/change_lock_multi", typeof(TrainedCharaChangeLockMultiRequest), typeof(TrainedCharaChangeLockMultiResponse)),
             [typeof(GameApi.TrainedChara.ChangeMemo)] = new(typeof(GameApi.TrainedChara.ChangeMemo), "/umamusume/trained_chara/change_memo", typeof(TrainedCharaChangeMemoRequest), typeof(TrainedCharaChangeMemoResponse)),
@@ -1241,6 +1247,7 @@ public static class GameEndpointCatalog
             ["/umamusume/live_theater/live_start"] = ByEndpointType[typeof(GameApi.LiveTheater.LiveStart)],
             ["/umamusume/live_theater_performers_preset/index"] = ByEndpointType[typeof(GameApi.LiveTheaterPerformersPreset.Index)],
             ["/umamusume/live_theater_performers_preset/update"] = ByEndpointType[typeof(GameApi.LiveTheaterPerformersPreset.Update)],
+            ["/umamusume/load/index"] = ByEndpointType[typeof(GameApi.Load.Index)],
             ["/umamusume/main_story/first_clear"] = ByEndpointType[typeof(GameApi.MainStory.FirstClear)],
             ["/umamusume/main_story_race/get_entry_list"] = ByEndpointType[typeof(GameApi.MainStoryRace.GetEntryList)],
             ["/umamusume/main_story_race/get_race_table"] = ByEndpointType[typeof(GameApi.MainStoryRace.GetRaceTable)],
@@ -1260,11 +1267,14 @@ public static class GameEndpointCatalog
             ["/umamusume/note/index"] = ByEndpointType[typeof(GameApi.Note.Index)],
             ["/umamusume/note/save_chara_data"] = ByEndpointType[typeof(GameApi.Note.SaveCharaData)],
             ["/umamusume/note/save_note_data"] = ByEndpointType[typeof(GameApi.Note.SaveNoteData)],
+            ["/umamusume/note/save_voice"] = ByEndpointType[typeof(GameApi.Note.SaveVoice)],
             ["/umamusume/note/trainer_note"] = ByEndpointType[typeof(GameApi.Note.TrainerNote)],
             ["/umamusume/note/use_gallery_key"] = ByEndpointType[typeof(GameApi.Note.UseGalleryKey)],
             ["/umamusume/option/change_option"] = ByEndpointType[typeof(GameApi.Option.ChangeOption)],
             ["/umamusume/payment/cancel"] = ByEndpointType[typeof(GameApi.Payment.Cancel)],
+            ["/umamusume/payment/finish"] = ByEndpointType[typeof(GameApi.Payment.Finish)],
             ["/umamusume/payment/get_coin_break_down_info"] = ByEndpointType[typeof(GameApi.Payment.GetCoinBreakDownInfo)],
+            ["/umamusume/payment/item_list"] = ByEndpointType[typeof(GameApi.Payment.ItemList)],
             ["/umamusume/payment/send_log"] = ByEndpointType[typeof(GameApi.Payment.SendLog)],
             ["/umamusume/payment/start"] = ByEndpointType[typeof(GameApi.Payment.Start)],
             ["/umamusume/payment/steam_micro_txn_init"] = ByEndpointType[typeof(GameApi.Payment.SteamMicroTxnInit)],
@@ -1793,6 +1803,7 @@ public static class GameEndpointCatalog
             ["/umamusume/succession_deck/update_succession_deck_set"] = ByEndpointType[typeof(GameApi.SuccessionDeck.UpdateSuccessionDeckSet)],
             ["/umamusume/support_card/change_lock"] = ByEndpointType[typeof(GameApi.SupportCard.ChangeLock)],
             ["/umamusume/support_card/get_by_skill"] = ByEndpointType[typeof(GameApi.SupportCard.GetBySkill)],
+            ["/umamusume/support_card/get_extend_master_info"] = ByEndpointType[typeof(GameApi.SupportCard.GetExtendMasterInfo)],
             ["/umamusume/support_card/get_support_card_event_skill"] = ByEndpointType[typeof(GameApi.SupportCard.GetSupportCardEventSkill)],
             ["/umamusume/support_card/limit_break_item"] = ByEndpointType[typeof(GameApi.SupportCard.LimitBreakItem)],
             ["/umamusume/support_card/sell"] = ByEndpointType[typeof(GameApi.SupportCard.Sell)],
@@ -1835,6 +1846,7 @@ public static class GameEndpointCatalog
             ["/umamusume/tool/pre_signup"] = ByEndpointType[typeof(GameApi.Tool.PreSignup)],
             ["/umamusume/tool/send_log"] = ByEndpointType[typeof(GameApi.Tool.SendLog)],
             ["/umamusume/tool/signup"] = ByEndpointType[typeof(GameApi.Tool.Signup)],
+            ["/umamusume/tool/start_session"] = ByEndpointType[typeof(GameApi.Tool.StartSession)],
             ["/umamusume/tool/update_force_display_status"] = ByEndpointType[typeof(GameApi.Tool.UpdateForceDisplayStatus)],
             ["/umamusume/trained_chara/change_lock_multi"] = ByEndpointType[typeof(GameApi.TrainedChara.ChangeLockMulti)],
             ["/umamusume/trained_chara/change_memo"] = ByEndpointType[typeof(GameApi.TrainedChara.ChangeMemo)],
@@ -2828,6 +2840,12 @@ public static partial class GameApi
         {
         }
     }
+    public static partial class Load
+    {
+        public sealed class Index : IGameEndpoint<LoginRequest, LoginResponse>
+        {
+        }
+    }
     public static partial class MainStory
     {
         public sealed class FirstClear : IGameEndpoint<MainStoryFirstClearRequest, MainStoryFirstClearResponse>
@@ -2899,6 +2917,9 @@ public static partial class GameApi
         public sealed class SaveNoteData : IGameEndpoint<NoteSaveNoteDataRequest, NoteSaveNoteDataResponse>
         {
         }
+        public sealed class SaveVoice : IGameEndpoint<NoteSaveVoiceRequest, NoteSaveVoiceResponse>
+        {
+        }
         public sealed class TrainerNote : IGameEndpoint<NoteTrainerNoteRequest, NoteTrainerNoteResponse>
         {
         }
@@ -2917,7 +2938,13 @@ public static partial class GameApi
         public sealed class Cancel : IGameEndpoint<PaymentCancelRequest, PaymentCancelResponse>
         {
         }
+        public sealed class Finish : IGameEndpoint<PaymentFinishRequest, PaymentFinishResponse>
+        {
+        }
         public sealed class GetCoinBreakDownInfo : IGameEndpoint<PaymentGetCoinBreakDownInfoRequest, PaymentGetCoinBreakDownInfoResponse>
+        {
+        }
+        public sealed class ItemList : IGameEndpoint<PaymentItemListRequest, PaymentItemListResponse>
         {
         }
         public sealed class SendLog : IGameEndpoint<PaymentSendLogRequest, PaymentSendLogResponse>
@@ -4594,6 +4621,9 @@ public static partial class GameApi
         public sealed class GetBySkill : IGameEndpoint<SupportCardGetBySkillRequest, SupportCardGetBySkillResponse>
         {
         }
+        public sealed class GetExtendMasterInfo : IGameEndpoint<SupportCardGetExtendMasterInfoRequest, SupportCardGetExtendMasterInfoResponse>
+        {
+        }
         public sealed class GetSupportCardEventSkill : IGameEndpoint<SupportCardGetSupportCardEventSkillRequest, SupportCardGetSupportCardEventSkillResponse>
         {
         }
@@ -4742,6 +4772,9 @@ public static partial class GameApi
         {
         }
         public sealed class Signup : IGameEndpoint<ToolSignupRequest, ToolSignupResponse>
+        {
+        }
+        public sealed class StartSession : IGameEndpoint<ToolStartSessionRequest, ToolStartSessionResponse>
         {
         }
         public sealed class UpdateForceDisplayStatus : IGameEndpoint<UpdateForceDisplayStatusRequest, UpdateForceDisplayStatusResponse>

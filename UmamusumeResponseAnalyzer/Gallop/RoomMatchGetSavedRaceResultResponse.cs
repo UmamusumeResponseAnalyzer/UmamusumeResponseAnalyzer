@@ -21,5 +21,6 @@ public class RoomMatchGetSavedRaceResultResponse : ResponseCommon
         [Key("season")] public int season; // 0x30
         [Key("weather")] public int weather; // 0x34
         [Key("ground_condition")] public int ground_condition; // 0x38
+        [Key("npc_name")] public string npc_name; // 0x40
     }
 }
