@@ -35,13 +35,7 @@ internal static class PluginRepository
             if (installed.Count == 0)
                 return;
 
-            var results = await PluginManager.ReloadPluginsAsync([.. installed]);
-            cancellationToken.ThrowIfCancellationRequested();
-            var failed = results.Where(r => r.Outcome == PluginManager.PluginLifecycleOutcome.Failed)
-                .Select(r => r.PluginName).ToArray();
-            if (failed.Length > 0)
-                throw new InvalidOperationException(string.Format(i18n.InstalledLoadFailed, string.Join(i18n.ListSeparator, failed)));
-            ModalDialogs.Acknowledge(string.Format(i18n.InstalledAndLoaded, string.Join(i18n.ListSeparator, installed)), cancellationToken);
+            ModalDialogs.Acknowledge(string.Format(i18n.InstalledRestartRequired, string.Join(i18n.ListSeparator, installed)), cancellationToken);
         }
         catch (global::UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.PostShutdownProcessRequestedException) { throw; }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }

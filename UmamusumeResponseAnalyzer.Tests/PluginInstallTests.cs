@@ -124,7 +124,7 @@ public sealed class PluginInstallTests : IDisposable
     }
 
     [Fact]
-    public async Task WebInstallUsesManifestAndStatusOnlyIncludesLoadedPlugins()
+    public async Task WebInstallWritesPackageWithoutChangingStartupSnapshot()
     {
         var sourcePath = Path.ChangeExtension(PluginRepository.InstallZipPath(Name), ".source.json");
         File.WriteAllText(sourcePath, "existing record is not read or rewritten");
@@ -139,7 +139,8 @@ public sealed class PluginInstallTests : IDisposable
         var body = JObject.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(body.Value<bool>("ok"));
-        Assert.True(body.Value<bool>("loaded"));
+        Assert.Equal(["error", "installed", "ok"], body.Properties().Select(property => property.Name).Order().ToArray());
+        Assert.Equal(JTokenType.Null, body["error"]!.Type);
         Assert.Equal(Name, confirmed!.InternalName);
         Assert.Equal("2026.03.04", confirmed.RawVersion);
         Assert.Equal(handler.Manifest.Description, confirmed.Description);
@@ -149,12 +150,10 @@ public sealed class PluginInstallTests : IDisposable
         Assert.Equal(Name, body.Value<string>("installed"));
         Assert.Equal("existing record is not read or rewritten", File.ReadAllText(sourcePath));
         Assert.Single(Directory.GetFiles("Plugins", "*.source.json"));
-        Assert.NotNull(PluginManager.FindLoadedPlugin(Name));
+        Assert.Null(PluginManager.FindLoadedPlugin(Name));
         var status = JObject.Parse(await client.GetStringAsync($"http://127.0.0.1:{port}/uracloud/status", TestContext.Current.CancellationToken));
-        var installed = Assert.Single(status["plugins"]!);
-        Assert.Equal(Name, installed["internalName"]!.Value<string>());
-        Assert.Equal(JTokenType.Null, installed["source"]!.Type);
-        Assert.True(installed["loaded"]!.Value<bool>());
+        Assert.Empty(status["plugins"]!);
+        Assert.Equal(package, File.ReadAllBytes(PluginRepository.InstallZipPath(Name)));
         Assert.Single(handler.Downloads);
         Assert.Equal(2, handler.Requests);
     }
@@ -203,7 +202,7 @@ public sealed class PluginInstallTests : IDisposable
     }
 
     [Fact]
-    public async Task WebLoadFailureKeepsInstalledZipAndReportsSeparateResults()
+    public async Task WebInstallDoesNotExecutePluginCode()
     {
         var zip = PluginRepository.InstallZipPath(Name);
         var sourcePath = Path.ChangeExtension(zip, ".source.json");
@@ -219,8 +218,8 @@ public sealed class PluginInstallTests : IDisposable
         var body = JObject.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(body.Value<bool>("ok"));
-        Assert.False(body.Value<bool>("loaded"));
-        Assert.False(string.IsNullOrWhiteSpace(body.Value<string>("error")));
+        Assert.Equal(["error", "installed", "ok"], body.Properties().Select(property => property.Name).Order().ToArray());
+        Assert.Equal(JTokenType.Null, body["error"]!.Type);
         Assert.Equal(handler.Bytes, File.ReadAllBytes(zip));
         Assert.True(Directory.Exists(sourcePath));
         Assert.Null(PluginManager.FindLoadedPlugin(Name));
@@ -234,7 +233,9 @@ public sealed class PluginInstallTests : IDisposable
         File.WriteAllBytes(PluginRepository.InstallZipPath(Name), package);
         Assert.Empty(await PluginRepository.CheckForUpdatesAsync(TestContext.Current.CancellationToken));
         Assert.Equal(0, handler.Requests);
-        await PluginManager.ReloadPluginsAsync(Name);
+        await PluginManager.ShutdownAsync();
+        PluginManager.Init();
+        PluginManager.InitializeLoadedPlugins();
         Assert.Empty(await PluginRepository.CheckForUpdatesAsync(TestContext.Current.CancellationToken));
         handler.Manifest.RawVersion = "2026.03.05";
         var update = Assert.Single(await PluginRepository.CheckForUpdatesAsync(TestContext.Current.CancellationToken));
@@ -249,7 +250,7 @@ public sealed class PluginInstallTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task MenuInstallsLatestStableAndReloadsAfterAllDownloads(bool updateInstalled)
+    public async Task MenuInstallsLatestStableAndKeepsRunningVersions(bool updateInstalled)
     {
         var otherPath = Path.Combine(tempDir, "Zulu.zip");
         PluginCompiler.CompilePackage(PluginCode, "Zulu", otherPath);
@@ -276,7 +277,9 @@ public sealed class PluginInstallTests : IDisposable
         if (updateInstalled)
         {
             File.Copy(olderPath, PluginRepository.InstallZipPath(Name));
-            await PluginManager.ReloadPluginsAsync(Name);
+            await PluginManager.ShutdownAsync();
+            PluginManager.Init();
+            PluginManager.InitializeLoadedPlugins();
         }
         WebInstallApi.ConfirmInstall = (_, _) => throw new InvalidOperationException("Menu must not use web confirmation.");
         handler.AfterDownload = () =>
@@ -299,14 +302,14 @@ public sealed class PluginInstallTests : IDisposable
             await terminal.InjectAsync(Key.Space);
             await terminal.InjectAsync(Key.Tab);
             await terminal.InjectAsync(Key.Enter);
-            await terminal.WaitForScreenAsync(i18n.InstalledAndLoaded.Split("{0}", StringSplitOptions.None)[0]);
+            await terminal.WaitForScreenAsync(i18n.InstalledRestartRequired.Split("{0}", StringSplitOptions.None)[0]);
             Assert.Equal([20L, 10L], handler.Downloads);
             Assert.Equal(3, handler.Requests);
             Assert.Equal(package, File.ReadAllBytes(PluginRepository.InstallZipPath(Name)));
-            Assert.Equal(new Version(2026, 3, 4),
-                PluginManager.SnapshotPluginStatuses().Single(p => p.InternalName == Name).Version);
-            Assert.NotNull(PluginManager.FindLoadedPlugin(Name));
-            Assert.NotNull(PluginManager.FindLoadedPlugin("Zulu"));
+            Assert.Equal(updateInstalled ? new Version(2026, 3, 3) : null,
+                PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.InternalName == Name)?.Version);
+            Assert.Equal(updateInstalled, PluginManager.FindLoadedPlugin(Name) is not null);
+            Assert.Null(PluginManager.FindLoadedPlugin("Zulu"));
             Assert.Empty(Directory.GetFiles("Plugins", "*.source.json"));
             await terminal.InjectAsync(Key.Enter);
             await menu.WaitAsync(TimeSpan.FromSeconds(5));

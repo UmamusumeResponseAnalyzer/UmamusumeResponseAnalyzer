@@ -97,22 +97,11 @@ internal static class WebInstallApi
             var plugin = await PluginRepository.GetPluginAsync(request.RepositoryId, request.ReleaseId, cancellationToken);
             if (!ConfirmInstall(plugin, cancellationToken))
             {
-                await SendJson(ctx, 409, new { ok = false, loaded = false, error = i18n.Cancelled });
+                await SendJson(ctx, 409, new { ok = false, error = i18n.Cancelled });
                 return;
             }
             var manifest = await PluginRepository.DownloadPluginZipAsync(plugin, cancellationToken);
-            // The ZIP is installed even when the subsequent reload fails or shutdown begins.
-            var loaded = false;
-            var error = (string?)null;
-            try
-            {
-                var result = (await PluginManager.ReloadPluginsAsync(manifest.InternalName)).Single();
-                loaded = result.Outcome == PluginManager.PluginLifecycleOutcome.Succeeded;
-                if (!loaded)
-                    error = i18n.InstalledNotLoaded;
-            }
-            catch (Exception ex) { error = ex.Message; }
-            await SendJson(ctx, 200, new { ok = true, loaded, installed = manifest.InternalName, error });
+            await SendJson(ctx, 200, new { ok = true, installed = manifest.InternalName, error = (string?)null });
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex) { await SendJson(ctx, 500, new { ok = false, error = ex.Message }); }

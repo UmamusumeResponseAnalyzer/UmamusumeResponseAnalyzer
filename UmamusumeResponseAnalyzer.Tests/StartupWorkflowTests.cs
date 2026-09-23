@@ -156,8 +156,8 @@ public sealed class StartupWorkflowTests
         => RunScenarioAsync(nameof(ReinstallLoadedPluginFromStartupWorkspace), s => InstallAsync(s, existing: true, shared: false));
 
     [Fact]
-    public Task InstallingSharedMemberReloadsExistingGroup()
-        => RunScenarioAsync(nameof(InstallingSharedMemberReloadsExistingGroup), s => InstallAsync(s, existing: true, shared: true));
+    public Task InstallingSharedMemberPreservesStartupSnapshot()
+        => RunScenarioAsync(nameof(InstallingSharedMemberPreservesStartupSnapshot), s => InstallAsync(s, existing: true, shared: true));
 
     [Fact]
     public Task StartLoadsDataInitializesPluginsAndThenStartsHttp()
@@ -240,10 +240,11 @@ public sealed class StartupWorkflowTests
         Assert.False(Server.IsRunning);
         Assert.DoesNotContain("initialized", File.Exists("lifecycle.log") ? File.ReadAllText("lifecycle.log") : "");
         releaseDownload.SetResult();
-        await terminal.WaitForScreenAsync(string.Format(Localization.PluginRegistry.InstalledAndLoaded, name));
-        Assert.Equal(new Version(2, 0, 0), PluginManager.SnapshotPluginStatuses().Single(p => p.InternalName == name).Version);
-        Assert.Equal(existing ? 1 : 0, File.ReadAllLines("lifecycle.log").Count(line => line.EndsWith("disposed")));
-        Assert.Contains($"/plugin reload {name}", host.CompleteCommand("/plugin reload "));
+        await terminal.WaitForScreenAsync(string.Format(Localization.PluginRegistry.InstalledRestartRequired, name));
+        Assert.Equal(new Version(2, 0, 0), PluginPackageValidator.Validate(Path.Combine("Plugins", name + ".zip"), false).Manifest.Version);
+        Assert.Equal(existing && !shared ? new Version(1, 0, 0) : null,
+            PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.InternalName == name)?.Version);
+        Assert.DoesNotContain("disposed", File.Exists("lifecycle.log") ? File.ReadAllText("lifecycle.log") : "");
         await terminal.InjectAsync(Key.Enter);
         await terminal.WaitForScreenAsync(I18N_Instruction);
         Assert.Same(workspace, Workspace.Current);
@@ -254,11 +255,15 @@ public sealed class StartupWorkflowTests
         await host.FlushAsync();
         var screen = await terminal.CaptureScreenAsync();
         Assert.Contains(I18N_DatabaseUnavailable, screen);
-        Assert.Contains(name, screen);
-        Assert.Contains("2.0.0", screen);
+        if (existing)
+        {
+            Assert.Contains(shared ? "Anchor" : name, screen);
+            Assert.Contains("1.0.0", screen);
+        }
+        Assert.DoesNotContain("2.0.0", screen);
         Assert.Same(workspace, Workspace.Current);
         Assert.False(Server.IsRunning);
-        Assert.DoesNotContain("initialized", File.ReadAllText("lifecycle.log"));
+        Assert.DoesNotContain("initialized", File.Exists("lifecycle.log") ? File.ReadAllText("lifecycle.log") : "");
         Assert.False(session.Run.IsCompleted);
         await session.CloseAsync();
         Assert.Equal(1, Environment.ExitCode);

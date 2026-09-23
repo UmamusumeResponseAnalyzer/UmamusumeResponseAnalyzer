@@ -21,20 +21,14 @@
   <data name="Cancelled" xml:space="preserve">
     <value>已取消安装。</value>
   </data>
-  <data name="InstalledNotLoaded" xml:space="preserve">
-    <value>ZIP 已保存，但加载未成功。</value>
-  </data>
   <data name="ExecutionWarning" xml:space="preserve">
     <value>该插件将在本机执行代码。</value>
   </data>
   <data name="OperationFailed" xml:space="preserve">
     <value>插件仓库操作失败: {0}</value>
   </data>
-  <data name="InstalledLoadFailed" xml:space="preserve">
-    <value>插件安装完成，但加载失败：{0}</value>
-  </data>
-  <data name="InstalledAndLoaded" xml:space="preserve">
-    <value>插件已安装并生效：{0}</value>
+  <data name="InstalledRestartRequired" xml:space="preserve">
+    <value>插件已安装：{0}。重启 URA 后生效。</value>
   </data>
   <data name="DuplicateSelection" xml:space="preserve">
     <value>已选插件 InternalName 重复。</value>
@@ -43,7 +37,7 @@
     <value>[{0} v{1}] 正在下载</value>
   </data>
   <data name="Installed" xml:space="preserve">
-    <value>[{0}] 安装完成</value>
+    <value>[{0}] 安装完成，重启 URA 后生效。</value>
   </data>
   <data name="InstallFailed" xml:space="preserve">
     <value>[{0}] 安装失败: {1}</value>

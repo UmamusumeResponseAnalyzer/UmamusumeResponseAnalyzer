@@ -21,20 +21,14 @@
   <data name="Cancelled" xml:space="preserve">
     <value>Installation cancelled.</value>
   </data>
-  <data name="InstalledNotLoaded" xml:space="preserve">
-    <value>ZIP saved, but loading did not succeed.</value>
-  </data>
   <data name="ExecutionWarning" xml:space="preserve">
     <value>This plugin will execute code on this computer.</value>
   </data>
   <data name="OperationFailed" xml:space="preserve">
     <value>Plugin registry operation failed: {0}</value>
   </data>
-  <data name="InstalledLoadFailed" xml:space="preserve">
-    <value>Plugins were installed, but loading failed: {0}</value>
-  </data>
-  <data name="InstalledAndLoaded" xml:space="preserve">
-    <value>Plugins installed and loaded: {0}</value>
+  <data name="InstalledRestartRequired" xml:space="preserve">
+    <value>Plugins installed: {0}. Restart URA to apply them.</value>
   </data>
   <data name="DuplicateSelection" xml:space="preserve">
     <value>Selected plugins share an InternalName.</value>
@@ -43,7 +37,7 @@
     <value>[{0} v{1}] Downloading</value>
   </data>
   <data name="Installed" xml:space="preserve">
-    <value>[{0}] Installation complete</value>
+    <value>[{0}] Installation complete. Restart URA to apply it.</value>
   </data>
   <data name="InstallFailed" xml:space="preserve">
     <value>[{0}] Installation failed: {1}</value>

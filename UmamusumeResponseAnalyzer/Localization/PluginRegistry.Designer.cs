@@ -568,7 +568,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 [{0}] Installation complete 的本地化字符串。
+        ///   查找类似 [{0}] Installation complete. Restart URA to apply it. 的本地化字符串。
         /// </summary>
         internal static string Installed {
             get {
@@ -577,29 +577,11 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Plugins installed and loaded: {0} 的本地化字符串。
+        ///   查找类似 Plugins installed: {0}. Restart URA to apply them. 的本地化字符串。
         /// </summary>
-        internal static string InstalledAndLoaded {
+        internal static string InstalledRestartRequired {
             get {
-                return ResourceManager.GetString("InstalledAndLoaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugins were installed, but loading failed: {0} 的本地化字符串。
-        /// </summary>
-        internal static string InstalledLoadFailed {
-            get {
-                return ResourceManager.GetString("InstalledLoadFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 ZIP saved, but loading did not succeed. 的本地化字符串。
-        /// </summary>
-        internal static string InstalledNotLoaded {
-            get {
-                return ResourceManager.GetString("InstalledNotLoaded", resourceCulture);
+                return ResourceManager.GetString("InstalledRestartRequired", resourceCulture);
             }
         }
         

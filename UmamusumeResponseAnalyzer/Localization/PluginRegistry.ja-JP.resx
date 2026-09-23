@@ -21,20 +21,14 @@
   <data name="Cancelled" xml:space="preserve">
     <value>インストールをキャンセルしました。</value>
   </data>
-  <data name="InstalledNotLoaded" xml:space="preserve">
-    <value>ZIP は保存されましたが、読み込みに失敗しました。</value>
-  </data>
   <data name="ExecutionWarning" xml:space="preserve">
     <value>このプラグインは、このコンピューター上でコードを実行します。</value>
   </data>
   <data name="OperationFailed" xml:space="preserve">
     <value>プラグインリポジトリの操作に失敗しました: {0}</value>
   </data>
-  <data name="InstalledLoadFailed" xml:space="preserve">
-    <value>プラグインはインストールされましたが、読み込みに失敗しました: {0}</value>
-  </data>
-  <data name="InstalledAndLoaded" xml:space="preserve">
-    <value>プラグインをインストールし、読み込みました: {0}</value>
+  <data name="InstalledRestartRequired" xml:space="preserve">
+    <value>プラグインをインストールしました：{0}。反映するには URA を再起動してください。</value>
   </data>
   <data name="DuplicateSelection" xml:space="preserve">
     <value>選択したプラグインの InternalName が重複しています。</value>
@@ -43,7 +37,7 @@
     <value>[{0} v{1}] ダウンロード中</value>
   </data>
   <data name="Installed" xml:space="preserve">
-    <value>[{0}] インストール完了</value>
+    <value>[{0}] インストール完了。反映するには URA を再起動してください。</value>
   </data>
   <data name="InstallFailed" xml:space="preserve">
     <value>[{0}] インストールに失敗しました: {1}</value>
