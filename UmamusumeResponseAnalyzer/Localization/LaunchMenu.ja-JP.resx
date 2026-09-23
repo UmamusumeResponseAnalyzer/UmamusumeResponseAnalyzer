@@ -171,12 +171,6 @@
   <data name="I18N_ListenAddress" xml:space="preserve">
     <value>待ち受けアドレス</value>
   </data>
-  <data name="I18N_ServerTargets" xml:space="preserve">
-    <value>対象サーバー</value>
-  </data>
-  <data name="I18N_Unrestricted" xml:space="preserve">
-    <value>制限なし</value>
-  </data>
   <data name="I18N_DataLanguage" xml:space="preserve">
     <value>データ言語</value>
   </data>
@@ -230,12 +224,6 @@
   </data>
   <data name="I18N_PhaseHost" xml:space="preserve">
     <value>ホスト</value>
-  </data>
-  <data name="I18N_PluginList" xml:space="preserve">
-    <value>プラグイン一覧</value>
-  </data>
-  <data name="I18N_NoPlugins" xml:space="preserve">
-    <value>（読み込まれたプラグインはありません）</value>
   </data>
   <data name="I18N_HostCleanupFailed" xml:space="preserve">
     <value>ホストの終了処理に失敗しました。</value>
@@ -292,13 +280,10 @@
     <value>http://{0}:{1} で待ち受け中</value>
   </data>
   <data name="I18N_PluginsLoaded" xml:space="preserve">
-    <value>{0} 個のプラグインを読み込みました。P キーで一覧を表示します。</value>
+    <value>{0} 個のプラグインを読み込みました。</value>
   </data>
   <data name="I18N_PluginLoadFailed" xml:space="preserve">
     <value>プラグイン {0} の読み込みに失敗しました</value>
-  </data>
-  <data name="I18N_PluginAuthor" xml:space="preserve">
-    <value>{0} v{1}  作者 {2}</value>
   </data>
   <data name="I18N_PluginsFound" xml:space="preserve">
     <value>利用可能なプラグインが {0} 個見つかりました。</value>
@@ -331,16 +316,10 @@
     <value>このコンピューター</value>
   </data>
   <data name="I18N_ExternalNetworkNotice" xml:space="preserve">
-    <value>URA は他の端末からのリクエストを受け付けます。初回の待ち受け開始時に Windows ファイアウォールで許可してください。使用する UM:PD のバージョンを選択してください。</value>
+    <value>URA は他の端末からのリクエストを受け付けます。初回の待ち受け開始時に Windows ファイアウォールで許可してください。</value>
   </data>
   <data name="I18N_LocalNetworkNotice" xml:space="preserve">
-    <value>URA はこのコンピューターからのリクエストのみ受け付けます。エミュレーターから接続する場合は「設定 → コア」でアドレスを 0.0.0.0 に変更し、ファイアウォールで許可してください。使用する UM:PD のバージョンを選択してください。</value>
-  </data>
-  <data name="I18N_Cygames" xml:space="preserve">
-    <value>日本版(Cygames)</value>
-  </data>
-  <data name="I18N_Komoe" xml:space="preserve">
-    <value>繁体字中国語版(Komoe)</value>
+    <value>URA はこのコンピューターからのリクエストのみ受け付けます。エミュレーターから接続する場合は「設定 → コア」でアドレスを 0.0.0.0 に変更し、ファイアウォールで許可してください。</value>
   </data>
   <data name="I18N_FirstRunDataLanguage" xml:space="preserve">
     <value>イベントデータの言語を選択してください。対応するクライアントに実装済みの内容の翻訳を使用します。効果やデータベース全体のサイズは変わりません。</value>

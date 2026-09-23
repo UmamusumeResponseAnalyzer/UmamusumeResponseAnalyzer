@@ -128,10 +128,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             }
         }
 
-        internal static Task TriggerStartedAsync(CancellationToken cancellationToken = default)
-            => ((PluginHostEvents)typeof(PluginManager).GetProperty("HostEvents", BindingFlags.NonPublic | BindingFlags.Static)!
-                .GetValue(null)!).TriggerStartedAsync(cancellationToken);
-
         void RestoreConfigState()
         {
             configCurrent.SetValue(null, originalConfig);

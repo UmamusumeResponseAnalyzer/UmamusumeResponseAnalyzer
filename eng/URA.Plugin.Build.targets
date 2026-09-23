@@ -28,7 +28,6 @@
       <RepositoryUrl ParameterType="System.String" Required="false" />
       <Homepage ParameterType="System.String" Required="false" />
       <Dependencies ParameterType="System.String" Required="false" />
-      <Targets ParameterType="System.String" Required="false" />
       <Version ParameterType="System.String" Required="true" />
     </ParameterGroup>
     <Task>
@@ -58,7 +57,6 @@
             Changelog = Changelog ?? string.Empty,
             Version,
             Dependencies = Names(Dependencies),
-            Targets = Names(Targets),
             RepositoryUrl = RepositoryUrl ?? string.Empty,
             LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             Category = Category ?? string.Empty,
@@ -392,7 +390,6 @@
         RepositoryUrl="$(PluginRepositoryUrl)"
         Homepage="$(PluginHomepage)"
         Dependencies="$(PluginDependencies)"
-        Targets="$(PluginTargets)"
         Version="$(Version)" />
   </Target>
 

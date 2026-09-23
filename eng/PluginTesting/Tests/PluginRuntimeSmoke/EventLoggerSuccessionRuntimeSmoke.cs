@@ -157,8 +157,8 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            eventLogger.Dispose();
-            eventResponse.Dispose();
+            eventLogger.DisposeAsync().GetAwaiter().GetResult();
+            eventResponse.DisposeAsync().GetAwaiter().GetResult();
         }
     }
 

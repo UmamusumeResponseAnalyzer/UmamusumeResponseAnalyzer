@@ -220,23 +220,14 @@ internal sealed class UiHostSurface : IDisposable
             selectedIndex >= 0 &&
             selectedIndex < display.Items.Count)
         {
-            var selectable = display.Items
-                .Select((item, index) => (item, index))
-                .Where(entry => entry.item.Workspace is not null)
-                .Select(entry => entry.index)
-                .ToArray();
-            var selected = Array.IndexOf(selectable, selectedIndex);
-            if (selected >= 0)
-            {
-                selection = new(
-                    selectable.Select(index => index + 1).ToArray(),
-                    selected,
-                    lineIndex =>
-                    {
-                        display.Items[lineIndex - 1].Workspace?.SwitchTo();
-                        return Task.CompletedTask;
-                    });
-            }
+            selection = new(
+                Enumerable.Range(1, display.Items.Count).ToArray(),
+                selectedIndex,
+                lineIndex =>
+                {
+                    display.Items[lineIndex - 1].Workspace.SwitchTo();
+                    return Task.CompletedTask;
+                });
         }
         HotkeyManager.ShowPopup(new HotkeyPopup(lines, Selection: selection));
     }

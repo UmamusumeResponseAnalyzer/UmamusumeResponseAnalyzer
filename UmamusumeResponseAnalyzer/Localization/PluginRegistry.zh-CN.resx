@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -45,9 +45,6 @@
   <data name="AmbiguousSource" xml:space="preserve">
     <value>插件 InternalName 对应多个来源，无法判断更新: {0}</value>
   </data>
-  <data name="LoadedVersionMissing" xml:space="preserve">
-    <value>已加载插件缺少版本: {0}</value>
-  </data>
   <data name="InvalidDownloadReference" xml:space="preserve">
     <value>插件下载引用无效。</value>
   </data>
@@ -84,9 +81,6 @@
   <data name="RootManifestRequired" xml:space="preserve">
     <value>ZIP 根目录必须且只能包含一个 manifest.json。</value>
   </data>
-  <data name="StrictJsonRequired" xml:space="preserve">
-    <value>manifest.json 不是严格 JSON。</value>
-  </data>
   <data name="PackageNameMismatch" xml:space="preserve">
     <value>ZIP 文件名必须等于 manifest InternalName: zip={0}, manifest={1}</value>
   </data>
@@ -98,18 +92,6 @@
   </data>
   <data name="ManifestObjectRequired" xml:space="preserve">
     <value>manifest.json 根节点必须是 object。</value>
-  </data>
-  <data name="DuplicateManifestField" xml:space="preserve">
-    <value>manifest 包含重复字段: {0}</value>
-  </data>
-  <data name="ManifestSchemaMismatch" xml:space="preserve">
-    <value>manifest schema 不匹配: missing=[{0}], unexpected=[{1}]</value>
-  </data>
-  <data name="ManifestTypeInvalid" xml:space="preserve">
-    <value>manifest {0} 类型无效: expected={1}, actual={2}</value>
-  </data>
-  <data name="ManifestStringsRequired" xml:space="preserve">
-    <value>manifest {0} 只能包含字符串。</value>
   </data>
   <data name="ClrMetadataMissing" xml:space="preserve">
     <value>主程序集没有 CLR metadata。</value>
@@ -153,8 +135,8 @@
   <data name="LifecyclePhaseInvalid" xml:space="preserve">
     <value>当前 phase={0}，不允许执行插件 {1}。</value>
   </data>
-  <data name="GenerationMissing" xml:space="preserve">
-    <value>插件缺少 runtime generation: {0}</value>
+  <data name="LifecycleMissing" xml:space="preserve">
+    <value>插件缺少生命周期状态: {0}</value>
   </data>
   <data name="InitializationTransactionBusy" xml:space="preserve">
     <value>已有插件 lifecycle 事务正在运行，无法重新初始化。</value>
@@ -195,9 +177,6 @@
   <data name="CannotCreatePluginInstance" xml:space="preserve">
     <value>无法创建插件实例: type={0}</value>
   </data>
-  <data name="LoadingCleanupFailed" xml:space="preserve">
-    <value>插件加载及清理失败。</value>
-  </data>
   <data name="LoadingFailed" xml:space="preserve">
     <value>插件加载失败: plugin={0}, phase={1}</value>
   </data>
@@ -225,26 +204,23 @@
   <data name="CleanupFailed" xml:space="preserve">
     <value>插件清理失败。</value>
   </data>
-  <data name="GenerationAlreadyRunning" xml:space="preserve">
-    <value>插件 generation 已在初始化或运行: {0}</value>
+  <data name="LifecycleAlreadyRunning" xml:space="preserve">
+    <value>插件生命周期已在初始化或运行: {0}</value>
   </data>
-  <data name="GenerationNotInitializing" xml:space="preserve">
-    <value>插件 generation 未在初始化: {0}</value>
+  <data name="LifecycleNotInitializing" xml:space="preserve">
+    <value>插件生命周期未在初始化: {0}</value>
   </data>
-  <data name="GenerationStillInitializing" xml:space="preserve">
-    <value>插件 generation 仍在初始化: {0}</value>
-  </data>
-  <data name="GenerationCloseFailed" xml:space="preserve">
-    <value>插件 generation 关闭失败。</value>
+  <data name="LifecycleStillInitializing" xml:space="preserve">
+    <value>插件生命周期仍在初始化: {0}</value>
   </data>
   <data name="BackgroundOperationFailed" xml:space="preserve">
     <value>插件后台操作失败: plugin={0}, {1}</value>
   </data>
-  <data name="GenerationUnavailable" xml:space="preserve">
-    <value>插件 generation 已关闭或未开放: {0}</value>
+  <data name="LifecycleUnavailable" xml:space="preserve">
+    <value>插件生命周期已关闭或未开放: {0}</value>
   </data>
-  <data name="EventHandlerFailed" xml:space="preserve">
-    <value>插件事件处理错误: plugin={0}, {1}</value>
+  <data name="StartFailed" xml:space="preserve">
+    <value>插件启动错误: plugin={0}, {1}</value>
   </data>
   <data name="RegistrationAlreadyCommitted" xml:space="preserve">
     <value>插件 registration stage 已提交: {0}</value>
@@ -265,7 +241,7 @@
     <value>程序注册的 {0} analyzer</value>
   </data>
   <data name="RegistrationPhaseInvalid" xml:space="preserve">
-    <value>Analyzer 与 background operation 只能在 Initialize 或 Host 执行的 OnStarted 回调中注册: plugin={0}</value>
+    <value>Analyzer 只能在 Initialize 或 Host 执行的 StartAsync 中注册: plugin={0}</value>
   </data>
   <data name="ConcreteHostPayloadRequired" xml:space="preserve">
     <value>Analyzer payload 必须是 Host 中现有的闭合具体 Gallop DTO: {0}</value>

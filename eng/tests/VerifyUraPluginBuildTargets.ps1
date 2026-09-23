@@ -83,7 +83,7 @@ try {
     <WriteUraPluginManifestTask OutputPath="$(MSBuildProjectDirectory)/full.json"
         Author="作者 &quot;A&quot;" InternalName="ManifestSmoke" DisplayName="菜单"
         Description="第一行&#xA;路径 C:\Uma&#x9;结束" Changelog="变更"
-        Dependencies=" A, B;C " Targets=" JP;TW " Version="1.2.3.4"
+        Dependencies=" A, B;C " Version="1.2.3.4"
         RepositoryUrl="https://example.com/?a=1&amp;b=2" Category="工具" Homepage="https://example.com/" />
     <WriteUraPluginManifestTask OutputPath="$(MSBuildProjectDirectory)/minimal.json"
         Author="作者" InternalName="MinimalSmoke" DisplayName="最小插件" Version="1.0.0" />
@@ -109,8 +109,8 @@ try {
     foreach ($name in $expected.Keys) {
         if ($full.$name -cne $expected[$name]) { throw "Manifest field $name did not round-trip." }
     }
-    if (@($full.PSObject.Properties).Count -ne 12 -or
-        ($full.Dependencies -join "|") -cne "A|B|C" -or ($full.Targets -join "|") -cne "JP|TW" -or
+    if (@($full.PSObject.Properties).Count -ne 11 -or
+        ($full.Dependencies -join "|") -cne "A|B|C" -or
         $full.LastUpdate -lt $startedAt -or $full.LastUpdate -gt [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) {
         throw "Manifest schema, list values or timestamp are incorrect."
     }
@@ -118,8 +118,7 @@ try {
     foreach ($name in @("Description", "Changelog", "RepositoryUrl", "Category", "Homepage")) {
         if ($minimal.$name -cne "") { throw "Omitted manifest field $name must be an empty string." }
     }
-    if ($minimal.Dependencies -isnot [Array] -or $minimal.Dependencies.Count -ne 0 -or
-        $minimal.Targets -isnot [Array] -or $minimal.Targets.Count -ne 0) {
+    if ($minimal.Dependencies -isnot [Array] -or $minimal.Dependencies.Count -ne 0) {
         throw "Omitted manifest lists must be empty arrays."
     }
 } finally {

@@ -10,8 +10,8 @@
 
 namespace UmamusumeResponseAnalyzer.Localization {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -23,15 +23,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class PluginRegistry {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal PluginRegistry() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,7 +45,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   使用此强类型资源类，为所有资源查找
         ///   重写当前线程的 CurrentUICulture 属性。
@@ -59,7 +59,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A wildcard endpoint pattern does not support adjacent **: {0} 的本地化字符串。
         /// </summary>
@@ -68,7 +68,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("AdjacentWildcardsForbidden", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Multiple sources share the plugin InternalName; cannot determine updates: {0} 的本地化字符串。
         /// </summary>
@@ -77,7 +77,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("AmbiguousSource", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Analyzer registration {1} (plugin {0}, endpoint {2}) is disabled until process exit because required assembly {4} is missing during {3}: {5} 的本地化字符串。
         /// </summary>
@@ -95,7 +95,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("AnalyzerSignatureInvalid", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Assembly names in the plugin group differ only by case: {0} / {1}, context={2} 的本地化字符串。
         /// </summary>
@@ -104,7 +104,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("AssemblyCaseConflict", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin group contains assemblies with the same name but different contents: {0}, context={1} 的本地化字符串。
         /// </summary>
@@ -113,7 +113,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("AssemblyContentConflict", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Main assembly name must match manifest InternalName: assembly={0}, manifest={1} 的本地化字符串。
         /// </summary>
@@ -122,7 +122,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("AssemblyIdentityMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin background operation failed: plugin={0}, {1} 的本地化字符串。
         /// </summary>
@@ -131,7 +131,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("BackgroundOperationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin is not running; cannot start callback: {0} 的本地化字符串。
         /// </summary>
@@ -140,7 +140,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CallbackUnavailable", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Installation cancelled. 的本地化字符串。
         /// </summary>
@@ -149,7 +149,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Cancelled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Cannot create plugin instance: type={0} 的本地化字符串。
         /// </summary>
@@ -158,7 +158,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CannotCreatePluginInstance", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Endpoint pattern must be a canonical absolute path: {0} 的本地化字符串。
         /// </summary>
@@ -167,7 +167,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CanonicalAbsolutePathRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 catalog endpoint 的本地化字符串。
         /// </summary>
@@ -176,7 +176,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CatalogEndpoint", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin cleanup failed. 的本地化字符串。
         /// </summary>
@@ -185,7 +185,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CleanupFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin cleanup failed: plugin={0}, phase={1} 的本地化字符串。
         /// </summary>
@@ -194,7 +194,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CleanupPhaseFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The main assembly has no CLR metadata. 的本地化字符串。
         /// </summary>
@@ -203,7 +203,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ClrMetadataMissing", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Analyzer payload must be an existing closed concrete Gallop DTO in the Host: {0} 的本地化字符串。
         /// </summary>
@@ -212,7 +212,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ConcreteHostPayloadRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin is not running; cannot open settings: {0} 的本地化字符串。
         /// </summary>
@@ -221,7 +221,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ConfigurationUnavailable", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Creating plugin instance 的本地化字符串。
         /// </summary>
@@ -230,7 +230,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CreatePluginInstance", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Cycle in plugin manifest Dependencies: {0} 的本地化字符串。
         /// </summary>
@@ -239,7 +239,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("DependencyCycle", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 [{0} v{1}] Downloading 的本地化字符串。
         /// </summary>
@@ -248,7 +248,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Downloading", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin download reference does not match the request. 的本地化字符串。
         /// </summary>
@@ -257,7 +257,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("DownloadReferenceMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Duplicate assembly name in ZIP root: {0} 的本地化字符串。
         /// </summary>
@@ -266,16 +266,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("DuplicateAssembly", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Duplicate manifest field: {0} 的本地化字符串。
-        /// </summary>
-        internal static string DuplicateManifestField {
-            get {
-                return ResourceManager.GetString("DuplicateManifestField", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 Manifest {0} contains a duplicate name: {1} 的本地化字符串。
         /// </summary>
@@ -284,7 +275,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("DuplicateManifestName", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Selected plugins share an InternalName. 的本地化字符串。
         /// </summary>
@@ -293,7 +284,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("DuplicateSelection", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 No available versions in the plugin registry. 的本地化字符串。
         /// </summary>
@@ -302,7 +293,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Empty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 URACloud returned empty JSON. 的本地化字符串。
         /// </summary>
@@ -311,7 +302,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("EmptyJson", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Manifest {0} must not contain empty names. 的本地化字符串。
         /// </summary>
@@ -320,7 +311,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("EmptyManifestName", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 endpoint type is not in GameEndpointCatalog 的本地化字符串。
         /// </summary>
@@ -329,7 +320,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("EndpointOutsideCatalog", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 An analyzer requires at least one endpoint pattern. 的本地化字符串。
         /// </summary>
@@ -338,7 +329,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("EndpointPatternRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Endpoint pattern does not match the current catalog: kind={0}, pattern={1} 的本地化字符串。
         /// </summary>
@@ -347,16 +338,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("EndpointPatternUnmatched", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Plugin event handler failed: plugin={0}, {1} 的本地化字符串。
-        /// </summary>
-        internal static string EventHandlerFailed {
-            get {
-                return ResourceManager.GetString("EventHandlerFailed", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 An exact endpoint pattern must not contain *: {0} 的本地化字符串。
         /// </summary>
@@ -365,7 +347,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ExactWildcardForbidden", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 This plugin will execute code on this computer. 的本地化字符串。
         /// </summary>
@@ -374,61 +356,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ExecutionWarning", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Plugin generation is already initializing or running: {0} 的本地化字符串。
-        /// </summary>
-        internal static string GenerationAlreadyRunning {
-            get {
-                return ResourceManager.GetString("GenerationAlreadyRunning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin generation failed to close. 的本地化字符串。
-        /// </summary>
-        internal static string GenerationCloseFailed {
-            get {
-                return ResourceManager.GetString("GenerationCloseFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin has no runtime generation: {0} 的本地化字符串。
-        /// </summary>
-        internal static string GenerationMissing {
-            get {
-                return ResourceManager.GetString("GenerationMissing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin generation is not initializing: {0} 的本地化字符串。
-        /// </summary>
-        internal static string GenerationNotInitializing {
-            get {
-                return ResourceManager.GetString("GenerationNotInitializing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin generation is still initializing: {0} 的本地化字符串。
-        /// </summary>
-        internal static string GenerationStillInitializing {
-            get {
-                return ResourceManager.GetString("GenerationStillInitializing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin generation is closed or not open: {0} 的本地化字符串。
-        /// </summary>
-        internal static string GenerationUnavailable {
-            get {
-                return ResourceManager.GetString("GenerationUnavailable", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 The plugin requires a newer host ABI; update UmamusumeResponseAnalyzer: requested {0}, current host {1}. 的本地化字符串。
         /// </summary>
@@ -437,7 +365,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("HostUpdateRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin initialization and cleanup failed. 的本地化字符串。
         /// </summary>
@@ -446,7 +374,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InitializationCleanupFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin {0} initialization failed 的本地化字符串。
         /// </summary>
@@ -455,7 +383,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InitializationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A plugin lifecycle transaction is running; cannot initialize again. 的本地化字符串。
         /// </summary>
@@ -464,7 +392,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InitializationTransactionBusy", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Confirm installation of plugin {0} v{1}
         ///{2}/{3}
@@ -476,7 +404,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InstallConfirmation", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 [{0}] Installation complete. Restart URA to apply it. 的本地化字符串。
         /// </summary>
@@ -485,7 +413,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Installed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugins installed: {0}. Restart URA to apply them. 的本地化字符串。
         /// </summary>
@@ -494,7 +422,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InstalledRestartRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 [{0}] Installation failed: {1} 的本地化字符串。
         /// </summary>
@@ -503,7 +431,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InstallFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin InternalName conflict (OrdinalIgnoreCase): {0} 的本地化字符串。
         /// </summary>
@@ -512,7 +440,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InternalNameConflict", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin InternalName conflict (OrdinalIgnoreCase): {0} ({1}) / {2} ({3}) 的本地化字符串。
         /// </summary>
@@ -521,7 +449,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InternalNamePackageConflict", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Invalid plugin download reference. 的本地化字符串。
         /// </summary>
@@ -530,7 +458,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InvalidDownloadReference", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Manifest InternalName is not a valid filename: {0} 的本地化字符串。
         /// </summary>
@@ -539,7 +467,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InvalidInternalName", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The main assembly is not a valid managed assembly: {0} 的本地化字符串。
         /// </summary>
@@ -548,7 +476,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InvalidManagedAssembly", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Invalid plugin package: package={0} 的本地化字符串。
         /// </summary>
@@ -557,7 +485,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InvalidPackage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Invalid plugin source ID. 的本地化字符串。
         /// </summary>
@@ -566,7 +494,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InvalidSourceId", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Invalid manifest Version: {0} 的本地化字符串。
         /// </summary>
@@ -575,7 +503,34 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("InvalidVersion", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Plugin lifecycle is already initializing or running: {0} 的本地化字符串。
+        /// </summary>
+        internal static string LifecycleAlreadyRunning {
+            get {
+                return ResourceManager.GetString("LifecycleAlreadyRunning", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin has no lifecycle state: {0} 的本地化字符串。
+        /// </summary>
+        internal static string LifecycleMissing {
+            get {
+                return ResourceManager.GetString("LifecycleMissing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin lifecycle is not initializing: {0} 的本地化字符串。
+        /// </summary>
+        internal static string LifecycleNotInitializing {
+            get {
+                return ResourceManager.GetString("LifecycleNotInitializing", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Plugin operation {1} is not allowed in phase={0}. 的本地化字符串。
         /// </summary>
@@ -584,7 +539,25 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("LifecyclePhaseInvalid", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 Plugin lifecycle is still initializing: {0} 的本地化字符串。
+        /// </summary>
+        internal static string LifecycleStillInitializing {
+            get {
+                return ResourceManager.GetString("LifecycleStillInitializing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Plugin lifecycle is closed or not open: {0} 的本地化字符串。
+        /// </summary>
+        internal static string LifecycleUnavailable {
+            get {
+                return ResourceManager.GetString("LifecycleUnavailable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 ,  的本地化字符串。
         /// </summary>
@@ -593,25 +566,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ListSeparator", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Loaded plugin has no version: {0} 的本地化字符串。
-        /// </summary>
-        internal static string LoadedVersionMissing {
-            get {
-                return ResourceManager.GetString("LoadedVersionMissing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin loading and cleanup failed. 的本地化字符串。
-        /// </summary>
-        internal static string LoadingCleanupFailed {
-            get {
-                return ResourceManager.GetString("LoadingCleanupFailed", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 Plugin loading failed: plugin={0}, phase={1} 的本地化字符串。
         /// </summary>
@@ -620,7 +575,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("LoadingFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Manifest {0} must not be empty. 的本地化字符串。
         /// </summary>
@@ -629,7 +584,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ManifestFieldEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Manifest {0} must not be null. 的本地化字符串。
         /// </summary>
@@ -638,7 +593,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ManifestFieldNull", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Missing plugin manifest. 的本地化字符串。
         /// </summary>
@@ -647,7 +602,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ManifestMissing", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The root of manifest.json must be an object. 的本地化字符串。
         /// </summary>
@@ -656,34 +611,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ManifestObjectRequired", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 Manifest schema mismatch: missing=[{0}], unexpected=[{1}] 的本地化字符串。
-        /// </summary>
-        internal static string ManifestSchemaMismatch {
-            get {
-                return ResourceManager.GetString("ManifestSchemaMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Manifest {0} must contain only strings. 的本地化字符串。
-        /// </summary>
-        internal static string ManifestStringsRequired {
-            get {
-                return ResourceManager.GetString("ManifestStringsRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Invalid manifest {0} type: expected={1}, actual={2} 的本地化字符串。
-        /// </summary>
-        internal static string ManifestTypeInvalid {
-            get {
-                return ResourceManager.GetString("ManifestTypeInvalid", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 Plugin registration stages cannot be nested. 的本地化字符串。
         /// </summary>
@@ -692,7 +620,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("NestedRegistration", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Endpoint pattern contains a noncanonical path segment: {0} 的本地化字符串。
         /// </summary>
@@ -701,7 +629,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("NonCanonicalPathSegment", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin error and notification diagnostics failed. 的本地化字符串。
         /// </summary>
@@ -710,7 +638,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("NotificationDiagnosticsFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin registry operation failed: {0} 的本地化字符串。
         /// </summary>
@@ -719,7 +647,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("OperationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloaded package Author does not match the request: expected={0}, actual={1} 的本地化字符串。
         /// </summary>
@@ -728,7 +656,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PackageAuthorMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin package entry is missing: package={0}, entry={1} 的本地化字符串。
         /// </summary>
@@ -737,7 +665,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PackageEntryMissing", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloaded package InternalName does not match the request: expected={0}, actual={1} 的本地化字符串。
         /// </summary>
@@ -746,7 +674,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PackageInternalNameMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 ZIP filename must match manifest InternalName: zip={0}, manifest={1} 的本地化字符串。
         /// </summary>
@@ -755,7 +683,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PackageNameMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin ZIP exceeds 64 MiB. 的本地化字符串。
         /// </summary>
@@ -764,7 +692,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PackageTooLarge", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Downloaded package Version does not match the request: expected={0}, actual={1} 的本地化字符串。
         /// </summary>
@@ -773,7 +701,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PackageVersionMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Analyzer payload is not a Host Gallop DTO for this direction: kind={0}, payload={1} 的本地化字符串。
         /// </summary>
@@ -782,7 +710,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PayloadDirectionMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin {0} is disabled until process exit because required assembly {2} is missing during {1}: {3} 的本地化字符串。
         /// </summary>
@@ -791,7 +719,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PluginDisabledMissingAssembly", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 No public concrete type implementing {0} was found. 的本地化字符串。
         /// </summary>
@@ -800,7 +728,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("PluginTypeMissing", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 programmatic {0} analyzer 的本地化字符串。
         /// </summary>
@@ -809,7 +737,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ProgrammaticAnalyzer", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Reading plugin assembly 的本地化字符串。
         /// </summary>
@@ -818,7 +746,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ReadAssembly", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Reading plugin exported types 的本地化字符串。
         /// </summary>
@@ -827,7 +755,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("ReadExportedTypes", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin registration stage is already committed: {0} 的本地化字符串。
         /// </summary>
@@ -836,16 +764,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("RegistrationAlreadyCommitted", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Analyzers and background operations can only be registered in Initialize or an OnStarted callback invoked by the host: plugin={0} 的本地化字符串。
+        ///   查找类似 Analyzers can only be registered in Initialize or StartAsync invoked by the host: plugin={0} 的本地化字符串。
         /// </summary>
         internal static string RegistrationPhaseInvalid {
             get {
                 return ResourceManager.GetString("RegistrationPhaseInvalid", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The ZIP root must contain exactly one main assembly {0}. 的本地化字符串。
         /// </summary>
@@ -854,7 +782,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("RootAssemblyRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The ZIP root must contain exactly one manifest.json. 的本地化字符串。
         /// </summary>
@@ -863,7 +791,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("RootManifestRequired", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Plugin runtime state is not empty in phase={0}; cannot run Init. 的本地化字符串。
         /// </summary>
@@ -872,7 +800,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("RuntimeStateNotEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Select plugins to install 的本地化字符串。
         /// </summary>
@@ -881,7 +809,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("SelectPlugins", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A plugin cannot depend on itself: {0} 的本地化字符串。
         /// </summary>
@@ -890,7 +818,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("SelfDependency", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Shared ABI assembly {0} must be loaded by the Default ALC, but the host cannot load it. 的本地化字符串。
         /// </summary>
@@ -899,7 +827,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("SharedAssemblyUnavailable", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Shared ABI assembly version mismatch: plugin requested {0}, host Default ALC loaded {1}. 的本地化字符串。
         /// </summary>
@@ -908,16 +836,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("SharedAssemblyVersionMismatch", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 manifest.json is not strict JSON. 的本地化字符串。
+        ///   查找类似 Plugin start failed: plugin={0}, {1} 的本地化字符串。
         /// </summary>
-        internal static string StrictJsonRequired {
+        internal static string StartFailed {
             get {
-                return ResourceManager.GetString("StrictJsonRequired", resourceCulture);
+                return ResourceManager.GetString("StartFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Unknown endpoint pattern kind. 的本地化字符串。
         /// </summary>
@@ -926,7 +854,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("UnknownEndpointPatternKind", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A wildcard endpoint pattern must contain *: {0} 的本地化字符串。
         /// </summary>

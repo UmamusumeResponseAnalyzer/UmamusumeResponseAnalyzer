@@ -66,13 +66,13 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void RegisterMethods_RegistersTypedRequestAndResponseAnalyzers()
+        public void AttributeRegistration_RegistersTypedRequestAndResponseAnalyzers()
         {
             var plugin = new TypedAnalyzerPlugin();
             var requestCount = PluginManager.RequestAnalyzerMethods.Count;
             var responseCount = PluginManager.ResponseAnalyzerMethods.Count;
 
-            PluginManager.RegisterMethods(plugin);
+            PluginManager.InitializePlugin(plugin);
 
             Assert.Equal(requestCount + 1, PluginManager.RequestAnalyzerMethods.Count);
             Assert.Equal(responseCount + 1, PluginManager.ResponseAnalyzerMethods.Count);
@@ -96,24 +96,24 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void RegisterMethods_RejectsRawAttributeAnalyzers()
+        public void AttributeRegistration_RejectsRawAttributeAnalyzers()
         {
             var plugin = new RawAnalyzerPlugin();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => PluginManager.RegisterMethods(plugin));
+                () => PluginManager.InitializePlugin(plugin));
 
             Assert.Contains(typeof(ReadOnlyMemory<byte>).FullName!, exception.Message);
             Assert.Contains(typeof(DataLinkIndexRequest).FullName!, exception.Message);
         }
 
         [Fact]
-        public void RegisterMethods_PreservesDeclarationOrderAtSamePriority()
+        public void AttributeRegistration_PreservesDeclarationOrderAtSamePriority()
         {
             var plugin = new MultiAttributePlugin();
             var count = PluginManager.ResponseAnalyzerMethods.Count;
 
-            PluginManager.RegisterMethods(plugin);
+            PluginManager.InitializePlugin(plugin);
 
             Assert.Equal(count + 2, PluginManager.ResponseAnalyzerMethods.Count);
             var registrations = PluginManager.ResponseAnalyzerMethods
@@ -126,11 +126,11 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void RegisterMethods_FailsFastForWrongDtoParameterType()
+        public void AttributeRegistration_FailsFastForWrongDtoParameterType()
         {
             var plugin = new WrongParameterPlugin();
 
-            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.RegisterMethods(plugin));
+            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(plugin));
 
             Assert.Contains(nameof(WrongParameterPlugin.OnResponse), ex.Message);
             Assert.Contains(typeof(GameApi.Account.Index).FullName!, ex.Message);
@@ -139,24 +139,24 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void RegisterMethods_FailsFastForInvalidAnalyzerReturnType()
+        public void AttributeRegistration_FailsFastForInvalidAnalyzerReturnType()
         {
             var taskPlugin = new TaskAnalyzerPlugin();
             var voidPlugin = new VoidAnalyzerPlugin();
 
-            var taskEx = Assert.Throws<InvalidOperationException>(() => PluginManager.RegisterMethods(taskPlugin));
-            var voidEx = Assert.Throws<InvalidOperationException>(() => PluginManager.RegisterMethods(voidPlugin));
+            var taskEx = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(taskPlugin));
+            var voidEx = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(voidPlugin));
 
             Assert.Contains("return=System.Threading.Tasks.Task", taskEx.Message);
             Assert.Contains("return=System.Void", voidEx.Message);
         }
 
         [Fact]
-        public void RegisterMethods_FailsFastForInvalidAnalyzerHeadersParameterType()
+        public void AttributeRegistration_FailsFastForInvalidAnalyzerHeadersParameterType()
         {
             var plugin = new WrongHeadersParameterPlugin();
 
-            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.RegisterMethods(plugin));
+            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(plugin));
 
             Assert.Contains(nameof(WrongHeadersParameterPlugin.OnResponse), ex.Message);
             Assert.Contains("ValueTask analyzer(TConcreteDto payload)", ex.Message);
@@ -164,11 +164,11 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void RegisterMethods_FailsFastForEndpointTypeMissingFromCatalog()
+        public void AttributeRegistration_FailsFastForEndpointTypeMissingFromCatalog()
         {
             var plugin = new UnknownEndpointPlugin();
 
-            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.RegisterMethods(plugin));
+            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(plugin));
 
             Assert.Contains(typeof(UnknownEndpoint).FullName!, ex.Message);
             Assert.Contains(nameof(GameEndpointCatalog), ex.Message);
@@ -816,7 +816,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public async Task Registrations_CommitAtomicallyForInitializeAndOnStarted()
+        public async Task Registrations_CommitAtomicallyForInitializeAndStartAsync()
         {
             var count = PluginManager.ResponseAnalyzerMethods.Count;
             var failedInitialize = new FailingInitializeRegistrationPlugin();
@@ -830,8 +830,8 @@ namespace UmamusumeResponseAnalyzer.Tests
                 PluginManager.InitializePlugin(committed);
                 PluginManager.InitializePlugin(rolledBack);
 
-                await PluginRuntimeFixture.TriggerStartedAsync();
-                await committed.BackgroundStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                await PluginManager.StartPluginAsync(committed);
+                await PluginManager.StartPluginAsync(rolledBack);
 
                 Assert.Equal(count + 1, PluginManager.ResponseAnalyzerMethods.Count);
                 var registration = Assert.Single(
@@ -848,11 +848,10 @@ namespace UmamusumeResponseAnalyzer.Tests
                 await PluginManager.CleanupPluginAsync(committed).WaitAsync(TimeSpan.FromSeconds(5));
                 await PluginManager.CleanupPluginAsync(rolledBack).WaitAsync(TimeSpan.FromSeconds(5));
             }
-            Assert.False(rolledBack.BackgroundStarted.Task.IsCompleted);
         }
 
         [Fact]
-        public async Task InitializePlugin_PassesPluginContextAndDisposesStartedSubscription()
+        public async Task InitializePlugin_PassesPluginContextAndCleanupPreventsStart()
         {
             var plugin = new ContextPlugin();
 
@@ -860,14 +859,13 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             Assert.NotNull(plugin.Context);
             Assert.Same(application, plugin.Context!.Application);
-            Assert.NotNull(plugin.Context.Events);
             Assert.NotNull(plugin.Context.Analyzers);
 
-            await PluginRuntimeFixture.TriggerStartedAsync();
+            await PluginManager.StartPluginAsync(plugin);
             Assert.Equal(1, plugin.StartedCalls);
 
-            PluginManager.DisposeHostEventSubscriptions(plugin);
-            await PluginRuntimeFixture.TriggerStartedAsync();
+            await PluginManager.CleanupPluginAsync(plugin);
+            await PluginManager.StartPluginAsync(plugin);
             Assert.Equal(1, plugin.StartedCalls);
         }
 
@@ -1056,6 +1054,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         abstract class TestPlugin : IPlugin
         {
             public virtual void Initialize(IPluginContext context) { }
+            public virtual ValueTask StartAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
         }
 
         sealed class CatalogDispatchPlugin : TestPlugin
@@ -1500,25 +1499,15 @@ namespace UmamusumeResponseAnalyzer.Tests
 
         sealed class StartedRegistrationPlugin(bool throwAfterRegistration) : TestPlugin
         {
-            public TaskCompletionSource BackgroundStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            public override void Initialize(IPluginContext context)
+            IPluginContext context = null!;
+            public override void Initialize(IPluginContext context) => this.context = context;
+            public override ValueTask StartAsync(CancellationToken cancellationToken = default)
             {
-                context.Events.OnStarted(_ =>
-                {
-                    context.Analyzers.Register<ReadOnlyMemory<byte>>(
-                        AnalyzerKind.Response,
-                        [EndpointPattern.Exact(AccountIndexPath)],
-                        _ => ValueTask.CompletedTask);
-                    context.RunBackground(_ =>
-                    {
-                        BackgroundStarted.SetResult();
-                        return ValueTask.CompletedTask;
-                    });
-                    if (throwAfterRegistration)
-                        throw new InvalidOperationException("started failed");
-                    return ValueTask.CompletedTask;
-                });
+                context.Analyzers.Register<ReadOnlyMemory<byte>>(
+                    AnalyzerKind.Response, [EndpointPattern.Exact(AccountIndexPath)], _ => ValueTask.CompletedTask);
+                if (throwAfterRegistration)
+                    throw new InvalidOperationException("started registration failed");
+                return ValueTask.CompletedTask;
             }
         }
 
@@ -1530,11 +1519,11 @@ namespace UmamusumeResponseAnalyzer.Tests
             public override void Initialize(IPluginContext context)
             {
                 Context = context;
-                context.Events.OnStarted(_ =>
-                {
-                    StartedCalls++;
-                    return ValueTask.CompletedTask;
-                });
+            }
+            public override ValueTask StartAsync(CancellationToken cancellationToken = default)
+            {
+                StartedCalls++;
+                return ValueTask.CompletedTask;
             }
         }
 

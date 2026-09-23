@@ -62,7 +62,7 @@ foreach (var (name, create) in plugins)
         }
         finally
         {
-            plugin.Dispose();
+            plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
         ui.Flush();
@@ -181,16 +181,11 @@ static void PreparePluginState(string name)
 sealed class SmokePluginContext(IApplication application) : IPluginContext
 {
     public IApplication Application { get; } = application;
-    public IPluginHostEvents Events { get; } = new SmokeHostEvents();
     public IPluginAnalyzerRegistry Analyzers { get; } = new SmokeAnalyzerRegistry();
     public bool IsPluginAvailable(string internalName) => false;
 
-    public void RunBackground(Func<CancellationToken, ValueTask> operation) { }
-}
-
-sealed class SmokeHostEvents : IPluginHostEvents
-{
-    public void OnStarted(Func<CancellationToken, ValueTask> handler) { }
+    public void ReportBackgroundFailure(Exception error)
+        => throw new InvalidOperationException("Plugin background work failed.", error);
 }
 
 sealed class SmokeAnalyzerRegistry : IPluginAnalyzerRegistry

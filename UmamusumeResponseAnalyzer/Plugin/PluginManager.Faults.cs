@@ -8,7 +8,17 @@ namespace UmamusumeResponseAnalyzer.Plugin;
 internal static partial class PluginManager
 {
     internal static bool IsPluginFaulted(IPlugin plugin)
-        => PluginGenerations.TryGetValue(plugin, out var generation) && generation.IsFaulted;
+        => Runtime.Lifecycles.TryGetValue(plugin, out var lifecycle) && lifecycle.IsFaulted;
+
+    internal static void ReportBackgroundFailure(IPlugin plugin, Exception error)
+    {
+        if (TryDisableForMissingAssembly(plugin, error, "Background"))
+            return;
+
+        var failure = new InvalidOperationException(
+            string.Format(i18n.BackgroundOperationFailed, InternalName(plugin), DescribeException(error)));
+        ReportPluginFailure("Plugin", failure, error.ToString());
+    }
 
     internal static bool TryDisableAnalyzerForMissingAssembly(AnalyzerRegistration registration, Exception error, string phase)
     {
@@ -35,32 +45,42 @@ internal static partial class PluginManager
         var failure = string.Format(
             i18n.PluginDisabledMissingAssembly,
             InternalName(plugin), phase, missing.AssemblyName.FullName, DescribeException(error));
-        var generation = GenerationFor(plugin);
-        if (!generation.TryMarkFaulted(failure))
+        var lifecycle = LifecycleFor(plugin);
+        if (!lifecycle.TryMarkFaulted(failure))
             return true;
 
-        _ = generation.Close();
+        _ = lifecycle.Close();
         ReportPluginFailure("Plugin", new InvalidOperationException(failure), error.ToString());
 
-        // The current callback or background operation must release its own lease before cleanup can finish.
+        // A fault can be reported while Initialize or StartAsync still holds its callback lease.
         _ = Task.Run(async () =>
         {
-            await generation.Close().ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            await lifecycle.Close();
+            Task cleanup;
             await Runtime.LifecycleGate.WaitAsync();
             try
             {
-                if (generation.CleanupTask is not null)
+                if (lifecycle.CleanupTask is not null)
                     return;
 
                 var name = InternalName(plugin);
-                Lifecycle.Failures[name] = failure;
-                var failedPackage = LifecycleMetadatas.TryGetValue(name, out var metadata)
+                var failedPackage = Runtime.Metadatas.TryGetValue(name, out var metadata)
                     ? metadata.PackagePath
                     : name;
-                if (!LifecycleFailedPlugins.Contains(failedPackage))
-                    LifecycleFailedPlugins.Add(failedPackage);
+                if (!Runtime.FailedPlugins.Contains(failedPackage))
+                    Runtime.FailedPlugins.Add(failedPackage);
 
-                await CleanupPluginAsync(plugin, flush: true);
+                cleanup = CleanupPluginResourcesAsync(plugin, flush: true);
+            }
+            finally
+            {
+                try { Runtime.Publish(); }
+                finally { Runtime.LifecycleGate.Release(); }
+            }
+
+            try
+            {
+                await cleanup;
             }
             catch (Exception cleanupError)
             {
@@ -71,7 +91,13 @@ internal static partial class PluginManager
             }
             finally
             {
-                try { Runtime.Publish(); }
+                await Runtime.LifecycleGate.WaitAsync();
+                try
+                {
+                    RemoveAnalyzerMethods(plugin);
+                    Runtime.LoadedPlugins.RemoveAll(candidate => ReferenceEquals(candidate, plugin));
+                    Runtime.Publish();
+                }
                 finally { Runtime.LifecycleGate.Release(); }
             }
         });
@@ -96,34 +122,40 @@ internal static partial class PluginManager
         return error.InnerException is { } inner ? FindMissingPluginAssembly(inner) : null;
     }
 
-    internal static Task CleanupPluginAsync(IPlugin plugin, bool flush = false)
+    internal static async Task CleanupPluginAsync(IPlugin plugin, bool flush = false)
     {
-        var generation = GenerationFor(plugin);
-        return generation.CleanupTask ??= CompletePluginCleanupAsync(plugin, generation, flush);
+        try
+        {
+            await CleanupPluginResourcesAsync(plugin, flush);
+        }
+        finally
+        {
+            RemoveAnalyzerMethods(plugin);
+            Runtime.LoadedPlugins.RemoveAll(candidate => ReferenceEquals(candidate, plugin));
+        }
     }
 
-    static async Task CompletePluginCleanupAsync(IPlugin plugin, PluginGeneration generation, bool flush)
+    static Task CleanupPluginResourcesAsync(IPlugin plugin, bool flush)
+    {
+        var lifecycle = LifecycleFor(plugin);
+        return lifecycle.CleanupTask ??= CompletePluginCleanupAsync(plugin, lifecycle, flush);
+    }
+
+    static async Task CompletePluginCleanupAsync(IPlugin plugin, PluginLifecycle lifecycle, bool flush)
     {
         var name = InternalName(plugin);
         var failures = new List<Exception>();
-        try
-        {
-            await generation.Close();
-        }
-        catch (Exception error)
-        {
-            failures.Add(new InvalidOperationException(string.Format(i18n.CleanupPhaseFailed, name, "Close"), error));
-        }
+        await lifecycle.Close();
 
         using (HotkeyManager.RegisterScope(plugin))
         {
             try
             {
-                plugin.Dispose();
+                await plugin.DisposeAsync();
             }
             catch (Exception error)
             {
-                failures.Add(new InvalidOperationException(string.Format(i18n.CleanupPhaseFailed, name, "Dispose"), error));
+                failures.Add(new InvalidOperationException(string.Format(i18n.CleanupPhaseFailed, name, "DisposeAsync"), error));
             }
         }
 
@@ -147,10 +179,6 @@ internal static partial class PluginManager
                 failures.Add(new InvalidOperationException(string.Format(i18n.CleanupPhaseFailed, name, "Flush"), error));
             }
         }
-
-        RemoveAnalyzerMethods(plugin);
-        DisposeHostEventSubscriptions(plugin);
-        LifecycleLoadedPlugins.RemoveAll(candidate => ReferenceEquals(candidate, plugin));
 
         if (failures.Count != 0)
             throw new AggregateException(i18n.CleanupFailed, failures);

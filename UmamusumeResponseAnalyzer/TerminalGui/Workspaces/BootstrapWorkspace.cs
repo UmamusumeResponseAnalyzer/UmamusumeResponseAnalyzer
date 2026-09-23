@@ -312,18 +312,19 @@ internal sealed record BootstrapPluginRow(
     string Result)
 {
     public BootstrapPluginRow(
-        PluginManager.PluginRuntimeStatus plugin,
+        PluginManager.PluginMetadata plugin,
+        bool loaded,
         bool initialized,
         bool failed)
         : this(
-            plugin.DisplayName == plugin.InternalName
+            plugin.DisplayName == plugin.PluginName
                 ? plugin.DisplayName
-                : $"{plugin.DisplayName} ({plugin.InternalName})",
-            plugin.Version?.ToString() ?? string.Empty,
-            plugin.IsLoaded ? initialized ? UiText.Severity_Success : UiText.Severity_Info : failed || !plugin.IsAvailable ? UiText.Severity_Error : UiText.Severity_Info,
-            plugin.IsLoaded
+                : $"{plugin.DisplayName} ({plugin.PluginName})",
+            plugin.Version.ToString(),
+            loaded ? initialized ? UiText.Severity_Success : UiText.Severity_Info : failed ? UiText.Severity_Error : UiText.Severity_Info,
+            loaded
                 ? initialized ? I18N_Initialized : I18N_Scanned
-                : failed || !plugin.IsAvailable
+                : failed
                     ? initialized ? I18N_LoadOrInitializeFailed : I18N_LoadFailed
                     : I18N_Unloaded)
     {

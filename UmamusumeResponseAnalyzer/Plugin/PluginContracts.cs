@@ -6,22 +6,19 @@ namespace UmamusumeResponseAnalyzer.Plugin;
 public interface IPluginContext
 {
     IApplication Application { get; }
-    IPluginHostEvents Events { get; }
     IPluginAnalyzerRegistry Analyzers { get; }
     bool IsPluginAvailable(string internalName);
-    void RunBackground(Func<CancellationToken, ValueTask> operation);
+    void ReportBackgroundFailure(Exception error);
 }
 
-public interface IPluginHostEvents
-{
-    void OnStarted(Func<CancellationToken, ValueTask> handler);
-}
-
-public interface IPlugin
+public interface IPlugin : IAsyncDisposable
 {
     void Initialize(IPluginContext context);
 
-    void Dispose() { }
+    ValueTask StartAsync(CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
+
+    ValueTask IAsyncDisposable.DisposeAsync() => ValueTask.CompletedTask;
 
     Task ConfigPromptAsync(IApplication application, CancellationToken cancellationToken = default)
         => Task.CompletedTask;

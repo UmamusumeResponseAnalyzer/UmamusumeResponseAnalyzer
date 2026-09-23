@@ -490,6 +490,9 @@ static class ModalDialogs
 
     static void Layout(Dialog dialog, ListView list, Button ok, Button cancel)
     {
+        var prompt = dialog.SubViews.First();
+        prompt.Height = Dim.Auto(DimAutoStyle.Text);
+        list.Y = Pos.Bottom(prompt);
         ok.X = Pos.Center() - 10;
         ok.Y = Pos.Bottom(list);
         cancel.X = Pos.Right(ok) + 2;

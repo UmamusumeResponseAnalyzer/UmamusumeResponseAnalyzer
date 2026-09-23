@@ -1,5 +1,11 @@
 using System.IO.Compression;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Reflection;
+using System.Resources;
+using Microsoft.CodeAnalysis;
 using UmamusumeResponseAnalyzer.Plugin;
+using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
 using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 
@@ -13,12 +19,17 @@ public sealed class SharedContextTests : IDisposable
         Path.GetTempPath(),
         $"ura-manifest-dependencies-{Guid.NewGuid():N}");
     readonly string pluginsDirectory;
+    readonly UiHost host;
+    readonly ConcurrentQueue<UiLogLine> diagnostics = new();
 
-    public SharedContextTests()
+    public SharedContextTests(PluginRuntimeFixture runtime)
     {
         pluginsDirectory = Path.Combine(testDirectory, "Plugins");
         Directory.CreateDirectory(pluginsDirectory);
         Directory.SetCurrentDirectory(testDirectory);
+        host = runtime.Host;
+        host.FlushAsync().GetAwaiter().GetResult();
+        host.LogAdded += diagnostics.Enqueue;
     }
 
     public void Dispose()
@@ -29,6 +40,7 @@ public sealed class SharedContextTests : IDisposable
         }
         finally
         {
+            host.LogAdded -= diagnostics.Enqueue;
             Directory.SetCurrentDirectory(originalDirectory);
             try { Directory.Delete(testDirectory, recursive: true); }
             catch (IOException) { }
@@ -79,7 +91,7 @@ public sealed class SharedContextTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void ConflictingSharedAssemblyFailsOnlyItsDependencyGroup(bool differentCase)
+    public async Task ConflictingSharedAssemblyFailsOnlyItsDependencyGroup(bool differentCase)
     {
         var constructedPath = Path.Combine(testDirectory, "conflicted-constructed.txt");
         foreach (var name in new[] { "Anchor", "Member" })
@@ -121,6 +133,7 @@ public sealed class SharedContextTests : IDisposable
 
         RestartPluginManager();
         PluginManager.InitializeLoadedPlugins();
+        await host.FlushAsync();
 
         Assert.Equal("ZuluHealthy", PluginManager.InternalName(Assert.Single(PluginManager.LoadedPlugins)));
         Assert.Equal("ZuluHealthy", Assert.Single(PluginManager.Contexts).Key);
@@ -132,15 +145,13 @@ public sealed class SharedContextTests : IDisposable
         var expectedError = differentCase
             ? string.Format(i18n.AssemblyCaseConflict, "SharedLibrary", "sharedlibrary", "Anchor&Member")
             : string.Format(i18n.AssemblyContentConflict, "SharedLibrary", "Anchor&Member");
-        var statuses = PluginManager.SnapshotPluginStatuses();
+        var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
+        Assert.Contains(expectedError, report.Text);
         foreach (var name in new[] { "Anchor", "Member" })
         {
-            var status = Assert.Single(statuses, status => status.InternalName == name);
-            Assert.False(status.IsLoaded);
-            Assert.True(status.IsAvailable);
-            Assert.Equal(expectedError, status.Error);
+            Assert.DoesNotContain(PluginManager.SnapshotActivePluginMetadatas(), metadata => metadata.PluginName == name);
+            Assert.Contains(name, PluginManager.Metadatas.Keys);
         }
-        Assert.Null(Assert.Single(statuses, status => status.InternalName == "ZuluHealthy").Error);
     }
 
     [Fact]
@@ -156,7 +167,11 @@ public sealed class SharedContextTests : IDisposable
                 public AnchorPlugin() => File.AppendAllLines(@"{{logPath}}", ["constructed"]);
                 public void Initialize(IPluginContext context)
                     => File.AppendAllLines(@"{{logPath}}", ["initialized"]);
-                public void Dispose() => File.AppendAllLines(@"{{logPath}}", ["disposed"]);
+                public System.Threading.Tasks.ValueTask DisposeAsync()
+                {
+                    File.AppendAllLines(@"{{logPath}}", ["disposed"]);
+                    return System.Threading.Tasks.ValueTask.CompletedTask;
+                }
             }
             """);
         CreatePackage("Member", ["Anchor"], """
@@ -175,7 +190,10 @@ public sealed class SharedContextTests : IDisposable
         Assert.Equal("Anchor", PluginManager.InternalName(Assert.Single(PluginManager.LoadedPlugins)));
         Assert.Single(PluginManager.Contexts);
         Assert.Equal(Path.Combine(pluginsDirectory, "Member.zip"), Assert.Single(PluginManager.FailedPlugins));
-        Assert.NotNull(Assert.Single(PluginManager.SnapshotPluginStatuses(), status => status.InternalName == "Member").Error);
+        await host.FlushAsync();
+        var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
+        Assert.Contains("Member", report.Text);
+        Assert.Contains("constructor failed", report.ExceptionDetails);
         await PluginManager.ShutdownAsync();
         Assert.Equal(["constructed", "initialized", "disposed"], File.ReadAllLines(logPath));
     }
@@ -215,6 +233,50 @@ public sealed class SharedContextTests : IDisposable
 
         Assert.Empty(PluginManager.FailedPlugins);
         Assert.Equal("available-same", File.ReadAllText(resultPath));
+    }
+
+    [Fact]
+    public async Task ConcurrentLazyLoadsShareDependenciesAndSatelliteResources()
+    {
+        var dependency = Path.Combine(testDirectory, "SharedLibrary.dll");
+        PluginCompiler.Compile("public static class SharedLibrary { public static int Value => 7; }", "SharedLibrary", dependency);
+        CreatePackage("Concurrent");
+        var resourcePath = Path.Combine(testDirectory, "Messages.resources");
+        using (var writer = new ResourceWriter(resourcePath))
+            writer.AddResource("Message", "并发加载");
+        var satellite = Path.Combine(testDirectory, "Concurrent.resources.dll");
+        PluginCompiler.Compile("[assembly: System.Reflection.AssemblyCulture(\"zh-CN\")]", "Concurrent.resources", satellite,
+            resources: [new ResourceDescription("Messages.zh-CN.resources", () => File.OpenRead(resourcePath), true)]);
+        using (var archive = ZipFile.Open(Path.Combine(pluginsDirectory, "Concurrent.zip"), ZipArchiveMode.Update))
+        {
+            archive.CreateEntryFromFile(dependency, "SharedLibrary.dll");
+            archive.CreateEntryFromFile(satellite, "zh-CN/Concurrent.resources.dll");
+        }
+        RestartPluginManager();
+        var context = Assert.Single(PluginManager.Contexts).Value;
+        var plugin = Assert.Single(PluginManager.LoadedPlugins);
+        using var ready = new CountdownEvent(8);
+        using var start = new ManualResetEventSlim();
+        var loads = Enumerable.Range(0, 8).Select(_ => Task.Factory.StartNew(() =>
+        {
+            ready.Signal();
+            start.Wait();
+            var assembly = context.LoadFromAssemblyName(new AssemblyName("SharedLibrary"));
+            var resource = new ResourceManager("Messages", plugin.GetType().Assembly);
+            Assert.Equal("并发加载", resource.GetString("Message", CultureInfo.GetCultureInfo("zh-CN")));
+            return assembly;
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray();
+        try
+        {
+            Assert.True(ready.Wait(TimeSpan.FromSeconds(10)));
+        }
+        finally
+        {
+            start.Set();
+        }
+        var assemblies = await Task.WhenAll(loads).WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.All(assemblies, assembly => Assert.Same(assemblies[0], assembly));
+        Assert.Equal(7, assemblies[0].GetType("SharedLibrary")!.GetProperty("Value")!.GetValue(null));
     }
 
     static void RestartPluginManager()

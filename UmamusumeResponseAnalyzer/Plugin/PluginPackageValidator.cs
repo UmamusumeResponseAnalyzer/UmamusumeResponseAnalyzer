@@ -14,22 +14,6 @@ internal sealed record ValidatedPluginPackage(
 
 internal static class PluginPackageValidator
 {
-    static readonly string[] ManifestPropertyNames =
-    [
-        "Author",
-        "InternalName",
-        "DisplayName",
-        "Description",
-        "Changelog",
-        "Version",
-        "Dependencies",
-        "Targets",
-        "RepositoryUrl",
-        "LastUpdate",
-        "Category",
-        "Homepage",
-    ];
-
     internal static ValidatedPluginPackage Validate(
         string packagePath,
         bool requireMatchingPackageFileName)
@@ -54,16 +38,12 @@ internal static class PluginPackageValidator
         {
             try
             {
-                using var json = JsonDocument.Parse(stream, new()
-                {
-                    AllowTrailingCommas = false,
-                    CommentHandling = JsonCommentHandling.Disallow,
-                });
-                manifest = ParseManifest(json.RootElement);
+                manifest = JsonSerializer.Deserialize<PluginInformation>(stream, JsonSerializerOptions.Strict)
+                    ?? throw new InvalidDataException(i18n.ManifestObjectRequired);
             }
             catch (System.Text.Json.JsonException ex)
             {
-                throw new InvalidDataException(i18n.StrictJsonRequired, ex);
+                throw new InvalidDataException(ex.Message, ex);
             }
         }
 
@@ -101,66 +81,6 @@ internal static class PluginPackageValidator
             mainEntries[0].FullName,
             assemblies,
             [.. archive.Entries.Select(entry => entry.FullName)]);
-    }
-
-    static PluginInformation ParseManifest(JsonElement manifest)
-    {
-        if (manifest.ValueKind != JsonValueKind.Object)
-            throw new InvalidDataException(i18n.ManifestObjectRequired);
-
-        var properties = manifest.EnumerateObject().ToArray();
-        var actualProperties = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var property in properties)
-            if (!actualProperties.Add(property.Name))
-                throw new InvalidDataException(string.Format(i18n.DuplicateManifestField, property.Name));
-
-        var missing = ManifestPropertyNames.Except(actualProperties, StringComparer.Ordinal).ToArray();
-        var unexpected = actualProperties.Except(ManifestPropertyNames, StringComparer.Ordinal).ToArray();
-        if (missing.Length != 0 || unexpected.Length != 0)
-            throw new InvalidDataException(
-                string.Format(i18n.ManifestSchemaMismatch, string.Join(", ", missing), string.Join(", ", unexpected)));
-
-        string String(string name)
-        {
-            var value = manifest.GetProperty(name);
-            if (value.ValueKind != JsonValueKind.String)
-                throw new InvalidDataException(string.Format(i18n.ManifestTypeInvalid, name, "String", value.ValueKind));
-            return value.GetString()!;
-        }
-
-        string[] Strings(string name)
-        {
-            var value = manifest.GetProperty(name);
-            if (value.ValueKind != JsonValueKind.Array)
-                throw new InvalidDataException(string.Format(i18n.ManifestTypeInvalid, name, "Array", value.ValueKind));
-            return value.EnumerateArray().Select(item =>
-            {
-                if (item.ValueKind != JsonValueKind.String)
-                    throw new InvalidDataException(string.Format(i18n.ManifestStringsRequired, name));
-                return item.GetString()!;
-            }).ToArray();
-        }
-
-        var lastUpdate = manifest.GetProperty("LastUpdate");
-        if (lastUpdate.ValueKind != JsonValueKind.Number || !lastUpdate.TryGetInt64(out var lastUpdateValue))
-            throw new InvalidDataException(
-                string.Format(i18n.ManifestTypeInvalid, "LastUpdate", "Integer", lastUpdate.ValueKind));
-
-        return new()
-        {
-            Author = String("Author"),
-            InternalName = String("InternalName"),
-            DisplayName = String("DisplayName"),
-            Description = String("Description"),
-            Changelog = String("Changelog"),
-            RawVersion = String("Version"),
-            Dependencies = Strings("Dependencies"),
-            Targets = Strings("Targets"),
-            RepositoryUrl = String("RepositoryUrl"),
-            LastUpdate = lastUpdateValue,
-            Category = String("Category"),
-            Homepage = String("Homepage"),
-        };
     }
 
     static void ValidateMainAssemblyIdentity(ZipArchiveEntry entry, string internalName)
@@ -208,11 +128,8 @@ internal static class PluginPackageValidator
             throw new InvalidDataException(string.Format(i18n.InvalidVersion, manifest.RawVersion));
         if (manifest.Dependencies is null)
             throw new InvalidDataException(string.Format(i18n.ManifestFieldNull, "Dependencies"));
-        if (manifest.Targets is null)
-            throw new InvalidDataException(string.Format(i18n.ManifestFieldNull, "Targets"));
 
         ValidateNames(manifest.Dependencies, "Dependencies");
-        ValidateNames(manifest.Targets, "Targets");
         if (manifest.Dependencies.Contains(manifest.InternalName, StringComparer.OrdinalIgnoreCase))
             throw new InvalidDataException(string.Format(i18n.SelfDependency, manifest.InternalName));
     }

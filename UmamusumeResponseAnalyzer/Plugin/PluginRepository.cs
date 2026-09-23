@@ -6,6 +6,7 @@ using UmamusumeResponseAnalyzer.TerminalGui;
 namespace UmamusumeResponseAnalyzer.Plugin;
 
 internal sealed record PluginUpdateInfo(string DisplayName, Version CurrentVersion, Version LatestVersion);
+internal sealed record PluginDownload(PluginInformation Manifest, string DownloadUrl);
 
 internal static class PluginRepository
 {
@@ -17,17 +18,16 @@ internal static class PluginRepository
     {
         try
         {
-            var plugins = BuildCatalog(await FetchPluginsAsync(
-                PluginApiBase, cancellationToken), Config.Repository.Targets);
+            var plugins = await FetchPluginsAsync(PluginApiBase, cancellationToken);
             if (plugins.Count == 0)
             {
                 ModalDialogs.Acknowledge(i18n.Empty, cancellationToken);
                 return;
             }
             var choices = plugins
-                .OrderBy(p => string.IsNullOrWhiteSpace(p.Category) || p.Category == UncategorizedCategory ? 1 : 0)
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Category) ? UncategorizedCategory : p.Category)
-                .ThenBy(DisplayLabel, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(p => string.IsNullOrWhiteSpace(p.Manifest.Category) || p.Manifest.Category == UncategorizedCategory ? 1 : 0)
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Manifest.Category) ? UncategorizedCategory : p.Manifest.Category)
+                .ThenBy(p => p.Manifest.DisplayName, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             var selected = ModalDialogs.MultiSelect(i18n.SelectPlugins, choices,
                 converter: FormatChoice, cancellationToken: cancellationToken).ToList();
@@ -42,34 +42,28 @@ internal static class PluginRepository
         catch (Exception ex) { ModalDialogs.Acknowledge(string.Format(i18n.OperationFailed, ex.Message), cancellationToken); }
     }
 
-    internal static List<PluginInformation> BuildCatalog(IEnumerable<PluginInformation> raw, IReadOnlyCollection<string> targets) =>
-        raw.Where(p => targets.Count == 0 || p.Targets.Length == 0 || p.Targets.Intersect(targets).Any()).ToList();
+    static string FormatChoice(PluginDownload plugin) =>
+        ($"{plugin.Manifest.DisplayName} v{plugin.Manifest.RawVersion} [{plugin.Manifest.RepositoryUrl}]" +
+        (string.IsNullOrEmpty(plugin.Manifest.Description) ? "" : $" — {plugin.Manifest.Description}")).ReplaceLineEndings(" ");
 
-    static string DisplayLabel(PluginInformation manifest) =>
-        string.IsNullOrWhiteSpace(manifest.DisplayName) ? manifest.InternalName : manifest.DisplayName;
-
-    static string FormatChoice(PluginInformation plugin) =>
-        ($"{DisplayLabel(plugin)} v{plugin.RawVersion} [{plugin.RepositoryUrl}]" +
-        (string.IsNullOrEmpty(plugin.Description) ? "" : $" — {plugin.Description}")).ReplaceLineEndings(" ");
-
-    internal static async Task<List<string>> InstallPluginsAsync(List<PluginInformation> selected, CancellationToken cancellationToken = default)
+    internal static async Task<List<string>> InstallPluginsAsync(List<PluginDownload> selected, CancellationToken cancellationToken = default)
     {
-        if (selected.Select(p => p.InternalName).Distinct(StringComparer.OrdinalIgnoreCase).Count() != selected.Count)
+        if (selected.Select(p => p.Manifest.InternalName).Distinct(StringComparer.OrdinalIgnoreCase).Count() != selected.Count)
             throw new InvalidOperationException(i18n.DuplicateSelection);
         var installed = new List<string>();
         foreach (var plugin in selected)
         {
             try
             {
-                TerminalUi.Log("URA", string.Format(i18n.Downloading, DisplayLabel(plugin), plugin.RawVersion));
+                TerminalUi.Log("URA", string.Format(i18n.Downloading, plugin.Manifest.DisplayName, plugin.Manifest.RawVersion));
                 var manifest = await DownloadPluginZipAsync(plugin, cancellationToken);
                 installed.Add(manifest.InternalName);
-                TerminalUi.Log("URA", string.Format(i18n.Installed, DisplayLabel(manifest)));
+                TerminalUi.Log("URA", string.Format(i18n.Installed, manifest.DisplayName));
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                var message = string.Format(i18n.InstallFailed, DisplayLabel(plugin), ex.Message);
+                var message = string.Format(i18n.InstallFailed, plugin.Manifest.DisplayName, ex.Message);
                 TerminalUi.Log("URA", message, UiSeverity.Error);
                 TerminalUi.Notify("URA", message, UiSeverity.Error);
             }
@@ -79,31 +73,29 @@ internal static class PluginRepository
 
     public static async Task<IReadOnlyList<PluginUpdateInfo>> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
     {
-        var loaded = PluginManager.SnapshotPluginStatuses().Where(p => p.IsLoaded).ToArray();
-        if (loaded.Length == 0)
+        var loaded = PluginManager.SnapshotActivePluginMetadatas();
+        if (loaded.Count == 0)
             return [];
-        var remote = BuildCatalog(await FetchPluginsAsync(PluginApiBase, cancellationToken), Config.Repository.Targets);
+        var remote = await FetchPluginsAsync(PluginApiBase, cancellationToken);
         var remoteByName = new Dictionary<string, PluginInformation>(StringComparer.OrdinalIgnoreCase);
         foreach (var plugin in remote)
-            if (!remoteByName.TryAdd(plugin.InternalName, plugin))
-                throw new InvalidDataException(string.Format(i18n.AmbiguousSource, plugin.InternalName));
+            if (!remoteByName.TryAdd(plugin.Manifest.InternalName, plugin.Manifest))
+                throw new InvalidDataException(string.Format(i18n.AmbiguousSource, plugin.Manifest.InternalName));
         var updates = new List<PluginUpdateInfo>();
         foreach (var plugin in loaded)
         {
-            var version = plugin.Version
-                ?? throw new InvalidOperationException(string.Format(i18n.LoadedVersionMissing, plugin.InternalName));
-            if (remoteByName.TryGetValue(plugin.InternalName, out var latest) && latest.Version > version)
-                updates.Add(new(DisplayLabel(latest), version, latest.Version));
+            if (remoteByName.TryGetValue(plugin.PluginName, out var latest) && latest.Version > plugin.Version)
+                updates.Add(new(latest.DisplayName, plugin.Version, latest.Version));
         }
         return updates;
     }
 
     internal static string InstallZipPath(string internalName) => Path.Combine("Plugins", $"{internalName}.zip");
 
-    static async Task<List<PluginInformation>> FetchPluginsAsync(string url, CancellationToken cancellationToken) =>
+    static async Task<List<PluginDownload>> FetchPluginsAsync(string url, CancellationToken cancellationToken) =>
         (await FetchAsync<JArray>(url, cancellationToken)).Select(ReadPlugin).ToList();
 
-    static PluginInformation ReadPlugin(JToken data)
+    static PluginDownload ReadPlugin(JToken data)
     {
         var repositoryId = data["source"]?["repositoryId"]?.Value<long>();
         var releaseId = data["releaseId"]?.Value<long>();
@@ -112,11 +104,10 @@ internal static class PluginRepository
         var plugin = data["manifest"]?.ToObject<PluginInformation>()
             ?? throw new InvalidDataException(i18n.ManifestMissing);
         PluginPackageValidator.ValidateManifest(plugin);
-        plugin.DownloadUrl = $"{PluginApiBase}/{repositoryId}/releases/{releaseId}/download";
-        return plugin;
+        return new(plugin, $"{PluginApiBase}/{repositoryId}/releases/{releaseId}/download");
     }
 
-    internal static async Task<PluginInformation> GetPluginAsync(long repositoryId, long releaseId, CancellationToken cancellationToken)
+    internal static async Task<PluginDownload> GetPluginAsync(long repositoryId, long releaseId, CancellationToken cancellationToken)
     {
         if (repositoryId <= 0 || releaseId <= 0)
             throw new ArgumentException(i18n.InvalidSourceId);
@@ -127,7 +118,7 @@ internal static class PluginRepository
         return plugin;
     }
 
-    internal static async Task<PluginInformation> DownloadPluginZipAsync(PluginInformation plugin, CancellationToken cancellationToken)
+    internal static async Task<PluginInformation> DownloadPluginZipAsync(PluginDownload plugin, CancellationToken cancellationToken)
     {
         using var response = await ResourceUpdater.HttpClient.GetAsync(plugin.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -150,7 +141,7 @@ internal static class PluginRepository
                 await output.FlushAsync(cancellationToken);
                 output.Flush(flushToDisk: true);
             }
-            var manifest = ValidatePackage(temp, plugin.Author, plugin.InternalName, plugin.RawVersion);
+            var manifest = ValidatePackage(temp, plugin.Manifest.Author, plugin.Manifest.InternalName, plugin.Manifest.RawVersion);
             cancellationToken.ThrowIfCancellationRequested();
             var existing = Directory.GetFiles("Plugins", "*.zip").SingleOrDefault(p =>
                 Path.GetFileNameWithoutExtension(p).Equals(manifest.InternalName, StringComparison.OrdinalIgnoreCase));

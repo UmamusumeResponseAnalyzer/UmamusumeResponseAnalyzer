@@ -21,22 +21,26 @@ public sealed class EndpointPatternDispatchTests
 
         var plugin = new TestPlugin();
         using var stage = PluginManager.BeginRegistrationStage(plugin);
-        var registry = PluginManager.AnalyzersFor(plugin);
-
-        registry.Register<DataLinkIndexResponse>(
+        PluginManager.StageProgrammaticAnalyzers<DataLinkIndexResponse>(
+            plugin,
             AnalyzerKind.Response,
             [EndpointPattern.Wildcard("/umamusume/single_mode*/check_event")],
-            _ => ValueTask.CompletedTask);
-        registry.Register<ReadOnlyMemory<byte>>(
+            _ => ValueTask.CompletedTask,
+            0);
+        PluginManager.StageProgrammaticAnalyzers<ReadOnlyMemory<byte>>(
+            plugin,
             AnalyzerKind.Response,
             [EndpointPattern.Regex("^/umamusume/account/index$")],
-            _ => ValueTask.CompletedTask);
+            _ => ValueTask.CompletedTask,
+            0);
 
         Assert.Throws<InvalidOperationException>(() =>
-            registry.Register<byte[]>(
+            PluginManager.StageProgrammaticAnalyzers<byte[]>(
+                plugin,
                 AnalyzerKind.Response,
                 [EndpointPattern.Exact(AccountIndexPath)],
-                _ => ValueTask.CompletedTask));
+                _ => ValueTask.CompletedTask,
+                0));
     }
 
     [Fact]

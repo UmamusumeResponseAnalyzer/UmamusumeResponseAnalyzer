@@ -422,33 +422,6 @@ sealed class WorkspaceSmokeSession : IDisposable
     }
 }
 
-sealed class RecordingHostEvents : IPluginHostEvents, IDisposable
-{
-    bool disposed;
-    public List<RecordedHostSubscription> Subscriptions { get; } = [];
-
-    public void OnStarted(Func<CancellationToken, ValueTask> handler)
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        Subscriptions.Add(new(handler));
-    }
-
-    public void Dispose()
-    {
-        disposed = true;
-        foreach (var subscription in Subscriptions)
-            subscription.Dispose();
-    }
-}
-
-sealed class RecordedHostSubscription(Func<CancellationToken, ValueTask> handler) : IDisposable
-{
-    public Func<CancellationToken, ValueTask> Handler { get; } = handler;
-    public bool IsDisposed { get; private set; }
-
-    public void Dispose() => IsDisposed = true;
-}
-
 sealed class RecordingAnalyzerRegistry : IPluginAnalyzerRegistry, IDisposable
 {
     bool disposed;
@@ -523,35 +496,18 @@ sealed class RuntimePluginContext(
     IApplication application,
     IReadOnlySet<string>? availablePlugins = null) : IPluginContext, IDisposable
 {
-    readonly CancellationTokenSource lifetime = new();
-    readonly List<Task> backgroundTasks = [];
-
     public IApplication Application { get; } = application;
-    public RecordingHostEvents HostEvents { get; } = new();
     public RecordingAnalyzerRegistry AnalyzerRegistry { get; } = new();
-    public IPluginHostEvents Events => HostEvents;
     public IPluginAnalyzerRegistry Analyzers => AnalyzerRegistry;
     public bool IsPluginAvailable(string internalName)
         => availablePlugins?.Contains(internalName) == true;
 
-    public void RunBackground(Func<CancellationToken, ValueTask> operation)
-    {
-        ArgumentNullException.ThrowIfNull(operation);
-        backgroundTasks.Add(Task.Run(() => operation(lifetime.Token).AsTask(), lifetime.Token));
-    }
+    public void ReportBackgroundFailure(Exception error)
+        => throw new InvalidOperationException("Plugin background work failed.", error);
 
     public void Dispose()
     {
-        lifetime.Cancel();
-        try
-        {
-            Task.WhenAll(backgroundTasks).WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
-        }
-        catch (OperationCanceledException) { }
-        catch (AggregateException ex) when (ex.InnerExceptions.All(inner => inner is OperationCanceledException)) { }
-        HostEvents.Dispose();
         AnalyzerRegistry.Dispose();
-        lifetime.Dispose();
     }
 }
 

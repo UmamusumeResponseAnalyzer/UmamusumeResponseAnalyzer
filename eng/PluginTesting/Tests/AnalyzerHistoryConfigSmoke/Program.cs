@@ -52,7 +52,7 @@ static void AssertMissingSettingsUsesDefaultWithoutCreatingFile(
     }
     finally
     {
-        plugin.Dispose();
+        plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }
 
@@ -98,7 +98,7 @@ static void AssertInvalidSettingsFailFast(IApplication application, PluginCase p
         }
         finally
         {
-            plugin.Dispose();
+            plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
 }
@@ -169,7 +169,7 @@ static void AssertConfigTransactions(IApplication application, PluginCase plugin
         AssertUnchanged(application, pluginCase, plugin, settingsPath, baseline, "cancellation token");
     }
 
-    plugin.Dispose();
+    plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
     var reloaded = pluginCase.Create();
     using var reloadedContext = new RuntimePluginContext(application);
@@ -180,7 +180,7 @@ static void AssertConfigTransactions(IApplication application, PluginCase plugin
     }
     finally
     {
-        reloaded.Dispose();
+        reloaded.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }
 

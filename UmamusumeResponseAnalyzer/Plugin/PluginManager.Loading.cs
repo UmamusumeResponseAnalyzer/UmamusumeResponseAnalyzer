@@ -11,9 +11,9 @@ internal static partial class PluginManager
 {
     internal static void LoadMetadatas()
     {
-        LifecycleMetadatas.Clear();
+        Runtime.Metadatas.Clear();
         foreach (var (name, metadata) in ScanPluginMetadata())
-            LifecycleMetadatas.Add(name, metadata);
+            Runtime.Metadatas.Add(name, metadata);
     }
 
     static Dictionary<string, PluginMetadata> ScanPluginMetadata()
@@ -37,8 +37,8 @@ internal static partial class PluginManager
                 {
                     scanned.Remove(metadata.PluginName);
                     conflictedNames.Add(metadata.PluginName);
-                    if (!LifecycleFailedPlugins.Contains(existing.PackagePath))
-                        LifecycleFailedPlugins.Add(existing.PackagePath);
+                    if (!Runtime.FailedPlugins.Contains(existing.PackagePath))
+                        Runtime.FailedPlugins.Add(existing.PackagePath);
                     throw new InvalidDataException(
                         string.Format(i18n.InternalNamePackageConflict, existing.PluginName, existing.PackagePath,
                             metadata.PluginName, metadata.PackagePath));
@@ -48,8 +48,8 @@ internal static partial class PluginManager
             catch (Exception ex)
             {
                 ReportPluginDiagnostic(new InvalidDataException(string.Format(i18n.InvalidPackage, zip.FullName), ex));
-                if (!LifecycleFailedPlugins.Contains(zip.FullName))
-                    LifecycleFailedPlugins.Add(zip.FullName);
+                if (!Runtime.FailedPlugins.Contains(zip.FullName))
+                    Runtime.FailedPlugins.Add(zip.FullName);
             }
         }
 
@@ -74,7 +74,6 @@ internal static partial class PluginManager
             manifest.Author,
             manifest.Version,
             manifest.Dependencies,
-            manifest.Targets,
             package.Assemblies,
             satellites,
             bytes);
@@ -82,23 +81,23 @@ internal static partial class PluginManager
 
     internal static void BuildGroups()
     {
-        _ = TopologicalOrder(LifecycleMetadatas.Keys);
+        _ = TopologicalOrder(Runtime.Metadatas.Keys);
 
-        var adjacency = LifecycleMetadatas.Keys.ToDictionary(
+        var adjacency = Runtime.Metadatas.Keys.ToDictionary(
             name => name,
             _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             StringComparer.OrdinalIgnoreCase);
-        foreach (var metadata in LifecycleMetadatas.Values)
+        foreach (var metadata in Runtime.Metadatas.Values)
             foreach (var dependency in metadata.Dependencies)
             {
-                if (!LifecycleMetadatas.ContainsKey(dependency))
+                if (!Runtime.Metadatas.ContainsKey(dependency))
                     continue;
                 adjacency[metadata.PluginName].Add(dependency);
                 adjacency[dependency].Add(metadata.PluginName);
             }
 
-        LifecycleContextGroups.Clear();
-        var remaining = LifecycleMetadatas.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Runtime.ContextGroups.Clear();
+        var remaining = Runtime.Metadatas.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
         while (remaining.Count != 0)
         {
             var root = remaining.Min(StringComparer.OrdinalIgnoreCase)!;
@@ -112,7 +111,7 @@ internal static partial class PluginManager
                     if (remaining.Remove(neighbor))
                         queue.Enqueue(neighbor);
             }
-            LifecycleContextGroups.Add(group);
+            Runtime.ContextGroups.Add(group);
         }
     }
 
@@ -135,7 +134,7 @@ internal static partial class PluginManager
 
             state[name] = 1;
             path.Add(name);
-            var metadata = LifecycleMetadatas[name];
+            var metadata = Runtime.Metadatas[name];
             foreach (var dependency in metadata.Dependencies.Where(scope.Contains))
                 Visit(dependency, path);
             path.RemoveAt(path.Count - 1);
@@ -143,7 +142,7 @@ internal static partial class PluginManager
             ordered.Add(name);
         }
 
-        foreach (var name in LifecycleMetadatas.Keys.Where(scope.Contains))
+        foreach (var name in Runtime.Metadatas.Keys.Where(scope.Contains))
             Visit(name, []);
         return ordered;
     }
@@ -153,52 +152,46 @@ internal static partial class PluginManager
 
     internal static void LoadPlugins()
     {
-        foreach (var group in LifecycleContextGroups.OrderBy(GroupKey, StringComparer.OrdinalIgnoreCase))
+        foreach (var group in Runtime.ContextGroups.OrderBy(GroupKey, StringComparer.OrdinalIgnoreCase))
         {
             var ordered = TopologicalOrder(group);
             var key = GroupKey(group);
             PluginLoadContext context;
             try
             {
-                context = new PluginLoadContext(key, ordered.Select(name => LifecycleMetadatas[name]));
+                context = new PluginLoadContext(key, ordered.Select(name => Runtime.Metadatas[name]));
             }
             catch (InvalidDataException ex)
             {
                 foreach (var name in ordered)
                 {
-                    Lifecycle.Failures[name] = ex.Message;
-                    LifecycleFailedPlugins.Add(LifecycleMetadatas[name].PackagePath);
+                    Runtime.FailedPlugins.Add(Runtime.Metadatas[name].PackagePath);
                 }
                 ReportPluginDiagnostic(ex);
                 continue;
             }
-            LifecycleContexts.Add(key, context);
+            Runtime.Contexts.Add(key, context);
             foreach (var name in ordered)
             {
-                var metadata = LifecycleMetadatas[name];
-                var failure = LoadIntoContextAsync(context, metadata).GetAwaiter().GetResult();
+                var metadata = Runtime.Metadatas[name];
+                var failure = LoadIntoContext(context, metadata);
                 if (failure is null)
                     continue;
-                Lifecycle.Failures[name] = failure.GetBaseException().Message;
-                LifecycleFailedPlugins.Add(metadata.PackagePath);
+                Runtime.FailedPlugins.Add(metadata.PackagePath);
                 ReportPluginDiagnostic(failure);
             }
         }
     }
 
-    static async Task<Exception?> LoadIntoContextAsync(
+    static Exception? LoadIntoContext(
         AssemblyLoadContext context,
         PluginMetadata metadata)
     {
-        IPlugin? plugin = null;
         var phase = i18n.ReadAssembly;
         try
         {
             using var stream = CreateZipEntryStream(metadata, metadata.AssemblyEntry);
             var assembly = context.LoadFromStream(stream);
-
-            if (!ShouldLoadPluginForCurrentTargets(metadata))
-                return null;
 
             phase = i18n.ReadExportedTypes;
             var type = assembly.GetExportedTypes().FirstOrDefault(candidate =>
@@ -207,36 +200,18 @@ internal static partial class PluginManager
                 throw new InvalidDataException(string.Format(i18n.PluginTypeMissing, nameof(IPlugin)));
 
             phase = i18n.CreatePluginInstance;
-            plugin = Activator.CreateInstance(type) as IPlugin
+            var plugin = Activator.CreateInstance(type) as IPlugin
                      ?? throw new InvalidDataException(string.Format(i18n.CannotCreatePluginInstance, type.FullName ?? type.Name));
-            _ = GenerationFor(plugin);
+            _ = LifecycleFor(plugin);
 
-            LifecycleLoadedPlugins.Add(plugin);
+            Runtime.LoadedPlugins.Add(plugin);
             return null;
         }
         catch (Exception ex)
         {
-            Exception failure = new InvalidOperationException(string.Format(i18n.LoadingFailed, metadata.PluginName, phase), ex);
-            if (plugin is not null)
-            {
-                try { await CleanupPluginAsync(plugin).ConfigureAwait(false); }
-                catch (Exception cleanupEx)
-                {
-                    failure = new AggregateException(
-                        i18n.LoadingCleanupFailed,
-                        failure,
-                        cleanupEx);
-                }
-            }
-
-            return failure;
+            return new InvalidOperationException(string.Format(i18n.LoadingFailed, metadata.PluginName, phase), ex);
         }
     }
-
-    static bool ShouldLoadPluginForCurrentTargets(PluginMetadata metadata)
-        => metadata.Targets.Count == 0 ||
-           metadata.Targets.Intersect(Config.Repository.Targets, StringComparer.OrdinalIgnoreCase).Any() ||
-           Config.Repository.Targets.Count == 0;
 
     internal static Assembly? ResolveSharedAssembly(AssemblyName requested)
     {
@@ -303,7 +278,6 @@ internal static partial class PluginManager
 
     internal sealed class PluginLoadContext : AssemblyLoadContext
     {
-        readonly object localAssemblyGate = new();
         readonly Dictionary<string, (PluginMetadata Package, string Entry)> availableAssemblies =
             new(StringComparer.OrdinalIgnoreCase);
         readonly PluginMetadata[] packages;
@@ -352,28 +326,25 @@ internal static partial class PluginManager
             if (name.Name is not { } assemblyName)
                 return null;
 
-            lock (localAssemblyGate)
+            if (!string.IsNullOrEmpty(name.CultureName) && assemblyName.EndsWith(".resources"))
             {
-                if (!string.IsNullOrEmpty(name.CultureName) && assemblyName.EndsWith(".resources"))
+                var suffix = $"{name.CultureName}/{assemblyName}.dll";
+                foreach (var package in packages)
                 {
-                    var suffix = $"{name.CultureName}/{assemblyName}.dll";
-                    foreach (var package in packages)
-                    {
-                        var entry = package.SatelliteEntries.FirstOrDefault(candidate =>
-                            candidate.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
-                        if (entry is null)
-                            continue;
-                        using var satellite = CreateZipEntryStream(package, entry);
-                        return LoadFromStream(satellite);
-                    }
+                    var entry = package.SatelliteEntries.FirstOrDefault(candidate =>
+                        candidate.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+                    if (entry is null)
+                        continue;
+                    using var satellite = CreateZipEntryStream(package, entry);
+                    return LoadFromStream(satellite);
                 }
-
-                if (!availableAssemblies.TryGetValue(assemblyName, out var location))
-                    return null;
-
-                using var stream = CreateZipEntryStream(location.Package, location.Entry);
-                return LoadFromStream(stream);
             }
+
+            if (!availableAssemblies.TryGetValue(assemblyName, out var location))
+                return null;
+
+            using var stream = CreateZipEntryStream(location.Package, location.Entry);
+            return LoadFromStream(stream);
         }
     }
 
@@ -385,7 +356,6 @@ internal static partial class PluginManager
         string author,
         Version version,
         IReadOnlyList<string> dependencies,
-        IReadOnlyList<string> targets,
         IReadOnlyDictionary<string, string> assemblies,
         IReadOnlyList<string> satelliteEntries,
         byte[] packageBytes)
@@ -397,7 +367,6 @@ internal static partial class PluginManager
         public string Author { get; } = author;
         public Version Version { get; } = version;
         public IReadOnlyList<string> Dependencies { get; } = dependencies;
-        public IReadOnlyList<string> Targets { get; } = targets;
         public IReadOnlyDictionary<string, string> Assemblies { get; } = assemblies;
         public IReadOnlyList<string> SatelliteEntries { get; } = satelliteEntries;
         internal byte[] PackageBytes { get; } = packageBytes;

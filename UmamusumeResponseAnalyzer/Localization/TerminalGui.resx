@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -178,9 +178,6 @@
   <data name="Command_WorkspaceUsage" xml:space="preserve">
     <value>Usage: /workspace | /workspace switch [&lt;title&gt;|"&lt;title&gt;"] | /workspace list</value>
   </data>
-  <data name="Command_PluginUsage" xml:space="preserve">
-    <value>Usage: /plugin [list]</value>
-  </data>
   <data name="Command_Empty" xml:space="preserve">
     <value>The command is empty.</value>
   </data>
@@ -207,23 +204,5 @@
   </data>
   <data name="Command_WorkspacesTitle" xml:space="preserve">
     <value>Workspaces</value>
-  </data>
-  <data name="Command_PluginsTitle" xml:space="preserve">
-    <value>Plugins</value>
-  </data>
-  <data name="Command_NoPlugins" xml:space="preserve">
-    <value>(No known plugins)</value>
-  </data>
-  <data name="Command_PluginStateLoaded" xml:space="preserve">
-    <value>loaded</value>
-  </data>
-  <data name="Command_PluginStateUnloaded" xml:space="preserve">
-    <value>not loaded</value>
-  </data>
-  <data name="Command_PluginStateFailed" xml:space="preserve">
-    <value>failed</value>
-  </data>
-  <data name="Command_PluginAuthor" xml:space="preserve">
-    <value>by {0}</value>
   </data>
 </root>

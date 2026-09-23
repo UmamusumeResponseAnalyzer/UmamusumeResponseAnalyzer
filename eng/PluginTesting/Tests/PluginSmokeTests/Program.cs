@@ -274,7 +274,7 @@ static void AssertEventResponseAnalyzerEndpointCoverage(IApplication application
             "EventResponseAnalyzer response endpoint coverage mismatch."
             + $" expected=[{string.Join(", ", expected.Select(x => x.FullName))}],"
             + $" actual=[{string.Join(", ", actual.Select(x => x.FullName))}]");
-    plugin.Dispose();
+    plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
 }
 
 static void AssertEventResponseAnalyzerPriorityAfterLegendScenarioAnalyzer(IApplication application)
@@ -304,8 +304,8 @@ static void AssertEventResponseAnalyzerPriorityAfterLegendScenarioAnalyzer(IAppl
             throw new InvalidOperationException(
                 $"EventResponseAnalyzer must run after LegendScenarioAnalyzer for {endpoint.FullName}: eventPriority={eventPriority}, legendPriority={legendPriority}.");
     }
-    eventPlugin.Dispose();
-    legendPlugin.Dispose();
+    eventPlugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    legendPlugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
 }
 
 static Dictionary<Type, int> ResponseAnalyzerPriorities(RecordingAnalyzerRegistry registry)
@@ -545,7 +545,7 @@ static async ValueTask AssertEventResponseAnalyzerDisplayStates(WorkspaceSmokeSe
     {
         await InitializeSmokeDatabase();
         EventI18n.Culture = originalCulture;
-        ((IPlugin)plugin).Dispose();
+        await plugin.DisposeAsync();
     }
 
     target.SwitchTo();
@@ -810,7 +810,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
         }
         finally
         {
-            plugin.Dispose();
+            await plugin.DisposeAsync();
         }
 
         void Navigate(Key key, int storyId, int selectIndex, params int[] hiddenStoryIds)
@@ -861,7 +861,7 @@ static async ValueTask AssertEventResponseAnalyzerHistory(WorkspaceSmokeSession 
         }
         finally
         {
-            plugin.Dispose();
+            await plugin.DisposeAsync();
         }
     }
 
@@ -1084,7 +1084,7 @@ static async ValueTask AssertEventResponseAnalyzerLegendExecCommandRendersEventP
     }
     finally
     {
-        ((IPlugin)plugin).Dispose();
+        await plugin.DisposeAsync();
     }
 
     target.SwitchTo();
@@ -1384,7 +1384,7 @@ static class PluginSmokeRunner
             }
             finally
             {
-                plugin.Dispose();
+                await plugin.DisposeAsync();
             }
 
             AssertDisposeState(target, exercised, ui);
@@ -1520,7 +1520,7 @@ static class PluginSmokeRunner
                 var expectedProperties = new HashSet<string>(
                 [
                     "Author", "InternalName", "DisplayName", "Description", "Changelog", "Version",
-                    "Dependencies", "Targets", "RepositoryUrl", "LastUpdate", "Category", "Homepage",
+                    "Dependencies", "RepositoryUrl", "LastUpdate", "Category", "Homepage",
                 ], StringComparer.Ordinal);
                 var properties = document.RootElement.EnumerateObject()
                     .Select(property => property.Name)
@@ -1572,7 +1572,7 @@ static class PluginSmokeRunner
     static async Task<int> InvokeAttributeAnalyzers(IPlugin plugin)
     {
         var count = 0;
-        foreach (var registration in PluginManager.CreateRegistrationPlan(plugin).Analyzers)
+        foreach (var registration in PluginManager.CreateAttributeRegistrations(plugin))
         {
             var descriptor = GameEndpointCatalog.ByEndpointType[registration.EndpointType];
             var dtoType = registration.Kind == AnalyzerKind.Request

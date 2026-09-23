@@ -14,6 +14,8 @@ internal sealed class UiHost : IUiInputSink, IDisposable
     // Exit does not wait for commands; an active command must still be able to release this semaphore.
     readonly SemaphoreSlim commandExecution = new(1, 1);
     readonly CancellationTokenRegistration lifetimeRegistration;
+    readonly Func<Task>? shutdownAsync;
+    readonly TaskCompletionSource shutdownCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     int shutdownStarted;
     bool disposed;
@@ -22,11 +24,13 @@ internal sealed class UiHost : IUiInputSink, IDisposable
     internal UiHost(
         IApplication application,
         SynchronizationContext ownerContext,
-        CancellationToken lifetimeToken)
+        CancellationToken lifetimeToken,
+        Func<Task>? shutdownAsync = null)
     {
         Application = application ?? throw new ArgumentNullException(nameof(application));
         OwnerContext = ownerContext ?? throw new ArgumentNullException(nameof(ownerContext));
         LifetimeToken = lifetimeToken;
+        this.shutdownAsync = shutdownAsync;
         surface = new(this, Application, session.Bootstrap);
         Bootstrap = new(this, session.Bootstrap);
         lifetimeRegistration = lifetimeToken.Register(
@@ -44,7 +48,6 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         add => surface.LogAdded += value;
         remove => surface.LogAdded -= value;
     }
-    internal event Action? ShutdownStarting;
 
     internal void EnsureAvailable() => session.EnsureAvailable();
 
@@ -197,17 +200,45 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         if (Interlocked.Exchange(ref shutdownStarted, 1) != 0)
             return;
 
-        session.BeginShutdown();
+        _ = CompleteShutdownAsync();
+    }
+
+    internal Task ShutdownAsync()
+    {
+        RequestShutdown();
+        return shutdownCompletion.Task;
+    }
+
+    async Task CompleteShutdownAsync()
+    {
+        Exception? failure = null;
         try
         {
-            ShutdownStarting?.Invoke();
+            if (shutdownAsync is not null)
+                await shutdownAsync();
         }
-        finally
+        catch (Exception ex)
         {
+            failure = ex;
+        }
+
+        try
+        {
+            // Plugin cleanup can still remove panels and flush while the UI is running.
+            session.BeginShutdown();
             OwnerContext.Post(
                 static state => ((UiHostSurface)state!).RequestApplicationStop(),
                 surface);
         }
+        catch (Exception ex)
+        {
+            failure = CombineFailure(failure, ex);
+        }
+
+        if (failure is null)
+            shutdownCompletion.TrySetResult();
+        else
+            shutdownCompletion.TrySetException(failure);
     }
 
     internal async Task RunAsync()
@@ -219,8 +250,6 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         {
             try
             {
-                var plugins = await Task.Run(PluginManager.SnapshotPluginStatuses);
-                session.SetPluginSnapshot(plugins);
                 surface.Create();
             }
             catch (Exception ex)
@@ -254,11 +283,19 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         Exception? cleanupFailure = null;
         try
         {
-            Dispose();
+            await ShutdownAsync();
         }
         catch (Exception ex)
         {
             cleanupFailure = ex;
+        }
+        try
+        {
+            Dispose();
+        }
+        catch (Exception ex)
+        {
+            cleanupFailure = CombineFailure(cleanupFailure, ex);
         }
 
         if (primaryFailure is not null)
@@ -550,10 +587,6 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         Exception? failure = null;
         try
         {
-            snapshot = snapshot with
-            {
-                Plugins = PluginManager.SnapshotPluginStatuses()
-            };
             result = HostCommands.Execute(
                 command,
                 snapshot,
@@ -569,20 +602,6 @@ internal sealed class UiHost : IUiInputSink, IDisposable
 
         if (LifetimeToken.IsCancellationRequested && failure is null)
             return;
-
-        IReadOnlyList<PluginManager.PluginRuntimeStatus>? plugins = null;
-        Exception? refreshFailure = null;
-        if (!LifetimeToken.IsCancellationRequested)
-        {
-            try
-            {
-                plugins = PluginManager.SnapshotPluginStatuses();
-            }
-            catch (Exception ex)
-            {
-                refreshFailure = ex;
-            }
-        }
 
         Exception? postFailure = null;
         if (failure is not null)
@@ -613,16 +632,8 @@ internal sealed class UiHost : IUiInputSink, IDisposable
             await InvokeOnOwnerAsync(() =>
             {
                 EnsureAvailable();
-                try
-                {
-                    if (result is not null)
-                        ApplyCommandResult(result);
-                }
-                finally
-                {
-                    if (plugins is not null)
-                        session.SetPluginSnapshot(plugins);
-                }
+                if (result is not null)
+                    ApplyCommandResult(result);
             }).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -632,20 +643,16 @@ internal sealed class UiHost : IUiInputSink, IDisposable
 
         if (LifetimeToken.IsCancellationRequested &&
             postFailure is null &&
-            failure is null &&
-            refreshFailure is null)
+            failure is null)
             return;
 
         if (postFailure is null &&
             failure is not null &&
-            (refreshFailure is not null ||
-             ownerFailure is not null ||
+            (ownerFailure is not null ||
              LifetimeToken.IsCancellationRequested))
         {
             postFailure = failure;
         }
-        if (refreshFailure is not null)
-            postFailure = CombineFailure(postFailure, refreshFailure);
         if (ownerFailure is not null)
             postFailure = CombineFailure(postFailure, ownerFailure);
         if (postFailure is not null)

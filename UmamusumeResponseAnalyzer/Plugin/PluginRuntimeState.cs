@@ -16,14 +16,11 @@ internal enum PluginLifecyclePhase
 
 internal sealed record PluginRuntimeSnapshot(
     FrozenDictionary<string, PluginManager.PluginMetadata> Metadatas,
-    FrozenDictionary<string, string> Failures,
     ImmutableArray<string> FailedPlugins,
     ImmutableArray<IPlugin> LoadedPlugins)
 {
     internal static PluginRuntimeSnapshot Empty { get; } = new(
         new Dictionary<string, PluginManager.PluginMetadata>(StringComparer.OrdinalIgnoreCase)
-            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
         [],
         []);
@@ -42,28 +39,21 @@ internal sealed record AnalyzerRuntimeSnapshot(
     internal static AnalyzerRuntimeSnapshot Empty { get; } = new([], []);
 }
 
-internal sealed class PluginRuntimeMutableState
-{
-    internal Dictionary<string, PluginManager.PluginMetadata> Metadatas { get; } =
-        new(StringComparer.OrdinalIgnoreCase);
-    internal List<string> FailedPlugins { get; } = [];
-    internal Dictionary<string, string> Failures { get; } = new(StringComparer.OrdinalIgnoreCase);
-    internal List<IPlugin> LoadedPlugins { get; } = [];
-    internal List<HashSet<string>> ContextGroups { get; } = [];
-    internal Dictionary<string, PluginManager.PluginLoadContext> Contexts { get; } =
-        new(StringComparer.OrdinalIgnoreCase);
-    internal PluginLifecyclePhase Phase { get; set; }
-}
-
 internal sealed class PluginRuntimeState
 {
     PluginRuntimeSnapshot snapshot = PluginRuntimeSnapshot.Empty;
     AnalyzerRuntimeSnapshot analyzers = AnalyzerRuntimeSnapshot.Empty;
     int shutdownRequested;
 
-    internal PluginRuntimeMutableState Mutable { get; } = new();
-    internal PluginHostEvents HostEvents { get; } = new();
-    internal ConditionalWeakTable<IPlugin, PluginGeneration> Generations { get; } = new();
+    internal Dictionary<string, PluginManager.PluginMetadata> Metadatas { get; } =
+        new(StringComparer.OrdinalIgnoreCase);
+    internal List<string> FailedPlugins { get; } = [];
+    internal List<IPlugin> LoadedPlugins { get; } = [];
+    internal List<HashSet<string>> ContextGroups { get; } = [];
+    internal Dictionary<string, PluginManager.PluginLoadContext> Contexts { get; } =
+        new(StringComparer.OrdinalIgnoreCase);
+    internal PluginLifecyclePhase Phase { get; set; }
+    internal ConditionalWeakTable<IPlugin, PluginLifecycle> Lifecycles { get; } = new();
     internal SemaphoreSlim LifecycleGate { get; } = new(1, 1);
 
     internal bool ShutdownRequested
@@ -80,12 +70,10 @@ internal sealed class PluginRuntimeState
 
     internal void Publish()
     {
-        var state = Mutable;
         Volatile.Write(ref snapshot, new(
-            state.Metadatas.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-            state.Failures.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-            [.. state.FailedPlugins],
-            [.. state.LoadedPlugins]));
+            Metadatas.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
+            [.. FailedPlugins],
+            [.. LoadedPlugins]));
     }
 
     internal void PublishAnalyzers(AnalyzerRuntimeSnapshot value)

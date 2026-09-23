@@ -44,11 +44,11 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void RegisterMethods_WhenLaterAnalyzerIsInvalid_RollsBackAllPluginRegistrations()
+        public void AttributeRegistration_WhenLaterAnalyzerIsInvalid_RollsBackAllPluginRegistrations()
         {
             var plugin = new PartiallyInvalidPlugin();
 
-            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.RegisterMethods(plugin));
+            var ex = Assert.Throws<InvalidOperationException>(() => PluginManager.InitializePlugin(plugin));
 
             Assert.Contains(nameof(PartiallyInvalidPlugin.Invalid), ex.Message, StringComparison.Ordinal);
             Assert.Empty(PluginManager.ResponseAnalyzerMethods);
@@ -64,7 +64,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.True(context.Initialized);
             Assert.NotNull(context.Context);
             Assert.Same(application, context.Context.Application);
-            Assert.Same(context.Context, context.Context.Events);
             Assert.NotNull(context.Context.Analyzers);
         }
 
@@ -77,16 +76,11 @@ namespace UmamusumeResponseAnalyzer.Tests
             PluginManager.InitializeLoadedPlugins();
             await PluginManager.TriggerStartedAsync();
 
-            var statuses = PluginManager.SnapshotPluginStatuses();
-            var failing = Assert.Single(statuses, status => status.InternalName == fixture.FailingPluginName);
-            var healthy = Assert.Single(statuses, status => status.InternalName == fixture.HealthyPluginName);
-            Assert.False(failing.IsLoaded);
-            Assert.True(failing.IsAvailable);
-            Assert.True(healthy.IsLoaded);
-            Assert.True(healthy.IsAvailable);
+            Assert.Null(PluginManager.FindLoadedPlugin(fixture.FailingPluginName));
+            Assert.NotNull(PluginManager.FindLoadedPlugin(fixture.HealthyPluginName));
+            Assert.Contains(Path.GetFullPath(Path.Combine("Plugins", $"{fixture.FailingPluginName}.zip")), PluginManager.FailedPlugins);
             Assert.True(File.Exists(fixture.FailingInitializeMarker));
             Assert.False(File.Exists(fixture.FailingStartedMarker));
-            Assert.False(File.Exists(fixture.FailingBackgroundMarker));
             Assert.True(File.Exists(fixture.HealthyInitializeMarker));
             Assert.True(File.Exists(fixture.HealthyStartedMarker));
         }
@@ -104,15 +98,19 @@ namespace UmamusumeResponseAnalyzer.Tests
             host.LogAdded += lines.Add;
             try
             {
-                var ex = await Record.ExceptionAsync(() => PluginRuntimeFixture.TriggerStartedAsync());
+                var ex = await Record.ExceptionAsync(async () =>
+                {
+                    await PluginManager.StartPluginAsync(failing);
+                    await PluginManager.StartPluginAsync(counter);
+                });
                 await host.FlushAsync();
 
                 Assert.Null(ex);
                 Assert.Equal(1, counter.StartedCalls);
-                var line = Assert.Single(lines, line => line.Text.Contains("插件事件处理错误", StringComparison.Ordinal));
+                var line = Assert.Single(lines, line => line.Text.Contains("插件启动错误", StringComparison.Ordinal));
                 Assert.Contains(nameof(StartedFailurePlugin), line.ExceptionDetails);
                 Assert.Contains(@"C:\plugins\started\settings.yaml", line.ExceptionDetails);
-                Assert.Contains(nameof(StartedFailurePlugin.OnStarted), line.ExceptionDetails);
+                Assert.Contains(nameof(StartedFailurePlugin.StartAsync), line.ExceptionDetails);
             }
             finally
             {
@@ -139,7 +137,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 Assert.Contains(nameof(BackgroundFailurePlugin), line.ExceptionDetails);
                 Assert.Contains(@"C:\plugins\background\pending.json", line.ExceptionDetails);
                 Assert.Contains(nameof(BackgroundFailurePlugin.Run), line.ExceptionDetails);
-                await PluginManager.ShutdownAsync().WaitAsync(TimeSpan.FromSeconds(5));
+                await PluginManager.CleanupPluginAsync(plugin).WaitAsync(TimeSpan.FromSeconds(5));
             }
             finally
             {
@@ -155,46 +153,23 @@ namespace UmamusumeResponseAnalyzer.Tests
             PluginManager.InitializePlugin(plugin);
 
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                PluginRuntimeFixture.TriggerStartedAsync(cancellation.Token));
+                PluginManager.StartPluginAsync(plugin, cancellation.Token));
         }
 
         [Fact]
-        public async Task TriggerStartedAsync_ChecksCancellationBetweenSubscriptions()
-        {
-            using var cancellation = new CancellationTokenSource();
-            var lateOutput = Path.Combine(Path.GetTempPath(), "ura-started-cancellation-" + Guid.NewGuid().ToString("N"));
-            var plugin = new CancelBetweenStartedSubscriptionsPlugin(cancellation, lateOutput);
-            PluginManager.InitializePlugin(plugin);
-            try
-            {
-                await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                    PluginRuntimeFixture.TriggerStartedAsync(cancellation.Token));
-
-                Assert.False(File.Exists(lateOutput));
-            }
-            finally
-            {
-                if (File.Exists(lateOutput))
-                    File.Delete(lateOutput);
-            }
-        }
-
-        [Fact]
-        public async Task DisposeHostEventSubscriptions_PreventsLaterStartedInvocation()
+        public async Task CleanupPreventsLaterStartedInvocation()
         {
             var plugin = new StartedCounterPlugin();
             PluginManager.InitializePlugin(plugin);
-
-            PluginManager.DisposeHostEventSubscriptions(plugin);
-            await PluginRuntimeFixture.TriggerStartedAsync();
-
+            await PluginManager.CleanupPluginAsync(plugin);
+            await PluginManager.StartPluginAsync(plugin);
             Assert.Equal(0, plugin.StartedCalls);
         }
 
         [Fact]
         public async Task ShutdownAllowsBackgroundCancellationToSnapshotLoadedPluginsBeforeDispose()
         {
-            const string scenario = "plugin-generation-shutdown-snapshot-reentry";
+            const string scenario = "plugin-lifecycle-shutdown-snapshot-reentry";
             if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
             {
                 Assert.Equal(
@@ -206,7 +181,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 return;
             }
 
-            using var fixture = new GenerationOrderingPackageFixture();
+            using var fixture = new LifecycleOrderingPackageFixture();
             RestartPluginRuntime();
             PluginManager.InitializeLoadedPlugins();
             await WaitForFileAsync(fixture.BackgroundStarted).WaitAsync(TimeSpan.FromSeconds(5));
@@ -218,52 +193,29 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public async Task GenerationCloseFailure_ShutdownStillCompletesLifecycleCleanup()
+        public async Task DisposeFailure_ShutdownStillCompletesLifecycleCleanup()
         {
-            const string scenario = "generation-close-failure-shutdown-cleanup";
-            if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
-            {
-                Assert.Equal(
-                    "ok",
-                    await TerminalUiLifecycleProcessTests.RunChildAsync(
-                        scenario,
-                        typeof(PluginLifecycleTests),
-                        nameof(GenerationCloseFailure_ShutdownStillCompletesLifecycleCleanup)));
-                return;
-            }
-
-            await AssertGenerationCloseFailureCleanupAsync();
-            TerminalUiLifecycleChildProcess.WriteResult("ok");
-        }
-
-        static async Task AssertGenerationCloseFailureCleanupAsync()
-        {
-            using var fixture = new FaultingGenerationPackageFixture("Shutdown");
+            PluginCompiler.CompilePackage("""
+                using System;
+                using System.Threading.Tasks;
+                using UmamusumeResponseAnalyzer.Plugin;
+                public sealed class FailingDispose : IPlugin
+                {
+                    public void Initialize(IPluginContext context) => context.Analyzers.Register<ReadOnlyMemory<byte>>(
+                        AnalyzerKind.Response, [EndpointPattern.Exact("/umamusume/account/index")], _ => ValueTask.CompletedTask);
+                    public ValueTask DisposeAsync() => throw new InvalidOperationException("dispose cleanup failed");
+                }
+                """, "FailingDispose", Path.Combine("Plugins", "FailingDispose.zip"));
             RestartPluginRuntime();
             PluginManager.InitializeLoadedPlugins();
-            await WaitForFileAsync(fixture.BackgroundStarted).WaitAsync(TimeSpan.FromSeconds(5));
-            var plugin = Assert.Single(
-                PluginManager.SnapshotLoadedPlugins(),
-                candidate => PluginManager.InternalName(candidate) == fixture.PluginName);
+            Assert.NotEmpty(PluginManager.ResponseAnalyzerMethods);
 
             var error = await Assert.ThrowsAsync<AggregateException>(PluginManager.ShutdownAsync);
 
-            AssertWorkflowFailurePrecedesCleanupFailure(error);
-            Assert.Equal(["dispose"], File.ReadAllLines(fixture.DisposeLog));
-            Assert.DoesNotContain(
-                PluginManager.ResponseAnalyzerMethods,
-                registration => ReferenceEquals(registration.Plugin, plugin));
-            await PluginRuntimeFixture.TriggerStartedAsync();
-            Assert.False(File.Exists(fixture.StartedMarker));
-            Assert.Empty(PluginManager.SnapshotPluginStatuses());
-
-            PluginManager.Init();
-            PluginManager.InitializeLoadedPlugins();
-
-            Assert.True(Assert.Single(
-                PluginManager.SnapshotPluginStatuses(),
-                status => status.InternalName == fixture.PluginName).IsLoaded);
-            await PluginManager.ShutdownAsync();
+            Assert.Contains("dispose cleanup failed", error.ToString());
+            Assert.Empty(PluginManager.ResponseAnalyzerMethods);
+            Assert.Empty(PluginManager.LoadedPlugins);
+            Assert.Empty(PluginManager.Metadatas);
         }
 
         [Fact]
@@ -277,20 +229,17 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             Assert.True(File.Exists(fixture.SecondInitializeMarker));
             Assert.True(File.Exists(fixture.StartedMarker));
-            var statuses = PluginManager.SnapshotPluginStatuses()
-                .Where(status => fixture.Names.Contains(status.InternalName)).ToArray();
-            Assert.Equal(2, statuses.Length);
-            Assert.Single(statuses, status => status.IsLoaded);
-            Assert.Single(statuses, status => !status.IsLoaded && status.Error is not null);
+            Assert.Single(PluginManager.LoadedPlugins);
+            Assert.Equal(Path.GetFullPath(Path.Combine("Plugins", $"{fixture.SecondName}.zip")), Assert.Single(PluginManager.FailedPlugins));
             Assert.Contains(PluginManager.ResponseAnalyzerMethods,
                 registration => fixture.Names.Contains(PluginManager.InternalName(registration.Plugin)));
 
             fixture.ReplaceSecondWithSuccessfulPackage();
-            Assert.Single(PluginManager.SnapshotPluginStatuses(),
-                status => fixture.Names.Contains(status.InternalName) && !status.IsLoaded);
+            Assert.Single(PluginManager.FailedPlugins);
             RestartPluginRuntime();
             PluginManager.InitializeLoadedPlugins();
-            Assert.All(PluginManager.SnapshotPluginStatuses(), status => Assert.True(status.IsLoaded));
+            Assert.Equal(2, PluginManager.LoadedPlugins.Count);
+            Assert.Empty(PluginManager.FailedPlugins);
         }
 
         [Fact]
@@ -335,7 +284,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void FailedInitializeContext_RejectsLateAnalyzerAndEventRegistration()
+        public void FailedInitializeContext_RejectsLateAnalyzerRegistration()
         {
             var plugin = new CapturingFailingInitializePlugin();
 
@@ -350,37 +299,25 @@ namespace UmamusumeResponseAnalyzer.Tests
                     AnalyzerKind.Response,
                     [EndpointPattern.Exact(path)],
                     _ => ValueTask.CompletedTask));
-            var eventError = Assert.Throws<InvalidOperationException>(() =>
-                context.Events.OnStarted(_ => ValueTask.CompletedTask));
             Assert.Equal(string.Format(i18n.RegistrationPhaseInvalid, PluginManager.InternalName(plugin)), analyzerError.Message);
-            Assert.Equal(string.Format(i18n.RegistrationPhaseInvalid, PluginManager.InternalName(plugin)), eventError.Message);
         }
 
         [Fact]
-        public async Task CompletedRegistrationStage_RejectsCapturedContextForEveryRegistration()
+        public void CompletedRegistrationStage_RejectsCapturedContextForAnalyzerRegistration()
         {
             var plugin = new CapturingRegistrationPlugin();
             PluginManager.InitializePlugin(plugin);
             var path = GameEndpointCatalog.ByEndpointType[typeof(GameApi.Account.Index)].Path;
-            var registrations = new Action[]
-            {
-                () => plugin.Context.Analyzers.Register<ReadOnlyMemory<byte>>(
-                    AnalyzerKind.Response, [EndpointPattern.Exact(path)], _ => ValueTask.CompletedTask),
-                () => plugin.Context.RunBackground(_ => ValueTask.CompletedTask),
-                () => plugin.Context.Events.OnStarted(_ => ValueTask.CompletedTask),
-            };
+            var register = () => plugin.Context.Analyzers.Register<ReadOnlyMemory<byte>>(
+                AnalyzerKind.Response, [EndpointPattern.Exact(path)], _ => ValueTask.CompletedTask);
 
-            foreach (var registration in registrations)
-                Assert.Throws<InvalidOperationException>(registration);
+            Assert.Throws<InvalidOperationException>(register);
             ExecutionContext.Run(plugin.CapturedContext, _ =>
             {
-                foreach (var registration in registrations)
-                    Assert.Throws<ObjectDisposedException>(registration);
+                Assert.Throws<ObjectDisposedException>(register);
             }, null);
 
             Assert.Empty(PluginManager.ResponseAnalyzerMethods);
-            await PluginRuntimeFixture.TriggerStartedAsync();
-            Assert.Equal([1, 2, 3], plugin.StartedOrder);
         }
 
         [Fact]
@@ -398,15 +335,15 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void PluginConfig_BuildPluginChoices_AllowsDuplicateDisplayNames()
+        public void PluginConfigPrompt_BuildPluginChoices_AllowsDuplicateDisplayNames()
         {
-            PluginManager.PluginRuntimeStatus[] plugins =
+            PluginManager.PluginMetadata[] plugins =
             [
-                new("PluginA", "Same Display Name", "Alice", null, true, true, null),
-                new("PluginB", "Same Display Name", "Bob", null, true, true, null),
+                new("", "", "PluginA", "Same Display Name", "Alice", new Version(1, 0), [], new Dictionary<string, string>(), [], []),
+                new("", "", "PluginB", "Same Display Name", "Bob", new Version(1, 0), [], new Dictionary<string, string>(), [], []),
             ];
 
-            var choices = PluginConfig.BuildPluginChoices(plugins);
+            var choices = PluginConfigPrompt.BuildPluginChoices(plugins);
 
             Assert.Equal(2, choices.Count);
             Assert.Equal(2, choices.Keys.Distinct(StringComparer.Ordinal).Count());
@@ -414,15 +351,15 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void PluginConfig_BuildPluginChoices_AllowsDuplicateDisplayNamesAndAuthors()
+        public void PluginConfigPrompt_BuildPluginChoices_AllowsDuplicateDisplayNamesAndAuthors()
         {
-            PluginManager.PluginRuntimeStatus[] plugins =
+            PluginManager.PluginMetadata[] plugins =
             [
-                new("PluginA", "Same Display Name", "Same Author", null, true, true, null),
-                new("PluginB", "Same Display Name", "Same Author", null, true, true, null),
+                new("", "", "PluginA", "Same Display Name", "Same Author", new Version(1, 0), [], new Dictionary<string, string>(), [], []),
+                new("", "", "PluginB", "Same Display Name", "Same Author", new Version(1, 0), [], new Dictionary<string, string>(), [], []),
             ];
 
-            var choices = PluginConfig.BuildPluginChoices(plugins);
+            var choices = PluginConfigPrompt.BuildPluginChoices(plugins);
 
             Assert.Equal(2, choices.Count);
             Assert.Equal(2, choices.Keys.Distinct(StringComparer.Ordinal).Count());
@@ -496,41 +433,9 @@ namespace UmamusumeResponseAnalyzer.Tests
         static void AssertPackageRejected(InvalidPackageFixture fixture)
         {
             Assert.Empty(PluginManager.LoadedPlugins);
-            Assert.Empty(PluginManager.SnapshotPluginStatuses());
+            Assert.Empty(PluginManager.Metadatas);
             Assert.Contains(fixture.PackagePath, PluginManager.FailedPlugins);
             Assert.False(File.Exists(fixture.InitializeMarker));
-        }
-
-        static void AssertWorkflowFailurePrecedesCleanupFailure(AggregateException error)
-        {
-            var failures = EnumerateLeafFailures(error).ToList();
-            var workflow = failures.FindIndex(exception =>
-                exception.Message.Contains("generation close workflow failed", StringComparison.Ordinal));
-            var cleanup = failures.FindIndex(exception =>
-                exception.Message.Contains("dispose cleanup failed", StringComparison.Ordinal));
-            Assert.True(workflow >= 0, error.ToString());
-            Assert.True(cleanup >= 0, error.ToString());
-            Assert.True(workflow < cleanup, error.ToString());
-        }
-
-        static IEnumerable<Exception> EnumerateLeafFailures(Exception exception)
-        {
-            if (exception is AggregateException aggregate)
-            {
-                foreach (var inner in aggregate.InnerExceptions)
-                    foreach (var nested in EnumerateLeafFailures(inner))
-                        yield return nested;
-                yield break;
-            }
-
-            if (exception.InnerException is not null)
-            {
-                foreach (var nested in EnumerateLeafFailures(exception.InnerException))
-                    yield return nested;
-                yield break;
-            }
-
-            yield return exception;
         }
 
         static void ResetPluginState()
@@ -551,6 +456,9 @@ namespace UmamusumeResponseAnalyzer.Tests
 
         abstract class TestPlugin : IPlugin
         {
+            public virtual ValueTask StartAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+            public virtual ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
             public virtual void Initialize(IPluginContext context)
             {
             }
@@ -753,7 +661,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             public string HealthyPluginName => "HealthyInitializePlugin";
             public string FailingInitializeMarker => Path.Combine(tempDir, "failing-initialize");
             public string FailingStartedMarker => Path.Combine(tempDir, "failing-started");
-            public string FailingBackgroundMarker => Path.Combine(tempDir, "failing-background");
             public string HealthyInitializeMarker => Path.Combine(tempDir, "healthy-initialize");
             public string HealthyStartedMarker => Path.Combine(tempDir, "healthy-started");
 
@@ -768,17 +675,12 @@ namespace UmamusumeResponseAnalyzer.Tests
                     public void Initialize(IPluginContext context)
                     {
                         File.WriteAllText(@"{{FailingInitializeMarker}}", "entered");
-                        context.Events.OnStarted(_ =>
-                        {
-                            File.WriteAllText(@"{{FailingStartedMarker}}", "called");
-                            return ValueTask.CompletedTask;
-                        });
-                        context.RunBackground(_ =>
-                        {
-                            File.WriteAllText(@"{{FailingBackgroundMarker}}", "started");
-                            return ValueTask.CompletedTask;
-                        });
                         throw new InvalidOperationException("initialize failed");
+                    }
+                    public ValueTask StartAsync(System.Threading.CancellationToken token = default)
+                    {
+                        File.WriteAllText(@"{{FailingStartedMarker}}", "called");
+                        return ValueTask.CompletedTask;
                     }
                 }
                 """;
@@ -793,11 +695,11 @@ namespace UmamusumeResponseAnalyzer.Tests
                     public void Initialize(IPluginContext context)
                     {
                         File.WriteAllText(@"{{HealthyInitializeMarker}}", "initialized");
-                        context.Events.OnStarted(_ =>
-                        {
-                            File.WriteAllText(@"{{HealthyStartedMarker}}", "started");
-                            return ValueTask.CompletedTask;
-                        });
+                    }
+                    public ValueTask StartAsync(System.Threading.CancellationToken token = default)
+                    {
+                        File.WriteAllText(@"{{HealthyStartedMarker}}", "started");
+                        return ValueTask.CompletedTask;
                     }
                 }
                 """;
@@ -810,14 +712,14 @@ namespace UmamusumeResponseAnalyzer.Tests
             }
         }
 
-        sealed class GenerationOrderingPackageFixture : IDisposable
+        sealed class LifecycleOrderingPackageFixture : IDisposable
         {
             readonly string originalCwd = Directory.GetCurrentDirectory();
             readonly string tempDir = Path.Combine(
                 Path.GetTempPath(),
-                "ura-plugin-generation-order-" + Guid.NewGuid().ToString("N"));
+                "ura-plugin-lifecycle-order-" + Guid.NewGuid().ToString("N"));
 
-            public GenerationOrderingPackageFixture()
+            public LifecycleOrderingPackageFixture()
             {
                 Directory.CreateDirectory(Path.Combine(tempDir, "Plugins"));
                 Directory.SetCurrentDirectory(tempDir);
@@ -848,13 +750,16 @@ namespace UmamusumeResponseAnalyzer.Tests
                 using System.Threading.Tasks;
                 using UmamusumeResponseAnalyzer.Plugin;
 
-                public sealed class GenerationOrderingPlugin : IPlugin
+                public sealed class LifecycleOrderingPlugin : IPlugin
                 {
                     readonly ConcurrentQueue<string> lifecycle = new();
 
+                    readonly CancellationTokenSource cancellation = new();
+                    Task background = Task.CompletedTask;
                     public void Initialize(IPluginContext context)
-                        => context.RunBackground(async cancellationToken =>
+                        => background = Task.Run(async () =>
                         {
+                            var cancellationToken = cancellation.Token;
                             File.WriteAllText(@"{{BackgroundStarted}}", "started");
                             using var registration = cancellationToken.Register(() =>
                             {
@@ -871,8 +776,11 @@ namespace UmamusumeResponseAnalyzer.Tests
                             lifecycle.Enqueue("background-exit");
                         });
 
-                    public void Dispose()
+                    public async ValueTask DisposeAsync()
                     {
+                        await cancellation.CancelAsync();
+                        await background;
+                        cancellation.Dispose();
                         lifecycle.Enqueue("dispose");
                         File.WriteAllLines(@"{{LifecycleLog}}", lifecycle);
                     }
@@ -882,98 +790,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             public void Dispose()
             {
                 ResetPluginState();
-                Directory.SetCurrentDirectory(originalCwd);
-                try { Directory.Delete(tempDir, recursive: true); } catch { }
-            }
-        }
-
-        sealed class FaultingGenerationPackageFixture : IDisposable
-        {
-            readonly string originalCwd = Directory.GetCurrentDirectory();
-            readonly string tempDir = Path.Combine(
-                Path.GetTempPath(),
-                "ura-plugin-generation-failure-" + Guid.NewGuid().ToString("N"));
-
-            public FaultingGenerationPackageFixture(string operation)
-            {
-                PluginName = $"FaultingGeneration{operation}Plugin";
-                Directory.CreateDirectory(Path.Combine(tempDir, "Plugins"));
-                Directory.SetCurrentDirectory(tempDir);
-                File.WriteAllText(CloseFaultFlag, "fault");
-                File.WriteAllText(DisposeFaultFlag, "fault");
-                PluginCompiler.CompilePackage(
-                    Source(),
-                    PluginName,
-                    Path.Combine(tempDir, "Plugins", $"{PluginName}.zip"));
-            }
-
-            public string PluginName { get; }
-            public string BackgroundStarted => Path.Combine(tempDir, "background-started");
-            public string DisposeLog => Path.Combine(tempDir, "dispose.log");
-            public string StartedMarker => Path.Combine(tempDir, "started");
-            string AnalyzerMarker => Path.Combine(tempDir, "analyzer");
-            string CloseFaultFlag => Path.Combine(tempDir, "close-fault");
-            string DisposeFaultFlag => Path.Combine(tempDir, "dispose-fault");
-
-            string Source() => $$"""
-                using System;
-                using System.IO;
-                using System.Threading;
-                using System.Threading.Tasks;
-                using Gallop;
-                using Gallop.Endpoints;
-                using UmamusumeResponseAnalyzer.Plugin;
-
-                public sealed class FaultingGenerationPlugin : IPlugin
-                {
-                    public void Initialize(IPluginContext context)
-                    {
-                        context.Events.OnStarted(_ =>
-                        {
-                            File.WriteAllText(@"{{StartedMarker}}", "started");
-                            return ValueTask.CompletedTask;
-                        });
-                        context.RunBackground(async cancellationToken =>
-                        {
-                            using var cancellation = cancellationToken.Register(() =>
-                            {
-                                if (!File.Exists(@"{{CloseFaultFlag}}"))
-                                    return;
-                                File.Delete(@"{{CloseFaultFlag}}");
-                                throw new InvalidOperationException("generation close workflow failed");
-                            });
-                            File.WriteAllText(@"{{BackgroundStarted}}", "started");
-                            try
-                            {
-                                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                            }
-                            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                            {
-                            }
-                        });
-                    }
-
-                    [ResponseAnalyzer<GameApi.Account.Index>]
-                    public ValueTask Analyze(DataLinkIndexResponse payload)
-                    {
-                        File.WriteAllText(@"{{AnalyzerMarker}}", "analyzed");
-                        return ValueTask.CompletedTask;
-                    }
-
-                    public void Dispose()
-                    {
-                        File.AppendAllText(@"{{DisposeLog}}", "dispose" + Environment.NewLine);
-                        if (!File.Exists(@"{{DisposeFaultFlag}}"))
-                            return;
-                        File.Delete(@"{{DisposeFaultFlag}}");
-                        throw new InvalidOperationException("dispose cleanup failed");
-                    }
-                }
-                """;
-
-            public void Dispose()
-            {
-                try { ResetPluginState(); } catch { }
                 Directory.SetCurrentDirectory(originalCwd);
                 try { Directory.Delete(tempDir, recursive: true); } catch { }
             }
@@ -1033,19 +849,15 @@ namespace UmamusumeResponseAnalyzer.Tests
 
                 public sealed class DependencyBackgroundPlugin : IPlugin
                 {
+                    Task background = Task.CompletedTask;
                     public void Initialize(IPluginContext context)
+                        => background = Task.Run(() => File.WriteAllText(@"{{BackgroundMarker}}", "started"));
+                    public ValueTask StartAsync(System.Threading.CancellationToken token = default)
                     {
-                        context.Events.OnStarted(_ =>
-                        {
-                            File.WriteAllText(@"{{StartedMarker}}", "started");
-                            return ValueTask.CompletedTask;
-                        });
-                        context.RunBackground(_ =>
-                        {
-                            File.WriteAllText(@"{{BackgroundMarker}}", "started");
-                            return ValueTask.CompletedTask;
-                        });
+                        File.WriteAllText(@"{{StartedMarker}}", "started");
+                        return ValueTask.CompletedTask;
                     }
+                    public async ValueTask DisposeAsync() => await background;
 
                     [ResponseAnalyzer<GameApi.Account.Index>]
                     public ValueTask Analyze(DataLinkIndexResponse payload)
@@ -1114,91 +926,51 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             public IPluginContext Context { get; private set; } = null!;
             public ExecutionContext CapturedContext { get; private set; } = null!;
-            public List<int> StartedOrder { get; } = [];
-
             public override void Initialize(IPluginContext context)
             {
                 Context = context;
                 CapturedContext = ExecutionContext.Capture()!;
-                context.Events.OnStarted(async _ =>
-                {
-                    StartedOrder.Add(1);
-                    await Task.Yield();
-                    StartedOrder.Add(2);
-                });
-                context.Events.OnStarted(_ =>
-                {
-                    StartedOrder.Add(3);
-                    return ValueTask.CompletedTask;
-                });
             }
         }
 
         sealed class StartedFailurePlugin : TestPlugin
         {
-            public override void Initialize(IPluginContext context)
-            {
-                context.Events.OnStarted(OnStarted);
-            }
-
-            public ValueTask OnStarted(CancellationToken cancellationToken)
+            public override ValueTask StartAsync(CancellationToken cancellationToken = default)
                 => throw new InvalidOperationException(@"started failed, path=C:\plugins\started\settings.yaml");
         }
 
         sealed class StartedCounterPlugin : TestPlugin
         {
             public int StartedCalls { get; private set; }
-
-            public override void Initialize(IPluginContext context)
+            public override ValueTask StartAsync(CancellationToken cancellationToken = default)
             {
-                context.Events.OnStarted(_ =>
-                {
-                    StartedCalls++;
-                    return ValueTask.CompletedTask;
-                });
+                StartedCalls++;
+                return ValueTask.CompletedTask;
             }
         }
 
         sealed class BackgroundFailurePlugin : TestPlugin
         {
-            public override void Initialize(IPluginContext context) => context.RunBackground(Run);
-
-            public async ValueTask Run(CancellationToken cancellationToken)
+            Task background = Task.CompletedTask;
+            public override void Initialize(IPluginContext context) => background = Task.Run(async () =>
+            {
+                try { await Run(); }
+                catch (Exception error) { context.ReportBackgroundFailure(error); }
+            });
+            public async Task Run()
             {
                 await Task.Yield();
                 throw new InvalidOperationException(@"background failed, path=C:\plugins\background\pending.json");
             }
+            public override async ValueTask DisposeAsync() => await background;
         }
 
-        sealed class CanceledStartedPlugin(CancellationTokenSource cancellation)
-            : TestPlugin
+        sealed class CanceledStartedPlugin(CancellationTokenSource cancellation) : TestPlugin
         {
-            public override void Initialize(IPluginContext context)
+            public override ValueTask StartAsync(CancellationToken cancellationToken = default)
             {
-                context.Events.OnStarted(cancellationToken =>
-                {
-                    cancellation.Cancel();
-                    return ValueTask.FromCanceled(cancellationToken);
-                });
-            }
-        }
-
-        sealed class CancelBetweenStartedSubscriptionsPlugin(
-            CancellationTokenSource cancellation,
-            string lateOutput) : TestPlugin
-        {
-            public override void Initialize(IPluginContext context)
-            {
-                context.Events.OnStarted(_ =>
-                {
-                    cancellation.Cancel();
-                    return ValueTask.CompletedTask;
-                });
-                context.Events.OnStarted(_ =>
-                {
-                    File.WriteAllText(lateOutput, "invoked");
-                    return ValueTask.CompletedTask;
-                });
+                cancellation.Cancel();
+                return ValueTask.FromCanceled(cancellationToken);
             }
         }
 

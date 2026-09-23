@@ -195,7 +195,7 @@ public sealed class StartupWorkflowTests
             await session.Terminal.WaitForScreenAsync(I18N_Initialized);
             await session.CloseAsync();
             Assert.False(Server.IsRunning);
-            Assert.DoesNotContain("disposed", File.ReadAllText("lifecycle.log"));
+            Assert.Contains("StartedPlugin disposed", File.ReadAllText("lifecycle.log"));
         });
 
     static async Task InstallAsync(StartupSession session, bool existing, bool shared)
@@ -243,7 +243,7 @@ public sealed class StartupWorkflowTests
         await terminal.WaitForScreenAsync(string.Format(Localization.PluginRegistry.InstalledRestartRequired, name));
         Assert.Equal(new Version(2, 0, 0), PluginPackageValidator.Validate(Path.Combine("Plugins", name + ".zip"), false).Manifest.Version);
         Assert.Equal(existing && !shared ? new Version(1, 0, 0) : null,
-            PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.InternalName == name)?.Version);
+            PluginManager.SnapshotActivePluginMetadatas().SingleOrDefault(p => p.PluginName == name)?.Version);
         Assert.DoesNotContain("disposed", File.Exists("lifecycle.log") ? File.ReadAllText("lifecycle.log") : "");
         Assert.Empty(host.CompleteCommand("/plugin reload "));
         await terminal.InjectAsync(Key.Enter);
@@ -315,12 +315,10 @@ public sealed class StartupWorkflowTests
 
         await terminal.InjectAsync(Key.CursorDown);
         await terminal.InjectAsync(Key.Enter);
-        await terminal.WaitForScreenAsync(I18N_Komoe);
-        await terminal.InjectAsync(Key.CursorDown);
-        await terminal.InjectAsync(Key.Space);
-        await terminal.InjectAsync(Key.Tab);
-        await terminal.InjectAsync(Key.Enter);
         await terminal.WaitForScreenAsync(I18N_TraditionalChinese);
+        var languageScreen = await terminal.CaptureScreenAsync();
+        Assert.Contains(I18N_LocalNetworkNotice[4..25], languageScreen);
+        Assert.Contains(I18N_FirstRunDataLanguage[..15], languageScreen);
         await terminal.InjectAsync(Key.CursorDown);
         await terminal.InjectAsync(Key.Enter);
         await terminal.WaitForScreenAsync(I18N_Female);
@@ -336,7 +334,6 @@ public sealed class StartupWorkflowTests
         var saved = Config.Deserialize(File.ReadAllText(Config.CONFIG_FILEPATH), Config.CONFIG_FILEPATH);
         Assert.Equal(config.Language.Selected, saved.Language.Selected);
         Assert.Equal("127.0.0.1", saved.Core.ListenAddress);
-        Assert.Equal(["Komoe"], saved.Repository.Targets);
         Assert.Equal("zh-TW", saved.Updater.DatabaseLanguage);
         Assert.False(saved.Updater.TrainerIsMale);
         Assert.False(saved.Core.ShowFirstRunPrompt);
@@ -355,7 +352,6 @@ public sealed class StartupWorkflowTests
         await terminal.WaitForScreenAsync($"{ConfigText.Tabs_Core_ShowFirstRunPrompt}: {UiText.Button_Yes}");
         saved = Config.Deserialize(File.ReadAllText(Config.CONFIG_FILEPATH), Config.CONFIG_FILEPATH);
         Assert.True(saved.Core.ShowFirstRunPrompt);
-        Assert.Equal(["Komoe"], saved.Repository.Targets);
         Assert.Equal("zh-TW", saved.Updater.DatabaseLanguage);
         Assert.False(saved.Updater.TrainerIsMale);
         await terminal.InjectAsync(Key.Esc);
@@ -432,8 +428,8 @@ public sealed class StartupWorkflowTests
         });
 
     [Fact]
-    public Task CancellationDuringPluginScanStopsUiWithoutWaiting()
-        => RunScenarioAsync(nameof(CancellationDuringPluginScanStopsUiWithoutWaiting),
+    public Task CancellationDuringPluginScanWaitsForConstructedPluginCleanup()
+        => RunScenarioAsync(nameof(CancellationDuringPluginScanWaitsForConstructedPluginCleanup),
             session => CancelDuringPluginScanAsync(session, Key.C.WithCtrl));
 
     [Fact]
@@ -458,7 +454,11 @@ public sealed class StartupWorkflowTests
                     File.WriteAllText("scan-returned", "returned");
                 }
                 public void Initialize(IPluginContext context) => throw new Exception("Must not initialize");
-                public void Dispose() => File.WriteAllText("scan-disposed", "disposed");
+                public System.Threading.Tasks.ValueTask DisposeAsync()
+                {
+                    File.WriteAllText("scan-disposed", "disposed");
+                    return System.Threading.Tasks.ValueTask.CompletedTask;
+                }
             }
             """, "ScanPlugin", "Plugins/ScanPlugin.zip");
         await session.StartAsync();
@@ -470,10 +470,12 @@ public sealed class StartupWorkflowTests
         Assert.Equal(DatabaseAvailability.Unavailable, Database.Availability);
         Assert.False(Server.IsRunning);
         await session.Terminal.InjectAsync(cancelKey);
-        await session.Run.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(session.Run.IsCompleted);
         Assert.False(File.Exists("scan-disposed"));
         File.WriteAllText("scan-release", "release");
-        await session.Terminal.WaitForAsync(() => File.Exists("scan-returned"));
+        await session.Run.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(File.Exists("scan-returned"));
+        Assert.True(File.Exists("scan-disposed"));
     }
 
     [Fact]
@@ -527,15 +529,19 @@ public sealed class StartupWorkflowTests
                 if (UmamusumeResponseAnalyzer.Database.Availability != UmamusumeResponseAnalyzer.DatabaseAvailability.Ready)
                     throw new System.Exception("Initialize before data is ready");
                 File.AppendAllText("lifecycle.log", "{{name}} initialized\n");
-                context.Events.OnStarted(_ =>
-                {
-                    if (!UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.Started)
-                        throw new System.Exception("OnStarted before HTTP is ready");
-                    File.AppendAllText("lifecycle.log", "{{name}} started\n");
-                    return ValueTask.CompletedTask;
-                });
             }
-            public void Dispose() => File.AppendAllText("lifecycle.log", "{{name}} disposed\n");
+            public ValueTask StartAsync(System.Threading.CancellationToken cancellationToken)
+            {
+                if (!UmamusumeResponseAnalyzer.UmamusumeResponseAnalyzer.Started)
+                    throw new System.Exception("StartAsync before HTTP is ready");
+                File.AppendAllText("lifecycle.log", "{{name}} started\n");
+                return ValueTask.CompletedTask;
+            }
+            public ValueTask DisposeAsync()
+            {
+                File.AppendAllText("lifecycle.log", "{{name}} disposed\n");
+                return ValueTask.CompletedTask;
+            }
         }
         """;
 

@@ -88,8 +88,6 @@ namespace UmamusumeResponseAnalyzer.Tests
                     public void Initialize(IPluginContext context)
                     {
                         _ = context.Application;
-                        context.Events.OnStarted(static _ => ValueTask.CompletedTask);
-                        context.RunBackground(static _ => ValueTask.CompletedTask);
                         context.Analyzers.Register<SingleModeCheckEventResponse>(
                             AnalyzerKind.Response,
                             new[]
@@ -117,6 +115,9 @@ namespace UmamusumeResponseAnalyzer.Tests
                             },
                             priority: -1);
                     }
+
+                    public ValueTask StartAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+                    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
                     [ResponseAnalyzer<GameApi.SingleMode.CheckEvent>]
                     static ValueTask AnalyzeCheckEvent(SingleModeCheckEventResponse payload)

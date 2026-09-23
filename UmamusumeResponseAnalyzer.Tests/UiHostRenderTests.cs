@@ -716,7 +716,7 @@ public sealed class UiHostRenderTests : IDisposable
                 UiSeverity.Success,
                 new HostCommands.Display(
                     "Command result display",
-                    [new("command-display-item-sentinel")]))));
+                    [new("command-display-item-sentinel", workspace)]))));
             await host.FlushAsync();
             await terminal.WaitForScreenAsync("command-display-item-sentinel");
 
@@ -988,10 +988,10 @@ public sealed class UiHostShutdownProcessTests
             RunWindowQuitAsync);
 
     [Fact]
-    public Task ShutdownCancelsLifetimeWithoutDisposingPlugins()
+    public Task ShutdownCancelsLifetimeAndDisposesPlugins()
         => RunScenarioAsync(
             "plugin-dispose-sees-cancelled-lifetime",
-            nameof(ShutdownCancelsLifetimeWithoutDisposingPlugins),
+            nameof(ShutdownCancelsLifetimeAndDisposesPlugins),
             RunDisposeAfterStartedAsync);
 
     [Fact]
@@ -1121,15 +1121,18 @@ public sealed class UiHostShutdownProcessTests
     {
         using var terminal = new TerminalGuiTestApp();
         using var lifetime = new CancellationTokenSource();
-        var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, lifetime.Token);
-        host.ShutdownStarting += lifetime.Cancel;
+        var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, lifetime.Token, async () =>
+        {
+            await lifetime.CancelAsync();
+            await PluginManager.ShutdownAsync();
+        });
         HotkeyManager.OverlaySink = host;
         var run = await terminal.StartAsync(host);
 
         using var plugin = new PackagedPluginFixture(
             "LeaseHoldingPlugin",
             root => LeaseHoldingPluginSource(Path.Combine(root, "entered")));
-        var started = PluginRuntimeFixture.TriggerStartedAsync(lifetime.Token);
+        var started = PluginManager.TriggerStartedAsync(lifetime.Token);
         await WaitForFileAsync(Path.Combine(plugin.Root, "entered"));
 
         await terminal.InvokeAsync(() =>
@@ -1144,22 +1147,25 @@ public sealed class UiHostShutdownProcessTests
     {
         using var terminal = new TerminalGuiTestApp();
         using var lifetime = new CancellationTokenSource();
-        var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, lifetime.Token);
-        host.ShutdownStarting += lifetime.Cancel;
+        var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, lifetime.Token, async () =>
+        {
+            await lifetime.CancelAsync();
+            await PluginManager.ShutdownAsync();
+        });
         HotkeyManager.OverlaySink = host;
         var run = await terminal.StartAsync(host);
 
         using var plugin = new PackagedPluginFixture(
             "CancellationObservingPlugin",
             root => CancellationObservingPluginSource(Path.Combine(root, "disposed")));
-        await PluginRuntimeFixture.TriggerStartedAsync(lifetime.Token);
+        await PluginManager.TriggerStartedAsync(lifetime.Token);
         Assert.False(lifetime.IsCancellationRequested);
 
         host.RequestShutdown();
         await run.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.True(lifetime.IsCancellationRequested);
-        Assert.False(File.Exists(Path.Combine(plugin.Root, "disposed")));
+        Assert.Equal("disposed", File.ReadAllText(Path.Combine(plugin.Root, "disposed")));
     }
 
     static async Task RunCreateWindowFailureAsync()
@@ -1191,8 +1197,8 @@ public sealed class UiHostShutdownProcessTests
     static async Task RunAggregatedFailureAsync()
     {
         using var terminal = new TerminalGuiTestApp();
-        var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, CancellationToken.None);
-        host.ShutdownStarting += () => throw new InvalidOperationException("shutdown-cleanup-failure");
+        var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, CancellationToken.None,
+            () => throw new InvalidOperationException("shutdown-cleanup-failure"));
         Config.WorkspaceTaskbarTitleOrder = null!;
 
         var failure = await Record.ExceptionAsync(async () =>
@@ -1337,6 +1343,7 @@ public sealed class UiHostShutdownProcessTests
     static string WorkspaceRemovalPluginSource(string marker)
         => $$"""
             using System.IO;
+            using System.Threading.Tasks;
             using UmamusumeResponseAnalyzer.Plugin;
             using UmamusumeResponseAnalyzer.TerminalGui;
 
@@ -1344,10 +1351,11 @@ public sealed class UiHostShutdownProcessTests
             {
                 public void Initialize(IPluginContext context) { }
 
-                public void Dispose()
+                public ValueTask DisposeAsync()
                 {
                     var removed = Workspace.Current.RemovePanel("probe");
                     File.WriteAllText(@"{{marker.Replace("\"", "\"\"")}}", removed ? "removed" : "missing");
+                    return ValueTask.CompletedTask;
                 }
             }
             """;
@@ -1362,12 +1370,12 @@ public sealed class UiHostShutdownProcessTests
 
             public sealed class Plugin : IPlugin
             {
-                public void Initialize(IPluginContext context)
-                    => context.Events.OnStarted(async cancellationToken =>
+                public void Initialize(IPluginContext context) { }
+                public async ValueTask StartAsync(CancellationToken cancellationToken = default)
                     {
                         File.WriteAllText(@"{{entered.Replace("\"", "\"\"")}}", "entered");
                         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                    });
+                    }
             }
             """;
 
@@ -1383,18 +1391,19 @@ public sealed class UiHostShutdownProcessTests
             {
                 CancellationToken lifetimeToken;
 
-                public void Initialize(IPluginContext context)
-                    => context.Events.OnStarted(cancellationToken =>
+                public void Initialize(IPluginContext context) { }
+                public ValueTask StartAsync(CancellationToken cancellationToken = default)
                     {
                         lifetimeToken = cancellationToken;
                         return ValueTask.CompletedTask;
-                    });
+                    }
 
-                public void Dispose()
+                public ValueTask DisposeAsync()
                 {
                     if (!lifetimeToken.IsCancellationRequested)
                         throw new InvalidOperationException("plugin lifetime was not cancelled");
                     File.WriteAllText(@"{{disposed.Replace("\"", "\"\"")}}", "disposed");
+                    return ValueTask.CompletedTask;
                 }
             }
             """;

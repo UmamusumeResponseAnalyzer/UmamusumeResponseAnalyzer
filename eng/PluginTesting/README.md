@@ -7,14 +7,16 @@
 | 项目 | 实际覆盖 |
 | --- | --- |
 | `PluginSmokeTests` | 默认运行 7 个源码插件实例、分析器注册/DTO 分发、事件显示与历史，并验证七个 ZIP 的 manifest；`--package-load` 单独验证 ZIP 加载和业务回调 |
-| `PluginRuntimeSmoke` | 默认遍历 22 个插件；配置了面板探针的插件检查 framebuffer、更新、历史按键和 Dispose，另检查 EventLogger 继承/剧本输出、DMM 空 token 失败提示、采集器永久上传失败 |
+| `PluginRuntimeSmoke` | 默认遍历 22 个插件；配置了面板探针的插件检查 framebuffer、更新、历史按键和 `DisposeAsync`，另检查 EventLogger 继承/剧本输出、DMM 空 token 失败提示、采集器永久上传失败及关闭时取消上传并保留 pending |
 | `PluginWorkspaceLifecycleSmoke` | 22 个插件初始化及未使用时 Dispose 的工作区稳定性、共享标题/面板、已移除工作区对迟到回调的拒绝 |
 | `AnalyzerHistoryConfigSmoke` | 10 个分析插件的 `historyLimit` 默认值、严格配置读取、保存/取消/关闭/token 取消、重建后的持久化结果 |
 | `PluginReplaySmoke` | `--self-test` 测试 HTTP 捕获解析与三语言可见 Error 判定；`--corpus` 将真实捕获依次送入 EventLogger、EventResponseAnalyzer、GamePacketCollector、RamenScenarioAnalyzer |
 
 这些项目为可执行程序，验收应使用 `dotnet run` 或直接执行构建产物。
 
-Host 的注册阶段和调度契约见 [插件开发](../../README.md#插件开发-plugin-development)：注册须在有效阶段内串行进行；analyzer 缺程序集只停用出错的单条注册，其他入口缺程序集按插件执行清理。直接调用 handler 的 smoke 验证业务输出，不覆盖 Host 的注册准入、缺程序集隔离或在途调用保护；这些行为由 Host 测试验证。Host 的原子注册测试同时验证 `OnStarted` 成功后启动后台任务、失败时不启动。共享组程序集冲突使该组加载失败，无关组继续启动；`--package-load` 验证正常包的加载路径。
+Host 的注册阶段和调度契约见 [插件开发](../../README.md#插件开发-plugin-development)：注册须在有效阶段内串行进行；analyzer 缺程序集只停用出错的单条注册，其他入口缺程序集按插件执行清理。直接调用 handler 的 smoke 验证业务输出，不覆盖 Host 的注册准入、缺程序集隔离或在途调用保护；这些行为由 Host 测试验证。Host 的原子注册测试验证 `StartAsync` 的注册提交与失败回滚。共享组程序集冲突使该组加载失败，无关组继续启动；`--package-load` 验证正常包的加载路径。
+
+Host 的 `PluginLifecycle` 管理回调准入、排空及一次性清理。故障测试读取实际 UI 日志，核对缺失程序集和执行阶段，并验证提前后台故障只报告首次原因。
 
 从 Host 仓库根目录执行以下 PowerShell。`UraTestPluginSourcesRoot` 指定包含各插件检出的目录，`Tests/Directory.Build.props` 从自身位置确定 Host 根目录；`URA_TEST_PLUGINS_ROOT` 供默认 `PluginSmokeTests` 检查插件源码。`DisableRealDriverIO` 用于无真实终端输入输出的测试运行。可选的 `URA_TEST_UI_CULTURE` 仅供测试，接受 `zh-CN`、`en-US`、`ja-JP`；设置后在共用 smoke Host 初始化配置前应用，其他值直接失败，未设置时沿用运行环境的语言。
 
@@ -86,7 +88,7 @@ dotnet run --project .\eng\PluginTesting\Tests\PluginSmokeTests @smokeBuild -- -
 - EventLoggerPlugin / EventResponseAnalyzer：当前回合/剧本、工作区内训练失败警告、已知事件选项及效果。
 - RamenScenarioAnalyzer / SendGameStatusPlugin：拉面状态与面板、`thisTurn.json` 和编号快照、状态写入不改变当前工作区或 framebuffer。
 
-测试结束时用测试清理入口撤销实例及分析器注册并移除面板；程序集上下文保留至进程结束。默认模式与 `--package-load` 各自运行，互不替代。该模式不经过真实 HTTP ingress，也不代表所有外部插件功能或真实捕获都已验证。
+测试结束时调用 `PluginManager.ShutdownAsync`，等待插件清理并撤销分析器注册及面板；程序集上下文保留至进程结束。默认模式与 `--package-load` 各自运行，互不替代。该模式不经过真实 HTTP ingress，也不代表所有外部插件功能或真实捕获都已验证。
 
 ## HTTP 捕获回放
 
@@ -102,7 +104,7 @@ dotnet run --project .\eng\PluginTesting\Tests\PluginReplaySmoke @smokeBuild -- 
 
 ## 共用基础设施与仓库边界
 
-`SmokeHost.cs` 提供真实 `UiHost` / ANSI driver 的独立 owner 线程、framebuffer/单元格捕获、按键/鼠标/模态交互及 flush。`RuntimePluginContext` 记录事件与分析器，并在释放时取消、等待后台任务；`HistoryConfigDialog` 提供历史上限编辑和按钮交互。生命周期 smoke 则使用不执行事件/后台任务的最小 context；它不证明业务回调正确。
+`SmokeHost.cs` 提供真实 `UiHost` / ANSI driver 的独立 owner 线程、framebuffer/单元格捕获、按键/鼠标/模态交互及 flush。`RuntimePluginContext` 记录分析器，并将后台故障转成测试失败；插件自行管理后台任务，测试通过 `DisposeAsync` 等待清理。`HistoryConfigDialog` 提供历史上限编辑和按钮交互。生命周期 smoke 使用最小 context，验证初始化后未使用插件的清理；它不证明业务回调正确。
 
 `RandomDtoGenerator` 按类型与 salt 的稳定 seed 生成公开字段，Protocol profile 用于协议往返，Analyzer profile 用于插件输入。`RandomDtoFactory` 添加角色、训练命令和剧本状态，部分 fixture 会更新 EventLogger 状态。它们是合成输入；Host 的 `URA_PACKET_CORPUS` 测试与这里的真实 replay 需另行提供捕获。
 

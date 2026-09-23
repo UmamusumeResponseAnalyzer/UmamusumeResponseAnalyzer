@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -45,9 +45,6 @@
   <data name="AmbiguousSource" xml:space="preserve">
     <value>Multiple sources share the plugin InternalName; cannot determine updates: {0}</value>
   </data>
-  <data name="LoadedVersionMissing" xml:space="preserve">
-    <value>Loaded plugin has no version: {0}</value>
-  </data>
   <data name="InvalidDownloadReference" xml:space="preserve">
     <value>Invalid plugin download reference.</value>
   </data>
@@ -84,9 +81,6 @@ This plugin will execute code on this computer.</value>
   <data name="RootManifestRequired" xml:space="preserve">
     <value>The ZIP root must contain exactly one manifest.json.</value>
   </data>
-  <data name="StrictJsonRequired" xml:space="preserve">
-    <value>manifest.json is not strict JSON.</value>
-  </data>
   <data name="PackageNameMismatch" xml:space="preserve">
     <value>ZIP filename must match manifest InternalName: zip={0}, manifest={1}</value>
   </data>
@@ -98,18 +92,6 @@ This plugin will execute code on this computer.</value>
   </data>
   <data name="ManifestObjectRequired" xml:space="preserve">
     <value>The root of manifest.json must be an object.</value>
-  </data>
-  <data name="DuplicateManifestField" xml:space="preserve">
-    <value>Duplicate manifest field: {0}</value>
-  </data>
-  <data name="ManifestSchemaMismatch" xml:space="preserve">
-    <value>Manifest schema mismatch: missing=[{0}], unexpected=[{1}]</value>
-  </data>
-  <data name="ManifestTypeInvalid" xml:space="preserve">
-    <value>Invalid manifest {0} type: expected={1}, actual={2}</value>
-  </data>
-  <data name="ManifestStringsRequired" xml:space="preserve">
-    <value>Manifest {0} must contain only strings.</value>
   </data>
   <data name="ClrMetadataMissing" xml:space="preserve">
     <value>The main assembly has no CLR metadata.</value>
@@ -153,8 +135,8 @@ This plugin will execute code on this computer.</value>
   <data name="LifecyclePhaseInvalid" xml:space="preserve">
     <value>Plugin operation {1} is not allowed in phase={0}.</value>
   </data>
-  <data name="GenerationMissing" xml:space="preserve">
-    <value>Plugin has no runtime generation: {0}</value>
+  <data name="LifecycleMissing" xml:space="preserve">
+    <value>Plugin has no lifecycle state: {0}</value>
   </data>
   <data name="InitializationTransactionBusy" xml:space="preserve">
     <value>A plugin lifecycle transaction is running; cannot initialize again.</value>
@@ -195,9 +177,6 @@ This plugin will execute code on this computer.</value>
   <data name="CannotCreatePluginInstance" xml:space="preserve">
     <value>Cannot create plugin instance: type={0}</value>
   </data>
-  <data name="LoadingCleanupFailed" xml:space="preserve">
-    <value>Plugin loading and cleanup failed.</value>
-  </data>
   <data name="LoadingFailed" xml:space="preserve">
     <value>Plugin loading failed: plugin={0}, phase={1}</value>
   </data>
@@ -225,26 +204,23 @@ This plugin will execute code on this computer.</value>
   <data name="CleanupFailed" xml:space="preserve">
     <value>Plugin cleanup failed.</value>
   </data>
-  <data name="GenerationAlreadyRunning" xml:space="preserve">
-    <value>Plugin generation is already initializing or running: {0}</value>
+  <data name="LifecycleAlreadyRunning" xml:space="preserve">
+    <value>Plugin lifecycle is already initializing or running: {0}</value>
   </data>
-  <data name="GenerationNotInitializing" xml:space="preserve">
-    <value>Plugin generation is not initializing: {0}</value>
+  <data name="LifecycleNotInitializing" xml:space="preserve">
+    <value>Plugin lifecycle is not initializing: {0}</value>
   </data>
-  <data name="GenerationStillInitializing" xml:space="preserve">
-    <value>Plugin generation is still initializing: {0}</value>
-  </data>
-  <data name="GenerationCloseFailed" xml:space="preserve">
-    <value>Plugin generation failed to close.</value>
+  <data name="LifecycleStillInitializing" xml:space="preserve">
+    <value>Plugin lifecycle is still initializing: {0}</value>
   </data>
   <data name="BackgroundOperationFailed" xml:space="preserve">
     <value>Plugin background operation failed: plugin={0}, {1}</value>
   </data>
-  <data name="GenerationUnavailable" xml:space="preserve">
-    <value>Plugin generation is closed or not open: {0}</value>
+  <data name="LifecycleUnavailable" xml:space="preserve">
+    <value>Plugin lifecycle is closed or not open: {0}</value>
   </data>
-  <data name="EventHandlerFailed" xml:space="preserve">
-    <value>Plugin event handler failed: plugin={0}, {1}</value>
+  <data name="StartFailed" xml:space="preserve">
+    <value>Plugin start failed: plugin={0}, {1}</value>
   </data>
   <data name="RegistrationAlreadyCommitted" xml:space="preserve">
     <value>Plugin registration stage is already committed: {0}</value>
@@ -265,7 +241,7 @@ This plugin will execute code on this computer.</value>
     <value>programmatic {0} analyzer</value>
   </data>
   <data name="RegistrationPhaseInvalid" xml:space="preserve">
-    <value>Analyzers and background operations can only be registered in Initialize or an OnStarted callback invoked by the host: plugin={0}</value>
+    <value>Analyzers can only be registered in Initialize or StartAsync invoked by the host: plugin={0}</value>
   </data>
   <data name="ConcreteHostPayloadRequired" xml:space="preserve">
     <value>Analyzer payload must be an existing closed concrete Gallop DTO in the Host: {0}</value>

@@ -189,8 +189,8 @@ static partial class PluginCases
         }
         finally
         {
-            plugin.Dispose();
-            eventLogger.Dispose();
+            plugin.DisposeAsync().GetAwaiter().GetResult();
+            eventLogger.DisposeAsync().GetAwaiter().GetResult();
             workspace.Remove();
         }
     }

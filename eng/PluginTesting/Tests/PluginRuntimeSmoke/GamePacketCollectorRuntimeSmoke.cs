@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using GamePacketCollector;
+using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 
@@ -55,11 +56,41 @@ static class GamePacketCollectorRuntimeSmoke
         }
         finally
         {
-            plugin.Dispose();
+            plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
         if (!ReferenceEquals(Workspace.Current, ui.Bootstrap))
             throw new InvalidOperationException("GamePacketCollector Dispose changed the active Workspace.");
+
+        using var stalledUpload = new TcpListener(IPAddress.Loopback, 0);
+        stalledUpload.Start();
+        new PacketUploadConfig
+        {
+            Enabled = true,
+            UploadUrl = $"http://127.0.0.1:{((IPEndPoint)stalledUpload.LocalEndpoint).Port}/api/GamePackets",
+            EndpointGroups = [PacketUploadConfig.SingleModeEndpointGroup],
+        }.Save(Path.Combine(dataDirectory, "config.json"), new(JsonSerializerDefaults.Web));
+        var interruptedFile = Path.Combine(pendingDirectory, "interrupted.json");
+        const string interruptedPacket = "{\"packetIdemKey\":\"interrupted\"}";
+        File.WriteAllText(interruptedFile, interruptedPacket);
+        using var interruptedContext = new RuntimePluginContext(ui.Application);
+        IPlugin interruptedPlugin = new GamePacketCollectorPlugin();
+        TcpClient? connection = null;
+        try
+        {
+            interruptedPlugin.Initialize(interruptedContext);
+            connection = stalledUpload.AcceptTcpClientAsync()
+                .WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            using var _ = connection;
+            interruptedPlugin.DisposeAsync().AsTask()
+                .WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+        }
+        if (File.ReadAllText(interruptedFile) != interruptedPacket)
+            throw new InvalidOperationException("GamePacketCollector shutdown did not preserve its pending upload.");
+        Console.WriteLine("PASS GamePacketCollector shutdown cancels an in-flight upload and preserves pending bytes");
     }
 
     static bool HasPermanentFailureNotification(string framebuffer)

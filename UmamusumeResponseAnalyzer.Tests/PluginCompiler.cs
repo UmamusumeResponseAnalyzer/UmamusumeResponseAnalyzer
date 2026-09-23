@@ -35,7 +35,8 @@ namespace UmamusumeResponseAnalyzer.Tests
             string source,
             string assemblyName,
             string dllPath,
-            IReadOnlyList<string>? referencePaths = null)
+            IReadOnlyList<string>? referencePaths = null,
+            IReadOnlyList<ResourceDescription>? resources = null)
         {
             var references = referencePaths is null
                 ? References
@@ -48,7 +49,7 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             // 单独 Emit 到内存再写盘：避免目标文件被占用时留下半截文件
             using var ms = new MemoryStream();
-            var result = compilation.Emit(ms);
+            var result = compilation.Emit(ms, manifestResources: resources);
             if (!result.Success)
             {
                 var errors = string.Join("\n", result.Diagnostics
@@ -64,7 +65,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             string internalName,
             string packagePath,
             IReadOnlyList<string>? dependencies = null,
-            IReadOnlyList<string>? targets = null,
             string version = "1.0.0",
             IReadOnlyList<string>? referencePaths = null)
         {
@@ -84,7 +84,6 @@ namespace UmamusumeResponseAnalyzer.Tests
                     Changelog = string.Empty,
                     Version = version,
                     Dependencies = dependencies ?? [],
-                    Targets = targets ?? [],
                     RepositoryUrl = string.Empty,
                     LastUpdate = 0,
                     Category = string.Empty,

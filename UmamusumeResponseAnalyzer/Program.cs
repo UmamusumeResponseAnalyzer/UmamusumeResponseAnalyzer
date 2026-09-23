@@ -87,8 +87,16 @@ namespace UmamusumeResponseAnalyzer
                 uiHost = new(
                     application,
                     synchronizationContext,
-                    lifetimeToken);
-                uiHost.ShutdownStarting += lifetimeCts.Cancel;
+                    lifetimeToken,
+                    async () =>
+                    {
+                        lifetimeCts.Cancel();
+                        await RunCleanupAsync(null,
+                        [
+                            async () => await Server.StopAsync(),
+                            async () => await PluginManager.ShutdownAsync(),
+                        ]);
+                    });
                 TerminalUi.Initialize(uiHost);
                 var bootstrap = uiHost.Bootstrap;
                 shutdownTarget = new(lifetimeCts.Cancel);
@@ -130,7 +138,6 @@ namespace UmamusumeResponseAnalyzer
                                 (I18N_WorkingDirectory, Directory.GetCurrentDirectory()),
                                 (I18N_ConfigFile, Path.GetFullPath(Config.CONFIG_FILEPATH)),
                                 (I18N_ListenAddress, $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
-                                (I18N_ServerTargets, Config.Repository.Targets.Count == 0 ? I18N_Unrestricted : string.Join(", ", Config.Repository.Targets)),
                                 (I18N_DataLanguage, Config.Updater.DatabaseLanguage),
                                 (I18N_TrainerGender, Config.Updater.TrainerIsMale ? I18N_Male : I18N_Female),
                                 (I18N_UpdateSource, updateSource)
@@ -176,7 +183,7 @@ namespace UmamusumeResponseAnalyzer
                             bootstrap.SetPhase("plugin-init", I18N_PhasePluginInit, UiSeverity.Info, I18N_InitializingPlugins);
                             PluginManager.InitializeLoadedPlugins();
                             bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true));
-                            var loadedPluginCount = PluginManager.SnapshotPluginStatuses().Count(plugin => plugin.IsLoaded);
+                            var loadedPluginCount = PluginManager.SnapshotActivePluginMetadatas().Count;
                             var failedPluginCount = PluginManager.FailedPlugins.Count;
                             bootstrap.SetPhase(
                                 "plugin-init",
@@ -247,17 +254,6 @@ namespace UmamusumeResponseAnalyzer
                         if (!serverStarted)
                             return;
 
-                        HotkeyManager.Register(ConsoleKey.P, I18N_PluginList, ctx =>
-                        {
-                            var plugins = PluginManager.SnapshotPluginStatuses()
-                                .Where(plugin => plugin.IsLoaded)
-                                .ToArray();
-                            foreach (var plugin in plugins)
-                                ctx.AddLine(string.Format(I18N_PluginAuthor, plugin.DisplayName, plugin.Version, plugin.Author));
-                            if (plugins.Length == 0)
-                                ctx.AddLine(I18N_NoPlugins);
-                            return Task.CompletedTask;
-                        });
                         await PluginManager.TriggerStartedAsync(lifetimeToken);
                         _ = CheckPluginUpdatesAsync(uiHost, lifetimeToken);
                     }
@@ -308,7 +304,11 @@ namespace UmamusumeResponseAnalyzer
                             lifetimeCts.Cancel();
                             return ValueTask.CompletedTask;
                         },
-                        async () => await Server.StopAsync(),
+                        async () =>
+                        {
+                            if (uiHost is not null)
+                                await uiHost.ShutdownAsync();
+                        },
                         () =>
                         {
                             uiHost?.Dispose();
@@ -380,7 +380,7 @@ namespace UmamusumeResponseAnalyzer
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            var loadedPluginCount = PluginManager.SnapshotPluginStatuses().Count(plugin => plugin.IsLoaded);
+            var loadedPluginCount = PluginManager.SnapshotActivePluginMetadatas().Count;
             var failedPluginCount = PluginManager.FailedPlugins.Count;
             bootstrap.SetPhase(
                 "plugin-scan",
@@ -394,9 +394,11 @@ namespace UmamusumeResponseAnalyzer
 
         static IReadOnlyList<BootstrapPluginRow> BuildBootstrapPluginSummary(bool initialized)
         {
-            var statuses = PluginManager.SnapshotPluginStatuses();
+            var metadatas = PluginManager.Metadatas;
+            var loadedNames = PluginManager.SnapshotActivePluginMetadatas()
+                .Select(plugin => plugin.PluginName).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var failedPlugins = PluginManager.FailedPlugins.ToArray();
-            var pluginNamesByPath = PluginManager.Metadatas.Values
+            var pluginNamesByPath = metadatas.Values
                 .GroupBy(x => x.PackagePath, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     group => group.Key,
@@ -405,18 +407,16 @@ namespace UmamusumeResponseAnalyzer
             var failedNames = failedPlugins
                 .Select(path => pluginNamesByPath.GetValueOrDefault(path) ?? path)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var knownNames = statuses
-                .SelectMany(x => new[] { x.InternalName, x.DisplayName })
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var knownNames = metadatas.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
             List<(string SortKey, BootstrapPluginRow Row)> rows =
             [
-                .. statuses.Select(status => (
-                    status.InternalName,
+                .. metadatas.Values.Select(metadata => (
+                    metadata.PluginName,
                     new BootstrapPluginRow(
-                        status,
+                        metadata,
+                        loadedNames.Contains(metadata.PluginName),
                         initialized,
-                        failedNames.Contains(status.InternalName) ||
-                        failedNames.Contains(status.DisplayName))))
+                        failedNames.Contains(metadata.PluginName))))
             ];
 
             foreach (var failedPath in failedPlugins)
@@ -491,13 +491,8 @@ namespace UmamusumeResponseAnalyzer
                 cancellationToken);
             if (allowOtherDevices)
                 Config.Core.ListenAddress = "0.0.0.0";
-            Config.Repository.Targets.AddRange(ModalDialogs.MultiSelect(
-                allowOtherDevices ? I18N_ExternalNetworkNotice : I18N_LocalNetworkNotice,
-                new[] { "Cygames", "Komoe" },
-                converter: value => value == "Cygames" ? I18N_Cygames : I18N_Komoe,
-                cancellationToken: cancellationToken));
             Config.Updater.DatabaseLanguage = ModalDialogs.Select(
-                I18N_FirstRunDataLanguage,
+                $"{(allowOtherDevices ? I18N_ExternalNetworkNotice : I18N_LocalNetworkNotice)}\n\n{I18N_FirstRunDataLanguage}",
                 new[] { "ja-JP", "zh-TW" },
                 value => value == "ja-JP" ? I18N_Japanese : I18N_TraditionalChinese,
                 cancellationToken);

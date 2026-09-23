@@ -25,8 +25,6 @@ namespace UmamusumeResponseAnalyzer
             .WithNamingConvention(HyphenatedNamingConvention.Instance)
             .Build();
         public static CoreConfig Core => Current.Core;
-        public static RepositoryConfig Repository => Current.Repository;
-        public static PluginConfig Plugin => Current.Plugin;
         public static UpdaterConfig Updater => Current.Updater;
         public static LanguageConfig Language => Current.Language;
         public static MiscConfig Misc => Current.Misc;
@@ -64,14 +62,9 @@ namespace UmamusumeResponseAnalyzer
                 var config = _deserializer.Deserialize<YamlConfig>(yaml)
                     ?? throw Invalid(sourcePath, "$", i18n.InvalidNullContent);
                 config.Updater.CustomDatabaseRepository ??= string.Empty;
-                foreach (var (values, path) in new[]
-                         {
-                             (config.Repository.Targets, "repository.targets"),
-                             (config.WorkspaceTaskbarTitleOrder, "workspace-taskbar-title-order")
-                         })
-                    for (var index = 0; index < values.Count; index++)
-                        if (values[index] is null)
-                            throw Invalid(sourcePath, $"{path}[{index}]", i18n.InvalidNullValue);
+                for (var index = 0; index < config.WorkspaceTaskbarTitleOrder.Count; index++)
+                    if (config.WorkspaceTaskbarTitleOrder[index] is null)
+                        throw Invalid(sourcePath, $"workspace-taskbar-title-order[{index}]", i18n.InvalidNullValue);
                 return config;
             }
             catch (YamlException exception)
@@ -125,7 +118,6 @@ namespace UmamusumeResponseAnalyzer
                         new[]
                         {
                             i18n.Tabs_Core_Title,
-                            i18n.Tabs_Repository_Title,
                             i18n.Tabs_Plugin_Title,
                             i18n.Tabs_Updater_Title,
                             i18n.Tabs_Language_Title,
@@ -138,10 +130,8 @@ namespace UmamusumeResponseAnalyzer
 
                     if (selected == i18n.Tabs_Core_Title)
                         Core.Prompt(cancellationToken);
-                    else if (selected == i18n.Tabs_Repository_Title)
-                        Repository.Prompt(cancellationToken);
                     else if (selected == i18n.Tabs_Plugin_Title)
-                        await Plugin.PromptAsync(cancellationToken);
+                        await PluginConfigPrompt.PromptAsync(cancellationToken);
                     else if (selected == i18n.Tabs_Updater_Title)
                         Updater.Prompt(cancellationToken);
                     else if (selected == i18n.Tabs_Language_Title)
@@ -160,8 +150,6 @@ namespace UmamusumeResponseAnalyzer
     public class YamlConfig
     {
         public CoreConfig Core { get; set; } = new();
-        public RepositoryConfig Repository { get; set; } = new();
-        public PluginConfig Plugin { get; set; } = new();
         public UpdaterConfig Updater { get; set; } = new();
         public LanguageConfig Language { get; set; } = new();
         public MiscConfig Misc { get; set; } = new();
@@ -224,87 +212,6 @@ namespace UmamusumeResponseAnalyzer
                 }
                 Config.Save();
             }
-        }
-    }
-
-    public class RepositoryConfig
-    {
-        public List<string> Targets { get; set; } = [];
-
-        internal void Prompt(CancellationToken cancellationToken)
-        {
-            while (true)
-            {
-                var targetsItem = $"{i18n.Tabs_Repository_Targets}: {string.Join(',', Targets)}";
-                var selected = ModalDialogs.Menu(
-                    i18n.Tabs_Repository_Title,
-                    new[] { targetsItem, i18n.Return },
-                    cancellationToken: cancellationToken);
-                if (selected == i18n.Return)
-                    return;
-
-                var input = ModalDialogs.Ask(
-                    i18n.Tabs_Repository_TargetsPrompt,
-                    string.Join(',', Targets),
-                    allowEmpty: true,
-                    cancellationToken: cancellationToken);
-                Targets = string.IsNullOrEmpty(input)
-                    ? []
-                    : [.. input.Replace('，', ',').Split(',')];
-                Config.Save();
-            }
-        }
-    }
-
-    public class PluginConfig
-    {
-        internal async Task PromptAsync(CancellationToken cancellationToken)
-        {
-            while (true)
-            {
-                var plugins = BuildPluginChoices(
-                    PluginManager.SnapshotPluginStatuses().Where(plugin => plugin.IsLoaded));
-                var choices = plugins
-                    .Select(x => (Label: x.Key, InternalName: (string?)x.Value))
-                    .Append((i18n.Return, null))
-                    .ToArray();
-                var selected = ModalDialogs.Menu(
-                    i18n.Tabs_Plugin_Title,
-                    choices,
-                    x => x.Label,
-                    cancellationToken: cancellationToken);
-                if (selected.InternalName is null)
-                    return;
-                var plugin = PluginManager.FindLoadedPlugin(selected.InternalName)
-                    ?? throw new InvalidOperationException(string.Format(i18n.PluginUnloaded, selected.InternalName));
-                await PluginConfigPrompt.RunAsync(plugin, cancellationToken);
-            }
-        }
-
-        internal static SortedDictionary<string, string> BuildPluginChoices(
-            IEnumerable<PluginManager.PluginRuntimeStatus> plugins)
-        {
-            var list = plugins.ToList();
-            var duplicateNames = list
-                .GroupBy(x => x.DisplayName, StringComparer.Ordinal)
-                .Where(x => x.Count() > 1)
-                .Select(x => x.Key)
-                .ToHashSet(StringComparer.Ordinal);
-
-            var choices = new SortedDictionary<string, string>(StringComparer.Ordinal);
-            foreach (var plugin in list)
-            {
-                var baseLabel = duplicateNames.Contains(plugin.DisplayName)
-                    ? $"{plugin.DisplayName} ({plugin.Author}/{plugin.InternalName})"
-                    : plugin.DisplayName;
-
-                var label = baseLabel;
-                for (var suffix = 2; choices.ContainsKey(label); suffix++)
-                    label = $"{baseLabel} #{suffix}";
-
-                choices.Add(label, plugin.InternalName);
-            }
-            return choices;
         }
     }
 

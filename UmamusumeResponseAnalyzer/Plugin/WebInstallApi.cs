@@ -1,6 +1,5 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using WatsonWebserver.Core;
 using WatsonWebserver.Lite;
@@ -10,11 +9,7 @@ namespace UmamusumeResponseAnalyzer.Plugin;
 /// <summary>Local URACloud integration: numeric references, allowed origins, and Host-side confirmation.</summary>
 internal static class WebInstallApi
 {
-    static readonly HashSet<string> AllowedOrigins = new(StringComparer.Ordinal)
-    {
-        "https://ura.shuise.net",
-    };
-    static readonly JsonSerializerSettings JsonSettings = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    const string AllowedOrigin = "https://ura.shuise.net";
 
     internal static Func<PluginInformation, CancellationToken, bool> ConfirmInstall = (plugin, ct) =>
         ModalDialogs.Confirm(BuildInstallConfirmation(plugin), cancellationToken: ct);
@@ -35,7 +30,7 @@ internal static class WebInstallApi
     static void ApplyCors(HttpContextBase ctx)
     {
         var origin = ctx.Request.Headers["Origin"];
-        if (origin != null && AllowedOrigins.Contains(origin))
+        if (origin == AllowedOrigin)
         {
             ctx.Response.Headers.Add("Access-Control-Allow-Origin", origin);
             ctx.Response.Headers.Add("Vary", "Origin");
@@ -57,14 +52,11 @@ internal static class WebInstallApi
     {
         cancellationToken.ThrowIfCancellationRequested();
         ApplyCors(ctx);
-        var plugins = PluginManager.SnapshotPluginStatuses().Where(p => p.IsLoaded).Select(p => new
+        var plugins = PluginManager.SnapshotActivePluginMetadatas().Select(p => new
         {
             author = p.Author,
-            internalName = p.InternalName,
-            version = (p.Version ?? throw new InvalidOperationException(string.Format(i18n.LoadedVersionMissing, p.InternalName))).ToString(),
-            loaded = true,
-            source = (object?)null,
-            error = (string?)null,
+            internalName = p.PluginName,
+            version = p.Version.ToString(),
         }).ToArray();
         return SendJson(ctx, 200, new
         {
@@ -79,7 +71,7 @@ internal static class WebInstallApi
         cancellationToken.ThrowIfCancellationRequested();
         ApplyCors(ctx);
         var origin = ctx.Request.Headers["Origin"];
-        if (origin is null || !AllowedOrigins.Contains(origin))
+        if (origin != AllowedOrigin)
         {
             await SendJson(ctx, 403, new { ok = false, error = "origin_not_allowed" });
             return;
@@ -95,7 +87,7 @@ internal static class WebInstallApi
         try
         {
             var plugin = await PluginRepository.GetPluginAsync(request.RepositoryId, request.ReleaseId, cancellationToken);
-            if (!ConfirmInstall(plugin, cancellationToken))
+            if (!ConfirmInstall(plugin.Manifest, cancellationToken))
             {
                 await SendJson(ctx, 409, new { ok = false, error = i18n.Cancelled });
                 return;
@@ -111,7 +103,7 @@ internal static class WebInstallApi
     {
         ctx.Response.StatusCode = status;
         ctx.Response.ContentType = "application/json";
-        return ctx.Response.Send(JsonConvert.SerializeObject(payload, JsonSettings));
+        return ctx.Response.Send(JsonConvert.SerializeObject(payload));
     }
 
     sealed record InstallRequest(long RepositoryId, long ReleaseId);

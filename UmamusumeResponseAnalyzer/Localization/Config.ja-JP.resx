@@ -177,15 +177,6 @@
   <data name="Tabs_Plugin_Title" xml:space="preserve">
     <value>プラグイン</value>
   </data>
-  <data name="Tabs_Repository_Targets" xml:space="preserve">
-    <value>対象サーバー</value>
-  </data>
-  <data name="Tabs_Repository_TargetsPrompt" xml:space="preserve">
-    <value>対象サーバーをカンマ区切りで入力してください。空欄の場合は制限しません（日本版：Cygames、繁体字中国語版：Komoe）。</value>
-  </data>
-  <data name="Tabs_Repository_Title" xml:space="preserve">
-    <value>リポジトリ</value>
-  </data>
   <data name="Tabs_Updater_CustomDatabaseRepositoryPrompt" xml:space="preserve">
     <value>カスタムデータベースリポジトリの URL を入力してください: </value>
   </data>

@@ -1,6 +1,5 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Text;
-using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 
 namespace UmamusumeResponseAnalyzer.Commands;
@@ -13,12 +12,11 @@ internal static class HostCommands
 
     internal sealed record Snapshot(
         IReadOnlyList<WorkspaceItem> Workspaces,
-        Workspace CurrentWorkspace,
-        IReadOnlyList<PluginManager.PluginRuntimeStatus> Plugins);
+        Workspace CurrentWorkspace);
 
     internal sealed record DisplayItem(
         string Text,
-        Workspace? Workspace = null);
+        Workspace Workspace);
 
     internal sealed record Display(
         string Title,
@@ -48,8 +46,6 @@ internal static class HostCommands
 
         if (name.Equals("workspace", StringComparison.OrdinalIgnoreCase))
             return RunWorkspaceCommand(arguments, snapshot);
-        if (name.Equals("plugin", StringComparison.OrdinalIgnoreCase))
-            return RunPluginCommand(arguments, snapshot);
 
         return Warning(string.Format(i18n.Command_Unknown, name));
     }
@@ -64,14 +60,13 @@ internal static class HostCommands
         var body = input[1..];
         var spaceIndex = body.IndexOf(' ');
         if (spaceIndex < 0)
-            return CompleteByPrefix(input, ["/plugin", "/workspace"]);
+            return CompleteByPrefix(input, ["/workspace"]);
 
         var name = body[..spaceIndex];
         var rest = body[(spaceIndex + 1)..];
         return name.ToLowerInvariant() switch
         {
             "workspace" => CompleteWorkspaceCommand(rest, snapshot.Workspaces),
-            "plugin" => CompleteByPrefix($"/plugin {rest}", ["/plugin list"]),
             _ => []
         };
     }
@@ -169,11 +164,6 @@ internal static class HostCommands
         return Warning(i18n.Command_WorkspaceUsage);
     }
 
-    static Result RunPluginCommand(string arguments, Snapshot snapshot)
-        => arguments.Length == 0 || arguments.Equals("list", StringComparison.OrdinalIgnoreCase)
-            ? ShowPlugins(snapshot.Plugins)
-            : Warning(i18n.Command_PluginUsage);
-
     static Result ShowWorkspaces(Snapshot snapshot, bool selectable)
     {
         var items = snapshot.Workspaces.Select(item =>
@@ -195,33 +185,6 @@ internal static class HostCommands
                 item => ReferenceEquals(item.Workspace, snapshot.CurrentWorkspace)))
             : null;
         return new(Display: new(i18n.Command_WorkspacesTitle, items, selectedIndex));
-    }
-
-    static Result ShowPlugins(IReadOnlyList<PluginManager.PluginRuntimeStatus> plugins)
-    {
-        if (plugins.Count == 0)
-            return new(Display: new(i18n.Command_PluginsTitle, [new(i18n.Command_NoPlugins)]));
-
-        return new(Display: new(
-            i18n.Command_PluginsTitle,
-            plugins.Select(plugin =>
-            {
-                var state = plugin.IsLoaded
-                    ? i18n.Command_PluginStateLoaded
-                    : plugin.Error is not null || !plugin.IsAvailable
-                        ? i18n.Command_PluginStateFailed
-                        : i18n.Command_PluginStateUnloaded;
-                var displayName = plugin.DisplayName == plugin.InternalName
-                    ? string.Empty
-                    : $" ({plugin.DisplayName})";
-                var version = plugin.Version is null ? string.Empty : $" v{plugin.Version}";
-                var author = string.IsNullOrWhiteSpace(plugin.Author)
-                    ? string.Empty
-                    : " " + string.Format(i18n.Command_PluginAuthor, plugin.Author);
-                var error = plugin.Error is null ? string.Empty : $" — {plugin.Error}";
-                return new DisplayItem(
-                    $"{state} {plugin.InternalName}{displayName}{version}{author}{error}");
-            }).ToArray()));
     }
 
     static IReadOnlyList<string> CompleteWorkspaceCommand(

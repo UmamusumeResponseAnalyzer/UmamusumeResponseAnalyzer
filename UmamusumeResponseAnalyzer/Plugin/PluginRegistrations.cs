@@ -23,26 +23,11 @@ internal sealed record AnalyzerRegistration(
     internal bool TryMarkFaulted() => Interlocked.Exchange(ref faulted, 1) == 0;
 }
 
-internal sealed record PluginRegistrationPlan(
-    IReadOnlyList<AnalyzerRegistration> Analyzers,
-    IReadOnlyList<Func<CancellationToken, ValueTask>> BackgroundOperations);
-
-internal sealed class PluginScopedAnalyzerRegistry(IPlugin plugin) : IPluginAnalyzerRegistry
-{
-    public void Register<TPayload>(
-        AnalyzerKind kind,
-        IReadOnlyList<EndpointPattern> patterns,
-        Func<AnalyzerInvocation<TPayload>, ValueTask> handler,
-        int priority = 0)
-        => PluginManager.StageProgrammaticAnalyzers(plugin, kind, patterns, handler, priority);
-}
-
 internal sealed class PluginRegistrationStage(
     IPlugin plugin,
     IEnumerable<AnalyzerRegistration>? initialAnalyzers = null) : IDisposable
 {
     readonly List<AnalyzerRegistration> analyzers = initialAnalyzers?.ToList() ?? [];
-    readonly List<Func<CancellationToken, ValueTask>> backgroundOperations = [];
     bool committed;
     internal bool IsDisposed { get; private set; }
 
@@ -51,25 +36,20 @@ internal sealed class PluginRegistrationStage(
     internal void Add(IEnumerable<AnalyzerRegistration> registrations)
         => analyzers.AddRange(registrations);
 
-    internal void AddBackground(Func<CancellationToken, ValueTask> operation)
-        => backgroundOperations.Add(operation);
-
-    internal PluginRegistrationPlan Commit()
+    internal IReadOnlyList<AnalyzerRegistration> Commit()
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (committed)
             throw new InvalidOperationException(string.Format(i18n.RegistrationAlreadyCommitted, PluginManager.InternalName(Plugin)));
 
-        var plan = new PluginRegistrationPlan([.. analyzers], [.. backgroundOperations]);
         committed = true;
-        return plan;
+        return [.. analyzers];
     }
 
     public void Dispose()
     {
         IsDisposed = true;
         analyzers.Clear();
-        backgroundOperations.Clear();
         PluginManager.EndRegistrationStage(this);
     }
 }
@@ -99,24 +79,7 @@ internal static partial class PluginManager
             ActiveRegistrationStage.Value = null;
     }
 
-    internal static void StageBackgroundOperation(
-        IPlugin plugin,
-        Func<CancellationToken, ValueTask> operation)
-    {
-        ArgumentNullException.ThrowIfNull(operation);
-        RequireRegistrationStage(plugin).AddBackground(operation);
-    }
-
-    internal static void ValidateRegistrationStage(IPlugin plugin)
-        => _ = RequireRegistrationStage(plugin);
-
-    internal static void RegisterMethods(IPlugin plugin)
-        => CommitAnalyzerRegistrations(CreateAttributeRegistrations(plugin));
-
-    internal static PluginRegistrationPlan CreateRegistrationPlan(IPlugin plugin)
-        => new(CreateAttributeRegistrations(plugin), []);
-
-    static List<AnalyzerRegistration> CreateAttributeRegistrations(IPlugin plugin)
+    internal static List<AnalyzerRegistration> CreateAttributeRegistrations(IPlugin plugin)
     {
         var registrations = new List<AnalyzerRegistration>();
         foreach (var method in plugin.GetType().GetMethods(
@@ -197,9 +160,6 @@ internal static partial class PluginManager
             : method.CreateDelegate<Func<TPayload, ValueTask>>(plugin);
         return context => handler((TPayload)context.GetDto(typeof(TPayload)));
     }
-
-    internal static IPluginAnalyzerRegistry AnalyzersFor(IPlugin plugin)
-        => new PluginScopedAnalyzerRegistry(plugin);
 
     internal static void StageProgrammaticAnalyzers<TPayload>(
         IPlugin plugin,
@@ -337,12 +297,11 @@ internal static partial class PluginManager
 
     internal static void CommitRegistrationStage(
         IPlugin plugin,
-        PluginRegistrationPlan plan)
+        IReadOnlyList<AnalyzerRegistration> registrations)
     {
-        var generation = RequireGeneration(plugin);
-        generation.ValidateBackgroundAdmission();
-        CommitAnalyzerRegistrations(plan.Analyzers);
-        generation.RunBackground(plan.BackgroundOperations);
+        var lifecycle = RequireLifecycle(plugin);
+        lifecycle.ValidateRegistrationCommit();
+        CommitAnalyzerRegistrations(registrations);
     }
 
     internal static void CommitAnalyzerRegistrations(IEnumerable<AnalyzerRegistration> registrations)

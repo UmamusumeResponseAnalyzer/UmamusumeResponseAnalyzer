@@ -17,10 +17,13 @@ public sealed class PluginMissingAssemblyTests : IDisposable
     readonly string directory = Path.Combine(Path.GetTempPath(), $"ura-missing-assembly-{Guid.NewGuid():N}");
     readonly string dependency;
     readonly TerminalGuiTestApp terminal;
+    readonly UiHost host;
+    readonly ConcurrentQueue<UiLogLine> diagnostics = new();
 
     public PluginMissingAssemblyTests(PluginRuntimeFixture runtime)
     {
         terminal = runtime.Terminal;
+        host = runtime.Host;
         PluginManager.ShutdownAsync().GetAwaiter().GetResult();
         HotkeyManager.OverlaySink = runtime.Host;
         Directory.CreateDirectory(Path.Combine(directory, "Plugins"));
@@ -29,30 +32,33 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         PluginCompiler.Compile("public static class AbsentLibrary { public static void Touch() { } }",
             "AbsentLibrary", dependency);
         CreatePlugin("Healthy", """
-            context.Events.OnStarted(token => { File.WriteAllText("healthy.started", "yes"); return ValueTask.CompletedTask; });
             context.Analyzers.Register<ReadOnlyMemory<byte>>(AnalyzerKind.Response,
                 [EndpointPattern.Exact("/umamusume/account/index")], invocation =>
                 { lock (typeof(Healthy)) File.AppendAllText("healthy.log", "packet\n"); return ValueTask.CompletedTask; });
-            """, [], members: """
+            """, [], started: "File.WriteAllText(\"healthy.started\", \"yes\");", members: """
             public Task ConfigPromptAsync(Terminal.Gui.App.IApplication application, System.Threading.CancellationToken token)
             { File.WriteAllText("healthy.config", "opened"); return Task.CompletedTask; }
             """);
+        host.FlushAsync().GetAwaiter().GetResult();
+        host.LogAdded += diagnostics.Enqueue;
     }
 
     [Theory]
     [InlineData("initialize")]
     [InlineData("constructor")]
-    public void StartupMissingAssemblyOnlyFailsResponsiblePlugin(string phase)
+    public async Task StartupMissingAssemblyOnlyFailsResponsiblePlugin(string phase)
     {
         CreatePlugin("Faulty", phase == "initialize" ? "Touch();" : "",
             constructor: phase == "constructor" ? "public Faulty() => Touch();" : "");
         PluginManager.Init();
         PluginManager.InitializeLoadedPlugins();
+        await host.FlushAsync();
 
         Assert.Equal("Healthy", PluginManager.InternalName(Assert.Single(PluginManager.LoadedPlugins)));
-        var failed = Assert.Single(PluginManager.SnapshotPluginStatuses(), status => status.InternalName == "Faulty");
-        Assert.False(failed.IsLoaded);
-        Assert.Contains("AbsentLibrary", failed.Error);
+        Assert.Null(PluginManager.FindLoadedPlugin("Faulty"));
+        var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
+        Assert.Contains("Faulty", report.Text);
+        Assert.Contains("AbsentLibrary", report.ExceptionDetails);
         Assert.Single(PluginManager.Contexts);
         if (phase == "initialize")
             Assert.Equal("disposed", File.ReadAllText("Faulty.disposed"));
@@ -65,17 +71,11 @@ public sealed class PluginMissingAssemblyTests : IDisposable
     [InlineData("hotkey")]
     public async Task DelayedMissingAssemblyDisablesOwnerAndSkipsRemainingCallbacks(string phase)
     {
-        var initialize = phase switch
-        {
-            "started" => """
-                context.Events.OnStarted(token => { Touch(); return ValueTask.CompletedTask; });
-                context.Events.OnStarted(token => { File.WriteAllText("later", "called"); return ValueTask.CompletedTask; });
-                """,
-            "config" => "",
-            "hotkey" => "HotkeyManager.Register(ConsoleKey.F12, \"missing assembly\", () => { Touch(); return Task.CompletedTask; });",
-            _ => "context.RunBackground(async token => { await Task.Yield(); Touch(); });"
-        };
-        CreatePlugin("Faulty", initialize, members: phase == "config" ? "public Task ConfigPromptAsync(Terminal.Gui.App.IApplication application, System.Threading.CancellationToken token) { Touch(); return Task.CompletedTask; }" : "");
+        CreatePlugin("Faulty",
+            phase == "hotkey" ? "HotkeyManager.Register(ConsoleKey.F12, \"missing assembly\", () => { Touch(); return Task.CompletedTask; });" : "",
+            started: phase == "started" ? "Touch(); File.WriteAllText(\"later\", \"called\");" : "",
+            background: phase == "background" ? "await Task.Yield(); Touch();" : "",
+            members: phase == "config" ? "public Task ConfigPromptAsync(Terminal.Gui.App.IApplication application, System.Threading.CancellationToken token) { Touch(); return Task.CompletedTask; }" : "");
         PluginManager.Init();
         var context = Assert.Single(PluginManager.Contexts).Value;
         PluginManager.InitializeLoadedPlugins();
@@ -87,6 +87,7 @@ public sealed class PluginMissingAssemblyTests : IDisposable
             Assert.True(await HotkeyManager.HandleKeyAsync(new(KeyCode.F12)).WaitAsync(TimeSpan.FromSeconds(5)));
         await WithServerAsync(port => PostPacketAsync(port, AnalyzerKind.Response, AccountIndexPath, [0xC0]));
         await WaitUntilAsync(() => File.Exists("Faulty.disposed") && PluginManager.FindLoadedPlugin("Faulty") is null);
+        await host.FlushAsync();
 
         Assert.False(File.Exists("later"));
         Assert.Equal("packet", Assert.Single(File.ReadAllLines("healthy.log")));
@@ -94,8 +95,9 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         Assert.Same(context, Assert.Single(PluginManager.Contexts).Value);
         Assert.DoesNotContain(PluginManager.ResponseAnalyzerMethods,
             registration => PluginManager.InternalName(registration.Plugin) == "Faulty");
-        Assert.Contains("AbsentLibrary", Assert.Single(PluginManager.SnapshotPluginStatuses(),
-            status => status.InternalName == "Faulty").Error);
+        var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
+        Assert.Contains("Faulty", report.Text);
+        Assert.Contains("AbsentLibrary", report.ExceptionDetails);
     }
 
     [Fact]
@@ -107,7 +109,7 @@ public sealed class PluginMissingAssemblyTests : IDisposable
             """);
         PluginManager.Init();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        var menu = Task.Run(() => Config.Plugin.PromptAsync(cancellation.Token), cancellation.Token);
+        var menu = Task.Run(() => PluginConfigPrompt.PromptAsync(cancellation.Token), cancellation.Token);
         try
         {
             await terminal.WaitForAsync(async () => await terminal.InvokeAsync(() =>
@@ -131,9 +133,11 @@ public sealed class PluginMissingAssemblyTests : IDisposable
 
             PluginManager.InitializeLoadedPlugins();
             await PluginManager.TriggerStartedAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            await host.FlushAsync();
             Assert.True(File.Exists("healthy.started"));
-            Assert.Contains("AbsentLibrary", Assert.Single(PluginManager.SnapshotPluginStatuses(),
-                status => status.InternalName == "Faulty").Error);
+            var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
+            Assert.Contains("Faulty", report.Text);
+            Assert.Contains("AbsentLibrary", report.ExceptionDetails);
         }
         finally
         {
@@ -153,15 +157,12 @@ public sealed class PluginMissingAssemblyTests : IDisposable
             context.Analyzers.Register<ReadOnlyMemory<byte>>(AnalyzerKind.Response,
                 [EndpointPattern.Exact("/umamusume/account/index")], invocation =>
                 { File.AppendAllText("sibling.log", "called\n"); return ValueTask.CompletedTask; }, 1);
-            context.Events.OnStarted(token => { File.WriteAllText("Faulty.started", "yes"); return ValueTask.CompletedTask; });
             HotkeyManager.Register(ConsoleKey.F12, "healthy hotkey", () =>
             { File.WriteAllText("Faulty.hotkey", "yes"); return Task.CompletedTask; });
-            context.RunBackground(async token =>
-            {
-                using var registration = token.Register(() => File.WriteAllText("background-cancelled", "yes"));
-                File.WriteAllText("background-started", "yes");
-                await Task.Delay(-1, token);
-            });
+            """, started: "File.WriteAllText(\"Faulty.started\", \"yes\");", background: """
+            using var registration = token.Register(() => File.WriteAllText("background-cancelled", "yes"));
+            File.WriteAllText("background-started", "yes");
+            await Task.Delay(-1, token);
             """, members: """
             static ValueTask Analyze(AnalyzerInvocation<ReadOnlyMemory<byte>> invocation)
             {
@@ -221,12 +222,10 @@ public sealed class PluginMissingAssemblyTests : IDisposable
                     await ReleaseFaults.Task;
                     Touch();
                 });
-            context.RunBackground(async token =>
-            {
-                using var registration = token.Register(() => BackgroundCancelled.TrySetResult());
-                BackgroundStarted.TrySetResult();
-                await Task.Delay(-1, token);
-            });
+            """, background: """
+            using var registration = token.Register(() => BackgroundCancelled.TrySetResult());
+            BackgroundStarted.TrySetResult();
+            await Task.Delay(-1, token);
             """, members: """
             public readonly TaskCompletionSource SlowEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
             public readonly TaskCompletionSource ReleaseSlow = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -279,7 +278,7 @@ public sealed class PluginMissingAssemblyTests : IDisposable
 
                     await PluginConfigPrompt.RunAsync(faulty).WaitAsync(TimeSpan.FromSeconds(5));
                     Assert.True(PluginManager.IsPluginFaulted(faulty));
-                    await Signal("BackgroundCancelled").Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    Assert.False(Signal("BackgroundCancelled").Task.IsCompleted);
                     Assert.False(File.Exists("Faulty.disposed"));
                 }
                 finally
@@ -303,21 +302,21 @@ public sealed class PluginMissingAssemblyTests : IDisposable
     [Fact]
     public async Task BackgroundFaultDrainsWithoutBlockingHealthyStartup()
     {
-        CreatePlugin("Faulty", """
-            context.RunBackground(async token =>
+        CreatePlugin("Faulty", "", background: """
+            var blocked = Task.Run(async () =>
             {
                 File.WriteAllText("blocked", "yes");
                 while (!File.Exists("release")) await Task.Delay(10);
             });
-            context.RunBackground(async token =>
-            {
-                while (!File.Exists("blocked")) await Task.Delay(10);
-                Touch();
-            });
+            while (!File.Exists("trigger")) await Task.Delay(10);
+            try { Touch(); }
+            catch (Exception error) { context.ReportBackgroundFailure(error); }
+            await blocked;
             """);
         PluginManager.Init();
         var faulty = PluginManager.FindLoadedPlugin("Faulty")!;
         PluginManager.InitializeLoadedPlugins();
+        File.WriteAllText("trigger", "yes");
         try
         {
             await WaitUntilAsync(() => PluginManager.IsPluginFaulted(faulty));
@@ -330,6 +329,77 @@ public sealed class PluginMissingAssemblyTests : IDisposable
             File.WriteAllText("release", "yes");
         }
         await WaitUntilAsync(() => File.Exists("Faulty.disposed") && PluginManager.FindLoadedPlugin("Faulty") is null);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task BackgroundFaultBeforeRegistrationCommitCannotReopenPlugin(bool duringInitialize)
+    {
+        PluginCompiler.CompilePackage($$"""
+            using System;
+            using System.IO;
+            using System.Runtime.CompilerServices;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using UmamusumeResponseAnalyzer.Plugin;
+            public sealed class EarlyFault : IPlugin
+            {
+                IPluginContext context;
+                Task background = Task.CompletedTask;
+                readonly TaskCompletionSource reported = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                public void Initialize(IPluginContext context)
+                {
+                    this.context = context;
+                    Register();
+                    if ({{duringInitialize.ToString().ToLowerInvariant()}})
+                    {
+                        Launch();
+                        reported.Task.GetAwaiter().GetResult();
+                    }
+                }
+                public async ValueTask StartAsync(CancellationToken cancellationToken = default)
+                {
+                    Register();
+                    Launch();
+                    await reported.Task;
+                }
+                void Register() => context.Analyzers.Register<ReadOnlyMemory<byte>>(
+                    AnalyzerKind.Response, [EndpointPattern.Exact("/umamusume/account/index")],
+                    _ => { File.WriteAllText("early.analyzed", "yes"); return ValueTask.CompletedTask; });
+                void Launch() => background = Task.Run(() =>
+                {
+                    try { Touch(); }
+                    catch (Exception error) { context.ReportBackgroundFailure(error); }
+                    finally { reported.TrySetResult(); }
+                });
+                [MethodImpl(MethodImplOptions.NoInlining)]
+                static void Touch() => AbsentLibrary.Touch();
+                public async ValueTask DisposeAsync()
+                {
+                    await background;
+                    File.AppendAllText("early.disposed", "disposed\n");
+                }
+            }
+            """, "EarlyFault", "Plugins/EarlyFault.zip", ["Healthy"], referencePaths: [dependency]);
+        PluginManager.Init();
+        var faulty = PluginManager.FindLoadedPlugin("EarlyFault")!;
+        PluginManager.InitializeLoadedPlugins();
+        await PluginManager.TriggerStartedAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await WaitUntilAsync(() => PluginManager.FindLoadedPlugin("EarlyFault") is null);
+        await WithServerAsync(port => PostPacketAsync(port, AnalyzerKind.Response, AccountIndexPath, [0xC0]));
+        await host.FlushAsync();
+
+        Assert.True(PluginManager.IsPluginFaulted(faulty));
+        Assert.Null(PluginManager.TryEnterPluginCallback(faulty));
+        Assert.DoesNotContain(PluginManager.ResponseAnalyzerMethods, item => ReferenceEquals(item.Plugin, faulty));
+        Assert.DoesNotContain(PluginManager.SnapshotActivePluginMetadatas(), item => item.PluginName == "EarlyFault");
+        Assert.False(File.Exists("early.analyzed"));
+        Assert.Equal("disposed", Assert.Single(File.ReadAllLines("early.disposed")));
+        var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
+        Assert.Contains("AbsentLibrary", report.ExceptionDetails);
+        Assert.Contains("Background", report.Text);
+        Assert.True(File.Exists("healthy.started"));
     }
 
     [Fact]
@@ -351,7 +421,7 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         Assert.NotNull(PluginManager.FindLoadedPlugin("Healthy"));
         Assert.Equal("packet", Assert.Single(File.ReadAllLines("healthy.log")));
         Assert.Equal(2, PluginManager.ResponseAnalyzerMethods.Count(registration => registration.IsFaulted));
-        Assert.All(PluginManager.SnapshotPluginStatuses(), status => Assert.Null(status.Error));
+        Assert.Empty(PluginManager.FailedPlugins);
     }
 
     [Fact]
@@ -386,10 +456,11 @@ public sealed class PluginMissingAssemblyTests : IDisposable
                 context.Analyzers.Register<ReadOnlyMemory<byte>>(AnalyzerKind.Response,
                     [EndpointPattern.Exact("/umamusume/account/index")], invocation => { {{body}} });
                 """,
-            "started" => "context.Events.OnStarted(token => { " + body + " });",
-            _ => "context.RunBackground(token => { File.WriteAllText(\"background-ran\", \"yes\"); " + body + " });"
+            _ => ""
         };
-        CreatePlugin("Ordinary", initialize);
+        CreatePlugin("Ordinary", initialize,
+            started: phase == "started" ? body : "",
+            background: phase == "background" ? "File.WriteAllText(\"background-ran\", \"yes\"); " + body : "");
         PluginManager.Init();
         PluginManager.InitializeLoadedPlugins();
         await PluginManager.TriggerStartedAsync();
@@ -400,15 +471,17 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         });
         if (phase == "background")
             await WaitUntilAsync(() => File.Exists("background-ran"));
-        Assert.NotNull(PluginManager.FindLoadedPlugin("Ordinary"));
-        Assert.Null(Assert.Single(PluginManager.SnapshotPluginStatuses(), status => status.InternalName == "Ordinary").Error);
+        var plugin = Assert.IsAssignableFrom<IPlugin>(PluginManager.FindLoadedPlugin("Ordinary"));
+        Assert.False(PluginManager.IsPluginFaulted(plugin));
+        Assert.Empty(PluginManager.FailedPlugins);
         Assert.False(File.Exists("Ordinary.disposed"));
         Assert.DoesNotContain(PluginManager.ResponseAnalyzerMethods, registration => registration.IsFaulted);
         if (phase is "analyzer" or "business")
             Assert.Equal(2, File.ReadAllLines("ordinary.log").Length);
     }
 
-    void CreatePlugin(string name, string initialize, string[]? dependencies = null, string constructor = "", string members = "")
+    void CreatePlugin(string name, string initialize, string[]? dependencies = null, string constructor = "", string members = "",
+        string started = "", string background = "")
         => PluginCompiler.CompilePackage($$"""
             using System;
             using System.IO;
@@ -420,10 +493,33 @@ public sealed class PluginMissingAssemblyTests : IDisposable
             {
                 {{constructor}}
                 {{members}}
-                public void Initialize(IPluginContext context) { {{initialize}} }
+                readonly System.Threading.CancellationTokenSource cancellation = new();
+                Task background = Task.CompletedTask;
+                public void Initialize(IPluginContext context)
+                {
+                    {{initialize}}
+                    background = Task.Run(async () =>
+                    {
+                        var token = cancellation.Token;
+                        try { {{background}} }
+                        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+                        catch (Exception error) { context.ReportBackgroundFailure(error); }
+                    });
+                }
+                public ValueTask StartAsync(System.Threading.CancellationToken token = default)
+                {
+                    {{started}}
+                    return ValueTask.CompletedTask;
+                }
                 [MethodImpl(MethodImplOptions.NoInlining)]
                 static void Touch() => AbsentLibrary.Touch();
-                public void Dispose() => File.WriteAllText("{{name}}.disposed", "disposed");
+                public async ValueTask DisposeAsync()
+                {
+                    await cancellation.CancelAsync();
+                    await background;
+                    cancellation.Dispose();
+                    File.WriteAllText("{{name}}.disposed", "disposed");
+                }
             }
             """, name, Path.Combine("Plugins", name + ".zip"), dependencies ?? ["Healthy"],
             referencePaths: [dependency]);
@@ -440,6 +536,7 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         try { PluginManager.ShutdownAsync().GetAwaiter().GetResult(); }
         finally
         {
+            host.LogAdded -= diagnostics.Enqueue;
             Directory.SetCurrentDirectory(originalDirectory);
             Directory.Delete(directory, recursive: true);
         }

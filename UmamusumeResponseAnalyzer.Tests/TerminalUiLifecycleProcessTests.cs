@@ -195,7 +195,7 @@ internal static class TerminalUiLifecycleChildProcess
         return CaptureFailure(() => TerminalUi.Log("lifecycle-test", "stopped"));
     }
 
-    internal static UiHost InitializeHost(TerminalGuiTestApp terminal, CancellationToken lifetimeToken)
+    internal static UiHost InitializeHost(TerminalGuiTestApp terminal, CancellationToken lifetimeToken, Func<Task>? shutdownAsync = null)
     {
         Assert.Null(CurrentConfig.GetValue(null));
         CurrentConfig.SetValue(null, new YamlConfig());
@@ -205,7 +205,8 @@ internal static class TerminalUiLifecycleChildProcess
             host = new UiHost(
                 terminal.Application,
                 SynchronizationContext.Current!,
-                lifetimeToken);
+                lifetimeToken,
+                shutdownAsync);
             TerminalUi.Initialize(host);
         });
         return host!;

@@ -82,6 +82,7 @@ public sealed class PluginInstallTests : IDisposable
             {
                 ("https://example.com", "", HttpStatusCode.Forbidden),
                 ("http://localhost:5173", "", HttpStatusCode.Forbidden),
+                ("https://URA.shuise.net", "", HttpStatusCode.Forbidden),
                 ("", "", HttpStatusCode.Forbidden),
                 ("https://ura.shuise.net", "not json", HttpStatusCode.BadRequest),
                 ("https://ura.shuise.net", "{\"repositoryId\":0,\"releaseId\":10}", HttpStatusCode.BadRequest),
@@ -138,6 +139,7 @@ public sealed class PluginInstallTests : IDisposable
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var body = JObject.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("https://ura.shuise.net", Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin")));
         Assert.True(body.Value<bool>("ok"));
         Assert.Equal(["error", "installed", "ok"], body.Properties().Select(property => property.Name).Order().ToArray());
         Assert.Equal(JTokenType.Null, body["error"]!.Type);
@@ -173,13 +175,13 @@ public sealed class PluginInstallTests : IDisposable
         switch (failure)
         {
             case "author":
-                plugin.Author = "other";
+                plugin.Manifest.Author = "other";
                 break;
             case "name":
-                plugin.InternalName = "OtherPlugin";
+                plugin.Manifest.InternalName = "OtherPlugin";
                 break;
             case "version":
-                plugin.RawVersion = "2026.03.05";
+                plugin.Manifest.RawVersion = "2026.03.05";
                 break;
             case "zip":
                 handler.Bytes = [1, 2, 3];
@@ -237,6 +239,15 @@ public sealed class PluginInstallTests : IDisposable
         PluginManager.Init();
         PluginManager.InitializeLoadedPlugins();
         Assert.Empty(await PluginRepository.CheckForUpdatesAsync(TestContext.Current.CancellationToken));
+        using var server = StartServer(TestContext.Current.CancellationToken, out var port);
+        using var client = new HttpClient();
+        var status = JObject.Parse(await client.GetStringAsync($"http://127.0.0.1:{port}/uracloud/status", TestContext.Current.CancellationToken));
+        Assert.Equal(["app", "plugins", "version"], status.Properties().Select(property => property.Name).Order().ToArray());
+        var installed = Assert.IsType<JObject>(Assert.Single(status["plugins"]!));
+        Assert.Equal(["author", "internalName", "version"], installed.Properties().Select(property => property.Name).Order().ToArray());
+        Assert.Equal(handler.Manifest.Author, installed.Value<string>("author"));
+        Assert.Equal(Name, installed.Value<string>("internalName"));
+        Assert.Equal("2026.3.4", installed.Value<string>("version"));
         handler.Manifest.RawVersion = "2026.03.05";
         var update = Assert.Single(await PluginRepository.CheckForUpdatesAsync(TestContext.Current.CancellationToken));
         Assert.Equal(new Version(2026, 3, 4), update.CurrentVersion);
@@ -244,7 +255,8 @@ public sealed class PluginInstallTests : IDisposable
         handler.Packages.Add(20, (2, handler.Manifest, package));
         var error = await Assert.ThrowsAsync<InvalidDataException>(() => PluginRepository.CheckForUpdatesAsync(TestContext.Current.CancellationToken));
         Assert.Contains(Name, error.Message);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => PluginRepository.InstallPluginsAsync([handler.Manifest, handler.Manifest]));
+        var download = new PluginDownload(handler.Manifest, "unused");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => PluginRepository.InstallPluginsAsync([download, download]));
     }
 
     [Theory]
@@ -286,7 +298,7 @@ public sealed class PluginInstallTests : IDisposable
         {
             Assert.Null(PluginManager.FindLoadedPlugin("Zulu"));
             Assert.Equal(updateInstalled ? new Version(2026, 3, 3) : null,
-                PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.IsLoaded)?.Version);
+                PluginManager.SnapshotActivePluginMetadatas().SingleOrDefault()?.Version);
         };
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cancellation.CancelAfter(TimeSpan.FromSeconds(20));
@@ -307,7 +319,7 @@ public sealed class PluginInstallTests : IDisposable
             Assert.Equal(3, handler.Requests);
             Assert.Equal(package, File.ReadAllBytes(PluginRepository.InstallZipPath(Name)));
             Assert.Equal(updateInstalled ? new Version(2026, 3, 3) : null,
-                PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.InternalName == Name)?.Version);
+                PluginManager.SnapshotActivePluginMetadatas().SingleOrDefault(p => p.PluginName == Name)?.Version);
             Assert.Equal(updateInstalled, PluginManager.FindLoadedPlugin(Name) is not null);
             Assert.Null(PluginManager.FindLoadedPlugin("Zulu"));
             Assert.Empty(Directory.GetFiles("Plugins", "*.source.json"));
@@ -382,10 +394,14 @@ public sealed class PluginInstallTests : IDisposable
             }
             var plugins = Packages.OrderByDescending(p => p.Value.Manifest.Version).ThenByDescending(p => p.Key)
                 .Select(p => new { source = new { repositoryId = p.Value.RepositoryId }, releaseId = p.Key, prerelease = Prereleases.Contains(p.Key), manifest = p.Value.Manifest });
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+            };
             var body = segments[^1] switch
             {
-                "Plugins" => JsonConvert.SerializeObject(plugins.Where(p => !p.prerelease).GroupBy(p => p.source.repositoryId).Select(g => g.First())),
-                _ => JsonConvert.SerializeObject(plugins.Single(p => p.releaseId == long.Parse(segments[^1])))
+                "Plugins" => JsonConvert.SerializeObject(plugins.Where(p => !p.prerelease).GroupBy(p => p.source.repositoryId).Select(g => g.First()), settings),
+                _ => JsonConvert.SerializeObject(plugins.Single(p => p.releaseId == long.Parse(segments[^1])), settings)
             };
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         }

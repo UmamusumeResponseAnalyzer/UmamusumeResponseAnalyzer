@@ -7,39 +7,28 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests
 {
-    /// <summary>
-    /// <see cref="PluginRepository.BuildCatalog"/> 的确定性单测——不依赖网络/Config。
-    /// 按目标过滤目录，本机插件身份使用 InternalName。
-    /// </summary>
     public class PluginRepositoryTests
     {
-        static PluginInformation Info(string author, string internalName, string category = "", string[]? targets = null) => new()
+        static PluginInformation Info(string author, string internalName, string category = "") => new()
         {
             Author = author,
             InternalName = internalName,
             DisplayName = internalName,
             Category = category,
-            Targets = targets ?? [],
             Version = new(1, 0, 0),
         };
 
         const string PackageInternalName = "UmamusumeResponseAnalyzer";
         [Fact]
-        public void CatalogFiltersTargetsWithoutCollapsingSameNamePlugins()
+        public void InstallPathUsesInternalName()
         {
-            var first = Info("same author", "Same");
-            var fork = Info("same author", "same");
-            var incompatible = Info("author", "Other", targets: ["Komoe"]);
-            var catalog = PluginRepository.BuildCatalog([first, fork, incompatible], ["Cygames"]);
-            Assert.Equal([first, fork], catalog);
-            Assert.Equal([first, fork, incompatible], PluginRepository.BuildCatalog([first, fork, incompatible], []));
             Assert.Equal(Path.Combine("Plugins", "Same.zip"), PluginRepository.InstallZipPath("Same"));
         }
 
         [Fact]
         public void ValidatePackage_ReturnsStrictManifestMetadata()
         {
-            var manifest = Info("author", PackageInternalName, targets: ["Cygames"]);
+            var manifest = Info("author", PackageInternalName);
             manifest.RawVersion = "2026.03.04";
             manifest.Dependencies = ["Dependency"];
             var package = CreatePackage(manifest);
@@ -53,7 +42,6 @@ namespace UmamusumeResponseAnalyzer.Tests
 
                 Assert.Equal(PackageInternalName, actual.InternalName);
                 Assert.Equal(["Dependency"], actual.Dependencies);
-                Assert.Equal(["Cygames"], actual.Targets);
                 Assert.Equal("2026.03.04", actual.RawVersion);
             }
             finally
@@ -76,8 +64,8 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Contains("missing=[Version]", error.Message);
-                Assert.Contains("unexpected=[version]", error.Message);
+                Assert.IsType<System.Text.Json.JsonException>(error.InnerException);
+                Assert.Contains("version", error.Message);
             }
             finally
             {
@@ -214,9 +202,8 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Equal(property == "LastUpdate"
-                    ? string.Format(i18n.ManifestTypeInvalid, property, "Integer", "String")
-                    : string.Format(i18n.ManifestStringsRequired, property), error.Message);
+                Assert.IsType<System.Text.Json.JsonException>(error.InnerException);
+                Assert.Contains(property, error.Message);
             }
             finally
             {
@@ -229,6 +216,10 @@ namespace UmamusumeResponseAnalyzer.Tests
         [InlineData("trailing-comma")]
         [InlineData("single-quotes")]
         [InlineData("extra-token")]
+        [InlineData("duplicate")]
+        [InlineData("Targets")]
+        [InlineData("DownloadUrl")]
+        [InlineData("RawVersion")]
         public void ValidatePackage_RejectsNonStrictJson(string mutation)
         {
             var package = CreatePackage(
@@ -239,6 +230,10 @@ namespace UmamusumeResponseAnalyzer.Tests
                     "trailing-comma" => $"{json[..^1]},}}",
                     "single-quotes" => json.Replace('"', '\''),
                     "extra-token" => $"{json}{{}}",
+                    "duplicate" => $"{json[..^1]},\"Author\":\"other\"}}",
+                    "Targets" => $"{json[..^1]},\"Targets\":[]}}",
+                    "DownloadUrl" => $"{json[..^1]},\"DownloadUrl\":\"https://example.com\"}}",
+                    "RawVersion" => $"{json[..^1]},\"RawVersion\":\"1.0\"}}",
                     _ => throw new InvalidOperationException($"未知 JSON mutation: {mutation}"),
                 });
             try
@@ -246,11 +241,42 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var error = Assert.Throws<InvalidDataException>(() =>
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
-                Assert.Equal(i18n.StrictJsonRequired, error.Message);
+                Assert.IsType<System.Text.Json.JsonException>(error.InnerException);
             }
             finally
             {
                 File.Delete(package);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ValidatePackage_RequiresAllManifestFields(bool useNull)
+        {
+            var info = Info("author", PackageInternalName);
+            var fields = JObject.FromObject(info).Properties().Select(property => property.Name).ToArray();
+            Assert.Equal(11, fields.Length);
+            foreach (var field in fields)
+            {
+                var package = CreatePackage(info, json =>
+                {
+                    if (useNull)
+                        json[field] = JValue.CreateNull();
+                    else
+                        json.Remove(field);
+                });
+                try
+                {
+                    var error = Assert.Throws<InvalidDataException>(() =>
+                        PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
+                    Assert.IsType<System.Text.Json.JsonException>(error.InnerException);
+                    Assert.Contains(field, error.Message);
+                }
+                finally
+                {
+                    File.Delete(package);
+                }
             }
         }
 

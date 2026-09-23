@@ -36,7 +36,7 @@ public sealed class PluginStartupSnapshotTests : IDisposable
         PluginManager.InitializeLoadedPlugins();
 
         Assert.Equal("v1", File.ReadAllText("version.txt"));
-        Assert.Equal(new Version(1, 0, 0), Assert.Single(PluginManager.SnapshotPluginStatuses()).Version);
+        Assert.Equal(new Version(1, 0, 0), Assert.Single(PluginManager.Metadatas).Value.Version);
         Assert.Same(original, Assert.Single(PluginManager.LoadedPlugins));
         Assert.Same(originalContext, Assert.Single(PluginManager.Contexts).Value);
         Assert.Single(Assert.Single(PluginManager.ContextGroups));
@@ -45,7 +45,7 @@ public sealed class PluginStartupSnapshotTests : IDisposable
         PluginManager.Init();
         PluginManager.InitializeLoadedPlugins();
         Assert.Equal("v2", File.ReadAllText("version.txt"));
-        Assert.Equal(new Version(2, 0, 0), Assert.Single(PluginManager.SnapshotPluginStatuses(), status => status.InternalName == "Snapshot").Version);
+        Assert.Equal(new Version(2, 0, 0), PluginManager.Metadatas["Snapshot"].Version);
         Assert.Equal(2, PluginManager.LoadedPlugins.Count);
         Assert.Equal(2, Assert.Single(PluginManager.ContextGroups).Count);
     }

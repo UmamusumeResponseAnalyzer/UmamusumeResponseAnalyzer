@@ -65,7 +65,7 @@ sealed record PluginCase(
             if (!ReferenceEquals(Workspace.Current, ui.Bootstrap))
                 throw new InvalidOperationException($"{Id}: Initialize changed the active bootstrap workspace.");
             if (Id == "DMMPlugin")
-                VerifyDmmRuntime(context, ui, currentDirectory.Path);
+                VerifyDmmRuntime(plugin, ui, currentDirectory.Path);
 
             if (ExpectedBootstrapLogOnInitialize is { } expectedLog
                 && !ui.CaptureScreen().Contains(expectedLog, StringComparison.Ordinal))
@@ -87,8 +87,9 @@ sealed record PluginCase(
 
         try
         {
-            plugin.Dispose();
-            eventLogger?.Dispose();
+            plugin.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            if (eventLogger is not null)
+                eventLogger.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
             if (publishedWorkspace is not null)
             {
@@ -452,7 +453,7 @@ sealed record PluginCase(
             """);
     }
 
-    void VerifyDmmRuntime(RuntimePluginContext context, WorkspaceSmokeSession ui, string currentDirectory)
+    void VerifyDmmRuntime(IPlugin plugin, WorkspaceSmokeSession ui, string currentDirectory)
     {
         var tokenSemantic = new System.Resources.ResourceManager("DMMPlugin.i18n.DMM", typeof(DMMPlugin.DMMPlugin).Assembly)
             .GetString("I18N_Token_CannotGetValid", System.Globalization.CultureInfo.CurrentUICulture)!;
@@ -462,7 +463,6 @@ sealed record PluginCase(
         var errorLogsBefore = CountDmmAccessTokenLogs(linesBefore, UiSeverity.Error, tokenSemantic);
         var infoLogsBefore = CountDmmAccessTokenLogs(linesBefore, UiSeverity.Info, tokenSemantic);
         var cardsBefore = CountDmmErrorCards(linesBefore);
-        var started = context.HostEvents.Subscriptions.Single();
         var ignoreExistingProcess = typeof(DMMPlugin.DMMPlugin).Assembly
             .GetType("DMMPlugin.DMM", throwOnError: true)!
             .GetField("IgnoreExistProcess")
@@ -471,7 +471,7 @@ sealed record PluginCase(
         try
         {
             ignoreExistingProcess.SetValue(null, true);
-            started.Handler(CancellationToken.None).GetAwaiter().GetResult();
+            plugin.StartAsync().AsTask().GetAwaiter().GetResult();
         }
         finally
         {
@@ -505,13 +505,13 @@ sealed record PluginCase(
                     || line.Contains(tokenSemantic, StringComparison.OrdinalIgnoreCase)
                     || line.Contains(UiText.Severity_Error, StringComparison.Ordinal)));
             throw new InvalidOperationException(
-                $"{Id}: OnStarted auth failure did not add exactly one access-token Error log, "
+                $"{Id}: StartAsync auth failure did not add exactly one access-token Error log, "
                 + $"one access-token Info log, and one DMM Error card "
                 + $"(Error {errorLogsBefore}->{errorLogsAfter}, Info {infoLogsBefore}->{infoLogsAfter}, "
                 + $"cards {cardsBefore}->{cardsAfter}). Visible: {visibleDiagnostics}");
         }
         if (!string.Equals(settingsBefore, File.ReadAllText(settingsPath), StringComparison.Ordinal))
-            throw new InvalidOperationException($"{Id}: OnStarted failure changed settings.yaml.");
+            throw new InvalidOperationException($"{Id}: StartAsync failure changed settings.yaml.");
     }
 
     static int CountDmmAccessTokenLogs(string[] lines, UiSeverity severity, string tokenSemantic)
@@ -579,8 +579,7 @@ sealed record PluginCase(
     static ValueTask DispatchAttributedAnalyzer(IPlugin plugin, object response)
     {
         var responseType = response.GetType();
-        var plan = PluginManager.CreateRegistrationPlan(plugin);
-        var registration = plan.Analyzers.Single(candidate =>
+        var registration = PluginManager.CreateAttributeRegistrations(plugin).Single(candidate =>
             candidate.Kind == AnalyzerKind.Response
             && GameEndpointCatalog.ByEndpointType[candidate.EndpointType].ResponseType == responseType);
         var endpoint = GameEndpointCatalog.ByEndpointType[registration.EndpointType];

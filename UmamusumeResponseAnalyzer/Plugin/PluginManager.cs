@@ -1,29 +1,13 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using UmamusumeResponseAnalyzer.TerminalGui;
 
 namespace UmamusumeResponseAnalyzer.Plugin
 {
     internal static partial class PluginManager
     {
-        internal sealed record PluginRuntimeStatus(
-            string InternalName,
-            string DisplayName,
-            string Author,
-            Version? Version,
-            bool IsLoaded,
-            bool IsAvailable,
-            string? Error);
-
         static readonly PluginRuntimeState Runtime = new();
-        static PluginRuntimeMutableState Lifecycle => Runtime.Mutable;
-        static Dictionary<string, PluginMetadata> LifecycleMetadatas => Lifecycle.Metadatas;
-        static List<string> LifecycleFailedPlugins => Lifecycle.FailedPlugins;
-        static List<IPlugin> LifecycleLoadedPlugins => Lifecycle.LoadedPlugins;
-        static List<HashSet<string>> LifecycleContextGroups => Lifecycle.ContextGroups;
-        static Dictionary<string, PluginLoadContext> LifecycleContexts => Lifecycle.Contexts;
 
         internal static FrozenDictionary<string, PluginMetadata> Metadatas
             => Runtime.ReadSnapshot().Metadatas;
@@ -32,9 +16,9 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static IReadOnlyList<IPlugin> LoadedPlugins
             => Runtime.ReadSnapshot().LoadedPlugins;
         internal static IReadOnlyList<ImmutableHashSet<string>> ContextGroups
-            => [.. LifecycleContextGroups.Select(group => group.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase))];
+            => [.. Runtime.ContextGroups.Select(group => group.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase))];
         internal static FrozenDictionary<string, PluginLoadContext> Contexts
-            => LifecycleContexts.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+            => Runtime.Contexts.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         internal static IReadOnlyList<AnalyzerRegistration> RequestAnalyzerMethods
             => Runtime.ReadAnalyzers().Request;
         internal static IReadOnlyList<AnalyzerRegistration> ResponseAnalyzerMethods
@@ -48,9 +32,6 @@ namespace UmamusumeResponseAnalyzer.Plugin
             "WatsonWebserver.Core",
             "WatsonWebserver.Lite",
         }.ToFrozenSet(StringComparer.Ordinal);
-        static PluginHostEvents HostEvents => Runtime.HostEvents;
-        static ConditionalWeakTable<IPlugin, PluginGeneration> PluginGenerations => Runtime.Generations;
-
         internal static IDisposable EnterPluginCallback(
             IPlugin plugin,
             CancellationToken cancellationToken = default)
@@ -66,11 +47,11 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsShuttingDown() ||
-                !PluginGenerations.TryGetValue(plugin, out var generation) ||
-                !generation.TryEnterCallback(out var generationLease))
+                !Runtime.Lifecycles.TryGetValue(plugin, out var lifecycle) ||
+                !lifecycle.TryEnterCallback(out var lifecycleLease))
                 return null;
 
-            return generationLease;
+            return lifecycleLease;
         }
 
         internal static IDisposable EnterPluginConfiguration(
@@ -85,8 +66,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static IDisposable? TryEnterPluginInspection(IPlugin plugin)
         {
             if (IsShuttingDown() ||
-                !PluginGenerations.TryGetValue(plugin, out var generation) ||
-                !generation.TryEnterInspection(out var inspection))
+                !Runtime.Lifecycles.TryGetValue(plugin, out var lifecycle) ||
+                !lifecycle.TryEnterInspection(out var inspection))
                 return null;
 
             return inspection;
@@ -145,8 +126,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static IDisposable? TryEnterPluginRegistration(IPlugin plugin)
         {
             if (!IsShuttingDown() &&
-                PluginGenerations.TryGetValue(plugin, out var generation) &&
-                generation.TryEnterRegistration(out var registration))
+                Runtime.Lifecycles.TryGetValue(plugin, out var lifecycle) &&
+                lifecycle.TryEnterRegistration(out var registration))
                 return registration!;
 
             return null;
@@ -158,7 +139,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
         static InvalidOperationException LifecyclePhaseFailure(
             string operation,
             PluginLifecyclePhase? phase = null)
-            => new(string.Format(i18n.LifecyclePhaseInvalid, phase ?? Lifecycle.Phase, operation));
+            => new(string.Format(i18n.LifecyclePhaseInvalid, phase ?? Runtime.Phase, operation));
 
         internal static IReadOnlyList<IPlugin> SnapshotLoadedPlugins()
             => Runtime.ReadSnapshot().LoadedPlugins;
@@ -167,31 +148,15 @@ namespace UmamusumeResponseAnalyzer.Plugin
             => Runtime.ReadSnapshot().LoadedPlugins.FirstOrDefault(plugin =>
                 string.Equals(InternalName(plugin), internalName, StringComparison.OrdinalIgnoreCase));
 
-        internal static IReadOnlyList<PluginRuntimeStatus> SnapshotPluginStatuses()
+        internal static bool IsPluginActive(IPlugin plugin)
+            => !Runtime.ShutdownRequested &&
+               Runtime.Lifecycles.TryGetValue(plugin, out var lifecycle) && !lifecycle.IsClosed;
+
+        internal static IReadOnlyList<PluginMetadata> SnapshotActivePluginMetadatas()
         {
             var snapshot = Runtime.ReadSnapshot();
-            var loadedByName = snapshot.LoadedPlugins.ToDictionary(InternalName, StringComparer.OrdinalIgnoreCase);
-            var names = snapshot.Metadatas.Keys.Concat(loadedByName.Keys)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Order(StringComparer.OrdinalIgnoreCase);
-            List<PluginRuntimeStatus> statuses = [];
-            foreach (var name in names)
-            {
-                loadedByName.TryGetValue(name, out var plugin);
-                var metadata = snapshot.Metadatas.GetValueOrDefault(name);
-                var generation = plugin is not null && PluginGenerations.TryGetValue(plugin, out var current)
-                    ? current
-                    : null;
-                statuses.Add(new(
-                    name,
-                    metadata?.DisplayName ?? name,
-                    metadata?.Author ?? string.Empty,
-                    metadata?.Version,
-                    generation is { IsClosed: false } && !IsShuttingDown(),
-                    metadata is not null,
-                    generation?.Failure ?? snapshot.Failures.GetValueOrDefault(name)));
-            }
-            return statuses;
+            return snapshot.LoadedPlugins.Where(IsPluginActive)
+                .Select(plugin => snapshot.Metadatas[InternalName(plugin)]).ToArray();
         }
 
         internal static string InternalName(IPlugin plugin)
@@ -199,13 +164,13 @@ namespace UmamusumeResponseAnalyzer.Plugin
                ?? plugin.GetType().FullName
                ?? nameof(IPlugin);
 
-        static PluginGeneration GenerationFor(IPlugin plugin)
-            => PluginGenerations.GetValue(plugin, static value => new(value));
+        static PluginLifecycle LifecycleFor(IPlugin plugin)
+            => Runtime.Lifecycles.GetValue(plugin, static value => new(value));
 
-        static PluginGeneration RequireGeneration(IPlugin plugin)
-            => PluginGenerations.TryGetValue(plugin, out var generation)
-                ? generation
-                : throw new InvalidOperationException(string.Format(i18n.GenerationMissing, InternalName(plugin)));
+        static PluginLifecycle RequireLifecycle(IPlugin plugin)
+            => Runtime.Lifecycles.TryGetValue(plugin, out var lifecycle)
+                ? lifecycle
+                : throw new InvalidOperationException(string.Format(i18n.LifecycleMissing, InternalName(plugin)));
 
         internal static void Init(CancellationToken cancellationToken = default)
         {
@@ -214,7 +179,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
             LoadMetadatas();
             BuildGroups();
             LoadPlugins();
-            Lifecycle.Phase = PluginLifecyclePhase.Loaded;
+            Runtime.Phase = PluginLifecyclePhase.Loaded;
         }
 
         static IDisposable EnterInitializationTransaction(CancellationToken cancellationToken)
@@ -229,18 +194,18 @@ namespace UmamusumeResponseAnalyzer.Plugin
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (Lifecycle.Phase is not PluginLifecyclePhase.Created and
+                if (Runtime.Phase is not PluginLifecyclePhase.Created and
                     not PluginLifecyclePhase.Stopped)
                     throw LifecyclePhaseFailure("Init");
-                if (LifecycleMetadatas.Count != 0 || LifecycleFailedPlugins.Count != 0 ||
-                    LifecycleLoadedPlugins.Count != 0 || LifecycleContextGroups.Count != 0 ||
-                    LifecycleContexts.Count != 0 || Runtime.ReadAnalyzers().Request.Length != 0 ||
+                if (Runtime.Metadatas.Count != 0 || Runtime.FailedPlugins.Count != 0 ||
+                    Runtime.LoadedPlugins.Count != 0 || Runtime.ContextGroups.Count != 0 ||
+                    Runtime.Contexts.Count != 0 || Runtime.ReadAnalyzers().Request.Length != 0 ||
                     Runtime.ReadAnalyzers().Response.Length != 0)
                     throw new InvalidOperationException(
-                        string.Format(i18n.RuntimeStateNotEmpty, Lifecycle.Phase));
+                        string.Format(i18n.RuntimeStateNotEmpty, Runtime.Phase));
 
                 Runtime.ShutdownRequested = false;
-                Lifecycle.Phase = PluginLifecyclePhase.Created;
+                Runtime.Phase = PluginLifecyclePhase.Created;
                 return new LifecycleTransaction();
             }
             catch
@@ -252,27 +217,25 @@ namespace UmamusumeResponseAnalyzer.Plugin
 
         internal static void InitializePlugin(IPlugin plugin)
         {
-            var generation = GenerationFor(plugin);
-            using var initialization = generation.EnterInitialization();
+            var lifecycle = LifecycleFor(plugin);
+            using var initialization = lifecycle.EnterInitialization();
             try
             {
                 using var owner = HotkeyManager.RegisterScope(plugin);
                 using var registrations = BeginRegistrationStage(plugin, includeAttributeAnalyzers: true);
-                var available = LifecycleMetadatas.TryGetValue(InternalName(plugin), out var metadata)
+                var available = Runtime.Metadatas.TryGetValue(InternalName(plugin), out var metadata)
                     ? metadata.Dependencies.Where(name =>
-                        LifecycleMetadatas.TryGetValue(name, out var dependency) &&
-                        ShouldLoadPluginForCurrentTargets(dependency)).ToHashSet(StringComparer.OrdinalIgnoreCase)
+                         Runtime.Metadatas.ContainsKey(name)).ToHashSet(StringComparer.OrdinalIgnoreCase)
                     : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                plugin.Initialize(new PluginContext(TerminalUi.RequireHost(), plugin, HostEvents, available));
+                plugin.Initialize(new PluginContext(TerminalUi.RequireHost(), plugin, available));
                 var plan = registrations.Commit();
-                generation.CompleteInitialization();
-                CommitAnalyzerRegistrations(plan.Analyzers);
-                generation.Open();
-                generation.RunBackground(plan.BackgroundOperations);
+                lifecycle.CompleteInitialization();
+                CommitAnalyzerRegistrations(plan);
+                lifecycle.Open();
             }
             catch
             {
-                generation.AbortInitialization();
+                lifecycle.AbortInitialization();
                 throw;
             }
         }
@@ -280,14 +243,14 @@ namespace UmamusumeResponseAnalyzer.Plugin
         internal static void InitializeLoadedPlugins()
         {
             using var transaction = EnterLifecycleTransaction(nameof(InitializeLoadedPlugins));
-            if (Lifecycle.Phase is PluginLifecyclePhase.Initialized or PluginLifecyclePhase.Started)
+            if (Runtime.Phase is PluginLifecyclePhase.Initialized or PluginLifecyclePhase.Started)
                 return;
-            if (Lifecycle.Phase != PluginLifecyclePhase.Loaded)
+            if (Runtime.Phase != PluginLifecyclePhase.Loaded)
                 throw LifecyclePhaseFailure(nameof(InitializeLoadedPlugins));
 
-            foreach (var plugin in LifecycleLoadedPlugins.ToArray())
+            foreach (var plugin in Runtime.LoadedPlugins.ToArray())
             {
-                if (GenerationFor(plugin).IsAccepting)
+                if (LifecycleFor(plugin).IsAccepting)
                     continue;
                 try
                 {
@@ -297,19 +260,22 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 {
                     var name = InternalName(plugin);
                     Exception failure = new InvalidOperationException(string.Format(i18n.InitializationFailed, name), ex);
-                    Lifecycle.Failures[name] = ex.GetBaseException().Message;
-                    var path = LifecycleMetadatas.GetValueOrDefault(name)?.PackagePath ?? name;
-                    if (!LifecycleFailedPlugins.Contains(path))
-                        LifecycleFailedPlugins.Add(path);
+                    var reportedFailure = LifecycleFor(plugin).Failure;
+                    var path = Runtime.Metadatas.GetValueOrDefault(name)?.PackagePath ?? name;
+                    if (!Runtime.FailedPlugins.Contains(path))
+                        Runtime.FailedPlugins.Add(path);
+                    var cleanupFailed = false;
                     try { CleanupPluginAsync(plugin, flush: true).GetAwaiter().GetResult(); }
                     catch (Exception cleanupEx)
                     {
                         failure = new AggregateException(i18n.InitializationCleanupFailed, failure, cleanupEx);
+                        cleanupFailed = true;
                     }
-                    ReportPluginDiagnostic(failure);
+                    if (reportedFailure is null || cleanupFailed)
+                        ReportPluginDiagnostic(failure);
                 }
             }
-            Lifecycle.Phase = PluginLifecyclePhase.Initialized;
+            Runtime.Phase = PluginLifecyclePhase.Initialized;
         }
 
         internal static async Task TriggerStartedAsync(CancellationToken cancellationToken = default)
@@ -318,20 +284,43 @@ namespace UmamusumeResponseAnalyzer.Plugin
             using var transaction = new LifecycleTransaction();
             if (Runtime.ShutdownRequested)
                 throw LifecyclePhaseFailure(nameof(TriggerStartedAsync));
-            if (Lifecycle.Phase == PluginLifecyclePhase.Started)
+            if (Runtime.Phase == PluginLifecyclePhase.Started)
                 return;
-            if (Lifecycle.Phase != PluginLifecyclePhase.Initialized)
+            if (Runtime.Phase != PluginLifecyclePhase.Initialized)
                 throw LifecyclePhaseFailure(nameof(TriggerStartedAsync));
 
-            await HostEvents.TriggerStartedAsync(cancellationToken: cancellationToken);
-            Lifecycle.Phase = PluginLifecyclePhase.Started;
+            foreach (var plugin in Runtime.LoadedPlugins.ToArray())
+                await StartPluginAsync(plugin, cancellationToken);
+            Runtime.Phase = PluginLifecyclePhase.Started;
         }
 
-        internal static void DisposeHostEventSubscriptions(IPlugin plugin)
-            => HostEvents.DisposeFor(plugin);
+        internal static async Task StartPluginAsync(IPlugin plugin, CancellationToken cancellationToken = default)
+        {
+            using var callback = TryEnterPluginCallback(plugin, cancellationToken);
+            if (callback is null)
+                return;
 
-        internal static void ClearHostEventSubscriptions()
-            => HostEvents.Clear();
+            using var owner = HotkeyManager.RegisterScope(plugin);
+            using var stage = BeginRegistrationStage(plugin);
+            try
+            {
+                await plugin.StartAsync(cancellationToken);
+                CommitRegistrationStage(plugin, stage.Commit());
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (IsPluginFaulted(plugin) || TryDisableForMissingAssembly(plugin, ex, "StartAsync"))
+                    return;
+
+                var failure = new InvalidOperationException(
+                    string.Format(i18n.StartFailed, InternalName(plugin), DescribeException(ex)));
+                ReportPluginFailure("Plugin", failure, ex.ToString());
+            }
+        }
 
         internal static async Task ShutdownAsync()
         {
@@ -339,28 +328,26 @@ namespace UmamusumeResponseAnalyzer.Plugin
             await Runtime.LifecycleGate.WaitAsync();
             try
             {
-                if (Lifecycle.Phase == PluginLifecyclePhase.Stopped)
+                if (Runtime.Phase == PluginLifecyclePhase.Stopped)
                     return;
 
-                Lifecycle.Phase = PluginLifecyclePhase.ShuttingDown;
-                var plugins = LifecycleLoadedPlugins.AsEnumerable().Reverse().ToArray();
+                Runtime.Phase = PluginLifecyclePhase.ShuttingDown;
+                var plugins = Runtime.LoadedPlugins.AsEnumerable().Reverse().ToArray();
                 foreach (var plugin in plugins)
-                    _ = GenerationFor(plugin).Close();
+                    _ = LifecycleFor(plugin).Close();
                 List<Exception> failures = [];
                 foreach (var plugin in plugins)
                 {
                     try { await CleanupPluginAsync(plugin, flush: true); }
                     catch (Exception ex) { failures.Add(ex); }
                 }
-                LifecycleLoadedPlugins.Clear();
-                LifecycleMetadatas.Clear();
-                LifecycleFailedPlugins.Clear();
-                Lifecycle.Failures.Clear();
-                LifecycleContextGroups.Clear();
-                LifecycleContexts.Clear();
+                Runtime.LoadedPlugins.Clear();
+                Runtime.Metadatas.Clear();
+                Runtime.FailedPlugins.Clear();
+                Runtime.ContextGroups.Clear();
+                Runtime.Contexts.Clear();
                 ClearAnalyzerRegistrations();
-                ClearHostEventSubscriptions();
-                Lifecycle.Phase = PluginLifecyclePhase.Stopped;
+                Runtime.Phase = PluginLifecyclePhase.Stopped;
                 if (failures.Count != 0)
                     throw new AggregateException(i18n.CleanupFailed, failures);
             }

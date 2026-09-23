@@ -15,8 +15,8 @@ namespace UmamusumeResponseAnalyzer.Tests
         [Theory]
         [InlineData("{}")]
         [InlineData("core: {}")]
-        [InlineData("repository: {}")]
         [InlineData("plugin: {}")]
+        [InlineData("plugin: null")]
         [InlineData("updater: {}")]
         [InlineData("language: {}")]
         [InlineData("misc: {}")]
@@ -69,8 +69,6 @@ namespace UmamusumeResponseAnalyzer.Tests
 
         [Theory]
         [InlineData("core: null")]
-        [InlineData("repository: null")]
-        [InlineData("plugin: null")]
         [InlineData("updater: null")]
         [InlineData("language: null")]
         [InlineData("misc: null")]
@@ -79,7 +77,6 @@ namespace UmamusumeResponseAnalyzer.Tests
         [InlineData("core: {listen-port: ~}")]
         [InlineData("core: {listen-port: }")]
         [InlineData("core: {show-first-run-prompt: null}")]
-        [InlineData("repository: {targets: null}")]
         [InlineData("updater: {is-github-blocked: null}")]
         [InlineData("updater: {trainer-is-male: null}")]
         [InlineData("updater: {database-language: null}")]
@@ -91,7 +88,6 @@ namespace UmamusumeResponseAnalyzer.Tests
         [InlineData("updater: {custom-database-repository: &nil null}\ncore: {show-first-run-prompt: *nil}")]
         [InlineData("updater: {custom-database-repository: &nil null}\nlanguage: {selected: *nil}")]
         [InlineData("updater: {custom-database-repository: &nil null}\ncore: {listen-address: *nil}")]
-        [InlineData("updater: {custom-database-repository: &nil null}\nrepository: {targets: *nil}")]
         [InlineData("updater: {custom-database-repository: &nil null}\ncore: *nil")]
         public void Deserialize_ForbiddenNull_ThrowsWithSourceAndYamlPosition(string yaml)
         {
@@ -124,6 +120,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.DoesNotContain("removed-", saved);
             Assert.DoesNotContain("duplicate", saved);
             Assert.DoesNotContain("request-additional-header", saved);
+            Assert.DoesNotContain("plugin:", saved);
             Assert.Equal(saved, Config.Serialize(Config.Deserialize(saved, "saved.yaml")));
         }
 
@@ -158,9 +155,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Theory]
-        [InlineData("repository: {targets: [Cygames, null]}", "repository.targets[1]")]
         [InlineData("workspace-taskbar-title-order: [null]", "workspace-taskbar-title-order[0]")]
-        [InlineData("updater: {custom-database-repository: &nil null}\nrepository: {targets: [*nil]}", "repository.targets[0]")]
         [InlineData("updater: {custom-database-repository: &nil null}\nworkspace-taskbar-title-order: [first, *nil]", "workspace-taskbar-title-order[1]")]
         public void Deserialize_NullCollectionItem_ThrowsWithIndexedFieldPath(string yaml, string fieldPath)
         {
@@ -182,17 +177,13 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void Deserialize_Aliases_PreserveValuesAndListIdentity()
+        public void Deserialize_Aliases_PreserveValues()
         {
             var config = Config.Deserialize("""
-                repository: {targets: &names [a, b]}
-                workspace-taskbar-title-order: *names
                 updater: {trainer-is-male: &enabled false}
                 core: {show-first-run-prompt: *enabled}
                 """, "config.yaml");
 
-            Assert.Equal(["a", "b"], config.Repository.Targets);
-            Assert.Same(config.Repository.Targets, config.WorkspaceTaskbarTitleOrder);
             Assert.False(config.Updater.TrainerIsMale);
             Assert.False(config.Core.ShowFirstRunPrompt);
         }
@@ -212,8 +203,6 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             var yaml = """
                 core: {listen-port: 4693, show-first-run-prompt: true}
-                repository: {}
-                plugin: {}
                 updater: {is-github-blocked: false, trainer-is-male: true, database-language: ja-JP, force-use-github-to-update: false}
                 language: {selected: AutoDetect}
                 misc: {save-response-for-debug: false}
@@ -222,7 +211,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             var config = Config.Deserialize(yaml, "config.yaml");
 
             Assert.Equal("127.0.0.1", config.Core.ListenAddress);
-            Assert.Empty(config.Repository.Targets);
             Assert.Equal(string.Empty, config.Updater.CustomDatabaseRepository);
             Assert.Empty(config.WorkspaceTaskbarTitleOrder);
         }
@@ -235,7 +223,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             foreach (var field in new[]
                      {
                          "core:", "listen-address:", "listen-port:", "show-first-run-prompt:",
-                         "repository:", "targets:", "plugin:", "updater:", "is-github-blocked:",
+                         "updater:", "is-github-blocked:",
                          "trainer-is-male:", "database-language:", "custom-database-repository:",
                          "force-use-github-to-update:", "language:", "selected:", "misc:",
                          "save-response-for-debug:", "workspace-taskbar-title-order:"
@@ -246,7 +234,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.NotNull(restored.Core.ListenAddress);
             Assert.NotNull(restored.Updater.DatabaseLanguage);
             Assert.Equal(string.Empty, restored.Updater.CustomDatabaseRepository);
-            Assert.NotNull(restored.Repository.Targets);
             Assert.NotNull(restored.WorkspaceTaskbarTitleOrder);
         }
 
@@ -261,8 +248,6 @@ namespace UmamusumeResponseAnalyzer.Tests
                     ListenPort = 5000,
                     ShowFirstRunPrompt = false
                 },
-                Repository = new RepositoryConfig { Targets = ["a", "b", "c"] },
-                Plugin = new PluginConfig(),
                 Updater = new UpdaterConfig
                 {
                     TrainerIsMale = false,
@@ -283,7 +268,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Equal("0.0.0.0", restored.Core.ListenAddress);
             Assert.Equal(5000, restored.Core.ListenPort);
             Assert.False(restored.Core.ShowFirstRunPrompt);
-            Assert.Equal(["a", "b", "c"], restored.Repository.Targets);
             Assert.False(restored.Updater.TrainerIsMale);
             Assert.Equal("zh-CN", restored.Updater.DatabaseLanguage);
             Assert.Equal("https://example.com/repo", restored.Updater.CustomDatabaseRepository);
@@ -316,7 +300,6 @@ namespace UmamusumeResponseAnalyzer.Tests
         [Fact]
         public void OtherConfig_Defaults_MatchSource()
         {
-            Assert.Empty(new RepositoryConfig().Targets);
             Assert.False(new MiscConfig().SaveResponseForDebug);
 
             var updater = new UpdaterConfig();

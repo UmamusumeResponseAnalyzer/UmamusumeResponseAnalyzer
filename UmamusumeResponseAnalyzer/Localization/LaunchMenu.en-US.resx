@@ -171,12 +171,6 @@
   <data name="I18N_ListenAddress" xml:space="preserve">
     <value>Listen address</value>
   </data>
-  <data name="I18N_ServerTargets" xml:space="preserve">
-    <value>Server targets</value>
-  </data>
-  <data name="I18N_Unrestricted" xml:space="preserve">
-    <value>Unrestricted</value>
-  </data>
   <data name="I18N_DataLanguage" xml:space="preserve">
     <value>Data language</value>
   </data>
@@ -230,12 +224,6 @@
   </data>
   <data name="I18N_PhaseHost" xml:space="preserve">
     <value>Host</value>
-  </data>
-  <data name="I18N_PluginList" xml:space="preserve">
-    <value>Plugin list</value>
-  </data>
-  <data name="I18N_NoPlugins" xml:space="preserve">
-    <value>(No plugins loaded)</value>
   </data>
   <data name="I18N_HostCleanupFailed" xml:space="preserve">
     <value>Host cleanup failed.</value>
@@ -292,13 +280,10 @@
     <value>Listening on http://{0}:{1}</value>
   </data>
   <data name="I18N_PluginsLoaded" xml:space="preserve">
-    <value>Loaded {0} plugins. Press P to view the plugin list.</value>
+    <value>Loaded {0} plugins.</value>
   </data>
   <data name="I18N_PluginLoadFailed" xml:space="preserve">
     <value>Failed to load plugin {0}</value>
-  </data>
-  <data name="I18N_PluginAuthor" xml:space="preserve">
-    <value>{0} v{1}  by {2}</value>
   </data>
   <data name="I18N_PluginsFound" xml:space="preserve">
     <value>Found {0} available plugins.</value>
@@ -331,16 +316,10 @@
     <value>This computer</value>
   </data>
   <data name="I18N_ExternalNetworkNotice" xml:space="preserve">
-    <value>URA will accept requests from other devices; allow access through Windows Firewall when the listener first starts. Choose the UM:PD version you use.</value>
+    <value>URA will accept requests from other devices; allow access through Windows Firewall when the listener first starts.</value>
   </data>
   <data name="I18N_LocalNetworkNotice" xml:space="preserve">
-    <value>URA will only accept local requests; for emulator access, change the address to 0.0.0.0 in Options → Core and allow access through the firewall. Choose the UM:PD version you use.</value>
-  </data>
-  <data name="I18N_Cygames" xml:space="preserve">
-    <value>Japan (Cygames)</value>
-  </data>
-  <data name="I18N_Komoe" xml:space="preserve">
-    <value>Traditional Chinese (Komoe)</value>
+    <value>URA will only accept local requests; for emulator access, change the address to 0.0.0.0 in Options → Core and allow access through the firewall.</value>
   </data>
   <data name="I18N_FirstRunDataLanguage" xml:space="preserve">
     <value>Choose the event data language. Translations use content released in the corresponding client. This does not change effects or the total database size.</value>

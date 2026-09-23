@@ -49,7 +49,7 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            plugin.Dispose();
+            plugin.DisposeAsync().GetAwaiter().GetResult();
         }
 
         RunTargetedLegendDisplaySequence(ui);
@@ -184,8 +184,8 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            eventLogger.Dispose();
-            legend.Dispose();
+            eventLogger.DisposeAsync().GetAwaiter().GetResult();
+            legend.DisposeAsync().GetAwaiter().GetResult();
             ui.Bootstrap.SwitchTo();
         }
     }
@@ -234,8 +234,8 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            eventLogger.Dispose();
-            legend.Dispose();
+            eventLogger.DisposeAsync().GetAwaiter().GetResult();
+            legend.DisposeAsync().GetAwaiter().GetResult();
             ui.Bootstrap.SwitchTo();
         }
     }
@@ -277,8 +277,8 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            eventLogger.Dispose();
-            ramen.Dispose();
+            eventLogger.DisposeAsync().GetAwaiter().GetResult();
+            ramen.DisposeAsync().GetAwaiter().GetResult();
             ui.Bootstrap.SwitchTo();
         }
     }
@@ -484,8 +484,8 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            eventLogger.Dispose();
-            legend.Dispose();
+            eventLogger.DisposeAsync().GetAwaiter().GetResult();
+            legend.DisposeAsync().GetAwaiter().GetResult();
             ui.Bootstrap.SwitchTo();
         }
     }
@@ -578,7 +578,7 @@ static partial class EventLoggerRuntimeSmoke
         }
         finally
         {
-            plugin.Dispose();
+            plugin.DisposeAsync().GetAwaiter().GetResult();
         }
     }
 

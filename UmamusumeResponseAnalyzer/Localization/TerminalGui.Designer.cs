@@ -10,8 +10,8 @@
 
 namespace UmamusumeResponseAnalyzer.Localization {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -23,15 +23,15 @@ namespace UmamusumeResponseAnalyzer.Localization {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class TerminalGui {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal TerminalGui() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,7 +45,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   使用此强类型资源类，为所有资源查找
         ///   重写当前线程的 CurrentUICulture 属性。
@@ -59,7 +59,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Cancel 的本地化字符串。
         /// </summary>
@@ -68,7 +68,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Button_Cancel", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 No 的本地化字符串。
         /// </summary>
@@ -77,7 +77,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Button_No", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 OK 的本地化字符串。
         /// </summary>
@@ -86,7 +86,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Button_OK", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Yes 的本地化字符串。
         /// </summary>
@@ -95,7 +95,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Button_Yes", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The command is empty. 的本地化字符串。
         /// </summary>
@@ -104,70 +104,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_Empty", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   查找类似 (No known plugins) 的本地化字符串。
-        /// </summary>
-        internal static string Command_NoPlugins {
-            get {
-                return ResourceManager.GetString("Command_NoPlugins", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 by {0} 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginAuthor {
-            get {
-                return ResourceManager.GetString("Command_PluginAuthor", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 failed 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginStateFailed {
-            get {
-                return ResourceManager.GetString("Command_PluginStateFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 loaded 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginStateLoaded {
-            get {
-                return ResourceManager.GetString("Command_PluginStateLoaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 not loaded 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginStateUnloaded {
-            get {
-                return ResourceManager.GetString("Command_PluginStateUnloaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugins 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginsTitle {
-            get {
-                return ResourceManager.GetString("Command_PluginsTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Usage: /plugin [list] 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginUsage {
-            get {
-                return ResourceManager.GetString("Command_PluginUsage", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   查找类似 A quoted workspace title must not be empty or contain only whitespace. 的本地化字符串。
         /// </summary>
@@ -176,7 +113,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_QuotedTitleEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A quoted workspace title must not have content after the closing quote. 的本地化字符串。
         /// </summary>
@@ -185,7 +122,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_QuotedTitleTrailingContent", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A quoted workspace title must not end with a backslash. 的本地化字符串。
         /// </summary>
@@ -194,7 +131,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_QuotedTitleTrailingSlash", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The quoted workspace title is missing its closing quote. 的本地化字符串。
         /// </summary>
@@ -203,7 +140,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_QuotedTitleUnclosed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 A quoted workspace title does not support escape \{0}; only \&quot; and \\ are supported. 的本地化字符串。
         /// </summary>
@@ -212,7 +149,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_QuotedTitleUnsupportedEscape", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Unknown command: /{0} 的本地化字符串。
         /// </summary>
@@ -221,7 +158,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_Unknown", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace not found: {0} 的本地化字符串。
         /// </summary>
@@ -230,7 +167,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_WorkspaceNotFound", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspaces 的本地化字符串。
         /// </summary>
@@ -239,7 +176,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_WorkspacesTitle", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Usage: /workspace | /workspace switch [&lt;title&gt;|&quot;&lt;title&gt;&quot;] | /workspace list 的本地化字符串。
         /// </summary>
@@ -248,7 +185,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Command_WorkspaceUsage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Command completion failed: {0} 的本地化字符串。
         /// </summary>
@@ -257,7 +194,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CommandMode_CompletionFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Tab complete · ↑↓ history · Esc cancel 的本地化字符串。
         /// </summary>
@@ -266,7 +203,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CommandMode_Help", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 +{0} more 的本地化字符串。
         /// </summary>
@@ -275,7 +212,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CommandMode_MoreCandidates", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Command mode 的本地化字符串。
         /// </summary>
@@ -284,7 +221,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("CommandMode_Title", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 File selection canceled. 的本地化字符串。
         /// </summary>
@@ -293,7 +230,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_FileSelectionCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Game executable 的本地化字符串。
         /// </summary>
@@ -302,7 +239,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_GameExecutable", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Input was canceled. 的本地化字符串。
         /// </summary>
@@ -311,7 +248,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_InputCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The menu was canceled. 的本地化字符串。
         /// </summary>
@@ -320,7 +257,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_MenuCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The menu must not be empty. 的本地化字符串。
         /// </summary>
@@ -329,7 +266,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_MenuEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Multiple selection was canceled. 的本地化字符串。
         /// </summary>
@@ -338,7 +275,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_MultiSelectionCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The multiple-selection list must not be empty. 的本地化字符串。
         /// </summary>
@@ -347,7 +284,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_MultiSelectionEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The operation was canceled. 的本地化字符串。
         /// </summary>
@@ -356,7 +293,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_OperationCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Processing 的本地化字符串。
         /// </summary>
@@ -365,7 +302,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_Processing", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Terminal.Gui dialogs must run on the UI owner thread. 的本地化字符串。
         /// </summary>
@@ -374,7 +311,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_RequiresOwnerThread", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Press Enter to return 的本地化字符串。
         /// </summary>
@@ -383,7 +320,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_ReturnPrompt", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Selection was canceled. 的本地化字符串。
         /// </summary>
@@ -392,7 +329,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_SelectionCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The selection list must not be empty. 的本地化字符串。
         /// </summary>
@@ -401,7 +338,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Dialog_SelectionEmpty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 TerminalUi is already initialized; UiHost cannot be replaced within this process. 的本地化字符串。
         /// </summary>
@@ -410,7 +347,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_AlreadyInitialized", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost stopped before the accepted flush event was applied. 的本地化字符串。
         /// </summary>
@@ -419,7 +356,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_FlushAbandoned", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost stopped before the accepted navigation event was applied. 的本地化字符串。
         /// </summary>
@@ -428,7 +365,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_NavigationAbandoned", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 TerminalUi has not been initialized. 的本地化字符串。
         /// </summary>
@@ -437,7 +374,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_NotInitialized", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost root creation failed; new UI operations are not accepted. 的本地化字符串。
         /// </summary>
@@ -446,7 +383,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_RootCreationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost.RunAsync can only be called once. 的本地化字符串。
         /// </summary>
@@ -455,7 +392,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_RunOnce", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost is stopped; new UI operations are not accepted. 的本地化字符串。
         /// </summary>
@@ -464,7 +401,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_Stopped", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost is stopping; new UI operations are not accepted. 的本地化字符串。
         /// </summary>
@@ -473,7 +410,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_Stopping", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Config.WorkspaceTaskbarTitleOrder must not be null. 的本地化字符串。
         /// </summary>
@@ -482,7 +419,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_TaskbarOrderNull", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Unknown UiHost ingress event: {0} 的本地化字符串。
         /// </summary>
@@ -491,7 +428,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_UnknownIngressEvent", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost workspace viewport has not been created. 的本地化字符串。
         /// </summary>
@@ -500,7 +437,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_ViewportNotCreated", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 UiHost window has not been created. 的本地化字符串。
         /// </summary>
@@ -509,7 +446,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Host_WindowNotCreated", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Hotkey handling failed: {0} 的本地化字符串。
         /// </summary>
@@ -518,7 +455,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Hotkey_HandlerFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 The UI input sink is already bound; the Host cannot be replaced. 的本地化字符串。
         /// </summary>
@@ -527,7 +464,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Hotkey_InputSinkAlreadyBound", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Hotkey popup requires a bound UI input sink. 的本地化字符串。
         /// </summary>
@@ -536,7 +473,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Hotkey_PopupRequiresInputSink", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Ctrl+{0} is reserved by the terminal and cannot be registered as a hotkey. 的本地化字符串。
         /// </summary>
@@ -545,7 +482,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Hotkey_Reserved", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 {0}s 的本地化字符串。
         /// </summary>
@@ -554,7 +491,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Notification_Countdown", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 {0} more notifications 的本地化字符串。
         /// </summary>
@@ -563,7 +500,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Notification_Remaining", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 ERROR 的本地化字符串。
         /// </summary>
@@ -572,7 +509,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Severity_Error", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 INFO 的本地化字符串。
         /// </summary>
@@ -581,7 +518,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Severity_Info", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 OK 的本地化字符串。
         /// </summary>
@@ -590,7 +527,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Severity_Success", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 TRACE 的本地化字符串。
         /// </summary>
@@ -599,7 +536,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Severity_Trace", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 WARN 的本地化字符串。
         /// </summary>
@@ -608,7 +545,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Severity_Warning", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Bootstrap workspace &apos;{0}&apos; cannot be removed. 的本地化字符串。
         /// </summary>
@@ -617,7 +554,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_BootstrapCannotRemove", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Startup 的本地化字符串。
         /// </summary>
@@ -626,7 +563,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_BootstrapTitle", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 WorkspaceContent factory returned null. 的本地化字符串。
         /// </summary>
@@ -635,7 +572,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_ContentFactoryNull", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace &apos;{0}&apos; is not the active registered generation. 的本地化字符串。
         /// </summary>
@@ -644,7 +581,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_GenerationNotActive", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace &apos;{0}&apos; could not release mouse capture from the controls being removed; view detachment was aborted. 的本地化字符串。
         /// </summary>
@@ -653,7 +590,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_MouseCaptureReleaseFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 {0} has no output yet. 的本地化字符串。
         /// </summary>
@@ -662,7 +599,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_NoOutput", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace panel &apos;{0}&apos; is not registered. 的本地化字符串。
         /// </summary>
@@ -671,7 +608,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_PanelNotRegistered", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace panel &apos;{0}&apos; factory returned an already attached View. 的本地化字符串。
         /// </summary>
@@ -680,7 +617,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_PanelViewAttached", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace panel &apos;{0}&apos; factory returned a View already disposed by the viewport. 的本地化字符串。
         /// </summary>
@@ -689,7 +626,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_PanelViewDisposed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace panel &apos;{0}&apos; factory returned a View already owned by the viewport. 的本地化字符串。
         /// </summary>
@@ -698,7 +635,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_PanelViewOwned", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace &apos;{0}&apos; was removed and this handle cannot be used. 的本地化字符串。
         /// </summary>
@@ -707,7 +644,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_Removed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Switch to {0} 的本地化字符串。
         /// </summary>
@@ -716,7 +653,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
                 return ResourceManager.GetString("Workspace_SwitchDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Workspace title must not be empty. 的本地化字符串。
         /// </summary>

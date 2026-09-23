@@ -1,7 +1,6 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Runtime.CompilerServices;
 using UmamusumeResponseAnalyzer.Commands;
-using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
 
@@ -25,8 +24,7 @@ public sealed class HostCommandsTests
             var (ordinary, _) = registry.Create("Startup");
             var snapshot = new HostCommands.Snapshot(
                 registry.SnapshotRegistrationOrder().Select(workspace => new HostCommands.WorkspaceItem(workspace)).ToArray(),
-                registry.Bootstrap,
-                []);
+                registry.Bootstrap);
 
             Assert.Equal("启动", registry.Bootstrap.Title);
             Assert.Equal(displayTitle, registry.Bootstrap.DisplayTitle);
@@ -49,10 +47,10 @@ public sealed class HostCommandsTests
                 HostCommands.Execute("/plugin reload", snapshot));
             Assert.Equal((i18n.Command_WorkspaceUsage, UiSeverity.Warning),
                 (workspaceHelp.Message, workspaceHelp.Severity));
-            Assert.Equal((i18n.Command_PluginUsage, UiSeverity.Warning),
+            Assert.Equal((string.Format(i18n.Command_Unknown, "plugin"), UiSeverity.Warning),
                 (pluginHelp.Message, pluginHelp.Severity));
             Assert.StartsWith(usagePrefix, workspaceHelp.Message!);
-            Assert.EndsWith("/plugin [list]", pluginHelp.Message!);
+            Assert.Contains("plugin", pluginHelp.Message!);
             var parseError = Assert.Throws<FormatException>(() =>
                 HostCommands.ParseWorkspaceTitle("\"title\\n\""));
             Assert.Equal(string.Format(i18n.Command_QuotedTitleUnsupportedEscape, "n"), parseError.Message);
@@ -67,7 +65,7 @@ public sealed class HostCommandsTests
     static HostCommands.Snapshot BootstrapOnlySnapshot()
     {
         var registry = new WorkspaceRegistry();
-        return new([new(registry.Bootstrap)], registry.Bootstrap, []);
+        return new([new(registry.Bootstrap)], registry.Bootstrap);
     }
 
     [Fact]
@@ -121,7 +119,7 @@ public sealed class HostCommandsTests
         Assert.Equal((i18n.Command_Empty, UiSeverity.Warning), (empty.Message, empty.Severity));
         Assert.Equal((string.Format(i18n.Command_Unknown, "missing"), UiSeverity.Warning), (unknown.Message, unknown.Severity));
         Assert.Equal((i18n.Command_WorkspaceUsage, UiSeverity.Warning), (workspaceUsage.Message, workspaceUsage.Severity));
-        Assert.Equal((i18n.Command_PluginUsage, UiSeverity.Warning), (pluginUsage.Message, pluginUsage.Severity));
+        Assert.Equal((string.Format(i18n.Command_Unknown, "plugin"), UiSeverity.Warning), (pluginUsage.Message, pluginUsage.Severity));
     }
 
     [Fact]
@@ -137,8 +135,7 @@ public sealed class HostCommandsTests
                     workspace,
                     ReferenceEquals(workspace, first) ? "Ctrl+1" : null))
                 .ToArray(),
-            second,
-            []);
+            second);
 
         var list = Assert.IsType<HostCommands.Result>(
             HostCommands.Execute("/workspace list", snapshot));
@@ -238,7 +235,7 @@ public sealed class HostCommandsTests
     {
         var registry = new WorkspaceRegistry();
         var (workspace, _) = registry.Create("Two  Spaces");
-        var snapshot = new HostCommands.Snapshot([new(workspace)], workspace, []);
+        var snapshot = new HostCommands.Snapshot([new(workspace)], workspace);
 
         var switched = Assert.IsType<HostCommands.Result>(
             HostCommands.Execute("/workspace switch Two  Spaces", snapshot));
@@ -254,44 +251,25 @@ public sealed class HostCommandsTests
     [Theory]
     [InlineData("/plugin")]
     [InlineData("/plugin list")]
-    public void PluginList_UsesSnapshotDisplayModel(string command)
+    public void PluginCommandsAreUnknown(string command)
     {
-        var plugins = new PluginManager.PluginRuntimeStatus[]
-        {
-            new("Internal", "显示名", "Author", new(1, 2, 3), true, true, null),
-            new("Plain", "Plain", string.Empty, null, false, true, null),
-            new("Broken", "Broken", string.Empty, null, false, true, "AbsentLibrary missing")
-        };
-        var snapshot = BootstrapOnlySnapshot() with
-        {
-            Plugins = plugins
-        };
-
-        var list = Assert.IsType<HostCommands.Result>(
-            HostCommands.Execute(command, snapshot));
-
-        var display = Assert.IsType<HostCommands.Display>(list.Display);
-        Assert.Equal(i18n.Command_PluginsTitle, display.Title);
-        Assert.Equal(
-            [
-                $"{i18n.Command_PluginStateLoaded} Internal (显示名) v1.2.3 {string.Format(i18n.Command_PluginAuthor, "Author")}",
-                $"{i18n.Command_PluginStateUnloaded} Plain",
-                $"{i18n.Command_PluginStateFailed} Broken — AbsentLibrary missing"
-            ],
-            display.Items.Select(item => item.Text).ToArray());
+        var snapshot = BootstrapOnlySnapshot();
+        var result = Assert.IsType<HostCommands.Result>(HostCommands.Execute(command, snapshot));
+        Assert.Equal((string.Format(i18n.Command_Unknown, "plugin"), UiSeverity.Warning), (result.Message, result.Severity));
+        Assert.Empty(HostCommands.Complete(command, snapshot));
     }
 
     [Theory]
     [InlineData("load")]
     [InlineData("unload")]
     [InlineData("reload")]
-    public void RemovedCommandsOnlyReturnUsage(string command)
+    public void RemovedCommandsAreUnknown(string command)
     {
         var snapshot = BootstrapOnlySnapshot();
         var result = Assert.IsType<HostCommands.Result>(HostCommands.Execute($"/plugin {command} Missing", snapshot));
-        Assert.Equal((i18n.Command_PluginUsage, UiSeverity.Warning), (result.Message, result.Severity));
+        Assert.Equal((string.Format(i18n.Command_Unknown, "plugin"), UiSeverity.Warning), (result.Message, result.Severity));
         Assert.Empty(HostCommands.Complete($"/plugin {command} ", snapshot));
-        Assert.Equal(["/plugin list"], HostCommands.Complete("/plugin ", snapshot));
+        Assert.Empty(HostCommands.Complete("/plugin ", snapshot));
     }
 
     [Fact]
@@ -305,10 +283,9 @@ public sealed class HostCommandsTests
             registry.SnapshotRegistrationOrder()
                 .Select(workspace => new HostCommands.WorkspaceItem(workspace))
                 .ToArray(),
-            alpha,
-            []);
+            alpha);
 
-        Assert.Equal(["/plugin", "/workspace"], HostCommands.Complete("/", snapshot));
+        Assert.Equal(["/workspace"], HostCommands.Complete("/", snapshot));
         Assert.Equal(["/workspace switch"], HostCommands.Complete("/workspace s", snapshot));
         Assert.Equal(
             ["/workspace switch \"Second \\\"Workspace\\\"\""],
@@ -316,9 +293,7 @@ public sealed class HostCommandsTests
         Assert.Equal(
             ["/workspace switch \"Back\\\\Slash\""],
             HostCommands.Complete("/workspace switch B", snapshot));
-        Assert.Equal(
-            ["/plugin list"],
-            HostCommands.Complete("/plugin ", snapshot));
+        Assert.Empty(HostCommands.Complete("/plugin ", snapshot));
 
         var first = HostCommands.Complete("/workspace switch ", snapshot);
         var second = HostCommands.Complete("/workspace switch ", snapshot);

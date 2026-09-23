@@ -1,7 +1,6 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Input;
 using UmamusumeResponseAnalyzer.Commands;
-using UmamusumeResponseAnalyzer.Plugin;
 
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
@@ -18,7 +17,6 @@ internal sealed class UiHostSession
         new(ReferenceEqualityComparer.Instance);
     readonly Queue<UiHostIngress> events = [];
 
-    IReadOnlyList<PluginManager.PluginRuntimeStatus> plugins = [];
     Lifecycle lifecycle;
     long panelSequence;
     bool drainRunning;
@@ -265,13 +263,6 @@ internal sealed class UiHostSession
         }
     }
 
-    internal void SetPluginSnapshot(
-        IReadOnlyList<PluginManager.PluginRuntimeStatus> plugins)
-    {
-        lock (gate)
-            this.plugins = plugins;
-    }
-
     internal void ClaimRun()
     {
         lock (gate)
@@ -463,8 +454,7 @@ internal sealed class UiHostSession
             registry.SnapshotRegistrationOrder().Select(workspace => new HostCommands.WorkspaceItem(
                 workspace,
                 workspaceHotkeys.GetValueOrDefault(workspace)?.ShortcutText)).ToArray(),
-            registry.Current,
-            plugins);
+            registry.Current);
 
     bool AdmitLocked(UiHostIngress uiEvent)
     {

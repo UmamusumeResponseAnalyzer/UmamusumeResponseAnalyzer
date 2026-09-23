@@ -177,15 +177,6 @@
   <data name="Tabs_Plugin_Title" xml:space="preserve">
     <value>Plugins</value>
   </data>
-  <data name="Tabs_Repository_Targets" xml:space="preserve">
-    <value>Server targets</value>
-  </data>
-  <data name="Tabs_Repository_TargetsPrompt" xml:space="preserve">
-    <value>Enter server targets, separated by commas; leave empty for no restriction. Use Cygames for Japan or Komoe for Traditional Chinese.</value>
-  </data>
-  <data name="Tabs_Repository_Title" xml:space="preserve">
-    <value>Repository</value>
-  </data>
   <data name="Tabs_Updater_CustomDatabaseRepositoryPrompt" xml:space="preserve">
     <value>Enter the custom database repository URL: </value>
   </data>

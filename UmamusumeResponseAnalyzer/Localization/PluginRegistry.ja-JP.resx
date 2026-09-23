@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -45,9 +45,6 @@
   <data name="AmbiguousSource" xml:space="preserve">
     <value>プラグインの InternalName に複数のソースが対応するため、更新を判定できません: {0}</value>
   </data>
-  <data name="LoadedVersionMissing" xml:space="preserve">
-    <value>読み込まれたプラグインにバージョンがありません: {0}</value>
-  </data>
   <data name="InvalidDownloadReference" xml:space="preserve">
     <value>プラグインのダウンロード参照が無効です。</value>
   </data>
@@ -84,9 +81,6 @@
   <data name="RootManifestRequired" xml:space="preserve">
     <value>ZIP のルートには manifest.json が 1 つだけ必要です。</value>
   </data>
-  <data name="StrictJsonRequired" xml:space="preserve">
-    <value>manifest.json は厳密な JSON 形式ではありません。</value>
-  </data>
   <data name="PackageNameMismatch" xml:space="preserve">
     <value>ZIP ファイル名は manifest の InternalName と一致する必要があります: zip={0}, manifest={1}</value>
   </data>
@@ -98,18 +92,6 @@
   </data>
   <data name="ManifestObjectRequired" xml:space="preserve">
     <value>manifest.json のルートは object である必要があります。</value>
-  </data>
-  <data name="DuplicateManifestField" xml:space="preserve">
-    <value>manifest のフィールドが重複しています: {0}</value>
-  </data>
-  <data name="ManifestSchemaMismatch" xml:space="preserve">
-    <value>manifest のスキーマが一致しません: missing=[{0}], unexpected=[{1}]</value>
-  </data>
-  <data name="ManifestTypeInvalid" xml:space="preserve">
-    <value>manifest {0} の型が無効です: expected={1}, actual={2}</value>
-  </data>
-  <data name="ManifestStringsRequired" xml:space="preserve">
-    <value>manifest {0} には文字列のみを含めることができます。</value>
   </data>
   <data name="ClrMetadataMissing" xml:space="preserve">
     <value>メインアセンブリに CLR メタデータがありません。</value>
@@ -153,8 +135,8 @@
   <data name="LifecyclePhaseInvalid" xml:space="preserve">
     <value>phase={0} ではプラグイン操作 {1} を実行できません。</value>
   </data>
-  <data name="GenerationMissing" xml:space="preserve">
-    <value>プラグインに runtime generation がありません: {0}</value>
+  <data name="LifecycleMissing" xml:space="preserve">
+    <value>プラグインのライフサイクル状態がありません: {0}</value>
   </data>
   <data name="InitializationTransactionBusy" xml:space="preserve">
     <value>プラグインのライフサイクルトランザクションが実行中のため、再初期化できません。</value>
@@ -195,9 +177,6 @@
   <data name="CannotCreatePluginInstance" xml:space="preserve">
     <value>プラグインインスタンスを作成できません: type={0}</value>
   </data>
-  <data name="LoadingCleanupFailed" xml:space="preserve">
-    <value>プラグインの読み込みとクリーンアップに失敗しました。</value>
-  </data>
   <data name="LoadingFailed" xml:space="preserve">
     <value>プラグインの読み込みに失敗しました: plugin={0}, phase={1}</value>
   </data>
@@ -225,26 +204,23 @@
   <data name="CleanupFailed" xml:space="preserve">
     <value>プラグインのクリーンアップに失敗しました。</value>
   </data>
-  <data name="GenerationAlreadyRunning" xml:space="preserve">
-    <value>プラグインの generation は既に初期化中、または実行中です: {0}</value>
+  <data name="LifecycleAlreadyRunning" xml:space="preserve">
+    <value>プラグインのライフサイクルは既に初期化中、または実行中です: {0}</value>
   </data>
-  <data name="GenerationNotInitializing" xml:space="preserve">
-    <value>プラグインの generation は初期化中ではありません: {0}</value>
+  <data name="LifecycleNotInitializing" xml:space="preserve">
+    <value>プラグインのライフサイクルは初期化中ではありません: {0}</value>
   </data>
-  <data name="GenerationStillInitializing" xml:space="preserve">
-    <value>プラグインの generation はまだ初期化中です: {0}</value>
-  </data>
-  <data name="GenerationCloseFailed" xml:space="preserve">
-    <value>プラグインの generation を閉じることができませんでした。</value>
+  <data name="LifecycleStillInitializing" xml:space="preserve">
+    <value>プラグインのライフサイクルはまだ初期化中です: {0}</value>
   </data>
   <data name="BackgroundOperationFailed" xml:space="preserve">
     <value>プラグインのバックグラウンド操作に失敗しました: plugin={0}, {1}</value>
   </data>
-  <data name="GenerationUnavailable" xml:space="preserve">
-    <value>プラグインの generation は閉じているか、まだ開かれていません: {0}</value>
+  <data name="LifecycleUnavailable" xml:space="preserve">
+    <value>プラグインのライフサイクルは閉じているか、まだ開かれていません: {0}</value>
   </data>
-  <data name="EventHandlerFailed" xml:space="preserve">
-    <value>プラグインのイベント処理に失敗しました: plugin={0}, {1}</value>
+  <data name="StartFailed" xml:space="preserve">
+    <value>プラグインの起動に失敗しました: plugin={0}, {1}</value>
   </data>
   <data name="RegistrationAlreadyCommitted" xml:space="preserve">
     <value>プラグインの登録ステージは既に確定しています: {0}</value>
@@ -265,7 +241,7 @@
     <value>プログラムによる {0} analyzer</value>
   </data>
   <data name="RegistrationPhaseInvalid" xml:space="preserve">
-    <value>Analyzer とバックグラウンド操作は Initialize またはホストが実行する OnStarted コールバック内でのみ登録できます: plugin={0}</value>
+    <value>Analyzer は Initialize またはホストが実行する StartAsync 内でのみ登録できます: plugin={0}</value>
   </data>
   <data name="ConcreteHostPayloadRequired" xml:space="preserve">
     <value>Analyzer の payload は Host 内に存在する、型パラメーターが確定した具象 Gallop DTO である必要があります: {0}</value>

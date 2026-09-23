@@ -15,7 +15,7 @@
 | `UraPluginManifestPath` | `$(TargetDir)manifest.json`；值为裸 `manifest.json` 时也按 TargetDir 解析 |
 | `UraPluginPackagePath` | `$(BaseOutputPath)$(Configuration)\$(AssemblyName).zip` |
 
-manifest 要求 `PluginAuthor`、`PluginInternalName`、`PluginDisplayName` 和 `Version`；`PluginInternalName` 必须等于 `AssemblyName`，`Version` 必须可解析为 `System.Version`。可选项为 `PluginDescription`、`PluginCategory`、`PluginChangelog`、`PluginRepositoryUrl`、`PluginHomepage`、`PluginDependencies` 和 `PluginTargets`。后两项以逗号或分号分隔，写成数组；`LastUpdate` 为构建时的 UTC Unix 秒数。
+manifest 要求 `PluginAuthor`、`PluginInternalName`、`PluginDisplayName` 和 `Version`；`PluginInternalName` 必须等于 `AssemblyName`，`Version` 必须可解析为 `System.Version`。可选项为 `PluginDescription`、`PluginCategory`、`PluginChangelog`、`PluginRepositoryUrl`、`PluginHomepage`和 `PluginDependencies`。依赖名称以逗号或分号分隔，写成数组；`LastUpdate` 为构建时的 UTC Unix 秒数。
 
 manifest 序列化在运行时加载构建宿主的 `Newtonsoft.Json.dll`：`dotnet msbuild` 使用 `MSBuildToolsPath`，Visual Studio full-framework MSBuild（含 `amd64` 入口）使用 `MSBuildToolsPath32`。资产选择同样使用构建环境的 `NuGet.ProjectModel.dll` 读取 `project.assets.json`。
 

@@ -171,12 +171,6 @@
   <data name="I18N_ListenAddress" xml:space="preserve">
     <value>监听地址</value>
   </data>
-  <data name="I18N_ServerTargets" xml:space="preserve">
-    <value>服务器目标</value>
-  </data>
-  <data name="I18N_Unrestricted" xml:space="preserve">
-    <value>未限制</value>
-  </data>
   <data name="I18N_DataLanguage" xml:space="preserve">
     <value>数据语言</value>
   </data>
@@ -230,12 +224,6 @@
   </data>
   <data name="I18N_PhaseHost" xml:space="preserve">
     <value>宿主</value>
-  </data>
-  <data name="I18N_PluginList" xml:space="preserve">
-    <value>插件列表</value>
-  </data>
-  <data name="I18N_NoPlugins" xml:space="preserve">
-    <value>（没有加载任何插件）</value>
   </data>
   <data name="I18N_HostCleanupFailed" xml:space="preserve">
     <value>Host cleanup 失败。</value>
@@ -292,13 +280,10 @@
     <value>监听 http://{0}:{1}</value>
   </data>
   <data name="I18N_PluginsLoaded" xml:space="preserve">
-    <value>已加载 {0} 个插件。按 P 查看插件列表。</value>
+    <value>已加载 {0} 个插件。</value>
   </data>
   <data name="I18N_PluginLoadFailed" xml:space="preserve">
     <value>插件 {0} 加载失败</value>
-  </data>
-  <data name="I18N_PluginAuthor" xml:space="preserve">
-    <value>{0} v{1}  作者 {2}</value>
   </data>
   <data name="I18N_PluginsFound" xml:space="preserve">
     <value>发现 {0} 个可用插件。</value>
@@ -331,16 +316,10 @@
     <value>此计算机</value>
   </data>
   <data name="I18N_ExternalNetworkNotice" xml:space="preserve">
-    <value>URA 将接受其它设备的请求；首次监听时请允许 Windows 防火墙放行。请选择所使用的 UM:PD 版本。</value>
+    <value>URA 将接受其它设备的请求；首次监听时请允许 Windows 防火墙放行。</value>
   </data>
   <data name="I18N_LocalNetworkNotice" xml:space="preserve">
-    <value>URA 将仅接受本机请求；模拟器接入时需在「选项 → 核心」改为 0.0.0.0 并放行防火墙。请选择所使用的 UM:PD 版本。</value>
-  </data>
-  <data name="I18N_Cygames" xml:space="preserve">
-    <value>日服(Cygames)</value>
-  </data>
-  <data name="I18N_Komoe" xml:space="preserve">
-    <value>繁中服(Komoe)</value>
+    <value>URA 将仅接受本机请求；模拟器接入时需在「选项 → 核心」改为 0.0.0.0 并放行防火墙。</value>
   </data>
   <data name="I18N_FirstRunDataLanguage" xml:space="preserve">
     <value>请选择事件数据语言，选择繁中等将会使用对应客户端已实装的内容翻译。不会影响实际效果及数据库总大小。</value>

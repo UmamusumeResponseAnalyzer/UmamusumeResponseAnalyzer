@@ -241,7 +241,7 @@ sealed class ReplayHarness(string corpusPath, WorkspaceSmokeSession ui)
 
     readonly ReplaySummary summary = new(corpusPath);
     readonly ReplayAnalyzerDispatcher dispatcher = new();
-    readonly List<LoadedReplayPlugin> plugins = [];
+    readonly List<IPlugin> plugins = [];
     CorpusFile? pendingRequestFile;
     HttpMessageEnvelope? pendingRequest;
 
@@ -277,33 +277,16 @@ sealed class ReplayHarness(string corpusPath, WorkspaceSmokeSession ui)
         {
             try
             {
-                foreach (var loaded in plugins)
+                foreach (var plugin in plugins)
                 {
                     try
                     {
-                        await loaded.Context.StopAsync();
+                        await plugin.DisposeAsync();
                     }
                     catch (Exception ex)
                     {
                         summary.PluginDisposeErrors.Add(
-                            $"{PluginManager.InternalName(loaded.Plugin)} background: {ex.Message}");
-                    }
-                }
-
-                foreach (var loaded in plugins)
-                {
-                    try
-                    {
-                        loaded.Plugin.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        summary.PluginDisposeErrors.Add(
-                            $"{PluginManager.InternalName(loaded.Plugin)}: {ex.Message}");
-                    }
-                    finally
-                    {
-                        loaded.Context.Dispose();
+                            $"{PluginManager.InternalName(plugin)}: {ex.Message}");
                     }
                 }
 
@@ -443,7 +426,7 @@ sealed class ReplayHarness(string corpusPath, WorkspaceSmokeSession ui)
         foreach (var plugin in candidates)
         {
             var context = new ReplayPluginContext(plugin, ui.Application, dispatcher);
-            plugins.Add(new(plugin, context));
+            plugins.Add(plugin);
             try
             {
                 dispatcher.RegisterAttributeAnalyzers(plugin);
@@ -458,8 +441,8 @@ sealed class ReplayHarness(string corpusPath, WorkspaceSmokeSession ui)
             }
         }
 
-        foreach (var loaded in plugins)
-            await loaded.Context.StartAsync();
+        foreach (var plugin in plugins)
+            await plugin.StartAsync();
     }
 
     void PrepareGamePacketCollectorConfig()
@@ -631,61 +614,17 @@ sealed record CorpusFile(int Sequence, string Name, string Path);
 sealed class UnrecognizedEndpointException(string canonicalUrl)
     : Exception($"未识别 Gallop endpoint: {canonicalUrl}");
 
-sealed record LoadedReplayPlugin(IPlugin Plugin, ReplayPluginContext Context);
-
 sealed class ReplayPluginContext(
     IPlugin plugin,
     IApplication application,
-    ReplayAnalyzerDispatcher dispatcher) : IPluginContext, IDisposable
+    ReplayAnalyzerDispatcher dispatcher) : IPluginContext
 {
-    readonly ReplayHostEvents events = new();
-    readonly CancellationTokenSource lifetime = new();
-    readonly List<Task> backgroundTasks = [];
-
     public IApplication Application { get; } = application;
-    public IPluginHostEvents Events => events;
     public IPluginAnalyzerRegistry Analyzers { get; } = new ReplayAnalyzerRegistry(plugin, dispatcher);
     public bool IsPluginAvailable(string internalName) => false;
 
-    public void RunBackground(Func<CancellationToken, ValueTask> operation)
-    {
-        ArgumentNullException.ThrowIfNull(operation);
-        backgroundTasks.Add(Task.Run(() => operation(lifetime.Token).AsTask()));
-    }
-
-    internal ValueTask StartAsync()
-        => events.StartAsync(lifetime.Token);
-
-    internal async ValueTask StopAsync()
-    {
-        lifetime.Cancel();
-        try
-        {
-            await Task.WhenAll(backgroundTasks).WaitAsync(TimeSpan.FromSeconds(10));
-        }
-        catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
-        {
-        }
-    }
-
-    public void Dispose() => lifetime.Dispose();
-}
-
-sealed class ReplayHostEvents : IPluginHostEvents
-{
-    readonly List<Func<CancellationToken, ValueTask>> startedHandlers = [];
-
-    public void OnStarted(Func<CancellationToken, ValueTask> handler)
-    {
-        ArgumentNullException.ThrowIfNull(handler);
-        startedHandlers.Add(handler);
-    }
-
-    internal async ValueTask StartAsync(CancellationToken cancellationToken)
-    {
-        foreach (var handler in startedHandlers)
-            await handler(cancellationToken);
-    }
+    public void ReportBackgroundFailure(Exception error)
+        => throw new InvalidOperationException("Plugin background work failed.", error);
 }
 
 sealed class ReplayAnalyzerRegistry(
@@ -705,7 +644,7 @@ sealed class ReplayAnalyzerDispatcher
     readonly List<AnalyzerRegistration> registrations = [];
 
     internal void RegisterAttributeAnalyzers(IPlugin plugin)
-        => registrations.AddRange(PluginManager.CreateRegistrationPlan(plugin).Analyzers);
+        => registrations.AddRange(PluginManager.CreateAttributeRegistrations(plugin));
 
     internal void Add<TPayload>(
         IPlugin plugin,
