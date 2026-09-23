@@ -75,6 +75,7 @@ public sealed class WorkspaceLifecycleTests(PluginRuntimeFixture fixture) : IDis
     public async Task GlobalLogsRenderInAdmissionOrderWithSource()
     {
         await terminal.ResizeAsync(120, 30);
+        await terminal.RedrawAsync();
         var bootstrap = host.Bootstrap;
         var run = Guid.NewGuid().ToString("N")[..8];
         var expected = Enumerable.Range(0, 4)
@@ -91,7 +92,7 @@ public sealed class WorkspaceLifecycleTests(PluginRuntimeFixture fixture) : IDis
         var positions = expected
             .Select(text => screen.IndexOf(text, StringComparison.Ordinal))
             .ToArray();
-        Assert.All(positions, position => Assert.True(position >= 0));
+        Assert.All(positions, position => Assert.True(position >= 0, screen));
         Assert.True(positions.SequenceEqual(positions.Order()));
         Assert.Contains("[Admission]", screen, StringComparison.Ordinal);
     }
