@@ -10,7 +10,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class UiHostRenderTests : IDisposable
 {
     readonly TerminalGuiTestApp terminal;
@@ -960,45 +960,10 @@ public sealed class UiHostShutdownProcessTests
             });
 
     [Fact]
-    public Task ShutdownDoesNotWaitForActiveCommand()
+    public Task PluginShutdownAndFlushCompleteWhileHostRuns()
         => RunScenarioAsync(
-            "shutdown-active-command",
-            nameof(ShutdownDoesNotWaitForActiveCommand),
-            async () =>
-            {
-                using var terminal = new TerminalGuiTestApp();
-                using var lifetime = new CancellationTokenSource();
-                var host = TerminalUiLifecycleChildProcess.InitializeHost(terminal, lifetime.Token);
-                host.ShutdownStarting += lifetime.Cancel;
-                var run = await terminal.StartAsync(host);
-                using var plugin = new PackagedPluginFixture(
-                    "BlockingCommandPlugin",
-                    _ => CommandPrimaryFailurePluginSource("BlockingCommandPlugin"));
-                var pluginType = plugin.Plugin.GetType();
-                var command = host.HandleCommandAsync("/plugin unload BlockingCommandPlugin");
-                try
-                {
-                    Assert.True((bool)(await Task.Run(() => pluginType
-                        .GetMethod("WaitUntilDisposing")!.Invoke(null, null)))!);
-                    host.RequestShutdown();
-                    await run.WaitAsync(TimeSpan.FromSeconds(5));
-                    Assert.False(command.IsCompleted);
-                }
-                finally
-                {
-                    pluginType.GetMethod("ReleaseDispose")!.Invoke(null, null);
-                }
-
-                var failure = await Record.ExceptionAsync(() => command.WaitAsync(TimeSpan.FromSeconds(5)));
-                Assert.False(failure is TimeoutException);
-                Assert.DoesNotContain(nameof(ObjectDisposedException), failure?.ToString() ?? string.Empty);
-            });
-
-    [Fact]
-    public Task PluginUnloadAndFlushCompleteWhileHostRuns()
-        => RunScenarioAsync(
-            "plugin-unload-while-host-runs",
-            nameof(PluginUnloadAndFlushCompleteWhileHostRuns),
+            "plugin-shutdown-while-host-runs",
+            nameof(PluginShutdownAndFlushCompleteWhileHostRuns),
             RunPluginShutdownAsync);
 
     [Fact]
@@ -1058,13 +1023,6 @@ public sealed class UiHostShutdownProcessTests
             RunCrossBatchApplyFailureAsync);
 
     [Fact]
-    public Task CommandPrimarySurvivesReportingFailureAndShutdown()
-        => RunScenarioAsync(
-            "command-primary-reporting-failure",
-            nameof(CommandPrimarySurvivesReportingFailureAndShutdown),
-            RunCommandPrimaryFailureAsync);
-
-    [Fact]
     public Task PluginHotkeyPendingBeforeRunIsNotRegisteredAfterGenerationCloses()
         => RunScenarioAsync(
             "pending-plugin-hotkey-generation-close",
@@ -1116,7 +1074,7 @@ public sealed class UiHostShutdownProcessTests
             "ShutdownWorkspacePlugin",
             root => WorkspaceRemovalPluginSource(Path.Combine(root, "panel-removed")));
 
-        await PluginManager.UnloadPluginsAsync("ShutdownWorkspacePlugin");
+        await PluginManager.ShutdownAsync();
         Assert.False(run.IsCompleted);
         Assert.Equal("removed", File.ReadAllText(Path.Combine(plugin.Root, "panel-removed")));
         Assert.True(view.DetachedAndDisposedWhileHostAccepted);
@@ -1171,7 +1129,7 @@ public sealed class UiHostShutdownProcessTests
         using var plugin = new PackagedPluginFixture(
             "LeaseHoldingPlugin",
             root => LeaseHoldingPluginSource(Path.Combine(root, "entered")));
-        var started = PluginManager.TriggerStartedForPluginsAsync([plugin.Plugin], lifetime.Token);
+        var started = PluginRuntimeFixture.TriggerStartedAsync(lifetime.Token);
         await WaitForFileAsync(Path.Combine(plugin.Root, "entered"));
 
         await terminal.InvokeAsync(() =>
@@ -1194,7 +1152,7 @@ public sealed class UiHostShutdownProcessTests
         using var plugin = new PackagedPluginFixture(
             "CancellationObservingPlugin",
             root => CancellationObservingPluginSource(Path.Combine(root, "disposed")));
-        await PluginManager.TriggerStartedForPluginsAsync([plugin.Plugin], lifetime.Token);
+        await PluginRuntimeFixture.TriggerStartedAsync(lifetime.Token);
         Assert.False(lifetime.IsCancellationRequested);
 
         host.RequestShutdown();
@@ -1326,58 +1284,6 @@ public sealed class UiHostShutdownProcessTests
         Assert.Contains("first-batch-failure", runFailure?.ToString());
     }
 
-    static async Task RunCommandPrimaryFailureAsync()
-    {
-        var originalCwd = Directory.GetCurrentDirectory();
-        var tempDir = Path.Combine(
-            Path.GetTempPath(),
-            "ura-command-primary-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(Path.Combine(tempDir, "Plugins"));
-        Directory.SetCurrentDirectory(tempDir);
-        try
-        {
-            const string pluginName = "CommandPrimaryFailure";
-            PluginCompiler.CompilePackage(
-                CommandPrimaryFailurePluginSource(pluginName),
-                pluginName,
-                Path.Combine(tempDir, "Plugins", $"{pluginName}.zip"));
-
-            using var terminal = new TerminalGuiTestApp();
-            var host = TerminalUiLifecycleChildProcess.InitializeHost(
-                terminal,
-                CancellationToken.None);
-            PluginManager.Init();
-            PluginManager.InitializeLoadedPlugins();
-            var pluginType = Assert.Single(PluginManager.LoadedPlugins).GetType();
-            host.LogAdded += line =>
-            {
-                if (line.Text == "[Command] command-primary-trigger")
-                    throw new InvalidOperationException("command-primary-trigger");
-            };
-
-            var run = await terminal.StartAsync(host);
-            var command = host.HandleCommandAsync($"/plugin unload {pluginName}");
-            var disposeEntered = (bool)(await Task.Run(() => pluginType
-                .GetMethod("WaitUntilDisposing")!
-                .Invoke(null, null)))!;
-            pluginType.GetMethod("ReleaseDispose")!.Invoke(null, null);
-            Assert.True(disposeEntered);
-
-            var commandFailure = await Record.ExceptionAsync(async () =>
-                await command.WaitAsync(TimeSpan.FromSeconds(5)));
-            Assert.False(commandFailure is TimeoutException);
-
-            var runFailure = await Record.ExceptionAsync(async () =>
-                await run.WaitAsync(TimeSpan.FromSeconds(5)));
-            Assert.Equal("command-primary-trigger", runFailure?.Message);
-        }
-        finally
-        {
-            Directory.SetCurrentDirectory(originalCwd);
-            try { Directory.Delete(tempDir, recursive: true); } catch { }
-        }
-    }
-
     static async Task RunPendingPluginHotkeyAsync()
     {
         using var terminal = new TerminalGuiTestApp();
@@ -1427,35 +1333,6 @@ public sealed class UiHostShutdownProcessTests
         });
         return (host!, ownerContext!);
     }
-
-    static string CommandPrimaryFailurePluginSource(string pluginName)
-        => $$"""
-            using System;
-            using System.Threading;
-            using UmamusumeResponseAnalyzer.Plugin;
-            using UmamusumeResponseAnalyzer.TerminalGui;
-
-            public sealed class {{pluginName}} : IPlugin
-            {
-                static readonly ManualResetEventSlim Disposing = new();
-                static readonly ManualResetEventSlim Release = new();
-
-                public string Name => "{{pluginName}}";
-                public string Author => "Test";
-                public string[] Targets => Array.Empty<string>();
-                public void Initialize(IPluginContext context) { }
-                public static bool WaitUntilDisposing()
-                    => Disposing.Wait(TimeSpan.FromSeconds(5));
-                public static void ReleaseDispose() => Release.Set();
-                public void Dispose()
-                {
-                    Disposing.Set();
-                    if (!Release.Wait(TimeSpan.FromSeconds(5)))
-                        throw new TimeoutException("Dispose was not released.");
-                    TerminalUi.Log("Command", "command-primary-trigger");
-                }
-            }
-            """;
 
     static string WorkspaceRemovalPluginSource(string marker)
         => $$"""

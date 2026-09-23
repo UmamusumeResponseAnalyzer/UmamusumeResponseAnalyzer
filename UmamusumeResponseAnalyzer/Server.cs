@@ -183,12 +183,12 @@ namespace UmamusumeResponseAnalyzer
 
                 SaveDebugPacket(kind, canonicalUrl, buffer);
 
-                using var registrations = PluginManager.SnapshotAnalyzerRegistrations(kind, descriptor.EndpointType);
-                if (registrations.Count == 0)
+                var registrations = PluginManager.SnapshotAnalyzerRegistrations(kind, descriptor.EndpointType);
+                if (registrations.Length == 0)
                     return;
 
                 var context = new AnalyzerDispatchContext(descriptor, buffer, headers);
-                for (var i = 0; i < registrations.Count; i++)
+                for (var i = 0; i < registrations.Length; i++)
                     await InvokeAnalyzer(kind, registrations[i], context);
             }
             catch (Exception e)
@@ -244,6 +244,10 @@ namespace UmamusumeResponseAnalyzer
 
         static async ValueTask InvokeAnalyzer(AnalyzerKind kind, AnalyzerRegistration registration, AnalyzerDispatchContext context)
         {
+            using var callback = PluginManager.TryEnterPluginCallback(registration.Plugin);
+            if (callback is null || registration.IsFaulted)
+                return;
+
             using var owner = HotkeyManager.RegisterScope(registration.Plugin);
             try
             {
@@ -251,6 +255,9 @@ namespace UmamusumeResponseAnalyzer
             }
             catch (Exception e)
             {
+                if (PluginManager.TryDisableAnalyzerForMissingAssembly(registration, e, $"{kind} analyzer"))
+                    return;
+
                 var root = e is TargetInvocationException { InnerException: { } inner } ? inner : e;
                 if (root is AnalyzerProjectionException projection && !projection.TryMarkReported())
                     return;

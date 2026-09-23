@@ -5,7 +5,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class ModalDialogsTests(PluginRuntimeFixture fixture)
 {
     readonly TerminalGuiTestApp terminal = fixture.Terminal;

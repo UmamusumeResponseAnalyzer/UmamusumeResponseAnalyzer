@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -179,7 +179,7 @@
     <value>用法: /workspace | /workspace switch [&lt;title&gt;|"&lt;title&gt;"] | /workspace list</value>
   </data>
   <data name="Command_PluginUsage" xml:space="preserve">
-    <value>用法: /plugin [list] | /plugin load &lt;InternalName&gt; | /plugin unload &lt;InternalName&gt; | /plugin reload &lt;InternalName&gt;</value>
+    <value>用法：/plugin [list]</value>
   </data>
   <data name="Command_Empty" xml:space="preserve">
     <value>命令为空。</value>
@@ -204,30 +204,6 @@
   </data>
   <data name="Command_WorkspaceNotFound" xml:space="preserve">
     <value>workspace 不存在: {0}</value>
-  </data>
-  <data name="Command_PluginNotFound" xml:space="preserve">
-    <value>插件不存在: {0}</value>
-  </data>
-  <data name="Command_PluginLoadFailed" xml:space="preserve">
-    <value>插件 {0} 加载失败。</value>
-  </data>
-  <data name="Command_PluginUnloadFailed" xml:space="preserve">
-    <value>插件 {0} 卸载失败。</value>
-  </data>
-  <data name="Command_PluginReloadFailed" xml:space="preserve">
-    <value>插件 {0} 重载失败。</value>
-  </data>
-  <data name="Command_PluginLoaded" xml:space="preserve">
-    <value>插件 {0} 已加载。</value>
-  </data>
-  <data name="Command_PluginUnloaded" xml:space="preserve">
-    <value>插件 {0} 已卸载。</value>
-  </data>
-  <data name="Command_PluginReloaded" xml:space="preserve">
-    <value>插件 {0} 已重载。</value>
-  </data>
-  <data name="Command_PluginTitle" xml:space="preserve">
-    <value>插件命令</value>
   </data>
   <data name="Command_WorkspacesTitle" xml:space="preserve">
     <value>工作区</value>

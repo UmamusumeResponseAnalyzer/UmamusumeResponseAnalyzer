@@ -1,83 +1,47 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
-using System.Collections.Immutable;
 
 namespace UmamusumeResponseAnalyzer.Plugin;
 
-internal sealed class AnalyzerCallbackSnapshot(
-    List<AnalyzerRegistration> items,
-    List<IDisposable> leases) : IDisposable
-{
-    List<AnalyzerRegistration>? items = items;
-    List<IDisposable>? leases = leases;
-
-    internal int Count => items?.Count ?? 0;
-    internal AnalyzerRegistration this[int index] => items![index];
-
-    internal static AnalyzerCallbackSnapshot Create(
-        ImmutableArray<AnalyzerRegistration> candidates,
-        CancellationToken cancellationToken = default)
-    {
-        var admission = new Dictionary<IPlugin, bool>(ReferenceEqualityComparer.Instance);
-        var items = new List<AnalyzerRegistration>();
-        var leases = new List<IDisposable>();
-        try
-        {
-            foreach (var candidate in candidates)
-            {
-                var owner = candidate.Plugin;
-                if (!admission.TryGetValue(owner, out var admitted))
-                {
-                    var lease = PluginManager.TryEnterPluginCallback(owner, cancellationToken);
-                    admitted = lease is not null;
-                    admission.Add(owner, admitted);
-                    if (lease is not null)
-                        leases.Add(lease);
-                }
-                if (admitted)
-                    items.Add(candidate);
-            }
-
-            return new(items, leases);
-        }
-        catch
-        {
-            for (var i = leases.Count - 1; i >= 0; i--)
-                leases[i].Dispose();
-            throw;
-        }
-    }
-
-    public void Dispose()
-    {
-        Interlocked.Exchange(ref items, null)?.Clear();
-        var currentLeases = Interlocked.Exchange(ref leases, null);
-        if (currentLeases is null)
-            return;
-
-        for (var i = currentLeases.Count - 1; i >= 0; i--)
-            currentLeases[i].Dispose();
-        currentLeases.Clear();
-    }
-}
-
 internal sealed class PluginGeneration(IPlugin plugin)
 {
-    static readonly AsyncLocal<bool> CallbackFlow = new();
     readonly object gate = new();
     readonly CancellationTokenSource backgroundCancellation = new();
     readonly List<Task> backgroundTasks = [];
-    PluginRegistrationPlan? pendingRegistration;
     TaskCompletionSource? callbackDrain;
     TaskCompletionSource? closeCompletion;
     int inFlight;
     bool initializing;
     bool accepting;
     bool closed;
+    string? failure;
 
     internal IPlugin Plugin { get; } = plugin;
+    internal Task? CleanupTask { get; set; }
 
-    internal static bool HasActiveCallbackFlow
-        => CallbackFlow.Value;
+    internal string? Failure
+    {
+        get
+        {
+            lock (gate)
+                return failure;
+        }
+    }
+
+    internal bool IsFaulted => Failure is not null;
+
+    internal bool TryMarkFaulted(string reason)
+    {
+        lock (gate)
+        {
+            if (closed)
+                return false;
+
+            failure = reason;
+            accepting = false;
+            closed = true;
+            return true;
+        }
+    }
 
     internal bool IsAccepting
     {
@@ -127,10 +91,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
     internal void AbortInitialization()
     {
         lock (gate)
-        {
             initializing = false;
-            pendingRegistration = null;
-        }
     }
 
     internal void Open()
@@ -142,37 +103,6 @@ internal sealed class PluginGeneration(IPlugin plugin)
             if (initializing)
                 throw new InvalidOperationException(string.Format(i18n.GenerationStillInitializing, PluginManager.InternalName(Plugin)));
             accepting = true;
-        }
-    }
-
-    internal bool TryStageRegistration(PluginRegistrationPlan plan)
-    {
-        lock (gate)
-        {
-            if (closed)
-                throw Closed();
-            if (!initializing)
-                return false;
-            if (pendingRegistration is not null)
-                throw new InvalidOperationException(
-                    string.Format(i18n.InitializationRegistrationCommitted, PluginManager.InternalName(Plugin)));
-
-            pendingRegistration = plan;
-            return true;
-        }
-    }
-
-    internal PluginRegistrationPlan TakePendingRegistration()
-    {
-        lock (gate)
-        {
-            if (closed || initializing || accepting)
-                throw Closed();
-            var plan = pendingRegistration
-                ?? throw new InvalidOperationException(
-                    string.Format(i18n.InitializationRegistrationNotCommitted, PluginManager.InternalName(Plugin)));
-            pendingRegistration = null;
-            return plan;
         }
     }
 
@@ -188,7 +118,6 @@ internal sealed class PluginGeneration(IPlugin plugin)
 
             accepting = false;
             closed = true;
-            pendingRegistration = null;
             callbackTask = inFlight == 0
                 ? Task.CompletedTask
                 : (callbackDrain = new(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
@@ -218,14 +147,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
                 failures.Add(ex);
             }
 
-            try
-            {
-                await callbackTask;
-            }
-            catch (Exception ex)
-            {
-                failures.Add(ex);
-            }
+            await callbackTask;
 
             try
             {
@@ -270,14 +192,6 @@ internal sealed class PluginGeneration(IPlugin plugin)
         }
     }
 
-    internal IDisposable EnterCallbackFlow(IDisposable generationLease)
-    {
-        var previous = CallbackFlow.Value;
-        if (!previous)
-            CallbackFlow.Value = true;
-        return new CallbackFlowLease(generationLease, previous);
-    }
-
     internal bool TryEnterInspection(out IDisposable? lease)
     {
         lock (gate)
@@ -312,7 +226,7 @@ internal sealed class PluginGeneration(IPlugin plugin)
     {
         lock (gate)
         {
-            if (closed || !initializing && !accepting)
+            if (closed || !accepting)
                 throw Closed();
         }
     }
@@ -332,6 +246,9 @@ internal sealed class PluginGeneration(IPlugin plugin)
         Func<CancellationToken, ValueTask> operation,
         CancellationToken cancellationToken)
     {
+        if (IsFaulted)
+            return;
+
         try
         {
             await operation(cancellationToken);
@@ -341,6 +258,9 @@ internal sealed class PluginGeneration(IPlugin plugin)
         }
         catch (Exception ex)
         {
+            if (PluginManager.TryDisableForMissingAssembly(Plugin, ex, "Background"))
+                return;
+
             var failure = new InvalidOperationException(
                 string.Format(i18n.BackgroundOperationFailed, PluginManager.InternalName(Plugin),
                     PluginManager.DescribeException(ex)));
@@ -374,22 +294,5 @@ internal sealed class PluginGeneration(IPlugin plugin)
 
         public void Dispose()
             => Interlocked.Exchange(ref release, null)?.Invoke();
-    }
-
-    sealed class CallbackFlowLease(
-        IDisposable generationLease,
-        bool previous) : IDisposable
-    {
-        IDisposable? generationLease = generationLease;
-
-        public void Dispose()
-        {
-            var current = Interlocked.Exchange(ref generationLease, null);
-            if (current is null)
-                return;
-            if (CallbackFlow.Value != previous)
-                CallbackFlow.Value = previous;
-            current.Dispose();
-        }
     }
 }

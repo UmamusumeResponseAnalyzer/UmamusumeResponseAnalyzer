@@ -190,10 +190,7 @@ internal sealed class UiHost : IUiInputSink, IDisposable
     }
 
     internal IReadOnlyList<string> CompleteCommand(string input)
-        => HostCommands.Complete(input, session.GetCommandSnapshot() with
-        {
-            Plugins = PluginManager.SnapshotPluginStatuses()
-        });
+        => HostCommands.Complete(input, session.GetCommandSnapshot());
 
     internal void RequestShutdown()
     {
@@ -555,12 +552,12 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         {
             snapshot = snapshot with
             {
-                Plugins = PluginManager.InspectPluginStatuses()
+                Plugins = PluginManager.SnapshotPluginStatuses()
             };
-            result = await HostCommands.ExecuteAsync(
+            result = HostCommands.Execute(
                 command,
                 snapshot,
-                LifetimeToken).ConfigureAwait(false);
+                LifetimeToken);
         }
         catch (OperationCanceledException) when (LifetimeToken.IsCancellationRequested)
         {
@@ -579,7 +576,7 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         {
             try
             {
-                plugins = PluginManager.InspectPluginStatuses();
+                plugins = PluginManager.SnapshotPluginStatuses();
             }
             catch (Exception ex)
             {

@@ -19,7 +19,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class TerminalGui {
@@ -47,8 +47,8 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性，对
-        ///   使用此强类型资源类的所有资源查找执行重写。
+        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Globalization.CultureInfo Culture {
@@ -124,51 +124,6 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Plugin {0} was loaded. 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginLoaded {
-            get {
-                return ResourceManager.GetString("Command_PluginLoaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Failed to load plugin {0}. 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginLoadFailed {
-            get {
-                return ResourceManager.GetString("Command_PluginLoadFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin not found: {0} 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginNotFound {
-            get {
-                return ResourceManager.GetString("Command_PluginNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin {0} was reloaded. 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginReloaded {
-            get {
-                return ResourceManager.GetString("Command_PluginReloaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Failed to reload plugin {0}. 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginReloadFailed {
-            get {
-                return ResourceManager.GetString("Command_PluginReloadFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 failed 的本地化字符串。
         /// </summary>
         internal static string Command_PluginStateFailed {
@@ -187,7 +142,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 unloaded 的本地化字符串。
+        ///   查找类似 not loaded 的本地化字符串。
         /// </summary>
         internal static string Command_PluginStateUnloaded {
             get {
@@ -205,34 +160,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
         
         /// <summary>
-        ///   查找类似 Plugin command 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginTitle {
-            get {
-                return ResourceManager.GetString("Command_PluginTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Plugin {0} was unloaded. 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginUnloaded {
-            get {
-                return ResourceManager.GetString("Command_PluginUnloaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Failed to unload plugin {0}. 的本地化字符串。
-        /// </summary>
-        internal static string Command_PluginUnloadFailed {
-            get {
-                return ResourceManager.GetString("Command_PluginUnloadFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Usage: /plugin [list] | /plugin load &lt;InternalName&gt; | /plugin unload &lt;InternalName&gt; | /plugin reload &lt;InternalName&gt; 的本地化字符串。
+        ///   查找类似 Usage: /plugin [list] 的本地化字符串。
         /// </summary>
         internal static string Command_PluginUsage {
             get {

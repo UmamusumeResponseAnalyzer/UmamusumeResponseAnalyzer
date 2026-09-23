@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -142,16 +142,13 @@ This plugin will execute code on this computer.</value>
     <value>Manifest {0} contains a duplicate name: {1}</value>
   </data>
   <data name="CallbackUnavailable" xml:space="preserve">
-    <value>Plugin is unloaded or its generation is closed; cannot start callback: {0}</value>
+    <value>Plugin is not running; cannot start callback: {0}</value>
   </data>
   <data name="ConfigurationUnavailable" xml:space="preserve">
-    <value>Plugin is unloaded or its generation is closed; cannot open settings: {0}</value>
+    <value>Plugin is not running; cannot open settings: {0}</value>
   </data>
   <data name="NotificationDiagnosticsFailed" xml:space="preserve">
     <value>Plugin error and notification diagnostics failed.</value>
-  </data>
-  <data name="CallbackLifecycleReentry" xml:space="preserve">
-    <value>Lifecycle operations cannot start inside a plugin callback; call after the callback returns.</value>
   </data>
   <data name="LifecyclePhaseInvalid" xml:space="preserve">
     <value>Plugin operation {1} is not allowed in phase={0}.</value>
@@ -164,9 +161,6 @@ This plugin will execute code on this computer.</value>
   </data>
   <data name="RuntimeStateNotEmpty" xml:space="preserve">
     <value>Plugin runtime state is not empty in phase={0}; cannot run Init.</value>
-  </data>
-  <data name="FailedGroupContextMissing" xml:space="preserve">
-    <value>Plugin group that failed initialization has no context: {0}</value>
   </data>
   <data name="InitializationFailed" xml:space="preserve">
     <value>Plugin {0} initialization failed</value>
@@ -182,9 +176,6 @@ This plugin will execute code on this computer.</value>
   </data>
   <data name="InvalidPackage" xml:space="preserve">
     <value>Invalid plugin package: package={0}</value>
-  </data>
-  <data name="DependencyNotInstalled" xml:space="preserve">
-    <value>Plugin dependency graph contains an uninstalled plugin: {0}</value>
   </data>
   <data name="DependencyCycle" xml:space="preserve">
     <value>Cycle in plugin manifest Dependencies: {0}</value>
@@ -228,59 +219,8 @@ This plugin will execute code on this computer.</value>
   <data name="AssemblyContentConflict" xml:space="preserve">
     <value>Plugin group contains assemblies with the same name but different contents: {0}, context={1}</value>
   </data>
-  <data name="PluginNotFound" xml:space="preserve">
-    <value>Plugin {0} does not exist and cannot be loaded.</value>
-  </data>
-  <data name="UnloadFailed" xml:space="preserve">
-    <value>Plugin unload failed: plugin={0}</value>
-  </data>
-  <data name="BatchUnloadFailed" xml:space="preserve">
-    <value>Batch plugin unload failed.</value>
-  </data>
-  <data name="LifecycleTransactionBusy" xml:space="preserve">
-    <value>A plugin lifecycle transaction is running; concurrent or reentrant operations are rejected.</value>
-  </data>
-  <data name="MissingFileUnloaded" xml:space="preserve">
-    <value>Plugin {0} was unloaded because its file no longer exists.</value>
-  </data>
-  <data name="PluginReloaded" xml:space="preserve">
-    <value>Plugin {0} reloaded.</value>
-  </data>
-  <data name="ContextGroupMissing" xml:space="preserve">
-    <value>Loaded plugin has no context group: {0}</value>
-  </data>
-  <data name="PluginNotLoaded" xml:space="preserve">
-    <value>Plugin {0} is not loaded.</value>
-  </data>
-  <data name="RelatedReloadFailed" xml:space="preserve">
-    <value>Plugin {0} was unloaded, but related plugins failed to reload: {1}</value>
-  </data>
-  <data name="PluginUnloaded" xml:space="preserve">
-    <value>Plugin {0} unloaded.</value>
-  </data>
-  <data name="GroupInitializationCleanupFailed" xml:space="preserve">
-    <value>Plugin group initialization and cleanup failed.</value>
-  </data>
-  <data name="GroupLoadingCleanupFailed" xml:space="preserve">
-    <value>Plugin group loading and cleanup failed.</value>
-  </data>
-  <data name="StagedGroupCommitCleanupFailed" xml:space="preserve">
-    <value>Staged plugin group commit and cleanup failed.</value>
-  </data>
   <data name="CleanupPhaseFailed" xml:space="preserve">
     <value>Plugin cleanup failed: plugin={0}, phase={1}</value>
-  </data>
-  <data name="DisposeFailed" xml:space="preserve">
-    <value>Plugin cleanup failed: plugin={0}, phase=Dispose, {1}{2}{3}</value>
-  </data>
-  <data name="RegistrationContextCleanupFailed" xml:space="preserve">
-    <value>Plugin registration/context cleanup failed.</value>
-  </data>
-  <data name="HostEventsCleanupFailed" xml:space="preserve">
-    <value>Plugin HostEvents cleanup failed.</value>
-  </data>
-  <data name="LoadContextCleanupFailed" xml:space="preserve">
-    <value>Plugin ALC cleanup failed: context={0}</value>
   </data>
   <data name="CleanupFailed" xml:space="preserve">
     <value>Plugin cleanup failed.</value>
@@ -293,12 +233,6 @@ This plugin will execute code on this computer.</value>
   </data>
   <data name="GenerationStillInitializing" xml:space="preserve">
     <value>Plugin generation is still initializing: {0}</value>
-  </data>
-  <data name="InitializationRegistrationCommitted" xml:space="preserve">
-    <value>Plugin initialization registration is already committed: {0}</value>
-  </data>
-  <data name="InitializationRegistrationNotCommitted" xml:space="preserve">
-    <value>Plugin initialization registration is not committed yet: {0}</value>
   </data>
   <data name="GenerationCloseFailed" xml:space="preserve">
     <value>Plugin generation failed to close.</value>
@@ -365,5 +299,11 @@ This plugin will execute code on this computer.</value>
   </data>
   <data name="ListSeparator" xml:space="preserve">
     <value>, </value>
+  </data>
+  <data name="PluginDisabledMissingAssembly" xml:space="preserve">
+    <value>Plugin {0} is disabled until process exit because required assembly {2} is missing during {1}: {3}</value>
+  </data>
+  <data name="AnalyzerDisabledMissingAssembly" xml:space="preserve">
+    <value>Analyzer registration {1} (plugin {0}, endpoint {2}) is disabled until process exit because required assembly {4} is missing during {3}: {5}</value>
   </data>
 </root>

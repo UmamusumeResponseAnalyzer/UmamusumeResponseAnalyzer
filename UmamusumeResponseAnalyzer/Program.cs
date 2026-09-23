@@ -397,7 +397,7 @@ namespace UmamusumeResponseAnalyzer
             var statuses = PluginManager.SnapshotPluginStatuses();
             var failedPlugins = PluginManager.FailedPlugins.ToArray();
             var pluginNamesByPath = PluginManager.Metadatas.Values
-                .GroupBy(x => x.FilePath, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(x => x.PackagePath, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     group => group.Key,
                     group => group.First().PluginName,

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class BootstrapMenuTests(PluginRuntimeFixture fixture)
 {
     readonly TerminalGuiTestApp terminal = fixture.Terminal;

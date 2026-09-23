@@ -16,11 +16,14 @@ internal enum PluginLifecyclePhase
 
 internal sealed record PluginRuntimeSnapshot(
     FrozenDictionary<string, PluginManager.PluginMetadata> Metadatas,
+    FrozenDictionary<string, string> Failures,
     ImmutableArray<string> FailedPlugins,
     ImmutableArray<IPlugin> LoadedPlugins)
 {
     internal static PluginRuntimeSnapshot Empty { get; } = new(
         new Dictionary<string, PluginManager.PluginMetadata>(StringComparer.OrdinalIgnoreCase)
+            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
         [],
         []);
@@ -44,6 +47,7 @@ internal sealed class PluginRuntimeMutableState
     internal Dictionary<string, PluginManager.PluginMetadata> Metadatas { get; } =
         new(StringComparer.OrdinalIgnoreCase);
     internal List<string> FailedPlugins { get; } = [];
+    internal Dictionary<string, string> Failures { get; } = new(StringComparer.OrdinalIgnoreCase);
     internal List<IPlugin> LoadedPlugins { get; } = [];
     internal List<HashSet<string>> ContextGroups { get; } = [];
     internal Dictionary<string, PluginManager.PluginLoadContext> Contexts { get; } =
@@ -79,6 +83,7 @@ internal sealed class PluginRuntimeState
         var state = Mutable;
         Volatile.Write(ref snapshot, new(
             state.Metadatas.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
+            state.Failures.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
             [.. state.FailedPlugins],
             [.. state.LoadedPlugins]));
     }

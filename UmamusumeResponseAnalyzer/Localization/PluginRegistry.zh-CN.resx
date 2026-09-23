@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -142,16 +142,13 @@
     <value>manifest {0} 包含重复名称: {1}</value>
   </data>
   <data name="CallbackUnavailable" xml:space="preserve">
-    <value>插件已卸载或 generation 已关闭，拒绝启动回调: {0}</value>
+    <value>插件未运行，无法启动回调：{0}</value>
   </data>
   <data name="ConfigurationUnavailable" xml:space="preserve">
-    <value>插件已卸载或 generation 已关闭，拒绝打开设置: {0}</value>
+    <value>插件未运行，无法打开设置：{0}</value>
   </data>
   <data name="NotificationDiagnosticsFailed" xml:space="preserve">
     <value>插件错误及 notification diagnostics 失败。</value>
-  </data>
-  <data name="CallbackLifecycleReentry" xml:space="preserve">
-    <value>插件 callback 内禁止启动 lifecycle 操作；请在 callback 返回后再调用。</value>
   </data>
   <data name="LifecyclePhaseInvalid" xml:space="preserve">
     <value>当前 phase={0}，不允许执行插件 {1}。</value>
@@ -164,9 +161,6 @@
   </data>
   <data name="RuntimeStateNotEmpty" xml:space="preserve">
     <value>当前 phase={0}，插件 runtime state 非空，无法执行 Init。</value>
-  </data>
-  <data name="FailedGroupContextMissing" xml:space="preserve">
-    <value>初始化失败的插件组缺少 context: {0}</value>
   </data>
   <data name="InitializationFailed" xml:space="preserve">
     <value>插件 {0} 初始化失败</value>
@@ -182,9 +176,6 @@
   </data>
   <data name="InvalidPackage" xml:space="preserve">
     <value>插件包无效: package={0}</value>
-  </data>
-  <data name="DependencyNotInstalled" xml:space="preserve">
-    <value>插件依赖图包含未安装插件: {0}</value>
   </data>
   <data name="DependencyCycle" xml:space="preserve">
     <value>插件 manifest Dependencies 存在循环: {0}</value>
@@ -228,59 +219,8 @@
   <data name="AssemblyContentConflict" xml:space="preserve">
     <value>插件组包含内容不同的同名程序集 {0}: context={1}</value>
   </data>
-  <data name="PluginNotFound" xml:space="preserve">
-    <value>插件 {0} 不存在，无法加载。</value>
-  </data>
-  <data name="UnloadFailed" xml:space="preserve">
-    <value>插件卸载失败: plugin={0}</value>
-  </data>
-  <data name="BatchUnloadFailed" xml:space="preserve">
-    <value>插件批量卸载失败。</value>
-  </data>
-  <data name="LifecycleTransactionBusy" xml:space="preserve">
-    <value>已有插件 lifecycle 事务正在运行，拒绝并发或重入操作。</value>
-  </data>
-  <data name="MissingFileUnloaded" xml:space="preserve">
-    <value>插件 {0} 的文件已不存在，已卸载。</value>
-  </data>
-  <data name="PluginReloaded" xml:space="preserve">
-    <value>插件 {0} 已重载。</value>
-  </data>
-  <data name="ContextGroupMissing" xml:space="preserve">
-    <value>已加载插件缺少 context group: {0}</value>
-  </data>
-  <data name="PluginNotLoaded" xml:space="preserve">
-    <value>插件 {0} 未加载。</value>
-  </data>
-  <data name="RelatedReloadFailed" xml:space="preserve">
-    <value>插件 {0} 已卸载，但关联插件重新加载失败: {1}</value>
-  </data>
-  <data name="PluginUnloaded" xml:space="preserve">
-    <value>插件 {0} 已卸载。</value>
-  </data>
-  <data name="GroupInitializationCleanupFailed" xml:space="preserve">
-    <value>插件组初始化及清理失败。</value>
-  </data>
-  <data name="GroupLoadingCleanupFailed" xml:space="preserve">
-    <value>插件组加载及清理失败。</value>
-  </data>
-  <data name="StagedGroupCommitCleanupFailed" xml:space="preserve">
-    <value>插件 staged group 提交及清理失败。</value>
-  </data>
   <data name="CleanupPhaseFailed" xml:space="preserve">
     <value>插件清理失败: plugin={0}, phase={1}</value>
-  </data>
-  <data name="DisposeFailed" xml:space="preserve">
-    <value>插件清理失败: plugin={0}, phase=Dispose, {1}{2}{3}</value>
-  </data>
-  <data name="RegistrationContextCleanupFailed" xml:space="preserve">
-    <value>插件 registration/context 清理失败。</value>
-  </data>
-  <data name="HostEventsCleanupFailed" xml:space="preserve">
-    <value>插件 HostEvents 清理失败。</value>
-  </data>
-  <data name="LoadContextCleanupFailed" xml:space="preserve">
-    <value>插件 ALC 清理失败: context={0}</value>
   </data>
   <data name="CleanupFailed" xml:space="preserve">
     <value>插件清理失败。</value>
@@ -293,12 +233,6 @@
   </data>
   <data name="GenerationStillInitializing" xml:space="preserve">
     <value>插件 generation 仍在初始化: {0}</value>
-  </data>
-  <data name="InitializationRegistrationCommitted" xml:space="preserve">
-    <value>插件 initialization registration 已提交: {0}</value>
-  </data>
-  <data name="InitializationRegistrationNotCommitted" xml:space="preserve">
-    <value>插件 initialization registration 尚未提交: {0}</value>
   </data>
   <data name="GenerationCloseFailed" xml:space="preserve">
     <value>插件 generation 关闭失败。</value>
@@ -365,5 +299,11 @@
   </data>
   <data name="ListSeparator" xml:space="preserve">
     <value>、</value>
+  </data>
+  <data name="PluginDisabledMissingAssembly" xml:space="preserve">
+    <value>插件 {0} 在 {1} 阶段缺少必需程序集 {2}，已停用至进程退出：{3}</value>
+  </data>
+  <data name="AnalyzerDisabledMissingAssembly" xml:space="preserve">
+    <value>插件 {0} 的 analyzer 注册 {1}（endpoint：{2}）在 {3} 阶段缺少必需程序集 {4}，该条注册已停用至进程退出：{5}</value>
   </data>
 </root>

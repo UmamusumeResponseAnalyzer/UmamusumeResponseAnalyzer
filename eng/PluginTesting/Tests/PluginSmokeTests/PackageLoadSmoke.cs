@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text.Json;
 using Gallop;
@@ -31,23 +30,11 @@ static class PackageLoadSmoke
             File.Copy(PluginSmokeRunner.FindPackagePath(target), Path.Combine("Plugins", target.AssemblyName + ".zip"));
         }
         PackageLegendFixture.WriteLegendBuffCsv();
-        var references = RunLoaded(targets, ui);
-        for (var attempt = 0; attempt < 20 && references.Any(item => item.Reference.IsAlive); attempt++)
-        {
-            ui.Flush();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-            Thread.Sleep(50);
-        }
-        Require(references.All(item => !item.Reference.IsAlive),
-            $"ZIP unload retained references: {string.Join(", ", references.Where(item => item.Reference.IsAlive).Select(item => item.Label))}.");
-        Console.WriteLine("PASS ZIP business: plugins=7; drained registrations, panels and collectible contexts released");
+        RunLoaded(targets, ui);
+        Console.WriteLine("PASS ZIP business: plugins=7; fixed contexts; shutdown drains registrations and panels");
     }
 
-    // A separate stack frame prevents the inspection locals from rooting a collectible plugin during GC.
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    static (string Label, WeakReference Reference)[] RunLoaded(TargetAssembly[] targets, WorkspaceSmokeSession ui)
+    static void RunLoaded(TargetAssembly[] targets, WorkspaceSmokeSession ui)
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
@@ -62,7 +49,6 @@ static class PackageLoadSmoke
             endpointGroups = new[] { "single-mode", "gacha" }
         }));
         var upload = ReceiveUpload(listener);
-        var weak = new List<(string Label, WeakReference Reference)>();
         var eventLogger = default(IPlugin);
         try
         {
@@ -89,24 +75,19 @@ static class PackageLoadSmoke
                 using var pe = new PEReader(bytes);
                 var reader = pe.GetMetadataReader();
                 var mvid = reader.GetGuid(reader.GetModuleDefinition().Mvid);
-                Require(context.IsCollectible && context != AssemblyLoadContext.Default && assembly.ManifestModule.ModuleVersionId == mvid,
-                    $"{target.AssemblyName} did not execute the fresh ZIP main DLL in a collectible context.");
+                Require(!context.IsCollectible && context != AssemblyLoadContext.Default && assembly.ManifestModule.ModuleVersionId == mvid,
+                    $"{target.AssemblyName} did not execute the fresh ZIP main DLL in a fixed context.");
                 foreach (var shared in new[] { typeof(IPlugin).Assembly, typeof(SingleModeChara).Assembly, typeof(IApplication).Assembly })
                     Require(ReferenceEquals(context.LoadFromAssemblyName(shared.GetName()), shared),
                         $"{target.AssemblyName} duplicated shared host identity {shared.GetName().Name}.");
-                weak.Add(($"{target.AssemblyName} instance", new(plugin)));
-                weak.Add(($"{target.AssemblyName} context", new(context)));
                 Console.WriteLine($"PASS ZIP origin {target.AssemblyName}: MVID={mvid}, PackagePath={metadata.PackagePath}");
             }
             foreach (var group in PluginManager.ContextGroups)
             {
                 var assemblies = PluginManager.LoadedPlugins.Where(plugin => group.Contains(PluginManager.InternalName(plugin)))
                     .Select(plugin => AssemblyLoadContext.GetLoadContext(plugin.GetType().Assembly)).Distinct().ToArray();
-                Require(assemblies.Length == 1, "Soft-linked ZIP plugins did not share one load context.");
+                Require(assemblies.Length == 1, "Dependency-linked ZIP plugins did not share one load context.");
             }
-            weak.AddRange(PluginManager.RequestAnalyzerMethods.Concat(PluginManager.ResponseAnalyzerMethods)
-                .Select(registration => ($"{PluginManager.InternalName(registration.Plugin)} callback", new WeakReference(registration.Handler))));
-
             AssertCaptureUpload(upload);
             AssertLegendAndAir(ui);
             AssertEventLogger(ui);
@@ -134,7 +115,6 @@ static class PackageLoadSmoke
             Require(!ui.CaptureScreen(200, 80).Contains(marker, StringComparison.Ordinal), $"ZIP shutdown left {workspace} output mounted.");
         }
         ui.Bootstrap.SwitchTo();
-        return [.. weak];
     }
 
     static void AssertCaptureUpload(Task<(string Method, string Json)> upload)
@@ -299,12 +279,14 @@ static class PackageLoadSmoke
 
     static void Dispatch(AnalyzerKind kind, GameEndpointDescriptor endpoint, byte[] payload, WorkspaceSmokeSession? ui = null)
     {
-        using var registrations = PluginManager.SnapshotAnalyzerRegistrations(kind, endpoint.EndpointType);
-        Require(registrations.Count != 0, $"No production registrations matched {kind} {endpoint.Path}.");
+        var registrations = PluginManager.SnapshotAnalyzerRegistrations(kind, endpoint.EndpointType);
+        Require(registrations.Length != 0, $"No production registrations matched {kind} {endpoint.Path}.");
         var context = new AnalyzerDispatchContext(endpoint, payload, Headers);
-        for (var index = 0; index < registrations.Count; index++)
+        for (var index = 0; index < registrations.Length; index++)
         {
             var registration = registrations[index];
+            using var callback = PluginManager.TryEnterPluginCallback(registration.Plugin);
+            Require(callback is not null && !registration.IsFaulted, $"ZIP analyzer is unavailable: {registration.Source}.");
             using var owner = HotkeyManager.RegisterScope(registration.Plugin);
             var checkStatusWorkspace = ui is not null && PluginManager.InternalName(registration.Plugin) == "SendGameStatusPlugin";
             var workspace = Workspace.Current;

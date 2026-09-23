@@ -465,7 +465,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
     }
 
-    [Collection("PluginReload")]
+    [Collection("PluginRuntime")]
     public class DatabaseInitializeMissingFilesTests(PluginRuntimeFixture runtime)
     {
         [Fact]

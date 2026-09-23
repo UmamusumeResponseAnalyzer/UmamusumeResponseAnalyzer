@@ -19,7 +19,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests
 {
-    [Collection("PluginReload")]
+    [Collection("PluginRuntime")]
     public sealed class PluginAnalyzerTests : IDisposable
     {
         readonly IApplication application;
@@ -816,7 +816,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public async Task AnalyzerRegistrations_CommitAtomicallyForInitializeAndOnStarted()
+        public async Task Registrations_CommitAtomicallyForInitializeAndOnStarted()
         {
             var count = PluginManager.ResponseAnalyzerMethods.Count;
             var failedInitialize = new FailingInitializeRegistrationPlugin();
@@ -825,20 +825,30 @@ namespace UmamusumeResponseAnalyzer.Tests
 
             var committed = new StartedRegistrationPlugin(throwAfterRegistration: false);
             var rolledBack = new StartedRegistrationPlugin(throwAfterRegistration: true);
-            PluginManager.InitializePlugin(committed);
-            PluginManager.InitializePlugin(rolledBack);
+            try
+            {
+                PluginManager.InitializePlugin(committed);
+                PluginManager.InitializePlugin(rolledBack);
 
-            await PluginManager.TriggerStartedForPluginsAsync([committed, rolledBack]);
+                await PluginRuntimeFixture.TriggerStartedAsync();
+                await committed.BackgroundStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-            Assert.Equal(count + 1, PluginManager.ResponseAnalyzerMethods.Count);
-            var registration = Assert.Single(
-                PluginManager.ResponseAnalyzerMethods,
-                candidate => ReferenceEquals(candidate.Plugin, committed) && candidate.Priority == 0);
-            Assert.Same(committed, registration.Plugin);
-            Assert.Equal(typeof(GameApi.Account.Index), registration.EndpointType);
-            Assert.DoesNotContain(
-                PluginManager.ResponseAnalyzerMethods,
-                candidate => ReferenceEquals(candidate.Plugin, rolledBack));
+                Assert.Equal(count + 1, PluginManager.ResponseAnalyzerMethods.Count);
+                var registration = Assert.Single(
+                    PluginManager.ResponseAnalyzerMethods,
+                    candidate => ReferenceEquals(candidate.Plugin, committed) && candidate.Priority == 0);
+                Assert.Same(committed, registration.Plugin);
+                Assert.Equal(typeof(GameApi.Account.Index), registration.EndpointType);
+                Assert.DoesNotContain(
+                    PluginManager.ResponseAnalyzerMethods,
+                    candidate => ReferenceEquals(candidate.Plugin, rolledBack));
+            }
+            finally
+            {
+                await PluginManager.CleanupPluginAsync(committed).WaitAsync(TimeSpan.FromSeconds(5));
+                await PluginManager.CleanupPluginAsync(rolledBack).WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            Assert.False(rolledBack.BackgroundStarted.Task.IsCompleted);
         }
 
         [Fact]
@@ -853,11 +863,11 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.NotNull(plugin.Context.Events);
             Assert.NotNull(plugin.Context.Analyzers);
 
-            await PluginManager.TriggerStartedForPluginsAsync([plugin]);
+            await PluginRuntimeFixture.TriggerStartedAsync();
             Assert.Equal(1, plugin.StartedCalls);
 
             PluginManager.DisposeHostEventSubscriptions(plugin);
-            await PluginManager.TriggerStartedForPluginsAsync([plugin]);
+            await PluginRuntimeFixture.TriggerStartedAsync();
             Assert.Equal(1, plugin.StartedCalls);
         }
 
@@ -867,6 +877,8 @@ namespace UmamusumeResponseAnalyzer.Tests
             var host = runtime.Host;
             var bootstrap = host.Bootstrap;
             var ctx = new PluginManager.PluginLoadContext("shared-abi-test");
+            var warnings = new List<UiLogLine>();
+            host.LogAdded += warnings.Add;
             try
             {
                 bootstrap.Workspace.SwitchTo();
@@ -888,8 +900,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 };
                 Assert.Same(typeof(Server).Assembly, ctx.LoadFromAssemblyName(futureHostVersion));
                 await host.FlushAsync();
-                await runtime.Terminal.WaitForScreenAsync(Localization.PluginRegistry.HostUpdateRequired
-                    .Split("UmamusumeResponseAnalyzer", StringSplitOptions.None)[0].Trim());
+                Assert.Contains(warnings, line => line.Text.Contains("99.0.0.0", StringComparison.Ordinal));
 
                 var wrongTerminalGuiVersion = new AssemblyName(typeof(View).Assembly.GetName().Name!)
                 {
@@ -899,9 +910,20 @@ namespace UmamusumeResponseAnalyzer.Tests
             }
             finally
             {
-                ctx.Unload();
+                host.LogAdded -= warnings.Add;
+                Assert.False(ctx.IsCollectible);
                 await host.FlushAsync();
             }
+        }
+
+        [Fact]
+        public void PluginLoadContextAllowsFrameworkAndResourceFallback()
+        {
+            var context = new PluginManager.PluginLoadContext("fallback-test");
+            var framework = context.LoadFromAssemblyName(new AssemblyName("System.Xml.ReaderWriter"));
+            Assert.Same(AssemblyLoadContext.Default, AssemblyLoadContext.GetLoadContext(framework));
+            var satellite = new AssemblyName(typeof(PluginAnalyzerTests).Assembly.GetName().Name + ".resources") { CultureName = "ja-JP" };
+            Assert.Throws<FileNotFoundException>(() => context.LoadFromAssemblyName(satellite));
         }
 
         async Task<bool> RunThroughNotificationServerAsync(
@@ -1478,6 +1500,8 @@ namespace UmamusumeResponseAnalyzer.Tests
 
         sealed class StartedRegistrationPlugin(bool throwAfterRegistration) : TestPlugin
         {
+            public TaskCompletionSource BackgroundStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
             public override void Initialize(IPluginContext context)
             {
                 context.Events.OnStarted(_ =>
@@ -1486,6 +1510,11 @@ namespace UmamusumeResponseAnalyzer.Tests
                         AnalyzerKind.Response,
                         [EndpointPattern.Exact(AccountIndexPath)],
                         _ => ValueTask.CompletedTask);
+                    context.RunBackground(_ =>
+                    {
+                        BackgroundStarted.SetResult();
+                        return ValueTask.CompletedTask;
+                    });
                     if (throwAfterRegistration)
                         throw new InvalidOperationException("started failed");
                     return ValueTask.CompletedTask;

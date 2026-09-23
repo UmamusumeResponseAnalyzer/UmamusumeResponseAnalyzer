@@ -195,7 +195,11 @@ internal sealed class HotkeyInputDispatcher(HotkeyRuntime runtime)
                 if (callback is null)
                     return;
 
-                await entry.Handler();
+                try
+                {
+                    await entry.Handler();
+                }
+                catch (Exception ex) when (PluginManager.TryDisableForMissingAssembly(plugin, ex, "Hotkey")) { }
             });
             return;
         }

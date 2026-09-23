@@ -40,8 +40,8 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             var manager = typeof(PluginManager);
             Assert.True(manager.IsNotPublic);
-            Assert.True(typeof(PluginManager.PluginLifecycleOutcome).IsNestedAssembly);
-            Assert.True(typeof(PluginManager.PluginLifecycleResult).IsNestedAssembly);
+            foreach (var name in new[] { "LoadPluginsAsync", "UnloadPluginsAsync", "ReloadPluginsAsync" })
+                Assert.Null(manager.GetMethod(name, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
         }
 
         internal const string SyntheticFuturePluginSource = """

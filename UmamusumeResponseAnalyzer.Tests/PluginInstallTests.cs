@@ -14,7 +14,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class PluginInstallTests : IDisposable
 {
     readonly string tempDir = Path.Combine(Path.GetTempPath(), "ura-plugin-install-" + Guid.NewGuid().ToString("N"));

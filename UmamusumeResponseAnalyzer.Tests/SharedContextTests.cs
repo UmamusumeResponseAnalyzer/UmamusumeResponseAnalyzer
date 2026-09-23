@@ -1,9 +1,11 @@
+using System.IO.Compression;
 using UmamusumeResponseAnalyzer.Plugin;
 using Xunit;
+using i18n = UmamusumeResponseAnalyzer.Localization.PluginRegistry;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class SharedContextTests : IDisposable
 {
     readonly string originalDirectory = Directory.GetCurrentDirectory();
@@ -77,11 +79,73 @@ public sealed class SharedContextTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GroupConstructionFailureDisposesEarlierMembers(bool loadAtRuntime)
+    public void ConflictingSharedAssemblyFailsOnlyItsDependencyGroup(bool differentCase)
     {
-        if (loadAtRuntime)
-            RestartPluginManager();
+        var constructedPath = Path.Combine(testDirectory, "conflicted-constructed.txt");
+        foreach (var name in new[] { "Anchor", "Member" })
+            CreatePackage(name, name == "Member" ? ["Anchor"] : [], $$"""
+                using System.IO;
+                using UmamusumeResponseAnalyzer.Plugin;
 
+                public sealed class {{name}}Plugin : IPlugin
+                {
+                    public {{name}}Plugin() => File.AppendAllLines(@"{{constructedPath}}", ["{{name}}"]);
+                    public void Initialize(IPluginContext context) { }
+                }
+                """);
+
+        var firstAssembly = Path.Combine(testDirectory, "first.dll");
+        var secondAssembly = Path.Combine(testDirectory, "second.dll");
+        PluginCompiler.Compile("public static class SharedLibrary { public const int Value = 1; }",
+            "SharedLibrary", firstAssembly);
+        if (!differentCase)
+            PluginCompiler.Compile("public static class SharedLibrary { public const int Value = 2; }",
+                "SharedLibrary", secondAssembly);
+        using (var archive = ZipFile.Open(Path.Combine(pluginsDirectory, "Anchor.zip"), ZipArchiveMode.Update))
+            archive.CreateEntryFromFile(firstAssembly, "SharedLibrary.dll");
+        using (var archive = ZipFile.Open(Path.Combine(pluginsDirectory, "Member.zip"), ZipArchiveMode.Update))
+            archive.CreateEntryFromFile(differentCase ? firstAssembly : secondAssembly,
+                differentCase ? "sharedlibrary.dll" : "SharedLibrary.dll");
+
+        var initializedPath = Path.Combine(testDirectory, "healthy-initialized.txt");
+        CreatePackage("ZuluHealthy", source: $$"""
+            using System.IO;
+            using UmamusumeResponseAnalyzer.Plugin;
+
+            public sealed class ZuluHealthyPlugin : IPlugin
+            {
+                public void Initialize(IPluginContext context)
+                    => File.WriteAllText(@"{{initializedPath}}", "initialized");
+            }
+            """);
+
+        RestartPluginManager();
+        PluginManager.InitializeLoadedPlugins();
+
+        Assert.Equal("ZuluHealthy", PluginManager.InternalName(Assert.Single(PluginManager.LoadedPlugins)));
+        Assert.Equal("ZuluHealthy", Assert.Single(PluginManager.Contexts).Key);
+        Assert.Equal("initialized", File.ReadAllText(initializedPath));
+        Assert.False(File.Exists(constructedPath));
+        Assert.Equal(
+            [Path.Combine(pluginsDirectory, "Anchor.zip"), Path.Combine(pluginsDirectory, "Member.zip")],
+            PluginManager.FailedPlugins);
+        var expectedError = differentCase
+            ? string.Format(i18n.AssemblyCaseConflict, "SharedLibrary", "sharedlibrary", "Anchor&Member")
+            : string.Format(i18n.AssemblyContentConflict, "SharedLibrary", "Anchor&Member");
+        var statuses = PluginManager.SnapshotPluginStatuses();
+        foreach (var name in new[] { "Anchor", "Member" })
+        {
+            var status = Assert.Single(statuses, status => status.InternalName == name);
+            Assert.False(status.IsLoaded);
+            Assert.True(status.IsAvailable);
+            Assert.Equal(expectedError, status.Error);
+        }
+        Assert.Null(Assert.Single(statuses, status => status.InternalName == "ZuluHealthy").Error);
+    }
+
+    [Fact]
+    public async Task ConstructionFailureKeepsEarlierGroupMemberLoaded()
+    {
         var logPath = Path.Combine(testDirectory, "group-lifecycle.txt");
         CreatePackage("Anchor", source: $$"""
             using System.IO;
@@ -106,17 +170,14 @@ public sealed class SharedContextTests : IDisposable
             }
             """);
 
-        if (loadAtRuntime)
-            Assert.Equal(PluginManager.PluginLifecycleOutcome.Failed,
-                Assert.Single(await PluginManager.LoadPluginsAsync("Member")).Outcome);
-        else
-            RestartPluginManager();
-
-        Assert.Empty(PluginManager.LoadedPlugins);
-        Assert.Empty(PluginManager.Contexts);
+        RestartPluginManager();
+        PluginManager.InitializeLoadedPlugins();
+        Assert.Equal("Anchor", PluginManager.InternalName(Assert.Single(PluginManager.LoadedPlugins)));
+        Assert.Single(PluginManager.Contexts);
         Assert.Equal(Path.Combine(pluginsDirectory, "Member.zip"), Assert.Single(PluginManager.FailedPlugins));
+        Assert.NotNull(Assert.Single(PluginManager.SnapshotPluginStatuses(), status => status.InternalName == "Member").Error);
         await PluginManager.ShutdownAsync();
-        Assert.Equal(["constructed", "disposed"], File.ReadAllLines(logPath));
+        Assert.Equal(["constructed", "initialized", "disposed"], File.ReadAllLines(logPath));
     }
 
     [Fact]

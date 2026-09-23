@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -179,7 +179,7 @@
     <value>Usage: /workspace | /workspace switch [&lt;title&gt;|"&lt;title&gt;"] | /workspace list</value>
   </data>
   <data name="Command_PluginUsage" xml:space="preserve">
-    <value>Usage: /plugin [list] | /plugin load &lt;InternalName&gt; | /plugin unload &lt;InternalName&gt; | /plugin reload &lt;InternalName&gt;</value>
+    <value>Usage: /plugin [list]</value>
   </data>
   <data name="Command_Empty" xml:space="preserve">
     <value>The command is empty.</value>
@@ -205,30 +205,6 @@
   <data name="Command_WorkspaceNotFound" xml:space="preserve">
     <value>Workspace not found: {0}</value>
   </data>
-  <data name="Command_PluginNotFound" xml:space="preserve">
-    <value>Plugin not found: {0}</value>
-  </data>
-  <data name="Command_PluginLoadFailed" xml:space="preserve">
-    <value>Failed to load plugin {0}.</value>
-  </data>
-  <data name="Command_PluginUnloadFailed" xml:space="preserve">
-    <value>Failed to unload plugin {0}.</value>
-  </data>
-  <data name="Command_PluginReloadFailed" xml:space="preserve">
-    <value>Failed to reload plugin {0}.</value>
-  </data>
-  <data name="Command_PluginLoaded" xml:space="preserve">
-    <value>Plugin {0} was loaded.</value>
-  </data>
-  <data name="Command_PluginUnloaded" xml:space="preserve">
-    <value>Plugin {0} was unloaded.</value>
-  </data>
-  <data name="Command_PluginReloaded" xml:space="preserve">
-    <value>Plugin {0} was reloaded.</value>
-  </data>
-  <data name="Command_PluginTitle" xml:space="preserve">
-    <value>Plugin command</value>
-  </data>
   <data name="Command_WorkspacesTitle" xml:space="preserve">
     <value>Workspaces</value>
   </data>
@@ -242,7 +218,7 @@
     <value>loaded</value>
   </data>
   <data name="Command_PluginStateUnloaded" xml:space="preserve">
-    <value>unloaded</value>
+    <value>not loaded</value>
   </data>
   <data name="Command_PluginStateFailed" xml:space="preserve">
     <value>failed</value>

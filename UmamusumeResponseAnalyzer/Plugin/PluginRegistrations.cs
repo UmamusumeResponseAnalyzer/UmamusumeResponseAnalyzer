@@ -14,7 +14,14 @@ internal sealed record AnalyzerRegistration(
     AnalyzerKind Kind,
     int Priority,
     Func<AnalyzerDispatchContext, ValueTask> Handler,
-    string Source);
+    string Source)
+{
+    int faulted;
+
+    internal bool IsFaulted => Volatile.Read(ref faulted) != 0;
+
+    internal bool TryMarkFaulted() => Interlocked.Exchange(ref faulted, 1) == 0;
+}
 
 internal sealed record PluginRegistrationPlan(
     IReadOnlyList<AnalyzerRegistration> Analyzers,
@@ -37,35 +44,30 @@ internal sealed class PluginRegistrationStage(
     readonly List<AnalyzerRegistration> analyzers = initialAnalyzers?.ToList() ?? [];
     readonly List<Func<CancellationToken, ValueTask>> backgroundOperations = [];
     bool committed;
-    bool disposed;
+    internal bool IsDisposed { get; private set; }
 
     internal IPlugin Plugin { get; } = plugin;
 
     internal void Add(IEnumerable<AnalyzerRegistration> registrations)
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        analyzers.AddRange(registrations);
-    }
+        => analyzers.AddRange(registrations);
 
     internal void AddBackground(Func<CancellationToken, ValueTask> operation)
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        backgroundOperations.Add(operation);
-    }
+        => backgroundOperations.Add(operation);
 
-    internal void Commit()
+    internal PluginRegistrationPlan Commit()
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (committed)
             throw new InvalidOperationException(string.Format(i18n.RegistrationAlreadyCommitted, PluginManager.InternalName(Plugin)));
 
-        PluginManager.CommitRegistrationStage(Plugin, analyzers, backgroundOperations);
+        var plan = new PluginRegistrationPlan([.. analyzers], [.. backgroundOperations]);
         committed = true;
+        return plan;
     }
 
     public void Dispose()
     {
-        disposed = true;
+        IsDisposed = true;
         analyzers.Clear();
         backgroundOperations.Clear();
         PluginManager.EndRegistrationStage(this);
@@ -236,6 +238,7 @@ internal static partial class PluginManager
         if (stage is null || !ReferenceEquals(stage.Plugin, plugin))
             throw new InvalidOperationException(
                 string.Format(i18n.RegistrationPhaseInvalid, InternalName(plugin)));
+        ObjectDisposedException.ThrowIf(stage.IsDisposed, stage);
         return stage;
     }
 
@@ -264,7 +267,6 @@ internal static partial class PluginManager
             var matcher = CreatePatternMatcher(pattern);
             var matches = GameEndpointCatalog.ByEndpointType.Values
                 .Where(endpoint => matcher(endpoint.Path))
-                .OrderBy(endpoint => endpoint.Path, StringComparer.Ordinal)
                 .ToList();
             if (matches.Count == 0)
                 throw new InvalidOperationException(
@@ -335,29 +337,12 @@ internal static partial class PluginManager
 
     internal static void CommitRegistrationStage(
         IPlugin plugin,
-        IReadOnlyList<AnalyzerRegistration> analyzers,
-        IReadOnlyList<Func<CancellationToken, ValueTask>> backgroundOperations)
+        PluginRegistrationPlan plan)
     {
         var generation = RequireGeneration(plugin);
-        var plan = new PluginRegistrationPlan([.. analyzers], [.. backgroundOperations]);
-        if (generation.TryStageRegistration(plan))
-            return;
-
         generation.ValidateBackgroundAdmission();
         CommitAnalyzerRegistrations(plan.Analyzers);
         generation.RunBackground(plan.BackgroundOperations);
-    }
-
-    internal static void CommitPendingRegistrations(IEnumerable<IPlugin> plugins)
-    {
-        var pending = plugins
-            .Select(plugin => (Generation: RequireGeneration(plugin), Plan: RequireGeneration(plugin).TakePendingRegistration()))
-            .ToList();
-        CommitAnalyzerRegistrations(pending.SelectMany(item => item.Plan.Analyzers));
-        foreach (var item in pending)
-            item.Generation.Open();
-        foreach (var item in pending)
-            item.Generation.RunBackground(item.Plan.BackgroundOperations);
     }
 
     internal static void CommitAnalyzerRegistrations(IEnumerable<AnalyzerRegistration> registrations)
@@ -376,22 +361,21 @@ internal static partial class PluginManager
                 added.Where(registration => registration.Kind == AnalyzerKind.Response))));
     }
 
-    internal static AnalyzerCallbackSnapshot SnapshotAnalyzerRegistrations(
+    internal static ImmutableArray<AnalyzerRegistration> SnapshotAnalyzerRegistrations(
         AnalyzerKind kind,
         Type endpointType)
     {
         var snapshot = Runtime.ReadAnalyzers();
         var index = kind == AnalyzerKind.Request ? snapshot.RequestByEndpoint : snapshot.ResponseByEndpoint;
-        return AnalyzerCallbackSnapshot.Create(index.GetValueOrDefault(endpointType, []));
+        return index.GetValueOrDefault(endpointType, []);
     }
 
-    static void RemoveAnalyzerMethods(IEnumerable<IPlugin> plugins)
+    static void RemoveAnalyzerMethods(IPlugin plugin)
     {
-        var removed = plugins.ToHashSet<IPlugin>(ReferenceEqualityComparer.Instance);
         var current = Runtime.ReadAnalyzers();
         Runtime.PublishAnalyzers(new(
-            current.Request.Where(registration => !removed.Contains(registration.Plugin)).ToImmutableArray(),
-            current.Response.Where(registration => !removed.Contains(registration.Plugin)).ToImmutableArray()));
+            current.Request.Where(registration => !ReferenceEquals(registration.Plugin, plugin)).ToImmutableArray(),
+            current.Response.Where(registration => !ReferenceEquals(registration.Plugin, plugin)).ToImmutableArray()));
     }
 
     static ImmutableArray<AnalyzerRegistration> AppendInDispatchOrder(

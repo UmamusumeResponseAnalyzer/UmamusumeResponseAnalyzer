@@ -245,6 +245,7 @@ public sealed class StartupWorkflowTests
         Assert.Equal(existing && !shared ? new Version(1, 0, 0) : null,
             PluginManager.SnapshotPluginStatuses().SingleOrDefault(p => p.InternalName == name)?.Version);
         Assert.DoesNotContain("disposed", File.Exists("lifecycle.log") ? File.ReadAllText("lifecycle.log") : "");
+        Assert.Empty(host.CompleteCommand("/plugin reload "));
         await terminal.InjectAsync(Key.Enter);
         await terminal.WaitForScreenAsync(I18N_Instruction);
         Assert.Same(workspace, Workspace.Current);

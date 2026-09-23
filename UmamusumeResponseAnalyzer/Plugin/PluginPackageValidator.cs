@@ -33,8 +33,15 @@ internal static class PluginPackageValidator
     internal static ValidatedPluginPackage Validate(
         string packagePath,
         bool requireMatchingPackageFileName)
+        => Validate(File.ReadAllBytes(packagePath), packagePath, requireMatchingPackageFileName);
+
+    internal static ValidatedPluginPackage Validate(
+        byte[] packageBytes,
+        string packagePath,
+        bool requireMatchingPackageFileName)
     {
-        using var archive = ZipFile.OpenRead(packagePath);
+        using var packageStream = new MemoryStream(packageBytes, writable: false);
+        using var archive = new ZipArchive(packageStream, ZipArchiveMode.Read);
         var manifestEntries = archive.Entries
             .Where(entry => IsRoot(entry.FullName) &&
                             string.Equals(entry.FullName, "manifest.json", StringComparison.OrdinalIgnoreCase))

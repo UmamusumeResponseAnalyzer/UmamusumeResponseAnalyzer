@@ -12,7 +12,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class HachimiEdgeTests(PluginRuntimeFixture fixture)
 {
     [Theory]

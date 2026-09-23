@@ -14,6 +14,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 await plugin.ConfigPromptAsync(TerminalUi.RequireHost().Application, cancellationToken);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
+            catch (Exception ex) when (PluginManager.TryDisableForMissingAssembly(plugin, ex, "ConfigPromptAsync")) { }
         }
     }
 }

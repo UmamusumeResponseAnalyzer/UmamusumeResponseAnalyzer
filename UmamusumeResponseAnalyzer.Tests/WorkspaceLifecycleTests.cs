@@ -8,7 +8,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests;
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class WorkspaceLifecycleTests(PluginRuntimeFixture fixture) : IDisposable
 {
     readonly TerminalGuiTestApp terminal = fixture.Terminal;

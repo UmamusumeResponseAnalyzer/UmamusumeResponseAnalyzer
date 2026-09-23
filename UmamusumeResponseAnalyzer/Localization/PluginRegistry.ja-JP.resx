@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -142,16 +142,13 @@
     <value>manifest {0} に重複する名前があります: {1}</value>
   </data>
   <data name="CallbackUnavailable" xml:space="preserve">
-    <value>プラグインがアンロード済み、または generation が閉じているため、コールバックを開始できません: {0}</value>
+    <value>プラグインが実行中ではないため、コールバックを開始できません：{0}</value>
   </data>
   <data name="ConfigurationUnavailable" xml:space="preserve">
-    <value>プラグインがアンロード済み、または generation が閉じているため、設定を開けません: {0}</value>
+    <value>プラグインが実行中ではないため、設定を開けません：{0}</value>
   </data>
   <data name="NotificationDiagnosticsFailed" xml:space="preserve">
     <value>プラグインエラーと通知の診断が失敗しました。</value>
-  </data>
-  <data name="CallbackLifecycleReentry" xml:space="preserve">
-    <value>プラグインのコールバック内ではライフサイクル操作を開始できません。コールバックが戻った後に呼び出してください。</value>
   </data>
   <data name="LifecyclePhaseInvalid" xml:space="preserve">
     <value>phase={0} ではプラグイン操作 {1} を実行できません。</value>
@@ -164,9 +161,6 @@
   </data>
   <data name="RuntimeStateNotEmpty" xml:space="preserve">
     <value>phase={0} でプラグインの実行時状態が空でないため、Init を実行できません。</value>
-  </data>
-  <data name="FailedGroupContextMissing" xml:space="preserve">
-    <value>初期化に失敗したプラグイングループに context がありません: {0}</value>
   </data>
   <data name="InitializationFailed" xml:space="preserve">
     <value>プラグイン {0} の初期化に失敗しました</value>
@@ -182,9 +176,6 @@
   </data>
   <data name="InvalidPackage" xml:space="preserve">
     <value>プラグインパッケージが無効です: package={0}</value>
-  </data>
-  <data name="DependencyNotInstalled" xml:space="preserve">
-    <value>プラグインの依存関係グラフに未インストールのプラグインがあります: {0}</value>
   </data>
   <data name="DependencyCycle" xml:space="preserve">
     <value>プラグインの manifest の Dependencies に循環があります: {0}</value>
@@ -228,59 +219,8 @@
   <data name="AssemblyContentConflict" xml:space="preserve">
     <value>プラグイングループに同名で内容の異なるアセンブリがあります: {0}, context={1}</value>
   </data>
-  <data name="PluginNotFound" xml:space="preserve">
-    <value>プラグイン {0} が存在しないため、読み込めません。</value>
-  </data>
-  <data name="UnloadFailed" xml:space="preserve">
-    <value>プラグインのアンロードに失敗しました: plugin={0}</value>
-  </data>
-  <data name="BatchUnloadFailed" xml:space="preserve">
-    <value>プラグインの一括アンロードに失敗しました。</value>
-  </data>
-  <data name="LifecycleTransactionBusy" xml:space="preserve">
-    <value>プラグインのライフサイクルトランザクションが実行中のため、並行操作や再入操作はできません。</value>
-  </data>
-  <data name="MissingFileUnloaded" xml:space="preserve">
-    <value>プラグイン {0} のファイルが存在しないため、アンロードしました。</value>
-  </data>
-  <data name="PluginReloaded" xml:space="preserve">
-    <value>プラグイン {0} を再読み込みしました。</value>
-  </data>
-  <data name="ContextGroupMissing" xml:space="preserve">
-    <value>読み込まれたプラグインに context group がありません: {0}</value>
-  </data>
-  <data name="PluginNotLoaded" xml:space="preserve">
-    <value>プラグイン {0} は読み込まれていません。</value>
-  </data>
-  <data name="RelatedReloadFailed" xml:space="preserve">
-    <value>プラグイン {0} はアンロードされましたが、関連プラグインの再読み込みに失敗しました: {1}</value>
-  </data>
-  <data name="PluginUnloaded" xml:space="preserve">
-    <value>プラグイン {0} をアンロードしました。</value>
-  </data>
-  <data name="GroupInitializationCleanupFailed" xml:space="preserve">
-    <value>プラグイングループの初期化とクリーンアップに失敗しました。</value>
-  </data>
-  <data name="GroupLoadingCleanupFailed" xml:space="preserve">
-    <value>プラグイングループの読み込みとクリーンアップに失敗しました。</value>
-  </data>
-  <data name="StagedGroupCommitCleanupFailed" xml:space="preserve">
-    <value>ステージング済みプラグイングループの確定とクリーンアップに失敗しました。</value>
-  </data>
   <data name="CleanupPhaseFailed" xml:space="preserve">
     <value>プラグインのクリーンアップに失敗しました: plugin={0}, phase={1}</value>
-  </data>
-  <data name="DisposeFailed" xml:space="preserve">
-    <value>プラグインのクリーンアップに失敗しました: plugin={0}, phase=Dispose, {1}{2}{3}</value>
-  </data>
-  <data name="RegistrationContextCleanupFailed" xml:space="preserve">
-    <value>プラグインの registration/context のクリーンアップに失敗しました。</value>
-  </data>
-  <data name="HostEventsCleanupFailed" xml:space="preserve">
-    <value>プラグインの HostEvents のクリーンアップに失敗しました。</value>
-  </data>
-  <data name="LoadContextCleanupFailed" xml:space="preserve">
-    <value>プラグインの ALC のクリーンアップに失敗しました: context={0}</value>
   </data>
   <data name="CleanupFailed" xml:space="preserve">
     <value>プラグインのクリーンアップに失敗しました。</value>
@@ -293,12 +233,6 @@
   </data>
   <data name="GenerationStillInitializing" xml:space="preserve">
     <value>プラグインの generation はまだ初期化中です: {0}</value>
-  </data>
-  <data name="InitializationRegistrationCommitted" xml:space="preserve">
-    <value>プラグインの初期化登録は既に確定しています: {0}</value>
-  </data>
-  <data name="InitializationRegistrationNotCommitted" xml:space="preserve">
-    <value>プラグインの初期化登録はまだ確定していません: {0}</value>
   </data>
   <data name="GenerationCloseFailed" xml:space="preserve">
     <value>プラグインの generation を閉じることができませんでした。</value>
@@ -365,5 +299,11 @@
   </data>
   <data name="ListSeparator" xml:space="preserve">
     <value>、</value>
+  </data>
+  <data name="PluginDisabledMissingAssembly" xml:space="preserve">
+    <value>プラグイン {0} は {1} の実行中に必須アセンブリ {2} が見つからなかったため、プロセス終了まで無効になりました：{3}</value>
+  </data>
+  <data name="AnalyzerDisabledMissingAssembly" xml:space="preserve">
+    <value>プラグイン {0} の analyzer 登録 {1}（endpoint：{2}）は、{3} の実行中に必須アセンブリ {4} が見つからなかったため、この登録のみプロセス終了まで無効になりました：{5}</value>
   </data>
 </root>

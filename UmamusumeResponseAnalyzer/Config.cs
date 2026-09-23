@@ -260,14 +260,14 @@ namespace UmamusumeResponseAnalyzer
     {
         internal async Task PromptAsync(CancellationToken cancellationToken)
         {
-            var plugins = BuildPluginChoices(
-                PluginManager.SnapshotPluginStatuses().Where(plugin => plugin.IsLoaded));
-            var choices = plugins
-                .Select(x => (Label: x.Key, InternalName: (string?)x.Value))
-                .Append((i18n.Return, null))
-                .ToArray();
             while (true)
             {
+                var plugins = BuildPluginChoices(
+                    PluginManager.SnapshotPluginStatuses().Where(plugin => plugin.IsLoaded));
+                var choices = plugins
+                    .Select(x => (Label: x.Key, InternalName: (string?)x.Value))
+                    .Append((i18n.Return, null))
+                    .ToArray();
                 var selected = ModalDialogs.Menu(
                     i18n.Tabs_Plugin_Title,
                     choices,

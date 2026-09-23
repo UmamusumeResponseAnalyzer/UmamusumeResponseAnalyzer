@@ -1,5 +1,4 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
-using System.Diagnostics;
 using System.Text;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -32,13 +31,14 @@ internal static class HostCommands
         Display? Display = null,
         Workspace? SwitchWorkspace = null);
 
-    internal static async Task<Result?> ExecuteAsync(
+    internal static Result? Execute(
         string command,
         Snapshot snapshot,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(snapshot);
+        cancellationToken.ThrowIfCancellationRequested();
         if (!command.StartsWith('/'))
             return null;
 
@@ -49,7 +49,7 @@ internal static class HostCommands
         if (name.Equals("workspace", StringComparison.OrdinalIgnoreCase))
             return RunWorkspaceCommand(arguments, snapshot);
         if (name.Equals("plugin", StringComparison.OrdinalIgnoreCase))
-            return await RunPluginCommandAsync(arguments, snapshot, cancellationToken);
+            return RunPluginCommand(arguments, snapshot);
 
         return Warning(string.Format(i18n.Command_Unknown, name));
     }
@@ -71,7 +71,7 @@ internal static class HostCommands
         return name.ToLowerInvariant() switch
         {
             "workspace" => CompleteWorkspaceCommand(rest, snapshot.Workspaces),
-            "plugin" => CompletePluginCommand(rest, snapshot.Plugins),
+            "plugin" => CompleteByPrefix($"/plugin {rest}", ["/plugin list"]),
             _ => []
         };
     }
@@ -169,63 +169,10 @@ internal static class HostCommands
         return Warning(i18n.Command_WorkspaceUsage);
     }
 
-    static async Task<Result> RunPluginCommandAsync(
-        string arguments,
-        Snapshot snapshot,
-        CancellationToken cancellationToken)
-    {
-        var (subcommand, remainder) = Tokenize(arguments);
-        if (subcommand.Length == 0)
-            return ShowPlugins(snapshot.Plugins);
-
-        if (subcommand.Equals("list", StringComparison.OrdinalIgnoreCase))
-        {
-            return remainder.Length == 0
-                ? ShowPlugins(snapshot.Plugins)
-                : Warning(i18n.Command_PluginUsage);
-        }
-
-        var action = subcommand.ToLowerInvariant();
-        if (action is not ("load" or "unload" or "reload"))
-            return Warning(i18n.Command_PluginUsage);
-
-        var (pluginName, extra) = Tokenize(remainder);
-        if (pluginName.Length == 0 || extra.Length != 0)
-            return Warning(i18n.Command_PluginUsage);
-
-        var plugin = snapshot.Plugins.FirstOrDefault(status =>
-            status.InternalName.Equals(pluginName, StringComparison.OrdinalIgnoreCase));
-        if (plugin is null)
-            return Warning(string.Format(i18n.Command_PluginNotFound, pluginName));
-
-        cancellationToken.ThrowIfCancellationRequested();
-        var result = (action switch
-        {
-            "load" => await PluginManager.LoadPluginsAsync(plugin.InternalName),
-            "unload" => await PluginManager.UnloadPluginsAsync(plugin.InternalName),
-            "reload" => await PluginManager.ReloadPluginsAsync(plugin.InternalName),
-            _ => throw new UnreachableException()
-        }).Single();
-
-        var failed = result.Outcome == PluginManager.PluginLifecycleOutcome.Failed;
-        var message = string.Format((action, failed) switch
-        {
-            ("load", true) => i18n.Command_PluginLoadFailed,
-            ("unload", true) => i18n.Command_PluginUnloadFailed,
-            ("reload", true) => i18n.Command_PluginReloadFailed,
-            ("load", false) => i18n.Command_PluginLoaded,
-            ("unload", false) => i18n.Command_PluginUnloaded,
-            ("reload", false) => i18n.Command_PluginReloaded,
-            _ => throw new UnreachableException()
-        }, plugin.InternalName);
-        if (failed)
-            return new(message, UiSeverity.Error);
-
-        return new(
-            message,
-            UiSeverity.Success,
-            new(i18n.Command_PluginTitle, [new(message)]));
-    }
+    static Result RunPluginCommand(string arguments, Snapshot snapshot)
+        => arguments.Length == 0 || arguments.Equals("list", StringComparison.OrdinalIgnoreCase)
+            ? ShowPlugins(snapshot.Plugins)
+            : Warning(i18n.Command_PluginUsage);
 
     static Result ShowWorkspaces(Snapshot snapshot, bool selectable)
     {
@@ -261,7 +208,9 @@ internal static class HostCommands
             {
                 var state = plugin.IsLoaded
                     ? i18n.Command_PluginStateLoaded
-                    : plugin.IsAvailable ? i18n.Command_PluginStateUnloaded : i18n.Command_PluginStateFailed;
+                    : plugin.Error is not null || !plugin.IsAvailable
+                        ? i18n.Command_PluginStateFailed
+                        : i18n.Command_PluginStateUnloaded;
                 var displayName = plugin.DisplayName == plugin.InternalName
                     ? string.Empty
                     : $" ({plugin.DisplayName})";
@@ -269,8 +218,9 @@ internal static class HostCommands
                 var author = string.IsNullOrWhiteSpace(plugin.Author)
                     ? string.Empty
                     : " " + string.Format(i18n.Command_PluginAuthor, plugin.Author);
+                var error = plugin.Error is null ? string.Empty : $" — {plugin.Error}";
                 return new DisplayItem(
-                    $"{state} {plugin.InternalName}{displayName}{version}{author}");
+                    $"{state} {plugin.InternalName}{displayName}{version}{author}{error}");
             }).ToArray()));
     }
 
@@ -331,36 +281,6 @@ internal static class HostCommands
             return title;
 
         return $"\"{title.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
-    }
-
-    static IReadOnlyList<string> CompletePluginCommand(
-        string rest,
-        IReadOnlyList<PluginManager.PluginRuntimeStatus> plugins)
-    {
-        var subcommandSpaceIndex = rest.IndexOf(' ');
-        if (subcommandSpaceIndex < 0)
-        {
-            return CompleteByPrefix($"/plugin {rest}",
-            [
-                "/plugin list",
-                "/plugin load",
-                "/plugin unload",
-                "/plugin reload"
-            ]);
-        }
-
-        var subcommand = rest[..subcommandSpaceIndex];
-        if (!subcommand.Equals("load", StringComparison.OrdinalIgnoreCase) &&
-            !subcommand.Equals("unload", StringComparison.OrdinalIgnoreCase) &&
-            !subcommand.Equals("reload", StringComparison.OrdinalIgnoreCase))
-        {
-            return [];
-        }
-
-        var arguments = rest[(subcommandSpaceIndex + 1)..];
-        return CompleteByPrefix(
-            $"/plugin {subcommand} {arguments}",
-            plugins.Select(plugin => $"/plugin {subcommand} {plugin.InternalName}"));
     }
 
     static IReadOnlyList<string> CompleteByPrefix(

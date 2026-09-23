@@ -9,8 +9,7 @@ using UmamusumeResponseAnalyzer.Plugin;
 namespace UmamusumeResponseAnalyzer.Tests
 {
     /// <summary>
-    /// 用 Roslyn 在运行时把插件源码字符串编译成 DLL，供热重载集成测试加载/重载。
-    /// 这样可以编出 v1/v2 两个版本，验证 reload 真的换上了新代码（而不仅是 ALC 卸载）。
+    /// 用 Roslyn 编译真实插件 DLL，验证启动加载、依赖解析与重启前后的包快照。
     /// </summary>
     static class PluginCompiler
     {

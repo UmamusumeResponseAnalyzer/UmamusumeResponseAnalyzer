@@ -5,7 +5,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests
 {
-    [Collection("PluginReload")]
+    [Collection("PluginRuntime")]
     public sealed class ResourceUpdaterTests : IDisposable
     {
         readonly HttpClient originalHttpClient;

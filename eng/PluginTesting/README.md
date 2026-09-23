@@ -14,6 +14,8 @@
 
 这些项目为可执行程序，验收应使用 `dotnet run` 或直接执行构建产物。
 
+Host 的注册阶段和调度契约见 [插件开发](../../README.md#插件开发-plugin-development)：注册须在有效阶段内串行进行；analyzer 缺程序集只停用出错的单条注册，其他入口缺程序集按插件执行清理。直接调用 handler 的 smoke 验证业务输出，不覆盖 Host 的注册准入、缺程序集隔离或在途调用保护；这些行为由 Host 测试验证。Host 的原子注册测试同时验证 `OnStarted` 成功后启动后台任务、失败时不启动。共享组程序集冲突使该组加载失败，无关组继续启动；`--package-load` 验证正常包的加载路径。
+
 从 Host 仓库根目录执行以下 PowerShell。`UraTestPluginSourcesRoot` 指定包含各插件检出的目录，`Tests/Directory.Build.props` 从自身位置确定 Host 根目录；`URA_TEST_PLUGINS_ROOT` 供默认 `PluginSmokeTests` 检查插件源码。`DisableRealDriverIO` 用于无真实终端输入输出的测试运行。可选的 `URA_TEST_UI_CULTURE` 仅供测试，接受 `zh-CN`、`en-US`、`ja-JP`；设置后在共用 smoke Host 初始化配置前应用，其他值直接失败，未设置时沿用运行环境的语言。
 
 ```powershell
@@ -77,14 +79,14 @@ DeployUraPluginToLocalAppDataOnBuild=false
 dotnet run --project .\eng\PluginTesting\Tests\PluginSmokeTests @smokeBuild -- --package-load
 ```
 
-此模式在临时目录复制 ZIP，通过 `PluginManager` 加载并启动插件，用 ZIP 内主 DLL 的 MVID 验证执行来源，检查共享 Host/Gallop/Terminal.Gui 程序集身份和依赖组的 collectible load context。业务检查包括：
+此模式在临时目录复制 ZIP，通过 `PluginManager` 加载并启动插件，用 ZIP 内主 DLL 的 MVID 验证执行来源，检查共享 Host/Gallop/Terminal.Gui 程序集身份和依赖组共享且进程内固定的 load context。业务检查包括：
 
 - GamePacketCollector：request/response 原始字节与头字段、向本地 loopback HTTP 服务发出 PUT、成功后清空 pending。
 - LegendScenarioAnalyzer / AIRedirector：CheckEvent、Load 更新训练面板与目标角色/回合；AI 进程开关保持关闭。
 - EventLoggerPlugin / EventResponseAnalyzer：当前回合/剧本、工作区内训练失败警告、已知事件选项及效果。
 - RamenScenarioAnalyzer / SendGameStatusPlugin：拉面状态与面板、`thisTurn.json` 和编号快照、状态写入不改变当前工作区或 framebuffer。
 
-结束时要求实例、上下文和分析器注册撤销，面板移除，插件/回调/load context 的弱引用经 GC 后释放。默认模式与 `--package-load` 各自运行，互不替代。该模式不经过真实 HTTP ingress，也不代表所有外部插件功能或真实捕获都已验证。
+测试结束时用测试清理入口撤销实例及分析器注册并移除面板；程序集上下文保留至进程结束。默认模式与 `--package-load` 各自运行，互不替代。该模式不经过真实 HTTP ingress，也不代表所有外部插件功能或真实捕获都已验证。
 
 ## HTTP 捕获回放
 

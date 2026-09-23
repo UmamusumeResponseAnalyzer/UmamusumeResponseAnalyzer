@@ -10,7 +10,7 @@ using Xunit;
 
 namespace UmamusumeResponseAnalyzer.Tests
 {
-    [Collection("PluginReload")]
+    [Collection("PluginRuntime")]
     public sealed class PluginLifecycleTests : IDisposable
     {
         readonly IApplication application;
@@ -68,31 +68,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.NotNull(context.Context.Analyzers);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task NestedCallbacksBlockLifecycleAcrossAwaitAndReleaseAfterReturn(bool sameOwner)
-        {
-            var first = new ContextInitializePlugin();
-            var second = new ContextInitializePlugin();
-            PluginManager.InitializePlugin(first);
-            PluginManager.InitializePlugin(second);
-
-            using (PluginManager.EnterPluginCallback(first))
-            {
-                using (PluginManager.EnterPluginCallback(sameOwner ? first : second))
-                {
-                    await Task.Yield();
-                    Assert.Equal(i18n.CallbackLifecycleReentry,
-                        Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins).Message);
-                }
-                Assert.Equal(i18n.CallbackLifecycleReentry,
-                    Assert.Throws<InvalidOperationException>(PluginManager.InitializeLoadedPlugins).Message);
-            }
-
-            PluginManager.InitializeLoadedPlugins();
-        }
-
         [Fact]
         public async Task InitializeLoadedPlugins_QuarantinesFailingPluginAndContinues()
         {
@@ -102,7 +77,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             PluginManager.InitializeLoadedPlugins();
             await PluginManager.TriggerStartedAsync();
 
-            var statuses = PluginManager.InspectPluginStatuses();
+            var statuses = PluginManager.SnapshotPluginStatuses();
             var failing = Assert.Single(statuses, status => status.InternalName == fixture.FailingPluginName);
             var healthy = Assert.Single(statuses, status => status.InternalName == fixture.HealthyPluginName);
             Assert.False(failing.IsLoaded);
@@ -117,7 +92,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public async Task TriggerStartedForPluginsAsync_LogsHandlerFailureAndContinues()
+        public async Task TriggerStartedAsync_LogsHandlerFailureAndContinues()
         {
             var failing = new StartedFailurePlugin();
             var counter = new StartedCounterPlugin();
@@ -129,7 +104,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             host.LogAdded += lines.Add;
             try
             {
-                var ex = await Record.ExceptionAsync(() => PluginManager.TriggerStartedForPluginsAsync([failing, counter]));
+                var ex = await Record.ExceptionAsync(() => PluginRuntimeFixture.TriggerStartedAsync());
                 await host.FlushAsync();
 
                 Assert.Null(ex);
@@ -173,18 +148,18 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public async Task TriggerStartedForPluginsAsync_RethrowsRequestedCancellation()
+        public async Task TriggerStartedAsync_RethrowsRequestedCancellation()
         {
             using var cancellation = new CancellationTokenSource();
             var plugin = new CanceledStartedPlugin(cancellation);
             PluginManager.InitializePlugin(plugin);
 
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                PluginManager.TriggerStartedForPluginsAsync([plugin], cancellation.Token));
+                PluginRuntimeFixture.TriggerStartedAsync(cancellation.Token));
         }
 
         [Fact]
-        public async Task TriggerStartedForPluginsAsync_ChecksCancellationBetweenSubscriptions()
+        public async Task TriggerStartedAsync_ChecksCancellationBetweenSubscriptions()
         {
             using var cancellation = new CancellationTokenSource();
             var lateOutput = Path.Combine(Path.GetTempPath(), "ura-started-cancellation-" + Guid.NewGuid().ToString("N"));
@@ -193,7 +168,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             try
             {
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                    PluginManager.TriggerStartedForPluginsAsync([plugin], cancellation.Token));
+                    PluginRuntimeFixture.TriggerStartedAsync(cancellation.Token));
 
                 Assert.False(File.Exists(lateOutput));
             }
@@ -211,37 +186,9 @@ namespace UmamusumeResponseAnalyzer.Tests
             PluginManager.InitializePlugin(plugin);
 
             PluginManager.DisposeHostEventSubscriptions(plugin);
-            await PluginManager.TriggerStartedForPluginsAsync([plugin]);
+            await PluginRuntimeFixture.TriggerStartedAsync();
 
             Assert.Equal(0, plugin.StartedCalls);
-        }
-
-        [Fact]
-        public async Task UnloadAllowsBackgroundCancellationToSnapshotLoadedPluginsBeforeDispose()
-        {
-            const string scenario = "plugin-generation-unload-snapshot-reentry";
-            if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
-            {
-                Assert.Equal(
-                    "ok",
-                    await TerminalUiLifecycleProcessTests.RunChildAsync(
-                        scenario,
-                        typeof(PluginLifecycleTests),
-                        nameof(UnloadAllowsBackgroundCancellationToSnapshotLoadedPluginsBeforeDispose)));
-                return;
-            }
-
-            using var fixture = new GenerationOrderingPackageFixture();
-            RestartPluginRuntime();
-            PluginManager.InitializeLoadedPlugins();
-            await WaitForFileAsync(fixture.BackgroundStarted).WaitAsync(TimeSpan.FromSeconds(5));
-
-            var unload = Task.Run(() => PluginManager.UnloadPluginsAsync(fixture.PluginName));
-            var result = Assert.Single(await unload.WaitAsync(TimeSpan.FromSeconds(5)));
-
-            Assert.Equal(PluginManager.PluginLifecycleOutcome.Succeeded, result.Outcome);
-            fixture.AssertDisposeOrder();
-            TerminalUiLifecycleChildProcess.WriteResult("ok");
         }
 
         [Fact]
@@ -271,25 +218,6 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public async Task GenerationCloseFailure_UnloadStillCompletesLifecycleCleanup()
-        {
-            const string scenario = "generation-close-failure-unload-cleanup";
-            if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
-            {
-                Assert.Equal(
-                    "ok",
-                    await TerminalUiLifecycleProcessTests.RunChildAsync(
-                        scenario,
-                        typeof(PluginLifecycleTests),
-                        nameof(GenerationCloseFailure_UnloadStillCompletesLifecycleCleanup)));
-                return;
-            }
-
-            await AssertGenerationCloseFailureCleanupAsync(shutdown: false);
-            TerminalUiLifecycleChildProcess.WriteResult("ok");
-        }
-
-        [Fact]
         public async Task GenerationCloseFailure_ShutdownStillCompletesLifecycleCleanup()
         {
             const string scenario = "generation-close-failure-shutdown-cleanup";
@@ -304,13 +232,13 @@ namespace UmamusumeResponseAnalyzer.Tests
                 return;
             }
 
-            await AssertGenerationCloseFailureCleanupAsync(shutdown: true);
+            await AssertGenerationCloseFailureCleanupAsync();
             TerminalUiLifecycleChildProcess.WriteResult("ok");
         }
 
-        static async Task AssertGenerationCloseFailureCleanupAsync(bool shutdown)
+        static async Task AssertGenerationCloseFailureCleanupAsync()
         {
-            using var fixture = new FaultingGenerationPackageFixture(shutdown ? "Shutdown" : "Unload");
+            using var fixture = new FaultingGenerationPackageFixture("Shutdown");
             RestartPluginRuntime();
             PluginManager.InitializeLoadedPlugins();
             await WaitForFileAsync(fixture.BackgroundStarted).WaitAsync(TimeSpan.FromSeconds(5));
@@ -318,96 +246,51 @@ namespace UmamusumeResponseAnalyzer.Tests
                 PluginManager.SnapshotLoadedPlugins(),
                 candidate => PluginManager.InternalName(candidate) == fixture.PluginName);
 
-            var error = shutdown
-                ? await Assert.ThrowsAsync<AggregateException>(PluginManager.ShutdownAsync)
-                : await Assert.ThrowsAsync<AggregateException>(
-                    () => PluginManager.UnloadPluginsAsync(fixture.PluginName));
+            var error = await Assert.ThrowsAsync<AggregateException>(PluginManager.ShutdownAsync);
 
             AssertWorkflowFailurePrecedesCleanupFailure(error);
             Assert.Equal(["dispose"], File.ReadAllLines(fixture.DisposeLog));
             Assert.DoesNotContain(
                 PluginManager.ResponseAnalyzerMethods,
                 registration => ReferenceEquals(registration.Plugin, plugin));
-            await PluginManager.TriggerStartedForPluginsAsync([plugin]);
+            await PluginRuntimeFixture.TriggerStartedAsync();
             Assert.False(File.Exists(fixture.StartedMarker));
-            Assert.False(Assert.Single(
-                PluginManager.InspectPluginStatuses(),
-                status => status.InternalName == fixture.PluginName).IsLoaded);
+            Assert.Empty(PluginManager.SnapshotPluginStatuses());
 
-            if (!shutdown)
-            {
-                var result = Assert.Single(await PluginManager.LoadPluginsAsync(fixture.PluginName));
-                Assert.Equal(PluginManager.PluginLifecycleOutcome.Succeeded, result.Outcome);
-            }
-            else
-            {
-                PluginManager.Init();
-                PluginManager.InitializeLoadedPlugins();
-            }
+            PluginManager.Init();
+            PluginManager.InitializeLoadedPlugins();
 
             Assert.True(Assert.Single(
-                PluginManager.InspectPluginStatuses(),
+                PluginManager.SnapshotPluginStatuses(),
                 status => status.InternalName == fixture.PluginName).IsLoaded);
             await PluginManager.ShutdownAsync();
         }
 
         [Fact]
-        public async Task DependencyGroupInitializeFailure_DoesNotStartBackgroundOrCommitAnyMember()
+        public async Task DependencyGroupInitializeFailureKeepsHealthyMemberRunning()
         {
-            using var fixture = new DependencyInitializationPackageFixture(failSecond: true);
+            using var fixture = new DependencyInitializationPackageFixture();
             RestartPluginRuntime();
-            var stagedPlugins = PluginManager.SnapshotLoadedPlugins();
-
-            PluginManager.InitializeLoadedPlugins();
-
-            Assert.False(File.Exists(fixture.BackgroundMarker));
-            Assert.True(File.Exists(fixture.SecondInitializeMarker));
-            var failedStatuses = PluginManager.InspectPluginStatuses()
-                .Where(status => fixture.Names.Contains(status.InternalName))
-                .ToArray();
-            Assert.Equal(2, failedStatuses.Length);
-            Assert.All(failedStatuses, status =>
-            {
-                Assert.False(status.IsLoaded);
-                Assert.True(status.IsAvailable);
-            });
-            Assert.DoesNotContain(
-                PluginManager.ResponseAnalyzerMethods,
-                registration => fixture.Names.Contains(PluginManager.InternalName(registration.Plugin)));
-            await PluginManager.TriggerStartedForPluginsAsync(stagedPlugins);
-            Assert.False(File.Exists(fixture.StartedMarker));
-
-            fixture.ReplaceSecondWithSuccessfulPackage();
-            var results = await PluginManager.LoadPluginsAsync([.. fixture.Names]);
-            Assert.Equal(2, results.Count);
-            Assert.All(
-                results,
-                result => Assert.Equal(PluginManager.PluginLifecycleOutcome.Succeeded, result.Outcome));
-            var recoveredStatuses = PluginManager.InspectPluginStatuses()
-                .Where(status => fixture.Names.Contains(status.InternalName))
-                .ToArray();
-            Assert.Equal(2, recoveredStatuses.Length);
-            Assert.All(recoveredStatuses, status => Assert.True(status.IsLoaded));
-            await PluginManager.ShutdownAsync();
-        }
-
-        [Fact]
-        public async Task SuccessfulDependencyGroup_StartsBackgroundOnlyAfterWholeGroupInitialization()
-        {
-            using var fixture = new DependencyInitializationPackageFixture(failSecond: false);
-            RestartPluginRuntime();
-
             PluginManager.InitializeLoadedPlugins();
             await WaitForFileAsync(fixture.BackgroundMarker).WaitAsync(TimeSpan.FromSeconds(5));
+            await PluginManager.TriggerStartedAsync();
 
-            Assert.Equal("not-started", File.ReadAllText(fixture.EarlyStartObservation));
-            Assert.Equal("after-group-initialize", File.ReadAllText(fixture.BackgroundMarker));
-            var statuses = PluginManager.InspectPluginStatuses()
-                .Where(status => fixture.Names.Contains(status.InternalName))
-                .ToArray();
+            Assert.True(File.Exists(fixture.SecondInitializeMarker));
+            Assert.True(File.Exists(fixture.StartedMarker));
+            var statuses = PluginManager.SnapshotPluginStatuses()
+                .Where(status => fixture.Names.Contains(status.InternalName)).ToArray();
             Assert.Equal(2, statuses.Length);
-            Assert.All(statuses, status => Assert.True(status.IsLoaded));
-            await PluginManager.ShutdownAsync();
+            Assert.Single(statuses, status => status.IsLoaded);
+            Assert.Single(statuses, status => !status.IsLoaded && status.Error is not null);
+            Assert.Contains(PluginManager.ResponseAnalyzerMethods,
+                registration => fixture.Names.Contains(PluginManager.InternalName(registration.Plugin)));
+
+            fixture.ReplaceSecondWithSuccessfulPackage();
+            Assert.Single(PluginManager.SnapshotPluginStatuses(),
+                status => fixture.Names.Contains(status.InternalName) && !status.IsLoaded);
+            RestartPluginRuntime();
+            PluginManager.InitializeLoadedPlugins();
+            Assert.All(PluginManager.SnapshotPluginStatuses(), status => Assert.True(status.IsLoaded));
         }
 
         [Fact]
@@ -474,6 +357,33 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
+        public async Task CompletedRegistrationStage_RejectsCapturedContextForEveryRegistration()
+        {
+            var plugin = new CapturingRegistrationPlugin();
+            PluginManager.InitializePlugin(plugin);
+            var path = GameEndpointCatalog.ByEndpointType[typeof(GameApi.Account.Index)].Path;
+            var registrations = new Action[]
+            {
+                () => plugin.Context.Analyzers.Register<ReadOnlyMemory<byte>>(
+                    AnalyzerKind.Response, [EndpointPattern.Exact(path)], _ => ValueTask.CompletedTask),
+                () => plugin.Context.RunBackground(_ => ValueTask.CompletedTask),
+                () => plugin.Context.Events.OnStarted(_ => ValueTask.CompletedTask),
+            };
+
+            foreach (var registration in registrations)
+                Assert.Throws<InvalidOperationException>(registration);
+            ExecutionContext.Run(plugin.CapturedContext, _ =>
+            {
+                foreach (var registration in registrations)
+                    Assert.Throws<ObjectDisposedException>(registration);
+            }, null);
+
+            Assert.Empty(PluginManager.ResponseAnalyzerMethods);
+            await PluginRuntimeFixture.TriggerStartedAsync();
+            Assert.Equal([1, 2, 3], plugin.StartedOrder);
+        }
+
+        [Fact]
         public async Task PluginConfigPrompt_RunAsync_RejectsStalePluginInstance()
         {
             var loaded = new ConfigPromptPlugin();
@@ -492,8 +402,8 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             PluginManager.PluginRuntimeStatus[] plugins =
             [
-                new("PluginA", "Same Display Name", "Alice", null, true, true),
-                new("PluginB", "Same Display Name", "Bob", null, true, true),
+                new("PluginA", "Same Display Name", "Alice", null, true, true, null),
+                new("PluginB", "Same Display Name", "Bob", null, true, true, null),
             ];
 
             var choices = PluginConfig.BuildPluginChoices(plugins);
@@ -508,8 +418,8 @@ namespace UmamusumeResponseAnalyzer.Tests
         {
             PluginManager.PluginRuntimeStatus[] plugins =
             [
-                new("PluginA", "Same Display Name", "Same Author", null, true, true),
-                new("PluginB", "Same Display Name", "Same Author", null, true, true),
+                new("PluginA", "Same Display Name", "Same Author", null, true, true, null),
+                new("PluginB", "Same Display Name", "Same Author", null, true, true, null),
             ];
 
             var choices = PluginConfig.BuildPluginChoices(plugins);
@@ -586,7 +496,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         static void AssertPackageRejected(InvalidPackageFixture fixture)
         {
             Assert.Empty(PluginManager.LoadedPlugins);
-            Assert.Empty(PluginManager.InspectPluginStatuses());
+            Assert.Empty(PluginManager.SnapshotPluginStatuses());
             Assert.Contains(fixture.PackagePath, PluginManager.FailedPlugins);
             Assert.False(File.Exists(fixture.InitializeMarker));
         }
@@ -1076,14 +986,11 @@ namespace UmamusumeResponseAnalyzer.Tests
                 Path.GetTempPath(),
                 "ura-plugin-group-initialize-" + Guid.NewGuid().ToString("N"));
             readonly string secondPackage;
-            readonly bool observeEarlyStart;
 
-            public DependencyInitializationPackageFixture(bool failSecond)
+            public DependencyInitializationPackageFixture()
             {
-                var suffix = failSecond ? "Failure" : "Success";
-                FirstName = $"AtomicBackground{suffix}Plugin";
-                SecondName = $"AtomicInitializer{suffix}Plugin";
-                observeEarlyStart = !failSecond;
+                FirstName = "DependencyBackgroundPlugin";
+                SecondName = "DependencyInitializerPlugin";
                 Directory.CreateDirectory(Path.Combine(tempDir, "Plugins"));
                 Directory.SetCurrentDirectory(tempDir);
                 PluginCompiler.CompilePackage(
@@ -1091,7 +998,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                     FirstName,
                     Path.Combine(tempDir, "Plugins", $"{FirstName}.zip"));
                 secondPackage = Path.Combine(tempDir, "Plugins", $"{SecondName}.zip");
-                CompileSecondPackage(failSecond);
+                CompileSecondPackage(fail: true);
             }
 
             public string FirstName { get; }
@@ -1102,9 +1009,7 @@ namespace UmamusumeResponseAnalyzer.Tests
             public string BackgroundMarker => Path.Combine(tempDir, "background");
             public string StartedMarker => Path.Combine(tempDir, "started");
             public string SecondInitializeMarker => Path.Combine(tempDir, "second-initialize");
-            public string EarlyStartObservation => Path.Combine(tempDir, "early-start-observation");
             string AnalyzerMarker => Path.Combine(tempDir, "analyzer");
-            string GroupInitializedMarker => Path.Combine(tempDir, "group-initialized");
 
             public void ReplaceSecondWithSuccessfulPackage()
             {
@@ -1126,7 +1031,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                 using Gallop.Endpoints;
                 using UmamusumeResponseAnalyzer.Plugin;
 
-                public sealed class AtomicBackgroundPlugin : IPlugin
+                public sealed class DependencyBackgroundPlugin : IPlugin
                 {
                     public void Initialize(IPluginContext context)
                     {
@@ -1137,11 +1042,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                         });
                         context.RunBackground(_ =>
                         {
-                            File.WriteAllText(
-                                @"{{BackgroundMarker}}",
-                                File.Exists(@"{{GroupInitializedMarker}}")
-                                    ? "after-group-initialize"
-                                    : "before-group-initialize");
+                            File.WriteAllText(@"{{BackgroundMarker}}", "started");
                             return ValueTask.CompletedTask;
                         });
                     }
@@ -1163,7 +1064,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                     using System.IO;
                     using UmamusumeResponseAnalyzer.Plugin;
 
-                    public sealed class AtomicFailingInitializerPlugin : IPlugin
+                    public sealed class FailingInitializerPlugin : IPlugin
                     {
                         public void Initialize(IPluginContext context)
                         {
@@ -1173,30 +1074,17 @@ namespace UmamusumeResponseAnalyzer.Tests
                     }
                     """;
 
-                var observeEarly = observeEarlyStart
-                    ? $$"""
-                        var deadline = DateTime.UtcNow.AddSeconds(1);
-                        while (!File.Exists(@"{{BackgroundMarker}}") && DateTime.UtcNow < deadline)
-                            Thread.Sleep(10);
-                        var startedEarly = File.Exists(@"{{BackgroundMarker}}");
-                        File.WriteAllText(
-                            @"{{EarlyStartObservation}}",
-                            startedEarly ? "started" : "not-started");
-                        """
-                    : string.Empty;
                 return $$"""
                     using System;
                     using System.IO;
                     using System.Threading;
                     using UmamusumeResponseAnalyzer.Plugin;
 
-                    public sealed class AtomicSuccessfulInitializerPlugin : IPlugin
+                    public sealed class SuccessfulInitializerPlugin : IPlugin
                     {
                         public void Initialize(IPluginContext context)
                         {
                             File.WriteAllText(@"{{SecondInitializeMarker}}", "entered");
-                            {{observeEarly}}
-                            File.WriteAllText(@"{{GroupInitializedMarker}}", "initialized");
                         }
                     }
                     """;
@@ -1219,6 +1107,30 @@ namespace UmamusumeResponseAnalyzer.Tests
             {
                 Initialized = true;
                 Context = context;
+            }
+        }
+
+        sealed class CapturingRegistrationPlugin : TestPlugin
+        {
+            public IPluginContext Context { get; private set; } = null!;
+            public ExecutionContext CapturedContext { get; private set; } = null!;
+            public List<int> StartedOrder { get; } = [];
+
+            public override void Initialize(IPluginContext context)
+            {
+                Context = context;
+                CapturedContext = ExecutionContext.Capture()!;
+                context.Events.OnStarted(async _ =>
+                {
+                    StartedOrder.Add(1);
+                    await Task.Yield();
+                    StartedOrder.Add(2);
+                });
+                context.Events.OnStarted(_ =>
+                {
+                    StartedOrder.Add(3);
+                    return ValueTask.CompletedTask;
+                });
             }
         }
 

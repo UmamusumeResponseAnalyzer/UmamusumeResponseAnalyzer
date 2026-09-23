@@ -717,7 +717,7 @@ public sealed class HotkeyManagerTests : IDisposable
     }
 }
 
-[Collection("PluginReload")]
+[Collection("PluginRuntime")]
 public sealed class HotkeyManagerErrorChannelTests(PluginRuntimeFixture runtime)
 {
     [Fact]
