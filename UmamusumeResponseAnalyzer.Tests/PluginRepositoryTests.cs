@@ -26,7 +26,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void ValidatePackage_ReturnsStrictManifestMetadata()
+        public void ValidatePackage_ReturnsManifestMetadata()
         {
             var manifest = Info("author", PackageInternalName);
             manifest.RawVersion = "2026.03.04";
@@ -51,7 +51,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         }
 
         [Fact]
-        public void ValidatePackage_RejectsNonCurrentManifestSchema()
+        public void ValidatePackage_RequiresExactRequiredFieldNames()
         {
             var manifest = Info("author", PackageInternalName);
             var package = CreatePackage(manifest, json =>
@@ -65,7 +65,7 @@ namespace UmamusumeResponseAnalyzer.Tests
                     PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
 
                 Assert.IsType<System.Text.Json.JsonException>(error.InnerException);
-                Assert.Contains("version", error.Message);
+                Assert.Contains("Version", error.Message);
             }
             finally
             {
@@ -216,11 +216,7 @@ namespace UmamusumeResponseAnalyzer.Tests
         [InlineData("trailing-comma")]
         [InlineData("single-quotes")]
         [InlineData("extra-token")]
-        [InlineData("duplicate")]
-        [InlineData("Targets")]
-        [InlineData("DownloadUrl")]
-        [InlineData("RawVersion")]
-        public void ValidatePackage_RejectsNonStrictJson(string mutation)
+        public void ValidatePackage_RejectsInvalidJsonSyntax(string mutation)
         {
             var package = CreatePackage(
                 Info("author", PackageInternalName),
@@ -230,10 +226,6 @@ namespace UmamusumeResponseAnalyzer.Tests
                     "trailing-comma" => $"{json[..^1]},}}",
                     "single-quotes" => json.Replace('"', '\''),
                     "extra-token" => $"{json}{{}}",
-                    "duplicate" => $"{json[..^1]},\"Author\":\"other\"}}",
-                    "Targets" => $"{json[..^1]},\"Targets\":[]}}",
-                    "DownloadUrl" => $"{json[..^1]},\"DownloadUrl\":\"https://example.com\"}}",
-                    "RawVersion" => $"{json[..^1]},\"RawVersion\":\"1.0\"}}",
                     _ => throw new InvalidOperationException($"未知 JSON mutation: {mutation}"),
                 });
             try
@@ -249,23 +241,36 @@ namespace UmamusumeResponseAnalyzer.Tests
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void ValidatePackage_RequiresAllManifestFields(bool useNull)
+        [Fact]
+        public void ValidatePackage_UsesDefaultJsonDeserialization()
+        {
+            var package = CreatePackage(
+                Info("author", PackageInternalName),
+                json => json["Description"] = JValue.CreateNull(),
+                editRawManifest: json => $"{json[..^1]},\"Targets\":[],\"DownloadUrl\":\"https://example.com\",\"RawVersion\":\"2.0\",\"Author\":\"other\"}}");
+            try
+            {
+                var manifest = PluginRepository.ValidatePackage(package, "other", PackageInternalName, "1.0.0");
+
+                Assert.Equal("other", manifest.Author);
+                Assert.Equal("1.0.0", manifest.RawVersion);
+                Assert.Null(manifest.Description);
+            }
+            finally
+            {
+                File.Delete(package);
+            }
+        }
+
+        [Fact]
+        public void ValidatePackage_RequiresAllManifestFields()
         {
             var info = Info("author", PackageInternalName);
             var fields = JObject.FromObject(info).Properties().Select(property => property.Name).ToArray();
             Assert.Equal(11, fields.Length);
             foreach (var field in fields)
             {
-                var package = CreatePackage(info, json =>
-                {
-                    if (useNull)
-                        json[field] = JValue.CreateNull();
-                    else
-                        json.Remove(field);
-                });
+                var package = CreatePackage(info, json => json.Remove(field));
                 try
                 {
                     var error = Assert.Throws<InvalidDataException>(() =>
@@ -277,6 +282,28 @@ namespace UmamusumeResponseAnalyzer.Tests
                 {
                     File.Delete(package);
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData("Author")]
+        [InlineData("InternalName")]
+        [InlineData("DisplayName")]
+        [InlineData("Version")]
+        [InlineData("Dependencies")]
+        [InlineData("LastUpdate")]
+        public void ValidatePackage_RejectsNullRequiredValues(string field)
+        {
+            var package = CreatePackage(Info("author", PackageInternalName), json => json[field] = JValue.CreateNull());
+            try
+            {
+                var error = Assert.Throws<InvalidDataException>(() =>
+                    PluginRepository.ValidatePackage(package, "author", PackageInternalName, "1.0.0"));
+                Assert.Contains(field, error.Message);
+            }
+            finally
+            {
+                File.Delete(package);
             }
         }
 

@@ -38,7 +38,7 @@ internal static class PluginPackageValidator
         {
             try
             {
-                manifest = JsonSerializer.Deserialize<PluginInformation>(stream, JsonSerializerOptions.Strict)
+                manifest = JsonSerializer.Deserialize<PluginInformation>(stream)
                     ?? throw new InvalidDataException(i18n.ManifestObjectRequired);
             }
             catch (System.Text.Json.JsonException ex)
