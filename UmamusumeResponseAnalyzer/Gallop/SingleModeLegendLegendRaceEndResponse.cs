@@ -22,7 +22,7 @@ public class SingleModeLegendLegendRaceEndResponse : ResponseCommon
         [Key("add_trophy_info")] public LoginUserTrophyInfo add_trophy_info; // 0x38
         [Key("trophy_reward_info")] public RaceRewardData trophy_reward_info; // 0x40
         [Key("legend_data_set")] public SingleModeLegendDataSet legend_data_set; // 0x48
-        [Key("add_music")] public UserMusic add_music; // 0x50
+        [Key("live_reward")] public LiveRewardInfo live_reward; // 0x50
         [Key("race_history")] public SingleRaceHistory[] race_history; // 0x58
     }
 }

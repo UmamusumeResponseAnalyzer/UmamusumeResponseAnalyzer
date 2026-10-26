@@ -16,5 +16,7 @@ public class TrainingRoadmapCopyResponse : ResponseCommon
     {
         [Key("character_array")] public TrainingRoadmapChara[] character_array; // 0x10
         [Key("succession_character_array")] public TrainingRoadmapSuccessionChara[] succession_character_array; // 0x18
+        [Key("auto_call_skill_set_deck_id")] public int auto_call_skill_set_deck_id; // 0x20
+        [Key("selected_character_identifier")] public TrainingRoadmapCharacterIdentifier selected_character_identifier; // 0x28
     }
 }

@@ -16,7 +16,6 @@ public class TrainingRoadmapSuccessionChara
     [Key("top_factor_id_array")] public int[] top_factor_id_array; // 0x28
     [Key("high_factor_id_array")] public int[] high_factor_id_array; // 0x30
     [Key("low_factor_id_array")] public int[] low_factor_id_array; // 0x38
-    [Key("single_mode_program_id_array")] public int[] single_mode_program_id_array; // 0x40
-    [Key("reserved_race_array")] public SingleModeReservedRace[] reserved_race_array; // 0x48
-    [Key("support_card_id_array")] public int[] support_card_id_array; // 0x50
+    [Key("reserved_race_array")] public SingleModeReservedRace[] reserved_race_array; // 0x40
+    [Key("support_card_id_array")] public int[] support_card_id_array; // 0x48
 }

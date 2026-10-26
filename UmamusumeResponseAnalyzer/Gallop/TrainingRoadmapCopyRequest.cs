@@ -11,4 +11,5 @@ public class TrainingRoadmapCopyRequest : RequestBase<TrainingRoadmapCopyRespons
     [Key("paste_identifier")] public TrainingRoadmapCharacterIdentifier paste_identifier; // 0x88
     [Key("copy_identifier")] public TrainingRoadmapCharacterIdentifier copy_identifier; // 0x90
     [Key("copy_type")] public int copy_type; // 0x98
+    [Key("need_check_selected")] public bool need_check_selected; // 0x9C
 }

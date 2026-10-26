@@ -10,4 +10,5 @@ public class SingleModeGainParameterInfo
 {
     [Key("gain_partner_support_effect_array")] public GainPartnerSupportEffect[] gain_partner_support_effect_array; // 0x10
     [Key("effected_command_id_array")] public int[] effected_command_id_array; // 0x18
+    [Key("is_view_training_bonus_turn_log")] public bool is_view_training_bonus_turn_log; // 0x20
 }

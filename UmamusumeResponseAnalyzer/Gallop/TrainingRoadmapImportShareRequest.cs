@@ -10,4 +10,5 @@ public class TrainingRoadmapImportShareRequest : RequestBase<TrainingRoadmapImpo
 {
     [Key("share_id")] public long share_id; // 0x88
     [Key("target_identifier")] public TrainingRoadmapCharacterIdentifier target_identifier; // 0x90
+    [Key("need_check_selected")] public bool need_check_selected; // 0x98
 }

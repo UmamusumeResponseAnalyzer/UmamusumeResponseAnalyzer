@@ -18,6 +18,6 @@ public class SingleModeSportCompetitionLiveResponse : ResponseCommon
         [Key("home_info")] public SingleModeHomeInfo home_info; // 0x18
         [Key("unchecked_event_array")] public SingleModeEventInfo[] unchecked_event_array; // 0x20
         [Key("sport_data_set")] public SingleModeSportDataSet sport_data_set; // 0x28
-        [Key("add_music")] public UserMusic add_music; // 0x30
+        [Key("live_reward")] public LiveRewardInfo live_reward; // 0x30
     }
 }

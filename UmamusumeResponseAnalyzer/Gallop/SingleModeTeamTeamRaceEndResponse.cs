@@ -16,6 +16,6 @@ public class SingleModeTeamTeamRaceEndResponse : ResponseCommon
     {
         [Key("chara_info")] public SingleModeChara chara_info; // 0x10
         [Key("team_data_set")] public SingleModeTeamDataSet team_data_set; // 0x18
-        [Key("add_music")] public UserMusic add_music; // 0x20
+        [Key("live_reward")] public LiveRewardInfo live_reward; // 0x20
     }
 }

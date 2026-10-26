@@ -17,6 +17,6 @@ public class SingleModeLiveLiveStartResponse : ResponseCommon
         [Key("chara_info")] public SingleModeChara chara_info; // 0x10
         [Key("unchecked_event_array")] public SingleModeEventInfo[] unchecked_event_array; // 0x18
         [Key("live_data_set")] public SingleModeLiveDataSet live_data_set; // 0x20
-        [Key("add_music")] public UserMusic add_music; // 0x28
+        [Key("live_reward")] public LiveRewardInfo live_reward; // 0x28
     }
 }

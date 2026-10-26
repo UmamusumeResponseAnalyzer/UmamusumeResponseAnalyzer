@@ -155,4 +155,5 @@ public class CommonDefine
     [Key("half_anniv_dress_5_5_open_date")] public string half_anniv_dress_5_5_open_date; // 0x348
     [Key("skill_filter_update_open_date")] public string skill_filter_update_open_date; // 0x350
     [Key("training_roadmap_open_date")] public string training_roadmap_open_date; // 0x358
+    [Key("single_mode_festa_option_open_date")] public string single_mode_festa_option_open_date; // 0x360
 }

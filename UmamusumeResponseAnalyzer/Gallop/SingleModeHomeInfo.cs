@@ -19,4 +19,5 @@ public class SingleModeHomeInfo
     [Key("shortened_race_state")] public int shortened_race_state; // 0x44
     [Key("special_home_id")] public int special_home_id; // 0x48
     [Key("disable_race_turn_array")] public int[] disable_race_turn_array; // 0x50
+    [Key("training_bonus_remain_turn_num")] public int training_bonus_remain_turn_num; // 0x58
 }

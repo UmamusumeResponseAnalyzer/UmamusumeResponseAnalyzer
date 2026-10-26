@@ -17,7 +17,7 @@ public class SingleModeCookRaceEndResponse : ResponseCommon
         [Key("race_reward_info")] public CharaRaceReward race_reward_info; // 0x10
         [Key("chara_info")] public SingleModeChara chara_info; // 0x18
         [Key("home_info")] public SingleModeHomeInfo home_info; // 0x20
-        [Key("add_music")] public UserMusic add_music; // 0x28
+        [Key("live_reward")] public LiveRewardInfo live_reward; // 0x28
         [Key("race_history")] public SingleRaceHistory[] race_history; // 0x30
         [Key("win_saddle_id_array")] public int[] win_saddle_id_array; // 0x38
         [Key("race_condition_array")] public SingleModeRaceCondition[] race_condition_array; // 0x40
