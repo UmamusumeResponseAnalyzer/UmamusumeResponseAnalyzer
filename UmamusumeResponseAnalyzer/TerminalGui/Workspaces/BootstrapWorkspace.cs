@@ -1,10 +1,15 @@
-using System.Collections.ObjectModel;
+using System.Collections;
+using System.Collections.Specialized;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
+using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
+using Attribute = Terminal.Gui.Drawing.Attribute;
 using UmamusumeResponseAnalyzer.Plugin;
 using static UmamusumeResponseAnalyzer.Localization.LaunchMenu;
 using UiText = UmamusumeResponseAnalyzer.Localization.TerminalGui;
@@ -152,7 +157,8 @@ internal sealed class BootstrapWorkspace : IDisposable
             logs.Add(new(
                 SeverityLabel(line.Severity),
                 line.Text,
-                line.ExceptionDetails));
+                line.ExceptionDetails,
+                line.Severity));
             if (logs.Count > MaxLogRows)
                 logs.RemoveRange(0, logs.Count - MaxLogRows);
         }
@@ -241,7 +247,8 @@ internal sealed class BootstrapMenuView : View
         var prompt = new Label
         {
             Text = selection is null ? I18N_PreparingStartup : title,
-            Width = Dim.Fill(),
+            X = 1,
+            Width = Dim.Fill(1),
             Height = 3
         };
         var items = choices.Select(value => new MenuItem
@@ -334,16 +341,19 @@ internal sealed record BootstrapPluginRow(
 internal sealed record BootstrapLogRow(
     string Status,
     string Text,
-    string? ExceptionDetails = null);
+    string? ExceptionDetails = null,
+    UiSeverity? Severity = null);
 
 internal sealed class BootstrapDashboardView : View
 {
     const int WideLayoutMinimumWidth = 96;
+    const string StatusDot = "● ";
 
-    readonly FrameView environmentFrame;
-    readonly FrameView phaseFrame;
-    readonly FrameView pluginFrame;
-    readonly FrameView logFrame;
+    readonly SectionView environmentFrame;
+    readonly SectionView phaseFrame;
+    readonly SectionView pluginFrame;
+    readonly SectionView logFrame;
+    readonly KeyHintsView hints;
     readonly ListView logList;
     readonly IReadOnlyList<BootstrapLogRow> logs;
     PopoverMenu? logContextMenu;
@@ -375,15 +385,17 @@ internal sealed class BootstrapDashboardView : View
                 [I18N_Status, I18N_Item, I18N_Result],
                 phases.Select(x => new[]
                 {
-                    BootstrapWorkspace.SeverityLabel(x.Severity),
+                    StatusDot + BootstrapWorkspace.SeverityLabel(x.Severity),
                     x.Label,
                     x.Detail
-                })));
+                }),
+                statusColumn: 0));
         pluginFrame = CreateFrame(
             I18N_PluginSummary,
             CreateTable(
                 [I18N_PluginName, I18N_Version, I18N_Status, I18N_Result],
-                plugins.Select(x => new[] { x.Name, x.Version, x.Status, x.Result })));
+                plugins.Select(x => new[] { x.Name, x.Version, StatusDot + x.Status, x.Result }),
+                statusColumn: 2));
 
         logList = new ListView
         {
@@ -402,13 +414,18 @@ internal sealed class BootstrapDashboardView : View
             MouseFlags.RightButtonClicked,
             Command.Activate,
             Command.Context);
-        logList.SetSource(new ObservableCollection<string>(
-            logs.Select(x => $"{x.Status} {x.Text}")));
+        logList.Source = new LogListSource(logs);
         if (logs.Count > 0)
             logList.SelectedItem = logs.Count - 1;
-        logFrame = CreateFrame(I18N_RecentLogs, logList);
+        logFrame = CreateFrame(I18N_RecentLogs, logList, bottomGap: 0);
+        hints = new KeyHintsView(UiText.Dashboard_Hints)
+        {
+            X = 0,
+            Y = Pos.AnchorEnd(1),
+            Width = Dim.Fill()
+        };
 
-        Add(environmentFrame, phaseFrame, pluginFrame, logFrame);
+        Add(environmentFrame, phaseFrame, pluginFrame, logFrame, hints);
         ApplyLayout(useWideLayout: false);
     }
 
@@ -565,24 +582,40 @@ internal sealed class BootstrapDashboardView : View
         logFrame.X = 0;
         logFrame.Y = Pos.Bottom(pluginFrame);
         logFrame.Width = Dim.Fill();
-        logFrame.Height = Dim.Fill();
+        logFrame.Height = Dim.Fill(1);
     }
 
-    static FrameView CreateFrame(string title, View content)
+    static SectionView CreateFrame(string title, View content, int bottomGap = 1)
     {
-        var frame = new FrameView
+        var section = new SectionView(title)
         {
-            Title = title,
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
             Height = Dim.Fill()
         };
-        frame.Add(content);
-        return frame;
+        SectionView.Place(content, bottomGap);
+        section.Add(content);
+        return section;
     }
 
-    static TableView CreateTable(string[] columns, IEnumerable<string[]> rows)
+    static readonly Scheme HeaderScheme = new(new Attribute(UraTheme.Muted, UraTheme.Ground))
+    {
+        Active = new Attribute(UraTheme.Muted, UraTheme.Ground)
+    };
+
+    // Built per table: the labels follow the current UI culture.
+    static Dictionary<string, Scheme> CreateStatusSchemes()
+        => new[] { UiSeverity.Info, UiSeverity.Success, UiSeverity.Warning, UiSeverity.Error }
+            .ToDictionary(
+                severity => StatusDot + BootstrapWorkspace.SeverityLabel(severity),
+                severity => new Scheme(UraTheme.Base)
+                {
+                    Normal = new Attribute(UraTheme.SeverityColor(severity), UraTheme.Ground),
+                    Active = new Attribute(UraTheme.SeverityColor(severity), UraTheme.InactiveSelection)
+                });
+
+    static TableView CreateTable(string[] columns, IEnumerable<string[]> rows, int? statusColumn = null)
     {
         var data = new DataTable();
         foreach (var column in columns)
@@ -605,7 +638,92 @@ internal sealed class BootstrapDashboardView : View
         };
         table.Style.AlwaysShowHeaders = true;
         table.Style.ShowHorizontalHeaderOverline = false;
+        table.Style.ShowHorizontalHeaderUnderline = false;
+        table.Style.ShowVerticalCellLines = false;
+        table.Style.ShowVerticalHeaderLines = false;
+        table.Style.HeaderScheme = HeaderScheme;
+        if (statusColumn is { } statusIndex)
+        {
+            var statusSchemes = CreateStatusSchemes();
+            table.Style.GetOrCreateColumnStyle(statusIndex).ColorGetter = args =>
+                args.CellValue is string status && statusSchemes.TryGetValue(status, out var scheme)
+                    ? scheme
+                    : null;
+        }
         table.RefreshContentSize();
         return table;
+    }
+
+    /// <summary>Recent log rows with the status word tinted by severity, except on the selected row.</summary>
+    sealed class LogListSource(IReadOnlyList<BootstrapLogRow> rows) : IListDataSource
+    {
+        readonly int maxItemLength = rows.Count == 0 ? 0 : rows.Max(row => Display(row).GetColumns());
+
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public int Count => rows.Count;
+
+        public int MaxItemLength => maxItemLength;
+
+        public bool SuspendCollectionChangedEvent { get; set; }
+
+        public bool IsMarked(int item) => false;
+
+        public void SetMark(int item, bool value)
+        {
+        }
+
+        public IList ToList() => rows.Select(Display).ToList();
+
+        public bool RenderMark(ListView listView, int item, int row, bool isMarked, bool markMultiple) => false;
+
+        public void Render(ListView listView, bool selected, int item, int col, int row, int width, int viewportX)
+        {
+            var line = rows[item];
+            var current = listView.SelectedItem == item;
+            var rowAttribute = listView.GetAttributeForRole(current
+                ? listView.HasFocus ? VisualRole.Focus : VisualRole.Active
+                : VisualRole.Normal);
+            var status = $"{StatusDot}{line.Status}";
+            var statusAttribute = current || line.Severity is not { } severity
+                ? rowAttribute
+                : new Attribute(UraTheme.SeverityColor(severity), rowAttribute.Background);
+            var text = Display(line);
+            var visible = CellText.Fit(
+                viewportX == 0 ? text : SkipColumns(text, viewportX),
+                Math.Max(0, width));
+            var statusColumns = Math.Max(0, status.GetColumns() - viewportX);
+            var statusPart = CellText.Clip(visible, statusColumns);
+
+            listView.Move(col, row);
+            listView.SetAttribute(statusAttribute);
+            listView.AddStr(statusPart);
+            listView.SetAttribute(rowAttribute);
+            listView.AddStr(visible[statusPart.Length..]);
+        }
+
+        public void Dispose()
+        {
+        }
+
+        static string Display(BootstrapLogRow row)
+            => $"{StatusDot}{row.Status} {row.Text.ReplaceLineEndings("  ")}";
+
+        static string SkipColumns(string text, int columns)
+        {
+            var elements = StringInfo.GetTextElementEnumerator(text);
+            var skipped = 0;
+            while (columns > 0 && elements.MoveNext())
+            {
+                var element = elements.GetTextElement();
+                columns -= Math.Max(0, element.GetColumns());
+                skipped += element.Length;
+            }
+            return text[skipped..];
+        }
     }
 }

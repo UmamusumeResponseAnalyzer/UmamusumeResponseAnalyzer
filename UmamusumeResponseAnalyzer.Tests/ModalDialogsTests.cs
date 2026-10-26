@@ -1,5 +1,7 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using Terminal.Gui.Input;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
 
@@ -125,23 +127,63 @@ public sealed class ModalDialogsTests(PluginRuntimeFixture fixture)
     [Fact]
     public async Task Progress_RendersRowsAndPropagatesFaultAndCancellation()
     {
+        await terminal.ResizeAsync(80, 24);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var rendered = ModalDialogs.RunProgressAsync(async (progress, cancellationToken) =>
         {
-            progress.Report(new("first", "Download A", 25, 100));
-            progress.Report(new("second", "Download B", 75, 100));
+            for (var index = 1; index <= 8; index++)
+                progress.Report(new($"asset-{index}", $"Download {index}", index * 10, 100));
             await release.Task.WaitAsync(cancellationToken);
         }, TestContext.Current.CancellationToken);
-        await terminal.WaitForScreenAsync("Download A");
-        await terminal.WaitForScreenAsync("Download B");
-        release.SetResult();
-        await rendered;
+        try
+        {
+            await terminal.WaitForScreenAsync("Download 1");
+            Assert.DoesNotContain("Download 8", await terminal.CaptureScreenAsync(), StringComparison.Ordinal);
+            await terminal.InjectAsync(Key.End);
+            await terminal.WaitForScreenAsync("Download 8");
+            Assert.Contains("80%", await terminal.CaptureScreenAsync(), StringComparison.Ordinal);
+
+            await terminal.InjectAsync(Key.Home);
+            var scrollbar = await terminal.InvokeAsync(() =>
+            {
+                var dialog = Assert.IsType<Dialog>(terminal.Application.TopRunnableView);
+                var body = Assert.Single(dialog.SubViews,
+                    view => view.ViewportSettings.HasFlag(ViewportSettingsFlags.HasVerticalScrollBar));
+                Assert.True(body.VerticalScrollBar.Visible);
+                return body.VerticalScrollBar.FrameToScreen();
+            });
+            for (var index = 0; index < 4; index++)
+                await terminal.ClickAsync(new(scrollbar.X, scrollbar.Bottom - 1));
+            await terminal.WaitForScreenAsync("Download 8");
+            Assert.Contains("80%", await terminal.CaptureScreenAsync(), StringComparison.Ordinal);
+
+            await terminal.ResizeAsync(70, 16);
+            await terminal.InjectAsync(Key.Home);
+            await terminal.WaitForScreenAsync("Download 1");
+            await terminal.InjectAsync(Key.End);
+            await terminal.WaitForScreenAsync("Download 8");
+            Assert.Contains("80%", await terminal.CaptureScreenAsync(), StringComparison.Ordinal);
+        }
+        finally
+        {
+            release.SetResult();
+            await rendered;
+            await terminal.ResizeAsync(80, 24);
+        }
 
         var faulted = ModalDialogs.RunProgressAsync(
             (_, _) => throw new InvalidOperationException("progress failed"),
             TestContext.Current.CancellationToken);
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => faulted);
         Assert.Equal("progress failed", error.Message);
+
+        var keyboardCancelled = ModalDialogs.RunProgressAsync(
+            (_, token) => Task.Delay(Timeout.InfiniteTimeSpan, token),
+            TestContext.Current.CancellationToken);
+        await terminal.WaitForScreenAsync(i18n.Dialog_Processing);
+        await terminal.InjectAsync(Key.Tab);
+        await terminal.InjectAsync(Key.Enter);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => keyboardCancelled);
 
         using var cancellation = new CancellationTokenSource();
         var cancelled = ModalDialogs.RunProgressAsync(

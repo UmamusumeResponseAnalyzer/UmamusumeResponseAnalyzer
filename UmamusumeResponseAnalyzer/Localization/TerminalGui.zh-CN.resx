@@ -4,11 +4,11 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="CommandMode_Title" xml:space="preserve">
-    <value>命令模式</value>
+  <data name="Dashboard_Hints" xml:space="preserve">
+    <value>Tab 切换区域 · ↑↓ 选择 · / 命令 · Ctrl+B 启动 · Ctrl+C 退出</value>
   </data>
   <data name="CommandMode_Help" xml:space="preserve">
-    <value>Tab 补全 · ↑↓ 历史 · Esc 取消</value>
+    <value>Tab 补全 · ↑↓ 历史 · Enter 执行 · Esc 取消</value>
   </data>
   <data name="CommandMode_MoreCandidates" xml:space="preserve">
     <value>还有 {0} 项</value>

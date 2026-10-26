@@ -657,15 +657,16 @@ public sealed class UiHostRenderTests : IDisposable
         await terminal.WaitForScreenAsync("CommandFocus");
         await terminal.InvokeAsync(() => focusTarget!.SetFocus());
 
+        var commandHint = i18n.CommandMode_Help.Split(" · ")[0];
         await terminal.InjectAsync(new Key('/'));
-        await terminal.WaitForScreenAsync(i18n.CommandMode_Title);
+        await terminal.WaitForScreenAsync(commandHint);
         await InjectTextAsync("workspace switch Input Second");
         await terminal.InjectAsync(Key.Enter);
 
         await terminal.WaitForScreenAsync("CommandInputResult");
         Assert.Same(second, host.GetCurrentWorkspace());
         Assert.DoesNotContain(
-            i18n.CommandMode_Title,
+            commandHint,
             await terminal.CaptureScreenAsync(),
             StringComparison.Ordinal);
     }
@@ -704,7 +705,11 @@ public sealed class UiHostRenderTests : IDisposable
             await terminal.InvokeAsync(() => host.ApplyCommandResult(
                 new HostCommands.Result(messageOnly, UiSeverity.Info)));
             await host.FlushAsync();
-            await terminal.WaitForScreenAsync($"[Command] {messageOnly}");
+            await terminal.WaitForScreenAsync(messageOnly);
+            Assert.Contains(
+                $"┌─ ● {i18n.Severity_Info} Command ",
+                await terminal.CaptureScreenAsync(),
+                StringComparison.Ordinal);
 
             Assert.Contains(
                 logs,

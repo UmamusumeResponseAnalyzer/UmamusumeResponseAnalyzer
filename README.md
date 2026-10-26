@@ -35,7 +35,7 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 * 命令结果中的非空 message 写入全局最近日志；只有 message 而没有 display 时同时显示 global notification，有 display 时通过 popup 呈现。
 * 插件更新 workspace panel 时默认会切到该 workspace；bootstrap 刷新和异常写入不会切换当前 workspace。按 `Ctrl+B` 返回启动 workspace，按 `Ctrl+C` 退出程序。插件状态显示在启动仪表盘。退出时先停止 HTTP 接收和插件新回调，等待在途插件回调退出，再异步清理插件，最后关闭 UI。
 * 程序启动后会检查已加载插件是否有新版本；发现更新时只通知，不自动安装。更新插件需要进入 `插件仓库` 手动选择。
-* 更新数据文件时会先写入临时文件，下载成功后替换目标文件；失败时清理临时文件并保留已有文件。
+* 更新数据文件时会先写入临时文件，下载成功后替换目标文件；失败时清理临时文件并保留已有文件。下载列表超出窗口时，可用滚动条或聚焦列表后按 `Up` / `Down`、`PageUp` / `PageDown`、`Home` / `End` 查看。
 * 开启 debug packet 保存后，请求写为 `Q`、响应写为 `R` 的 `.msgpack` 文件，文件名包含时间戳、UUIDv7 和 API endpoint path（`/` 写为 `-`）；`DEBUG` 构建额外写 `.json`，文件名只包含时间戳和 `Q`/`R`，完整 canonical URL 写在 JSON 内容中。`packets/` 中超过一天的旧文件会在下次保存时清理，单个旧文件清理失败不会中断当前请求/响应分析。
 
 # 检查安装 Checking

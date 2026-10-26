@@ -196,7 +196,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
 
         /// <summary>
-        ///   查找类似 Tab complete · ↑↓ history · Esc cancel 的本地化字符串。
+        ///   查找类似 Tab complete · ↑↓ history · Enter run · Esc cancel 的本地化字符串。
         /// </summary>
         internal static string CommandMode_Help {
             get {
@@ -214,11 +214,11 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
 
         /// <summary>
-        ///   查找类似 Command mode 的本地化字符串。
+        ///   查找类似 Tab switch area · ↑↓ select · / command · Ctrl+B startup · Ctrl+C quit 的本地化字符串。
         /// </summary>
-        internal static string CommandMode_Title {
+        internal static string Dashboard_Hints {
             get {
-                return ResourceManager.GetString("CommandMode_Title", resourceCulture);
+                return ResourceManager.GetString("Dashboard_Hints", resourceCulture);
             }
         }
 

@@ -11,6 +11,8 @@ namespace UmamusumeResponseAnalyzer.TerminalGui;
 
 internal sealed class WorkspaceViewport : View
 {
+    const int SectionGap = 1;
+
     static readonly object ReleasedViewMarker = new();
 
     readonly Dictionary<Workspace, Dictionary<string, WorkspacePanel>> panels =
@@ -235,29 +237,30 @@ internal sealed class WorkspaceViewport : View
         foreach (var panel in selected)
         {
             var realized = GetRealized(panel);
-            realized.View.X = 0;
-            realized.View.Y = 0;
-            realized.View.Width = Dim.Fill();
             EnableFocusPath(realized.View);
             if (fullBleed)
             {
+                realized.View.X = 0;
+                realized.View.Y = 0;
+                realized.View.Width = Dim.Fill();
                 Add(realized.View);
                 panelLayouts.Add(new(realized, null));
                 continue;
             }
 
-            var frame = new FrameView
+            var section = new SectionView(panel.Title)
             {
-                Title = panel.Title,
                 X = 0,
                 Width = Dim.Fill()
             };
-            frame.Border.GetOrCreateView();
-            frame.Add(realized.View);
-            EnableFocusPath(frame);
-            Add(frame);
-            layoutViews.Add(frame);
-            panelLayouts.Add(new(realized, frame));
+            realized.View.X = SectionView.ContentX;
+            realized.View.Y = SectionView.ContentY;
+            realized.View.Width = Dim.Fill(SectionView.ContentX);
+            section.Add(realized.View);
+            EnableFocusPath(section);
+            Add(section);
+            layoutViews.Add(section);
+            panelLayouts.Add(new(realized, section));
         }
     }
 
@@ -422,7 +425,7 @@ internal sealed class WorkspaceViewport : View
             {
                 var layout = panelLayouts[index];
                 var panelHeight = heights[index];
-                if (layout.Frame is null)
+                if (layout.Section is null)
                 {
                     layout.Realized.View.Height = layout.Realized.FillsViewportHeight
                         ? Dim.Fill()
@@ -430,9 +433,11 @@ internal sealed class WorkspaceViewport : View
                     continue;
                 }
 
-                layout.Frame.Y = y;
-                layout.Frame.Height = panelHeight;
-                layout.Realized.View.Height = Math.Max(1, panelHeight - 2);
+                // Every section but the last keeps a blank row below it to separate the next heading.
+                var gap = index < panelLayouts.Count - 1 ? SectionGap : 0;
+                layout.Section.Y = y;
+                layout.Section.Height = panelHeight;
+                layout.Realized.View.Height = Math.Max(1, panelHeight - SectionView.ContentY - gap);
                 y += panelHeight;
             }
 
@@ -479,14 +484,17 @@ internal sealed class WorkspaceViewport : View
                 ];
         }
 
+        // A section's chrome is its heading row plus, except for the last section, one blank row:
+        // the same two rows a bordered frame used.
+        var chrome = SectionView.ContentY + SectionGap;
         var result = panelLayouts
             .Select(layout => Math.Max(
-                3,
+                chrome + 1,
                 PreferredViewHeight(
                     layout.Realized.View,
                     layout.Realized.DeclaredHeight,
-                    Math.Max(1, height / panelLayouts.Count - 2),
-                    Math.Max(1, width - 2)) + 2))
+                    Math.Max(1, height / panelLayouts.Count - chrome),
+                    Math.Max(1, width - 2 * SectionView.ContentX)) + chrome))
             .ToArray();
         var remaining = height - result.Sum();
         if (remaining > 0)
@@ -586,5 +594,5 @@ internal sealed class WorkspaceViewport : View
 
     sealed record PanelLayout(
         RealizedPanel Realized,
-        FrameView? Frame);
+        SectionView? Section);
 }

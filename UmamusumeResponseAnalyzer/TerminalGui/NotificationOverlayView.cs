@@ -4,13 +4,20 @@ using System.Drawing;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
+using Attribute = Terminal.Gui.Drawing.Attribute;
 
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
+/// <summary>
+/// Notification cards stacked at the top right. A card is a box in the rule tone on the raised
+/// surface; its top border carries the severity, the source and the remaining seconds, and the body
+/// wraps inside. Notifications that do not fit collapse into one "N more" line.
+/// </summary>
 internal sealed class NotificationOverlayView : View
 {
     const int MaxVisibleNotifications = 4;
-    const int OverflowHeight = 3;
+    const int MaxBodyLines = 4;
+    const int OverflowHeight = 1;
 
     ImmutableArray<OverlayLine> lines = [];
 
@@ -51,13 +58,15 @@ internal sealed class NotificationOverlayView : View
 
     protected override bool OnDrawingContent(DrawContext? context)
     {
-        var normal = GetAttributeForRole(VisualRole.Normal);
         for (var y = 0; y < lines.Length; y++)
         {
-            SetAttribute(lines[y].Severity is { } severity
-                ? SeverityAttribute(severity)
-                : normal);
-            AddStr(0, y, lines[y].Text);
+            var x = lines[y].Indent;
+            foreach (var span in lines[y].Spans)
+            {
+                SetAttribute(span.Attribute);
+                AddStr(x, y, span.Text);
+                x += span.Text.GetColumns();
+            }
         }
         context?.AddDrawnRectangle(ViewportToScreen());
         return true;
@@ -104,11 +113,7 @@ internal sealed class NotificationOverlayView : View
         for (var i = 0; i < displayed; i++)
             result.AddRange(cards[i]);
         if (remaining > 0)
-        {
-            result.Add(new(Top(width)));
-            result.Add(new(Content(string.Format(i18n.Notification_Remaining, remaining), width)));
-            result.Add(new(Bottom(width)));
-        }
+            result.Add(Overflow(string.Format(i18n.Notification_Remaining, remaining), width));
         return result.ToImmutable();
     }
 
@@ -117,27 +122,70 @@ internal sealed class NotificationOverlayView : View
         int width,
         DateTimeOffset now)
     {
-        var result = ImmutableArray.CreateBuilder<OverlayLine>();
-        result.Add(new(Top(width)));
-        result.Add(new(Content(SeverityText(notification.Severity), width), notification.Severity));
-        foreach (var line in notification.Text.ReplaceLineEndings("\n").Split('\n'))
-            result.Add(new(Content(line, width)));
-        result.Add(new(Bottom(width, Countdown(notification.ExpiresAt, now))));
+        var inner = width - 4;
+        var body = CellText.Wrap(notification.Text, inner);
+        if (body.Count > MaxBodyLines)
+        {
+            body = body.GetRange(0, MaxBodyLines);
+            body[^1] = CellText.Shorten(body[^1] + CellText.Ellipsis, inner);
+        }
+
+        var result = ImmutableArray.CreateBuilder<OverlayLine>(body.Count + 2);
+        result.Add(Top(notification, width, Countdown(notification.ExpiresAt, now)));
+        foreach (var line in body)
+            result.Add(new(0, [Rule("│ "), Body(CellText.Fit(line, inner)), Rule(" │")]));
+        result.Add(new(0, [Rule($"└{new string('─', width - 2)}┘")]));
         return result.ToImmutable();
     }
 
-    static Terminal.Gui.Drawing.Attribute SeverityAttribute(UiSeverity severity)
-        => new(
-            severity switch
-            {
-                UiSeverity.Trace => StandardColor.Gray,
-                UiSeverity.Info => StandardColor.Cyan,
-                UiSeverity.Success => StandardColor.BrightGreen,
-                UiSeverity.Warning => StandardColor.BrightYellow,
-                UiSeverity.Error => StandardColor.BrightRed,
-                _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, null)
-            },
-            Terminal.Gui.Drawing.Color.None);
+    // ┌─ ● 错误 Source ───────── 9秒 ─┐
+    static OverlayLine Top(NotificationOverlayItem notification, int width, string countdown)
+    {
+        const string Head = "┌─ ";
+        const string Tail = " ─┐";
+        var severity = $"● {SeverityText(notification.Severity)}";
+        // Head, severity, the space before the rule, and Tail; the rule keeps at least one dash.
+        var fixedColumns = Head.Length + severity.GetColumns() + 1 + Tail.Length;
+
+        var countdownColumns = countdown.GetColumns() + 1;
+        if (fixedColumns + 1 + countdownColumns > width)
+        {
+            countdown = string.Empty;
+            countdownColumns = 0;
+        }
+        var sourceRoom = width - fixedColumns - countdownColumns - 2;
+        var source = notification.Source is { Length: > 0 } name && sourceRoom > 0
+            ? CellText.Shorten(name, sourceRoom)
+            : string.Empty;
+        var sourceColumns = source.Length == 0 ? 0 : source.GetColumns() + 1;
+        var dashes = Math.Max(1, width - fixedColumns - countdownColumns - sourceColumns);
+
+        var severityAttribute = new Attribute(
+            UraTheme.SeverityColor(notification.Severity),
+            UraTheme.Surface,
+            TextStyle.Bold);
+        return new(0,
+        [
+            Rule(Head),
+            new(severity, severityAttribute),
+            Muted(source.Length == 0 ? string.Empty : $" {source}"),
+            Rule($" {new string('─', dashes)}"),
+            Muted(countdown.Length == 0 ? string.Empty : $" {countdown}"),
+            Rule(Tail)
+        ]);
+    }
+
+    static OverlayLine Overflow(string text, int width)
+    {
+        var label = $" {CellText.Shorten(text, width - 2)} ";
+        return new(width - label.GetColumns(), [Muted(label)]);
+    }
+
+    static Span Rule(string text) => new(text, new Attribute(UraTheme.Rule, UraTheme.Surface));
+
+    static Span Body(string text) => new(text, new Attribute(UraTheme.Ink, UraTheme.Surface));
+
+    static Span Muted(string text) => new(text, new Attribute(UraTheme.Muted, UraTheme.Surface));
 
     static string SeverityText(UiSeverity severity)
         => severity switch
@@ -159,33 +207,16 @@ internal sealed class NotificationOverlayView : View
         return string.Format(i18n.Notification_Countdown, seconds);
     }
 
-    static string Top(int width) => FrameBorder('┌', '┐', width);
+    readonly record struct Span(string Text, Attribute Attribute);
 
-    static string Bottom(int width, string? label = null)
-    {
-        if (string.IsNullOrEmpty(label))
-            return FrameBorder('└', '┘', width);
-
-        label = $" {label} ";
-        var dashes = width - 2 - label.GetColumns();
-        return dashes < 2
-            ? FrameBorder('└', '┘', width)
-            : $"└{new string('─', dashes)}{label}┘";
-    }
-
-    static string FrameBorder(char left, char right, int width)
-        => $"{left}{new string('─', width - 2)}{right}";
-
-    static string Content(string text, int width)
-        => $"│ {TextFormatter.ClipOrPad(text, width - 4)} │";
-
-    readonly record struct OverlayLine(string Text, UiSeverity? Severity = null);
+    readonly record struct OverlayLine(int Indent, ImmutableArray<Span> Spans);
 }
 
 internal readonly record struct NotificationOverlayItem(
     string Text,
     UiSeverity Severity,
-    DateTimeOffset ExpiresAt);
+    DateTimeOffset ExpiresAt,
+    string? Source = null);
 
 internal sealed record NotificationOverlaySnapshot(
     ImmutableArray<NotificationOverlayItem> Notifications,

@@ -2,6 +2,7 @@ using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Terminal.Gui.Input;
+using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.TerminalGui;
@@ -916,6 +917,43 @@ public sealed class WorkspaceViewTests
             Assert.Contains($"WARN {logText}", screen);
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => BootstrapWorkspace.SeverityLabel((UiSeverity)int.MaxValue));
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Theory]
+    [InlineData("中")]
+    [InlineData("😀")]
+    public async Task BootstrapLogsScrollWideCharactersToVisibleEnd(string wideText)
+    {
+        using var terminal = new TerminalGuiTestApp(width: 22, height: 24);
+        const string suffix = "ABCDEFGHIJKLMNOPQRS";
+        using var dashboard = new BootstrapDashboardView(
+            [], [], [], [new("INFO", wideText + suffix)]);
+        var logList = dashboard.SubViews
+            .SelectMany(view => view.SubViews)
+            .OfType<ListView>()
+            .Single();
+        using var window = WindowWith(dashboard);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            await terminal.InvokeAsync(() => logList.ScrollHorizontal("● INFO ".GetColumns()));
+            await terminal.RedrawAsync();
+            Assert.Contains(wideText + suffix[..^1], await terminal.CaptureScreenAsync());
+
+            await terminal.InvokeAsync(() =>
+            {
+                logList.ScrollHorizontal(logList.Source!.MaxItemLength);
+                Assert.Equal(
+                    logList.Source.MaxItemLength - logList.Viewport.Width,
+                    logList.Viewport.X);
+            });
+            await terminal.RedrawAsync();
+            Assert.Contains(suffix, await terminal.CaptureScreenAsync());
         }
         finally
         {

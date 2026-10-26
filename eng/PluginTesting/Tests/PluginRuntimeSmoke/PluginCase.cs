@@ -514,10 +514,13 @@ sealed record PluginCase(
             throw new InvalidOperationException($"{Id}: StartAsync failure changed settings.yaml.");
     }
 
+    // A notification card's top border reads "┌─ ● <severity> <source> ─── <seconds> ─┐".
+    static string ErrorCardHeader => $"┌─ ● {UiText.Severity_Error}";
+
     static int CountDmmAccessTokenLogs(string[] lines, UiSeverity severity, string tokenSemantic)
     {
         var overlayColumn = lines
-            .Select(line => (Line: line, Index: line.IndexOf($"│ {UiText.Severity_Error}", StringComparison.Ordinal)))
+            .Select(line => (Line: line, Index: line.IndexOf(ErrorCardHeader, StringComparison.Ordinal)))
             .Where(item => item.Index >= 0)
             .Select(item => item.Line[..item.Index].GetColumns())
             .DefaultIfEmpty(int.MaxValue)
@@ -530,32 +533,9 @@ sealed record PluginCase(
         });
     }
 
+    // The host moves a "[DMMPlugin] " message prefix into the card's top border as its source.
     static int CountDmmErrorCards(string[] lines)
-    {
-        var count = 0;
-        for (var headerRow = 0; headerRow < lines.Length; headerRow++)
-        {
-            var headerIndex = lines[headerRow].IndexOf($"│ {UiText.Severity_Error}", StringComparison.Ordinal);
-            if (headerIndex < 0)
-                continue;
-            var cardColumn = lines[headerRow][..headerIndex].GetColumns();
-
-            for (var row = headerRow + 1; row < lines.Length; row++)
-            {
-                if (lines[row].GetColumns() <= cardColumn)
-                    continue;
-                var card = lines[row][TextFormatter.ClipOrPad(lines[row], cardColumn).Length..];
-                if (card.StartsWith('└'))
-                    break;
-                if (card.Contains("[DMMPlugin]", StringComparison.Ordinal))
-                {
-                    count++;
-                    break;
-                }
-            }
-        }
-        return count;
-    }
+        => lines.Count(line => line.Contains($"{ErrorCardHeader} DMMPlugin ", StringComparison.Ordinal));
 
     static string CaptureConsole(Action action)
     {

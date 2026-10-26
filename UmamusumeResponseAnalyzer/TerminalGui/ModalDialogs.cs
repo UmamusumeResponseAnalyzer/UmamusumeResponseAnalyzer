@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -11,6 +12,11 @@ namespace UmamusumeResponseAnalyzer.TerminalGui;
 static class ModalDialogs
 {
     const int PromptHeight = 3;
+
+    static readonly Scheme PromptScheme = new(UraTheme.Dialog)
+    {
+        Normal = new Terminal.Gui.Drawing.Attribute(UraTheme.Ink, UraTheme.Surface, TextStyle.Bold)
+    };
 
     internal static string PickExecutable(string title, CancellationToken cancellationToken = default)
     {
@@ -62,9 +68,26 @@ static class ModalDialogs
             X = 1,
             Y = PromptHeight,
             Width = Dim.Fill(1),
-            Height = Dim.Fill(2)
+            Height = Dim.Fill(2),
+            CanFocus = true,
+            ViewportSettings = ViewportSettingsFlags.HasVerticalScrollBar
         };
-        var rows = new Dictionary<string, (Label Label, ProgressBar Bar)>(StringComparer.Ordinal);
+        body.KeyDown += (_, key) =>
+        {
+            var offset = key switch
+            {
+                _ when key == Key.CursorUp => -1,
+                _ when key == Key.CursorDown => 1,
+                _ when key == Key.PageUp => -body.Viewport.Height,
+                _ when key == Key.PageDown => body.Viewport.Height,
+                _ when key == Key.Home => -body.GetContentHeight(),
+                _ when key == Key.End => body.GetContentHeight(),
+                _ => (int?)null
+            };
+            if (offset is { } rowsToScroll)
+                key.Handled = body.ScrollVertical(rowsToScroll) is true;
+        };
+        var rows = new Dictionary<string, (Label Label, MeterView Meter)>(StringComparer.Ordinal);
         var running = 1;
         var progress = new DialogProgress(
             app,
@@ -73,27 +96,29 @@ static class ModalDialogs
         {
             if (!rows.TryGetValue(value.Id, out var row))
             {
-                var y = rows.Count;
+                // Each download takes two rows: its description, then its meter.
+                var y = rows.Count * 2;
                 row = (
                     new Label
                     {
                         X = 0,
                         Y = y,
-                        Width = Dim.Percent(60),
+                        Width = Dim.Fill(),
                         Text = value.Description
                     },
-                    new ProgressBar
+                    new MeterView
                     {
-                        X = Pos.Percent(60),
-                        Y = y,
+                        X = 0,
+                        Y = y + 1,
                         Width = Dim.Fill()
                     });
                 rows.Add(value.Id, row);
-                body.Add(row.Label, row.Bar);
+                body.Add(row.Label, row.Meter);
+                body.SetContentHeight(rows.Count * 2);
             }
 
             row.Label.Text = value.Description;
-            row.Bar.Fraction = value.Total <= 0
+            row.Meter.Fraction = value.Total <= 0
                 ? 0
                 : Math.Clamp((float)value.Completed / value.Total, 0, 1);
         });
@@ -245,9 +270,9 @@ static class ModalDialogs
             window.Margin.Thickness = Thickness.Empty;
             window.Add(new Label
             {
-                X = 0,
+                X = 1,
                 Y = 0,
-                Width = Dim.Fill(),
+                Width = Dim.Fill(1),
                 Height = PromptHeight,
                 Text = title
             });
@@ -450,18 +475,20 @@ static class ModalDialogs
     {
         var dialog = new Dialog
         {
-            Title = "URA",
             Width = Dim.Percent(80),
             Height = height is null ? Dim.Percent(80) : height.Value
         };
-        dialog.Add(new Label
+        UraTheme.UseRuleBorder(dialog);
+        var prompt = new Label
         {
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
             Height = PromptHeight,
             Text = title
-        });
+        };
+        prompt.SetScheme(PromptScheme);
+        dialog.Add(prompt);
         return dialog;
     }
 
@@ -548,6 +575,45 @@ static class ModalDialogs
             }
         }, null);
         return completion.Task;
+    }
+
+    /// <summary>A one-row meter: accent dashes for the done part, rule dashes for the rest, then the percentage.</summary>
+    sealed class MeterView : View
+    {
+        float fraction;
+
+        internal MeterView()
+        {
+            Height = 1;
+            CanFocus = false;
+        }
+
+        internal float Fraction
+        {
+            get => fraction;
+            set
+            {
+                if (fraction == value)
+                    return;
+                fraction = value;
+                SetNeedsDraw();
+            }
+        }
+
+        protected override bool OnDrawingContent(DrawContext? context)
+        {
+            var background = GetAttributeForRole(VisualRole.Normal).Background;
+            var percent = $"{(int)Math.Round(fraction * 100)}%";
+            var track = Math.Max(0, Viewport.Width - 5);
+            var done = (int)Math.Round(track * fraction);
+            SetAttribute(new Terminal.Gui.Drawing.Attribute(UraTheme.Accent, background));
+            AddStr(0, 0, new string('━', done));
+            SetAttribute(new Terminal.Gui.Drawing.Attribute(UraTheme.Rule, background));
+            AddStr(done, 0, new string('━', track - done));
+            SetAttribute(new Terminal.Gui.Drawing.Attribute(UraTheme.Muted, background));
+            AddStr(Math.Max(0, Viewport.Width - percent.Length), 0, percent);
+            return true;
+        }
     }
 
     sealed class DialogProgress(

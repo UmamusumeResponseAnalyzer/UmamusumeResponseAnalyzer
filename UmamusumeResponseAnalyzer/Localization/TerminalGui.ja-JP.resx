@@ -4,11 +4,11 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="CommandMode_Title" xml:space="preserve">
-    <value>コマンドモード</value>
+  <data name="Dashboard_Hints" xml:space="preserve">
+    <value>Tab 領域切替 · ↑↓ 選択 · / コマンド · Ctrl+B 起動 · Ctrl+C 終了</value>
   </data>
   <data name="CommandMode_Help" xml:space="preserve">
-    <value>Tab 補完 · ↑↓ 履歴 · Esc キャンセル</value>
+    <value>Tab 補完 · ↑↓ 履歴 · Enter 実行 · Esc キャンセル</value>
   </data>
   <data name="CommandMode_MoreCandidates" xml:space="preserve">
     <value>ほか {0} 件</value>

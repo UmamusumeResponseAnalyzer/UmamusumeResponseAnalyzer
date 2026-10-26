@@ -37,7 +37,8 @@ public sealed class NotificationOverlayViewTests
                 now,
                 available));
 
-            Assert.Equal(new Rectangle(50, 3, 34, 17), overlay.Frame);
+            // Each card is its body plus the two border rows; severity and countdown ride the top border.
+            Assert.Equal(new Rectangle(50, 3, 34, 13), overlay.Frame);
             Assert.Equal(1, available.Right - overlay.Frame.Right);
             Assert.True(overlay.Frame.Bottom <= available.Bottom);
 
@@ -58,25 +59,19 @@ public sealed class NotificationOverlayViewTests
                 Assert.Equal(firstRow + 1, secondRow);
                 Assert.True(secondRow < successRow);
 
-                var expectedAttribute = await terminal.InvokeAsync(
-                    () => overlay.GetAttributeForRole(VisualRole.Normal));
                 Assert.Equal(
-                    expectedAttribute,
+                    new Terminal.Gui.Drawing.Attribute(UraTheme.Rule, UraTheme.Surface),
                     await terminal.CaptureAttributeAsync(overlay.Frame.Location));
+                // The severity dot follows "┌─ " on each card's top border.
                 var severityAttributes = new[]
                 {
-                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 1)),
-                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 5)),
-                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 10)),
-                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 2, overlay.Frame.Y + 14))
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 3, overlay.Frame.Y)),
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 3, overlay.Frame.Y + 3)),
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 3, overlay.Frame.Y + 7)),
+                    await terminal.CaptureAttributeAsync(new(overlay.Frame.X + 3, overlay.Frame.Y + 10))
                 };
                 Assert.Equal(
-                    [
-                        new Terminal.Gui.Drawing.Attribute(StandardColor.Gray, Terminal.Gui.Drawing.Color.None).Foreground,
-                        new Terminal.Gui.Drawing.Attribute(StandardColor.Cyan, Terminal.Gui.Drawing.Color.None).Foreground,
-                        new Terminal.Gui.Drawing.Attribute(StandardColor.BrightGreen, Terminal.Gui.Drawing.Color.None).Foreground,
-                        new Terminal.Gui.Drawing.Attribute(StandardColor.BrightYellow, Terminal.Gui.Drawing.Color.None).Foreground
-                    ],
+                    [UraTheme.Muted, UraTheme.Accent, UraTheme.Success, UraTheme.Warning],
                     severityAttributes.Select(attribute => attribute!.Value.Foreground));
 
                 await terminal.InvokeAsync(() => overlay.UpdateSnapshot(new(
@@ -85,9 +80,9 @@ public sealed class NotificationOverlayViewTests
                     available)));
                 await terminal.WaitForScreenAsync(i18n.Severity_Error);
                 Assert.Equal(
-                    new Terminal.Gui.Drawing.Attribute(StandardColor.BrightRed, Terminal.Gui.Drawing.Color.None).Foreground,
+                    UraTheme.Error,
                     (await terminal.CaptureAttributeAsync(
-                        new(overlay.Frame.X + 2, overlay.Frame.Y + 1)))!.Value.Foreground);
+                        new(overlay.Frame.X + 3, overlay.Frame.Y)))!.Value.Foreground);
 
                 await terminal.InvokeAsync(() => overlay.UpdateSnapshot(new([], now, available)));
                 await terminal.WaitForAsync(async () =>
@@ -123,15 +118,17 @@ public sealed class NotificationOverlayViewTests
             now,
             new Rectangle(0, 0, 80, 10)));
 
+        // Three 3-row cards would fill the 9 usable rows, so the third yields to the one-row overflow line.
         Assert.Equal(new Rectangle(45, 1, 34, 7), overlay.Frame);
         using var window = WindowWith(overlay);
         var run = await StartAsync(terminal, window);
         try
         {
-            await terminal.WaitForScreenAsync(string.Format(i18n.Notification_Remaining, 5));
+            await terminal.WaitForScreenAsync(string.Format(i18n.Notification_Remaining, 4));
             var screen = await terminal.CaptureScreenAsync();
             Assert.Contains("first", screen, StringComparison.Ordinal);
-            Assert.DoesNotContain("second", screen, StringComparison.Ordinal);
+            Assert.Contains("second", screen, StringComparison.Ordinal);
+            Assert.DoesNotContain("third", screen, StringComparison.Ordinal);
             Assert.True(overlay.Frame.Bottom <= 10);
         }
         finally
@@ -141,7 +138,7 @@ public sealed class NotificationOverlayViewTests
     }
 
     [Fact]
-    public async Task CellWidth_TruncatesBeforeWholeCjkOrEmojiRune()
+    public async Task CellWidth_WrapsBeforeWholeCjkOrEmojiRune()
     {
         using var terminal = new TerminalGuiTestApp(width: 70, height: 10);
         using var overlay = new NotificationOverlayView();
@@ -157,17 +154,90 @@ public sealed class NotificationOverlayViewTests
         try
         {
             await terminal.WaitForScreenAsync(prefix);
-            var row = await CaptureRowAsync(
-                terminal,
-                overlay.Frame.X,
-                overlay.Frame.Y + 2,
-                overlay.Frame.Width);
-            Assert.Equal($"│ {prefix}马👨‍👩‍👧‍👦 │", row);
-            Assert.DoesNotContain("🙂", row, StringComparison.Ordinal);
+            Assert.Equal(
+                $"│ {prefix}马👨‍👩‍👧‍👦 │",
+                await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y + 1, overlay.Frame.Width));
+            Assert.Equal(
+                $"│ 🙂tail{new string(' ', 24)} │",
+                await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y + 2, overlay.Frame.Width));
         }
         finally
         {
             await StopAsync(terminal, run);
+        }
+    }
+
+    [Fact]
+    public async Task CellWidth_WrapsWideRuneThatWouldCrossTheRightBorder()
+    {
+        using var terminal = new TerminalGuiTestApp(width: 70, height: 10);
+        using var overlay = new NotificationOverlayView();
+        var now = DateTimeOffset.UnixEpoch;
+        var prefix = new string('a', 29);
+        overlay.UpdateSnapshot(new(
+            [new($"{prefix}马tail", UiSeverity.Info, now.AddSeconds(1))],
+            now,
+            new Rectangle(0, 0, 70, 10)));
+
+        using var window = WindowWith(overlay);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            await terminal.WaitForScreenAsync(prefix);
+            // The wide rune would straddle the right border, so the row pads and the rune wraps.
+            Assert.Equal(
+                $"│ {prefix}  │",
+                await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y + 1, overlay.Frame.Width));
+            Assert.Equal(
+                $"│ 马tail{new string(' ', 24)} │",
+                await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y + 2, overlay.Frame.Width));
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Fact]
+    public async Task Card_BorderCarriesSeveritySourceAndCountdownAndCapsTheBody()
+    {
+        var originalCulture = i18n.Culture;
+        i18n.Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        try
+        {
+            using var terminal = new TerminalGuiTestApp(width: 70, height: 12);
+            using var overlay = new NotificationOverlayView();
+            var now = DateTimeOffset.UnixEpoch;
+            overlay.UpdateSnapshot(new(
+                [new("one\ntwo\nthree\nfour\nfive", UiSeverity.Info, now.AddSeconds(1), "URA")],
+                now,
+                new Rectangle(0, 0, 70, 12)));
+
+            Assert.Equal(new Rectangle(35, 1, 34, 6), overlay.Frame);
+            using var window = WindowWith(overlay);
+            var run = await StartAsync(terminal, window);
+            try
+            {
+                await terminal.WaitForScreenAsync("URA");
+                Assert.Equal(
+                    $"┌─ ● INFO URA {new string('─', 14)} 1s ─┐",
+                    await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y, overlay.Frame.Width));
+                Assert.Equal(
+                    $"│ four…{new string(' ', 25)} │",
+                    await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y + 4, overlay.Frame.Width));
+                Assert.Equal(
+                    $"└{new string('─', 32)}┘",
+                    await CaptureRowAsync(terminal, overlay.Frame.X, overlay.Frame.Y + 5, overlay.Frame.Width));
+                Assert.DoesNotContain("five", await terminal.CaptureScreenAsync(), StringComparison.Ordinal);
+            }
+            finally
+            {
+                await StopAsync(terminal, run);
+            }
+        }
+        finally
+        {
+            i18n.Culture = originalCulture;
         }
     }
 

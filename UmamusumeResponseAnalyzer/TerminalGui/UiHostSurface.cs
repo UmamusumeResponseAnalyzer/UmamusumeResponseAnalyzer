@@ -1,6 +1,7 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Collections.Immutable;
 using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
@@ -11,6 +12,12 @@ namespace UmamusumeResponseAnalyzer.TerminalGui;
 
 internal sealed class UiHostSurface : IDisposable
 {
+    // The popup is disabled so it never takes input; keep its text at full strength anyway.
+    static readonly Scheme HotkeyPopupScheme = new(UraTheme.Raised)
+    {
+        Disabled = new Terminal.Gui.Drawing.Attribute(UraTheme.Ink, UraTheme.Surface)
+    };
+
     readonly UiHost host;
     readonly IApplication application;
     readonly Workspace bootstrap;
@@ -50,6 +57,7 @@ internal sealed class UiHostSurface : IDisposable
         var savedTaskbarTitleOrder = Config.WorkspaceTaskbarTitleOrder?.ToArray()
             ?? throw new InvalidOperationException(
                 i18n.Host_TaskbarOrderNull);
+        UraTheme.Apply();
         window = new UiHostWindow(host.RequestShutdown)
         {
             Title = "UmamusumeResponseAnalyzer",
@@ -77,10 +85,9 @@ internal sealed class UiHostSurface : IDisposable
             CanFocus = false,
             Enabled = false,
             Visible = false,
-            ViewportSettings =
-                ViewportSettingsFlags.Transparent |
-                ViewportSettingsFlags.TransparentMouse
+            ViewportSettings = ViewportSettingsFlags.TransparentMouse
         };
+        hotkeyLayer.SetScheme(HotkeyPopupScheme);
         window.Add(
             workspaceViewport,
             workspaceTaskbar.BottomEdgeTrigger,
@@ -423,13 +430,30 @@ internal sealed class UiHostSurface : IDisposable
                 .Where(notification =>
                     notification.Workspace is null ||
                     ReferenceEquals(notification.Workspace, renderedWorkspace))
-                .Select(notification => new NotificationOverlayItem(
-                    notification.Text,
-                    notification.Severity,
-                    notification.ExpiresAt))
+                .Select(notification =>
+                {
+                    var (source, text) = SplitSource(notification.Text);
+                    return new NotificationOverlayItem(
+                        text,
+                        notification.Severity,
+                        notification.ExpiresAt,
+                        source ?? notification.Workspace?.DisplayTitle);
+                })
                 .ToImmutableArray(),
             now,
             window.Viewport));
+    }
+
+    // Host messages are written "[source] text"; the card shows the source in its top border.
+    static (string? Source, string Text) SplitSource(string text)
+    {
+        if (text.StartsWith('['))
+        {
+            var end = text.IndexOf("] ", StringComparison.Ordinal);
+            if (end > 1)
+                return (text[1..end], text[(end + 2)..]);
+        }
+        return (null, text);
     }
 
     void RefreshHotkeyOverlay()
@@ -443,8 +467,8 @@ internal sealed class UiHostSurface : IDisposable
             var lines = hotkeyPopup.Lines
                 .Select((line, index) =>
                     hotkeyPopup.Selection?.SelectedLineIndex == index
-                        ? $"> {line.Text}"
-                        : $"  {line.Text}")
+                        ? $" › {line.Text}"
+                        : $"   {line.Text}")
                 .Skip(hotkeyPopup.ScrollOffset)
                 .Take(Math.Max(1, window.Viewport.Height - 2))
                 .ToArray();

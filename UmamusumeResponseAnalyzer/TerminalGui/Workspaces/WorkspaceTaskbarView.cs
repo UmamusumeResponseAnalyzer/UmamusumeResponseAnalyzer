@@ -16,16 +16,16 @@ internal sealed class WorkspaceTaskbarView : View
     const string Ellipsis = "…";
 
     static readonly int EllipsisWidth = Ellipsis.GetColumns();
-    static readonly Scheme PopupScheme = new(new Attribute(StandardColor.White, StandardColor.RaisinBlack));
+    static readonly Scheme PopupScheme = UraTheme.Raised;
     static readonly Scheme InactiveScheme = new()
     {
-        Normal = new Attribute(StandardColor.White, StandardColor.RaisinBlack),
-        Highlight = new Attribute(StandardColor.White, StandardColor.DarkSlateGray)
+        Normal = new Attribute(UraTheme.Ink, UraTheme.Surface),
+        Highlight = new Attribute(UraTheme.Ink, UraTheme.Hover)
     };
     static readonly Scheme ActiveScheme = new()
     {
-        Normal = new Attribute(StandardColor.Black, StandardColor.Cyan),
-        Highlight = new Attribute(StandardColor.Black, StandardColor.Cyan)
+        Normal = new Attribute(UraTheme.OnActiveTab, UraTheme.Selection, TextStyle.Bold),
+        Highlight = new Attribute(UraTheme.OnActiveTab, UraTheme.Selection, TextStyle.Bold)
     };
 
     readonly Func<bool> commandModeIsOpen;
@@ -46,6 +46,8 @@ internal sealed class WorkspaceTaskbarView : View
     int laidOutViewportWidth;
     bool titleLayoutValid;
     bool bottomEdgeActivationSuppressed;
+    // True while the pointer is over the bar and the bar has not moved since it entered.
+    bool pointerOverBar;
     Shortcut? pressedItem;
     int pressScreenX;
     int insertionIndex;
@@ -83,21 +85,24 @@ internal sealed class WorkspaceTaskbarView : View
             ViewportSettings = ViewportSettingsFlags.Transparent
         };
         bottomEdgeTrigger.MouseBindings.Clear();
+        // One raised row with no box, one cell of padding per side. It sits just above the bottom
+        // trigger row, where the items always were, so moving down onto the trigger still dismisses it.
         popup = new View
         {
             X = Pos.Center(),
-            Y = Pos.AnchorEnd(),
+            Y = Pos.AnchorEnd(2),
             Width = Dim.Auto(DimAutoStyle.Content, maximumContentDim: Dim.Fill(2)),
-            Height = 3,
-            BorderStyle = LineStyle.Single,
+            Height = 1,
             CanFocus = false,
             TabStop = TabBehavior.NoStop,
             Visible = false
         };
+        popup.Padding.Thickness = new Thickness(1, 0, 1, 0);
         popup.SetScheme(PopupScheme);
 
         bottomEdgeTrigger.MouseEnter += BottomEdgeTriggerMouseEnter;
         bottomEdgeTrigger.MouseLeave += BottomEdgeTriggerMouseLeave;
+        popup.MouseEnter += PopupMouseEnter;
         popup.MouseLeave += PopupMouseLeave;
         Add(popup);
     }
@@ -154,6 +159,7 @@ internal sealed class WorkspaceTaskbarView : View
             CancelInteraction(relayout: false);
             bottomEdgeTrigger.MouseEnter -= BottomEdgeTriggerMouseEnter;
             bottomEdgeTrigger.MouseLeave -= BottomEdgeTriggerMouseLeave;
+            popup.MouseEnter -= PopupMouseEnter;
             popup.MouseLeave -= PopupMouseLeave;
             foreach (var (item, _) in items)
                 DetachItem(item);
@@ -165,6 +171,8 @@ internal sealed class WorkspaceTaskbarView : View
     protected override void OnViewportChanged(DrawEventArgs e)
     {
         base.OnViewportChanged(e);
+        // The bar moves with the viewport, so a later leave is not the pointer moving off it.
+        pointerOverBar = false;
         CancelInteraction(relayout: false);
         RefreshTitleMeasurements();
         titleLayoutValid = false;
@@ -211,10 +219,20 @@ internal sealed class WorkspaceTaskbarView : View
         ApplyTitleLayout();
     }
 
+    void PopupMouseEnter(object? sender, CancelEventArgs e) => pointerOverBar = true;
+
     void PopupMouseLeave(object? sender, EventArgs e)
     {
-        if (pressedItem is null)
-            Hide();
+        var leftDownward = pointerOverBar &&
+            App?.Mouse.LastMousePosition is { } position &&
+            bottomEdgeTrigger.FrameToScreen().Contains(position);
+        pointerOverBar = false;
+        if (pressedItem is not null)
+            return;
+
+        // Moving down from the bar onto the trigger row dismisses it until the pointer leaves that row.
+        bottomEdgeActivationSuppressed = leftDownward;
+        Hide();
     }
 
     void Hide()

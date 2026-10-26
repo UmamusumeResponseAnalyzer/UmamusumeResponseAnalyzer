@@ -1,5 +1,4 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
-using Rectangle = System.Drawing.Rectangle;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Drawing;
@@ -9,19 +8,29 @@ using Terminal.Gui.Views;
 
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
-internal sealed class CommandModeView : FrameView
+/// <summary>
+/// The bottom command line on the raised surface: a rule row, completion candidates, the <c>›</c>
+/// input row and right-aligned key hints. Narrow or short terminals get the input row alone.
+/// </summary>
+internal sealed class CommandModeView : View
 {
     const int CompactWidth = 24;
-    const int FramedHeight = 5;
+    // Rule, input and hint rows; candidates go between the rule and the input.
+    const int FullHeight = 3;
+    const int PromptX = 2;
+    const int InputX = 4;
+
+    static readonly Scheme CandidateScheme = new(new Attribute(UraTheme.Muted, UraTheme.Surface));
+    static readonly Scheme PromptScheme = new(new Attribute(UraTheme.Accent, UraTheme.Surface, TextStyle.Bold));
 
     readonly Action<string> submitted;
     readonly Func<string, IReadOnlyList<string>> complete;
     readonly List<string> history = [];
-    readonly Label title;
     readonly Label candidates;
     readonly Label prompt;
     readonly TextField input;
-    readonly Label footer;
+    readonly KeyHintsView hints;
+    bool compact;
 
     IReadOnlyList<string> completionCandidates = [];
     View? previousFocus;
@@ -41,32 +50,25 @@ internal sealed class CommandModeView : FrameView
         Width = Dim.Fill();
         Height = Dim.Func(_ => DesiredHeight());
         Visible = false;
+        CanFocus = true;
+        TabStop = TabBehavior.TabGroup;
+        SetScheme(UraTheme.Raised);
 
-        title = new Label
-        {
-            Text = i18n.CommandMode_Title,
-            X = 0,
-            Y = 0,
-            Width = Dim.Fill(),
-            Height = 1,
-            TextAlignment = Alignment.Center,
-            CanFocus = false
-        };
         candidates = new Label
         {
-            X = 0,
-            Width = Dim.Fill(),
+            X = InputX,
+            Width = Dim.Fill(1),
             CanFocus = false
         };
-        candidates.SetScheme(new Scheme(new Attribute(StandardColor.Gray, Color.None)));
+        candidates.SetScheme(CandidateScheme);
         prompt = new Label
         {
-            Text = "❯ ",
-            Width = 2,
+            Text = "›",
+            Width = 1,
             Height = 1,
             CanFocus = false
         };
-        prompt.SetScheme(new Scheme(new Attribute(StandardColor.GreenPhosphor, Color.None)));
+        prompt.SetScheme(PromptScheme);
         input = new TextField
         {
             Height = 1,
@@ -75,16 +77,12 @@ internal sealed class CommandModeView : FrameView
         input.KeyBindings.Remove(Key.Tab);
         input.KeyBindings.Remove(Key.CursorUp);
         input.KeyBindings.Remove(Key.CursorDown);
-        footer = new Label
+        hints = new KeyHintsView(i18n.CommandMode_Help)
         {
-            Text = i18n.CommandMode_Help,
             X = 0,
             Width = Dim.Fill(),
-            Height = 1,
-            TextAlignment = Alignment.Center,
-            CanFocus = false
+            HintAlignment = Alignment.End
         };
-        footer.SetScheme(new Scheme(new Attribute(StandardColor.Gray, Color.None)));
 
         input.Accepting += (_, args) =>
         {
@@ -125,7 +123,7 @@ internal sealed class CommandModeView : FrameView
             SetNeedsDraw();
         };
 
-        Add(title, candidates, prompt, input, footer);
+        Add(candidates, prompt, input, hints);
     }
 
     internal bool IsOpen => Visible;
@@ -170,32 +168,34 @@ internal sealed class CommandModeView : FrameView
             focus.SetFocus();
     }
 
-    protected override void OnFrameChanged(in Rectangle frame)
+    protected override bool OnDrawingContent(DrawContext? context)
     {
-        base.OnFrameChanged(in frame);
-        LineStyle? borderStyle = frame.Height < 3 ? null : LineStyle.Single;
-        if (BorderStyle != borderStyle)
-            BorderStyle = borderStyle;
+        if (!compact && Viewport.Width > 0)
+        {
+            SetAttribute(new Attribute(UraTheme.Rule, UraTheme.Surface));
+            AddStr(0, 0, new string('─', Viewport.Width));
+        }
+        return true;
     }
 
     protected override void OnSubViewLayout(LayoutEventArgs args)
     {
-        var compact = Frame.Width < CompactWidth || Frame.Height < FramedHeight;
+        compact = Frame.Width < CompactWidth || Frame.Height < FullHeight;
         var candidateLines = compact ? [] : VisibleCandidateLines();
 
-        title.Visible = !compact;
         candidates.Visible = !compact && candidateLines.Length > 0;
-        footer.Visible = !compact;
+        hints.Visible = !compact;
         candidates.Text = string.Join(Environment.NewLine, candidateLines);
         candidates.Y = 1;
         candidates.Height = candidateLines.Length;
 
         var inputY = compact ? 0 : candidateLines.Length + 1;
+        prompt.X = compact ? 0 : PromptX;
         prompt.Y = inputY;
-        input.X = Pos.Right(prompt);
+        input.X = compact ? 2 : InputX;
         input.Y = inputY;
-        input.Width = Dim.Fill();
-        footer.Y = inputY + 1;
+        input.Width = Dim.Fill(compact ? 0 : 1);
+        hints.Y = inputY + 1;
 
         base.OnSubViewLayout(args);
     }
@@ -204,14 +204,10 @@ internal sealed class CommandModeView : FrameView
     {
         var availableHeight = SuperView?.Viewport.Height ?? 0;
         var availableWidth = SuperView?.Viewport.Width ?? 0;
-        if (availableHeight <= 0)
+        if (availableHeight < FullHeight || availableWidth < CompactWidth)
             return 1;
-        if (availableHeight < FramedHeight)
-            return Math.Min(availableHeight, 3);
-        if (availableWidth < CompactWidth)
-            return 3;
 
-        return Math.Min(availableHeight, FramedHeight + VisibleCandidateCount(availableHeight));
+        return Math.Min(availableHeight, FullHeight + VisibleCandidateCount(availableHeight));
     }
 
     string[] VisibleCandidateLines()
@@ -220,18 +216,18 @@ internal sealed class CommandModeView : FrameView
         if (visibleCount == 0)
             return [];
         if (completionCandidates.Count <= visibleCount)
-            return completionCandidates.Select(x => $"  {x}").ToArray();
+            return completionCandidates.ToArray();
 
         return
         [
-            .. completionCandidates.Take(Math.Max(0, visibleCount - 1)).Select(x => $"  {x}"),
-            "  " + string.Format(i18n.CommandMode_MoreCandidates, completionCandidates.Count - Math.Max(0, visibleCount - 1))
+            .. completionCandidates.Take(Math.Max(0, visibleCount - 1)),
+            string.Format(i18n.CommandMode_MoreCandidates, completionCandidates.Count - Math.Max(0, visibleCount - 1))
         ];
     }
 
     int VisibleCandidateCount(int availableHeight)
     {
-        return Math.Min(completionCandidates.Count, Math.Max(0, availableHeight - FramedHeight));
+        return Math.Min(completionCandidates.Count, Math.Max(0, availableHeight - FullHeight));
     }
 
     void Complete()
