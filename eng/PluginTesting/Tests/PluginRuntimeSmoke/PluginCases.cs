@@ -129,7 +129,6 @@ static partial class PluginCases
                 "training",
                 "训练分析",
                 FullBleed: true,
-                RequiresEventLogger: true,
                 SwitchesOnUpdate: true,
                 VisibleText: "评价会回合周期",
                 CreateUpdatedResponse: static () => CreatePioneerTrainingResponse(73),

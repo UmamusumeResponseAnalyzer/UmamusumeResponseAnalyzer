@@ -33,7 +33,7 @@ var targets = new[]
         "EventLoggerPlugin",
         static () => new EventLoggerPlugin.EventLoggerPlugin(),
         ExpectedWorkspaceTitle: "事件记录",
-        ExpectedManifestDependencies: ["LegendScenarioAnalyzer", "RamenScenarioAnalyzer"]),
+        ExpectedManifestDependencies: ["LegendScenarioAnalyzer", "RamenScenarioAnalyzer", "PioneerScenarioAnalyzer"]),
     new TargetAssembly(
         "EventResponseAnalyzer",
         static () => new EventResponseAnalyzer.EventResponseAnalyzer(),
@@ -1357,7 +1357,7 @@ static class PluginSmokeRunner
                 plugin.Initialize(context);
                 var expectedProgrammaticRegistrations = target.AssemblyName switch
                 {
-                    "EventLoggerPlugin" => 9,
+                    "EventLoggerPlugin" => 15,
                     "EventResponseAnalyzer" => 2,
                     "GamePacketCollector" => 2,
                     "LegendScenarioAnalyzer" => 2,
