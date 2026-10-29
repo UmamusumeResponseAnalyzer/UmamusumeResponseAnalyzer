@@ -41,6 +41,7 @@
 		<InternalsVisibleTo Include="PluginSmokeTests" />
 		<InternalsVisibleTo Include="PluginWorkspaceLifecycleSmoke" />
 		<InternalsVisibleTo Include="RamenScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="PioneerScenarioAnalyzerSmoke" />
 		<InternalsVisibleTo Include="SendGameStatusPluginSmoke" />
 		<InternalsVisibleTo Include="SkillEffectPluginSmoke" />
 		<InternalsVisibleTo Include="SkillTipsResponseAnalyzerSmoke" />

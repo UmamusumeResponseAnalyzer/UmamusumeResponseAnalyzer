@@ -18,6 +18,7 @@ sealed record PanelProbe(
     string Title,
     bool FullBleed,
     bool RequiresEventLogger = false,
+    bool SwitchesOnUpdate = false,
     int NotificationCount = 0,
     UiSeverity? NotificationSeverity = null,
     string? VisibleText = null,
@@ -40,7 +41,8 @@ sealed record PluginCase(
     public void Run(WorkspaceSmokeSession ui)
     {
         using var currentDirectory = new TempCurrentDirectory(Id);
-        using var context = new RuntimePluginContext(ui.Application);
+        using var context = new RuntimePluginContext(ui.Application,
+            Panel?.RequiresEventLogger == true ? new HashSet<string> { "EventLoggerPlugin" } : null);
         using var eventLoggerContext = Panel?.RequiresEventLogger == true
             ? new RuntimePluginContext(ui.Application)
             : null;
@@ -219,8 +221,8 @@ sealed record PluginCase(
             ui.Flush();
             if (!string.IsNullOrEmpty(directOutput))
                 throw new InvalidOperationException($"{Id}: later analyzer dispatch wrote to the process console: {directOutput}");
-            if (!ReferenceEquals(Workspace.Current, ui.Bootstrap))
-                throw new InvalidOperationException($"{Id}: later training update stole workspace focus.");
+            if (!ReferenceEquals(Workspace.Current, Panel.SwitchesOnUpdate ? expectedWorkspace : ui.Bootstrap))
+                throw new InvalidOperationException($"{Id}: later training update did not honor its workspace switching policy.");
 
             expectedWorkspace.SwitchTo();
             var refreshed = CaptureScrollablePanel(ui);
