@@ -2,12 +2,13 @@
 
 [plugins.json](plugins.json) 记录 22 个公开插件仓的固定提交与项目路径；其中 Pioneer 的项目位于 `PioneerScenarioAnalyzer/PioneerScenarioAnalyzer.csproj`。跨插件测试直接引用 Host 源码与外部插件项目，插件生产构建则通过 `Version="*" PrivateAssets="all"` 引用 Host NuGet 包。包来源和构建属性见 [构建契约](../README.md)。
 
-## 五个跨插件测试入口
+## 跨插件测试入口
 
 | 项目 | 实际覆盖 |
 | --- | --- |
 | `PluginSmokeTests` | 默认运行 7 个源码插件实例、分析器注册/DTO 分发、事件显示与历史，并验证七个 ZIP 的 manifest；`--package-load` 单独验证 ZIP 加载和业务回调 |
 | `PluginRuntimeSmoke` | 默认遍历 22 个插件；配置了面板探针的插件检查 framebuffer、更新、历史按键和 `DisposeAsync`，另检查 EventLogger 继承/剧本输出、DMM 空 token 失败提示、采集器永久上传失败及关闭时取消上传并保留 pending |
+| `PioneerEventLoggerSmoke` | Pioneer 与 EventLogger 的请求/响应联动、事件链、训练失败、夏合宿、岛训练、继承与胜场、历史快照及可选依赖缺失；使用 EventLogger 固定的 Pioneer 源码与夹具 |
 | `PluginWorkspaceLifecycleSmoke` | 22 个插件初始化及未使用时 Dispose 的工作区稳定性、共享标题/面板、已移除工作区对迟到回调的拒绝 |
 | `AnalyzerHistoryConfigSmoke` | 10 个分析插件的 `historyLimit` 默认值、严格配置读取、保存/取消/关闭/token 取消、重建后的持久化结果 |
 | `PluginReplaySmoke` | `--self-test` 测试 HTTP 捕获解析与三语言可见 Error 判定；`--corpus` 将真实捕获依次送入 EventLogger、EventResponseAnalyzer、GamePacketCollector、RamenScenarioAnalyzer |
@@ -36,6 +37,7 @@ $smokeBuild = @(
 $env:URA_PLUGIN_SMOKE_PACKAGE_ROOT = 'C:\absolute\fresh-plugin-packages'
 dotnet run --project .\eng\PluginTesting\Tests\PluginSmokeTests @smokeBuild
 dotnet run --project .\eng\PluginTesting\Tests\PluginRuntimeSmoke @smokeBuild
+dotnet run --project .\eng\PluginTesting\Tests\PioneerEventLoggerSmoke @smokeBuild
 dotnet run --project .\eng\PluginTesting\Tests\PluginWorkspaceLifecycleSmoke @smokeBuild
 dotnet run --project .\eng\PluginTesting\Tests\AnalyzerHistoryConfigSmoke @smokeBuild
 dotnet run --project .\eng\PluginTesting\Tests\PluginReplaySmoke @smokeBuild -- --self-test
