@@ -6,6 +6,8 @@
 
 插件项目声明 `IsUraPlugin=true`，使用 `Version="*" PrivateAssets="all"` 引用 Host 包。单独构建插件不需要 Host 源码；插件之间的源码依赖使用固定提交的 submodule。`props` 禁用传递 `ProjectReference` 展开、保留父项目 Configuration/Platform，并从 SDK 默认项排除 `deps/**`、`tests/**` 和构建输出。
 
+宿主使用 Terminal.Gui 2.5.0，插件运行时共用宿主加载的程序集。直接引用 Terminal.Gui 包的插件应与宿主版本一致。
+
 | 属性 | 默认值或作用 |
 | --- | --- |
 | `IsUraPlugin` | `false`；插件在项目中显式启用 |

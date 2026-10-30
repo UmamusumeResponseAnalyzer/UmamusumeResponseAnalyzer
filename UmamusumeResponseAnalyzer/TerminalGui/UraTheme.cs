@@ -85,13 +85,15 @@ internal static class UraTheme
         SchemeManager.AddScheme("Menu", Menu);
         SchemeManager.AddScheme("Dialog", Dialog);
 
-        Terminal.Gui.Views.Dialog.DefaultShadow = ShadowStyles.None;
-        Terminal.Gui.Views.Dialog.DefaultBorderStyle = LineStyle.Single;
-        MessageBox.DefaultBorderStyle = LineStyle.Single;
-        FrameView.DefaultBorderStyle = LineStyle.Single;
-        Button.DefaultShadow = ShadowStyles.None;
-        Glyphs.LeftBracket = new Rune('[');
-        Glyphs.RightBracket = new Rune(']');
+        DialogSettings.Current = DialogSettings.Current with
+        {
+            DefaultShadow = ShadowStyles.None,
+            DefaultBorderStyle = LineStyle.Single
+        };
+        MessageBoxSettings.Current = MessageBoxSettings.Current with { DefaultBorderStyle = LineStyle.Single };
+        FrameViewSettings.Current = FrameViewSettings.Current with { DefaultBorderStyle = LineStyle.Single };
+        ButtonSettings.Current = ButtonSettings.Current with { DefaultShadow = ShadowStyles.None };
+        GlyphSettings.Current = GlyphSettings.Current with { LeftBracket = new Rune('['), RightBracket = new Rune(']') };
     }
 
     internal static Color SeverityColor(UiSeverity severity) => severity switch

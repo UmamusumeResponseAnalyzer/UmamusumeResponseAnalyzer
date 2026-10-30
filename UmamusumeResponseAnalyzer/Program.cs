@@ -311,7 +311,7 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
 
-                // Terminal.Gui 2.4.17 的 RunAsync 会同步进入 run loop，必须先创建 startup waiter。
+                // RunAsync 会同步进入 run loop，必须先创建 startup waiter。
                 _ = CompleteStartupAsync();
                 await uiHost.RunAsync();
             }
@@ -772,8 +772,18 @@ namespace UmamusumeResponseAnalyzer
                 if (Environment.CurrentManagedThreadId != ownerThreadId)
                     throw new InvalidOperationException(I18N_DrainOwnerThread);
 
-                while (workItems.TryTake(out var workItem))
-                    workItem.Callback(workItem.State);
+                // 宿主续体使用自身队列，避免嵌套弹窗进入 Terminal.Gui 的 Invoke 计时器锁。
+                var previousContext = Current;
+                SetSynchronizationContext(this);
+                try
+                {
+                    while (workItems.TryTake(out var workItem))
+                        workItem.Callback(workItem.State);
+                }
+                finally
+                {
+                    SetSynchronizationContext(previousContext);
+                }
                 Interlocked.Exchange(ref applicationDrainScheduled, 0);
                 if (workItems.Count > 0)
                     WakeApplicationLoop();
