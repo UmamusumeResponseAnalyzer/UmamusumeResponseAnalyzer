@@ -1,113 +1,89 @@
 # UmamusumeResponseAnalyzer
 
-UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接收游戏请求/响应的 MessagePack payload，按 Gallop endpoint catalog 分发给已安装插件；插件 live state 显示在 workspace，notification 由 Host overlay 呈现，interactive Host session 中捕获的异常集中记录到启动 workspace。
+UmamusumeResponseAnalyzer（URA）接收《赛马娘》的游戏数据，通过插件显示分析结果。
 
-# 前置 Prerequisite
+- **育成**：事件选项效果、剧本回合信息、育成结束时的技能评分方案。
+- **赛马娘资料**：殿堂马与好友种马信息。
+- **竞技场**：对手信息。
 
-* 任意可以把游戏请求/响应 MessagePack payload 发送到宿主 `/notify/request` / `/notify/response` 的 sender。请求必须带 `X-Hachimi-Game-Url` header，值为游戏原始 canonical URL；该 URL 的 path 必须命中 Gallop endpoint catalog，或能在带/不带 `/umamusume` 前缀两种形式之间切换后命中 catalog。Windows 安装入口使用 [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge) 和 [HTTP 转发插件](https://github.com/UmamusumeResponseAnalyzer/hachimi-httpforward-plugin)。
-* sender 的目标地址默认设置为 `http://127.0.0.1:4693`。如果游戏在手机或其他设备上运行，首次运行向导可把监听地址改为 `0.0.0.0`；启动时按控制台提示放行防火墙。
-* Windows 版启动 workspace 的 `更多` 提供 `安装 Hachimi-Edge`，支持 DMM 日服、Komoe 繁中、Steam 日服及国际服；可选择自动发现的目录或手动选择游戏 EXE。关闭目标游戏后操作，一次安装一个目录。
-* DMM 自动发现读取 `%APPDATA%\dmmgameplayer5\dmmgame.cnf` 中唯一的已安装 `umamusume/GCL` 记录，并验证 `umamusume.exe` 存在。记录损坏时显示警告，继续使用注册表及 Komoe 等来源。DMMPlugin 通过 Host 的 `UraCoreHelper.FindDmmGameExecutable` 复用此解析。
+具体功能及支持的区服、剧本取决于所安装的插件。
 
-# 安装 Installation
+> [!NOTE]
+> 本文适用于 **1.15.0.0**。下载前请核对版本，较早发布版的界面和操作可能与本文不同。
 
-* 在 [Release](https://github.com/EtherealAO/UmamusumeResponseAnalyzer/releases) 页面下载最新版本程序。
-* 将程序放在任意位置，运行 `UmamusumeResponseAnalyzer.exe`。
-* 普通启动要求 stdin 和 stdout 连接到 interactive terminal；redirected stdin/stdout 会以明确错误退出。`--version`、`--update <savePath>`、`--enable-dll-redirection` 等 CLI-only 路径不启动 TUI。
-* 首次运行按向导选择运行设备、事件数据语言和训练员性别。
-* 首次设置完成后先选择 `更新数据文件`。数据文件用于事件、技能、名称等本地解析；不完整或损坏时数据库保持不可用，插件不会初始化，HTTP server 也不会启动，需要退出后重新打开程序，在启动前更新数据文件。技能进化条件 `Type=0/None` 仅使用服务器完成状态，不做本地预测。未定义的技能进化条件类型只记录 warning，并按条件未满足处理，不阻断完整数据快照加载。
-* 进入 `插件仓库`，安装需要的功能插件。没有插件时宿主仍会启动，并提供启动信息、异常记录、通知和基础分发能力。
-* 启动 workspace 在整个 Host session 内保留同一页面。首次设置、插件扫描完成后启用工具栏；选择 `启动` 后在原页显示当前阶段和监听结果，启动前操作保持原位并禁用。监听地址表示 HTTP server 的绑定结果，不表示游戏已经连接。
-* 待启动时显示接入范围、端口和折叠的启动设置；启动中只显示当前阶段，启动后通过启动详情查看阶段结果和最近日志。版本、路径与更新源从 `更多` 打开诊断信息查看。正文支持鼠标滚轮，列表到达滚动边界后继续滚动正文。后台更新保留焦点、展开状态及正在查看的日志位置。最近日志收集宿主/插件日志和 Host 捕获的异常，最多保留 128 条；异常详情及日志菜单可复制完整异常链和 stack trace。右键选中日志，或在选中异常后按 `Shift+F10` 打开菜单；菜单打开期间保留原目标，clipboard 写入失败会显示错误。
-* 数据库加载警告、插件扫描/加载/安装诊断、程序更新文件损坏和请求分析异常还会显示 Host overlay notification；写入日志或显示 notification 均不会切换当前 workspace。终端不足 70 列时隐藏 notification overlay；宽度足够时最多同时呈现四张完整卡片，其余通知按可用高度显示余量提示。
+## 快速开始
 
-# 运行与文件位置
+以下为 Windows x64 电脑端游戏的接入步骤。
 
-`config.yaml` 的缺失节和字段使用默认值；未知字段及其子树读取时忽略，保存时丢弃。空文档、正在解析的映射内重复键、无效标量及不允许的 null 会报错，错误包含来源与字段路径或 YAML 行列。`updater.custom-database-repository` 留空或 null 表示空字符串。界面语言可选择自动、简体中文、日语或英语，修改后重启；部分界面文案尚未覆盖全部语言。界面语言与事件数据语言分别设置。
+1. 从 [Releases](https://github.com/UmamusumeResponseAnalyzer/UmamusumeResponseAnalyzer/releases) 下载 `UmamusumeResponseAnalyzer.exe`，直接运行。
+2. 按首次设置向导选择**游戏运行设备、事件数据语言和训练员性别**。Windows 版游戏与 URA 在同一台电脑上时，选择「此计算机」。
+3. 点击「更新数据文件」，等待下载完成。
+4. 在「插件仓库」安装需要的插件，然后**退出并重新打开 URA**。
+5. **关闭游戏**，在「更多 → 安装 Hachimi-Edge」选择游戏目录；未找到时手动选择游戏 EXE。安装器支持 DMM 日服、Komoe 繁中、Steam 日服和国际服，并配置本机游戏数据转发。
+6. 点击「启动」，再打开游戏，进入已安装插件对应的功能，例如育成事件或竞技场对手列表。**出现对应分析结果，才说明接入成功。**
 
-* 默认工作目录为 `%LocalAppData%\UmamusumeResponseAnalyzer`。程序所在目录存在 `.portable` 文件夹时，使用该文件夹作为工作目录。CLI 命令保留启动时的工作目录。
-* `config.yaml`、数据文件、`Plugins/` 和 debug `packets/` 都写在工作目录下。
-* 默认监听 `http://127.0.0.1:4693`。`/notify/ping` 返回 `pong`，可作为 smoke test。
-* 启动 workspace 使用 Terminal.Gui 原生按钮，`Tab` 移动焦点，click 或 `Enter` 激活；`Esc` 关闭 `更多` 并返回触发按钮。设置和插件设置使用全屏原生 `Menu`，mouse hover 或 `Up` / `Down` 移动菜单项。插件仓库、更新、安装 Mod 和字段编辑使用各自的 dialog，完成后返回原入口。
-* 启动后，focused control 未处理的 `/` 或 `Enter` 在未命中注册快捷键时打开 Command Mode；内置命令需以 `/` 开头。Command Mode 使用 Terminal.Gui 原生 `TextField` 输入，支持 `Tab` 补全、`Up` / `Down` 浏览当前进程内提交过的命令、`Esc` 取消和 `Enter` 执行。底部全宽带框 overlay 显示 ` Command Mode ` 标题、补全候选及 `+N more`、`❯` 输入区和操作 footer；窄窗口或高度不足时使用紧凑布局。
-* 鼠标进入 terminal 最底行时，在该行显示覆盖在 workspace 上的居中 taskbar popup，不占用 workspace 布局空间；离开最底行或连续 5 秒无操作时隐藏。底行内移动、点击或切换 workspace 会重新计时，普通内容刷新不续时；按住标题或拖拽期间保持显示，释放后在底行内重新计时，行外则隐藏。超时隐藏后，在底行再次移动鼠标即可呼出。过长标题会随 terminal 宽度以 `…` 缩略，当前项和 hovered 项优先显示完整标题。click workspace title 直接切换，按住左键左右拖拽可调整并持久化 taskbar 顺序；该顺序只影响 taskbar。当前项和 hover 由背景属性区分。Command Mode 显示时 taskbar 被抑制，并拥有更高的图层优先级。
-* `/workspace` 或 `/workspace switch` 打开 workspace 选择器，`/workspace switch <title>` 直接切换；标题也可用双引号包围，其中 `\"` 和 `\\` 分别表示双引号和反斜杠。`/workspace list` 列出 workspace。
-* workspace 内容超出终端时默认显示底部；`Up` / `Down` 按行滚动，`PageUp` / `PageDown` 按页滚动，`Home` / `End` 跳到顶部或底部。`Left` / `Right` 不参与 workspace viewport 滚动；focused view 未处理时继续匹配已注册 hotkey。Terminal.Gui 主界面中，滚轮产生与无 modifier 的 `Up` / `Down` 相同的 workspace viewport 滚动效果；滚轮不触发快捷键，popup 或 Command Mode 存活时会被忽略。
-* Host dialog 的 `TextField` 与 `ListView` 使用 Terminal.Gui 原生 whole-view hover；focus 视觉优先于 hover，hover 不改变 focus、selection 或 marked 状态。`Button`、菜单及插件提供的 `View` 使用各控件自身的 Terminal.Gui 默认行为。workspace/plugin popup 保持 mouse click-through。popup 或 Command Mode 存活时由其优先处理按键；workspace 已到边界时按键继续交给已注册 hotkey。
-* 命令结果中的非空 message 写入全局最近日志；只有 message 而没有 display 时同时显示 global notification，有 display 时通过 popup 呈现。
-* 插件更新 workspace panel 时默认会切到该 workspace；bootstrap 刷新和异常写入不会切换当前 workspace。按 `Ctrl+B` 返回启动 workspace，按 `Ctrl+C` 退出程序。插件故障显示在启动 workspace，完整状态按需展开。退出时先停止 HTTP 接收和插件新回调，等待在途插件回调退出，再异步清理插件，最后关闭 UI。
-* 程序启动后会检查已加载插件是否有新版本；发现更新时只通知，不自动安装。更新插件需要进入 `插件仓库` 手动选择。
-* 更新数据文件时会先写入临时文件，下载成功后替换目标文件；失败时清理临时文件并保留已有文件。下载列表超出窗口时，可用滚动条或聚焦列表后按 `Up` / `Down`、`PageUp` / `PageDown`、`Home` / `End` 查看。
-* 开启 debug packet 保存后，请求写为 `Q`、响应写为 `R` 的 `.msgpack` 文件，文件名包含时间戳、UUIDv7 和 API endpoint path（`/` 写为 `-`）；`DEBUG` 构建额外写 `.json`，文件名只包含时间戳和 `Q`/`R`，完整 canonical URL 写在 JSON 内容中。`packets/` 中超过一天的旧文件会在下次保存时清理，单个旧文件清理失败不会中断当前请求/响应分析。
+> [!WARNING]
+> 安装 Hachimi-Edge 会覆盖目标文件，不保留备份；Steam 日服还会替换游戏 EXE。已有模组或手动配置时，请先备份相关文件。DMM 首次启用 DLL 重定向后，按提示重启 Windows。
 
-# 检查安装 Checking
+手机或模拟器还需要配置游戏端转发，见下方「进阶说明」。
 
-`安装 Hachimi-Edge` 每次按所选客户端取得 URACloud 当前生效组件，校验长度、SHA-256 和 Windows x64 PE 架构，再覆盖固定文件。安装、更新和同版本重装使用同一动作；该客户端尚无完整生效配置时不能安装。
+## 日常使用
 
-| 客户端 | Hachimi-Edge 目标 | 额外文件 |
-|---|---|---|
-| DMM 日服 | `umamusume.exe.local/UnityPlayer.dll` | Cellar → `umamusume.exe.local/apphelp.dll` |
-| Komoe 繁中 | `winhttp.dll` | — |
-| Steam 国际服 | `cri_mana_vpx.dll` | — |
-| Steam 日服 | `cri_mana_vpx.dll` | FunnyHoney → `UmamusumePrettyDerby_Jpn.exe` |
+| 操作 | 方法 |
+| --- | --- |
+| 选择按钮 | 鼠标点击，或 `Tab` 移动、`Enter` 确认 |
+| 切换分析页面 | 鼠标移到终端最底行，点击页面名称；也可直接输入 `/workspace` 后回车 |
+| 滚动正文 | 鼠标滚轮、`PageUp` / `PageDown`、`Home` / `End` |
+| 查看启动信息与错误 | `Ctrl+B` |
+| 退出程序 | `Ctrl+C` |
 
-所有客户端均安装 `hachimi/hachimi_httpforward_plugin.dll`，将 `hachimi\hachimi_httpforward_plugin.dll` 加入 `hachimi/config.json` 顶层 `load_libraries`，并设置 `hachimi/httpforward.json` 的 `notifier_host`。目标地址自动取自当前 URA 监听设置，通配地址转换为回环地址。已有超时与其他设置保留；首次超时为 100 ms。损坏的 JSON 或字段类型错误会阻止安装。
+设置和更新均在点击「启动」前完成；已经启动时，请退出并重新打开 URA。
 
-选择游戏目录后自动准备组件并安装。固定列表之外的文件保留，其他加载器可能与本次组件冲突。只有目录权限或 DMM 的 `DevOverrideEnable` 设置需要时才请求提权；首次启用 DLL redirection 后须重启 Windows。
+- **插件设置**：「选项 → 插件」。刚安装的插件需重启后才能配置。
+- **插件更新**：「插件仓库」。发现新版本时程序只会提示，手动安装后重启生效。
+- **数据更新**：「更新数据文件」。
+- **程序更新**：「更多 → 更新程序」。
 
-安装直接覆盖目标文件，不保留备份。单个文件写入完成后再替换目标；安装中途失败时，已覆盖的文件保留，排除错误后重新安装。目标文件的符号链接替换为普通文件，链接指向的文件保持原样；目标路径中的目录链接会阻止安装。
+## 常见问题
 
-The Windows installer applies the selected client's active URACloud component set to one game directory and preserves unrelated files and settings. It overwrites target files without backups; files already replaced remain in place if installation fails. Fix the error and run the installation again. Installation success and actual game traffic reception are separate checks.
+| 现象 | 检查与处理 |
+| --- | --- |
+| 数据加载失败，无法启动 | 退出并重新打开 URA，在点击「启动」前更新数据文件；失败时查看具体错误。数据不可用时，插件和监听都不会启动。 |
+| 已启动，但没有分析结果 | 确认已加载对应插件、插件支持当前区服和功能，并在游戏中触发该功能；再检查游戏端转发地址。安装组件成功或显示监听地址，都不代表收到游戏数据。 |
+| 刚安装或更新的插件没有生效 | 完全退出并重新打开 URA；仍失败时查看启动信息中的插件错误。 |
+| 监听失败 | 在「选项 → 核心」检查监听地址及端口是否可用、端口是否被其他程序占用；修改后重新启动。 |
 
-* 在 URA 中选择 `启动！`；浏览器或命令行访问 `http://127.0.0.1:4693/notify/ping`，返回 `pong` 只说明宿主 HTTP server 可达。
-* 启动游戏后，前往殿堂马列表、竞技场选择对手或查看好友信息。若 workspace 中出现插件输出，说明 sender、header 和插件分发配置正确。
+## 进阶说明
 
-# 插件仓库与 URACloud
+<details>
+<summary>手机或模拟器接入</summary>
 
-* `插件仓库` 从 `https://ura.shuise.net/api/Plugins` 读取每个插件的最新稳定版，按分类排序。宿主使用 manifest 展示插件与版本，repository ID / Release ID 用于构造 URACloud 下载地址；安装和更新直接使用目录中的最新稳定版。安装只处理所选插件，不自动增加 manifest `Dependencies`。
-* 同名来源可并列展示，一次不能选择多个同名插件。本机同一 `InternalName`（OrdinalIgnoreCase）只能安装一个，ZIP 位于 `Plugins/<InternalName>.zip`；宿主只扫描 `Plugins/` 顶层 ZIP。
-* 下载先写临时文件，核对 manifest 的 Author、InternalName、Version 和 ZIP 包契约后替换目标 ZIP，上限 64 MiB。下载或校验失败保留现有 ZIP。安装和更新保存插件包，重启 URA 后生效；本进程继续使用启动时加载的代码。
-* 更新检查仅处理已加载插件，按 `InternalName` 匹配并比较版本；同名多个来源使匹配不唯一时明确报错。发现更新只通知，安装由用户手动选择。
-* 网页安装入口位于插件模块 [WebInstallApi.cs](UmamusumeResponseAnalyzer/Plugin/WebInstallApi.cs)。本地 `/uracloud/install` 接受白名单 Origin（`https://ura.shuise.net`）的 `{repositoryId, releaseId}`，下载源固定为 URACloud。宿主获取 manifest 后在本机确认插件身份与版本，并提示插件将在本机执行代码。网页可指定预发行 Release。
-* 安装成功返回 `{ok: true, installed: "<InternalName>", error: null}`，失败返回 `ok: false` 和错误原因。成功只表示 ZIP 已保存，网页和 Host 提示重启后生效。`/uracloud/status` 返回 Host 版本和当前已加载插件，每项包含 `author`、`internalName`、`version`；网页按 `internalName` 识别已安装插件并提供更新，不区分其来源 Release。
+1. 首次设置选择「手机/模拟器以及此计算机」，或在「选项 → 核心」将监听地址设为 `0.0.0.0`。默认端口为 `4693`。
+2. 启动 URA，按 Windows 提示放行防火墙。启动日志会列出可用的本机地址。
+3. 在游戏端的数据转发工具中，将目标设为 `http://电脑的局域网IP:4693`，确保设备能够访问该地址。手机或模拟器中的 `127.0.0.1` 不是运行 URA 的电脑。
 
-Host **1.15.0.0** uses repository and release IDs to address URACloud downloads. The plugin repository menu installs and updates to the latest stable release from the catalog. Web requests require local confirmation of the plugin identity and version; downloads validate the package structure and manifest identity before replacing the ZIP. Installation succeeds when the ZIP is saved; restart URA to apply installations and updates. Status and version checks cover currently loaded plugins. Status reports no source identity.
+首次设置只调整 URA 的接收范围，不会安装手机或模拟器中的转发工具；游戏端工具的安装与支持范围请查阅其说明。
 
-# 插件开发 Plugin Development
+</details>
 
-构建属性、打包命令及本地 SDK 验证见 [构建契约](UmamusumeResponseAnalyzer/Build/README.md)。插件业务测试位于各插件仓的 `tests/`，宿主契约测试位于 `UmamusumeResponseAnalyzer.Tests/`。
+<details>
+<summary>文件位置与便携模式</summary>
 
-* 插件直接引用宿主程序集与 Terminal.Gui，目标框架为 `.NET 10`。宿主公开 `IPlugin`、`AnalyzerAttribute`、workspace UI contract 和 Gallop DTO/endpoint catalog；插件源码使用 `UmamusumeResponseAnalyzer.Plugin`、`UmamusumeResponseAnalyzer.TerminalGui`、`Terminal.Gui.ViewBase`、`Terminal.Gui.Views`、`Gallop`、`Gallop.Endpoints` 命名空间。宿主程序集、Terminal.Gui 与 Watson 共享程序集由 Default ALC 提供；Terminal.Gui 和 Watson 的程序集版本必须与宿主一致。插件请求更高宿主程序集版本时提示更新并继续使用当前宿主程序集，不保证缺失 API 可用。
-* 插件包只能是 `Plugins/<InternalName>.zip`。ZIP 根目录必须且只能有一个 `manifest.json`，并且必须且只能有一个名为 `<InternalName>.dll` 的主程序集；根目录中的其它 managed DLL 是插件依赖程序集，卫星资源 DLL 放在对应 culture 子目录。标准打包产物只包含这些运行时文件，不包含 PDB、deps.json 或临时 metadata。ZIP 文件名必须等于 manifest `InternalName`；manifest `InternalName`、根主 DLL 文件名（不含扩展名）和主 DLL 内嵌 `AssemblyName` 必须一致。
-* `manifest.json` 使用 `System.Text.Json` 默认选项读取：未知字段（包括 `Targets`）忽略，重复字段取最后值；字段名称区分大小写。必须包含以下 11 个字段：`Author`、`InternalName`、`DisplayName`、`Description`、`Changelog`、`Version`、`Dependencies`、`RepositoryUrl`、`LastUpdate`、`Category`、`Homepage`。`Dependencies` 声明直接引用的插件 internal name，用于已安装包的程序集共享及初始化顺序；缺失项不阻止加载，必需程序集实际缺失时按下述入口规则处理。软依赖指插件自己检查目标是否安装并保护可选调用的情况，manifest 不另作分类。插件集合、代码和依赖组在启动时确定，共享 load context 保留至进程退出。已安装图中的自依赖、重复名称和依赖环使插件加载失败；共享组内的程序集名称大小写冲突或同名程序集内容冲突使该组加载失败，无关组继续加载。`IPluginContext.IsPluginAvailable` 检查声明目标是否在启动时已安装，不反映运行期故障状态；可选插件类型不得出现在 Consumer 导出类型签名或启动必经字段初始化中。所有已安装插件均参与加载与初始化。分发按 URL path 匹配，同路径可能跨服命中；启动流程也会执行。
-* 宿主提供基础 `TurnInfo` / `CommandInfo` 领域视图。UAF、L'Arc、Cook、Mecha、Legend、Pioneer、Onsen、Breeders 等场景专用聚合模型由场景插件基于 Gallop DTO 派生。
-* 精确请求/响应 analyzer 可以使用 endpoint attribute，例如 `[ResponseAnalyzer<GameApi.Account.Index>] ValueTask Analyze(DataLinkIndexResponse response)`。方法必须返回 `ValueTask`，并且只能有一个闭合具体 Gallop DTO 参数；DTO 类型必须精确匹配 endpoint descriptor 对应方向的 payload 类型。同一个方法可以挂多个 analyzer attribute，但这些 attribute 必须要求同一个 DTO 类型。
-* 程序化 analyzer 统一使用 `context.Analyzers.Register<TPayload>(AnalyzerKind kind, IReadOnlyList<EndpointPattern> patterns, Func<AnalyzerInvocation<TPayload>, ValueTask> handler, int priority = 0)`。DTO 的 `TPayload` 必须是宿主当前 catalog 中该方向的闭合具体 Gallop DTO；可以将多个 endpoint 的 payload 投影到同一个 `TPayload`，不要求它等于各 descriptor 的默认 DTO。raw analyzer 使用 `ReadOnlyMemory<byte>`。`AnalyzerInvocation<TPayload>` 提供匹配后的 descriptor、payload 和非 null 的 `GameHttpHeaders`，其中六个 header 值分别可为 `null`。
-* `EndpointPattern.Exact`、`Wildcard` 和 `Regex` 都匹配 catalog 的 canonical path，区分大小写。wildcard 的 `*` 不跨 `/`；regex 以 `CultureInvariant`、`NonBacktracking` 和 100 ms timeout 匹配完整 path。每个 pattern 必须在注册时至少命中一个 catalog endpoint，多个 pattern 的命中结果会去重。
-* attribute 和程序化 analyzer handler 都返回 `ValueTask`。程序化 analyzer 只能在有效的 `Initialize` 或宿主调用的 `StartAsync` 阶段内串行注册；阶段结束后，捕获该阶段的异步上下文也不能继续注册。每个阶段成功后提交该阶段暂存的 analyzer，失败则丢弃。普通 `StartAsync` 失败保留原有 analyzer；插件负责回滚本次新增资源。
-* 宿主按 `X-Hachimi-Game-Url` header 中的 canonical game URL 解析 path，并在带/不带 `/umamusume` 前缀两种形式之间查询 `GameEndpointCatalog.ByPath`；两种形式均未命中的数据会被静默丢弃。sender 可附带 `X-Hachimi-sid`、`X-Hachimi-app-ver`、`X-Hachimi-res-ver`、`X-Hachimi-viewerid`、`X-Hachimi-device`、`X-Hachimi-device-subtype`；raw analyzer 收到的是原始 MessagePack payload bytes。
-* 分发以 raw payload 为基础，先按方向和 endpoint 取得 analyzer 快照；同一轮的 raw 与 DTO analyzer 按 priority 从小到大串行执行，同 priority 保持注册顺序。DTO 在执行点按声明的 payload 类型反序列化，同一分发中相同类型共享 DTO 实例或投影失败结果；同类投影失败只报告一次，后续 raw analyzer 仍可执行。单个 handler 异常写入全局最近日志并通知，后续 handler 继续执行；日志保留异常类型、消息和完整 backtrace 文本。
-* Gallop DTO 的 `bool` 字段在反序列化时接受 MessagePack boolean 和 positive fixint `0` / `1`；其它整数编码会抛出 `MessagePackSerializationException`，序列化始终写入 MessagePack boolean。
-* 插件必须实现 `Initialize(IPluginContext context)`；`StartAsync(CancellationToken)`、`DisposeAsync()` 和 `ConfigPromptAsync(...)` 有默认空实现；`IPlugin` 继承 `IAsyncDisposable`。
-* HTTP 路由使用 `[Route(WatsonWebserver.Core.HttpMethod.GET, "status")] Task Handler(HttpContextBase context)`；WebSocket 路由使用 `[WebSocketRoute("bridge")] Task Handler(HttpContextBase context, WebSocket socket, CancellationToken cancellationToken)`。两者接受静态或实例方法，挂载到现有 HTTP listener 的 `/<InternalName>/<相对路径>`；相对路径段只接受 ASCII 字母、数字、`-`、`_`、`.`，不能是空段、`.` 或 `..`。同一 HTTP 方法和路径只允许一项注册。HTTP 与 WebSocket 路由在插件初始化成功后一起提交，失败回滚。
-* WebSocket 路由接受标准 HTTP/1.1 升级，不协商子协议或扩展；宿主提供 .NET `WebSocket`，handler 必须等待会话结束，不得在返回后继续使用 socket。HTTP handler 通过 `context.Token` 接收取消，WebSocket handler 使用参数中的令牌。插件停止或故障时先取消在途路由，再等待回调结束、移除路由并调用 `DisposeAsync()`；WebSocket 升级后的错误只记录并关闭连接。路由与宿主共用监听范围，访问来源和 Origin 限制由插件按自身协议检查。
-* `context.Application` 是宿主进程唯一的 `IApplication`，插件不得自行创建或释放 Terminal.Gui application。插件的配置与其它 dialog 直接使用该 application 和 Terminal.Gui 控件；宿主 modal helper 不属于插件 ABI。
-* 插件通过 `Workspace.Create(title)` 获取 workspace，`Workspace.Current` 读取当前 workspace；`SetPanel`、`RemovePanel`、`Notify`、`SwitchTo`、`BindHotkey` 和 `Remove` 均为 `Workspace` 实例方法。`SetPanel(key, title, content, fullBleed, switchToWorkspace)` 接受 `WorkspaceContent`，默认在 panel 更新时切到目标 workspace；静默刷新传 `switchToWorkspace: false`。`WorkspaceContent` 的 factory 每次返回一个未挂载的新 `Terminal.Gui.ViewBase.View`，View 的挂载和释放由宿主管理；纯文本可用 `WorkspaceContent.Text(...)`。
-* `TerminalUi.Log(source, text, severity)` 写入启动 workspace 的全局“最近日志”，全局保留最新 128 条；`Workspace.Notify` 写入对应 workspace scope，`TerminalUi.Notify` 写入 global scope。普通 workspace 只显示 panel live state，notification 按现有 scope 由 Host overlay 显示。interactive Host session 中，`TerminalUi.LogException` 捕获的异常也写入全局“最近日志”，且不会切换 active workspace。插件 hotkey 通过 `HotkeyManager` 注册。
-* 宿主在 HTTP listener 启动后按插件顺序调用每插件一个 `StartAsync(CancellationToken)`。后台任务由插件持有 CTS 和 Task，在准备与注册结束后启动，可能早于注册提交执行。插件捕获后台异常后调用同步的 `context.ReportBackgroundFailure(Exception)`；此方法记录错误或触发停用后立即返回。插件在 `DisposeAsync()` 中停止并等待自己的任务，再释放资源。
-* analyzer 遇到必需程序集缺失时，宿主报告插件、注册来源、endpoint、执行阶段和缺失程序集，并仅将出错的单条 analyzer 注册停用至进程退出。该注册已开始的调用自然结束，后续调用跳过该注册；同插件的其他注册、同一 handler 在其他 endpoint 的注册继续各自执行。此停用不等待在途调用、不取消后台任务、不调用 `DisposeAsync()`，也不移除注册。
-* `ConfigPromptAsync`、`StartAsync`、快捷键和后台上报遇到必需程序集缺失时，宿主将该插件停用至进程退出：停止准入新回调，等待已准入回调结束，等待 `DisposeAsync()`，再清理 analyzer、快捷键归属与 UI。插件负责清理自己创建的 panel 和资源；宿主保留程序集和全局共享 workspace。普通异常记录错误；插件停用不连带停用其他插件。初始化或启动返回前已上报缺程序集的插件保持关闭，保留首次故障原因，清理只执行一次。
-* `Notify(..., shortcuts: UiShortcut[])` 注册 notification TTL 内的临时快捷键；`HotkeyContext.BindShortcut(...)` 注册 popup 存活期间的临时快捷键。临时 handler 可重复触发，不关闭 popup、notification，也不延长 TTL；优先 popup 先于 focused control 获得按键；其余情况下由 focused control 先处理，Command Mode 打开时截断其余未消费按键。未打开 Command Mode 时，Host 快捷键分发依次尝试 popup shortcut、popup built-in、最新 TTL-live notification shortcut、workspace navigation 和持久 hotkey；仍未处理的 `/` 或 `Enter` 再打开 Command Mode。notification 未显示在 active workspace、窄屏或 overflow 中时，TTL 内的快捷键仍然有效。临时快捷键不写入持久 hotkey dictionary，也不自动渲染按键提示；workspace 删除、宿主停止和插件故障停用会清理对应注册。
-* `Workspace.Create(title)` 原样保留 title（包括边界空白），纯空白 title 非法；进程内以 `OrdinalIgnoreCase` 将 title canonicalize 为全局共享的 `Workspace`，所有调用方取得同一实例。`Workspace.Current` 始终返回当前 workspace；每个 Host session 都以不可移除的“启动” workspace 作为初始值和默认回退目标。普通 workspace 只显示各 panel 的当前 live state；同一 workspace 内的 panel key 以 `Ordinal` 区分并由所有调用方共享，`SetPanel(...)` 替换同 key panel，`RemovePanel(key)` 删除同 key panel 并返回是否存在。`Workspace.Remove()` 清除普通 workspace 的 panel、滚动位置、notification/临时快捷键和 workspace hotkey；删除 active 普通 workspace 时回退到注册顺序首项，即“启动”。相同 title 此后再次 `Workspace.Create(...)` 会取得新的 generation；旧 handle 成为 tombstone，除重复 `Remove()` 外，`SetPanel`、`RemovePanel`、`Notify`、`SwitchTo` 和 `BindHotkey` 均立即抛出 `InvalidOperationException`；对“启动”调用 `Remove()` 会抛出 `InvalidOperationException`。
-* Host 在面板或布局拆除前释放其中控件（含子控件及已有 adornment）的鼠标捕获。面板结构重建会结束其中正在进行的拖拽；普通重绘、滚动和尺寸调整保持捕获。其它窗口及任务栏的捕获不受影响；待移除控件的捕获若未能释放，Host 会报错并中止拆除，保留原界面层级。
-* 插件配置由插件自行维护。宿主不预创建插件数据目录，不自动读写配置文件，也不提供通用属性编辑器；菜单入口调用 `ConfigPromptAsync(IApplication application, CancellationToken cancellationToken = default)`，其中 `application` 与 `context.Application` 为同一个宿主实例。该方法可能在插件实例已加载、但 `Initialize` 尚未执行时调用，因此不得依赖 `Initialize` 产生的状态。配置过程中因缺程序集停用的插件会从配置菜单移除。插件需要配置或数据目录时，应在插件代码中创建目录、读取/校验自己的文件，用户取消时不得写入 draft，错误直接抛出明确异常。
+默认工作目录为 `%LocalAppData%\UmamusumeResponseAnalyzer`，其中保存 `config.yaml`、数据文件和 `Plugins/` 插件目录。
 
-## 本地化维护
+需要便携使用时，在首次运行前于 EXE 旁创建名为 `.portable` 的**文件夹**，程序便会使用该文件夹保存配置和数据。已有配置与数据不会自动迁入。
 
-Host 的界面、日志、异常和游戏展示文本位于 `UmamusumeResponseAnalyzer/Localization`。默认 `.resx` 与 `en-US` 使用英语，`zh-CN`、`ja-JP` 提供完整对应资源；新增文本同步维护四份文件，完整句子使用 `{0}` 等占位符。语言设置保存后重启生效，安装子进程通过内部 `--culture` 参数接收所选语言。
+实际使用的路径可在「更多 → 诊断信息」查看。
 
-修改 `.resx` 后用 Visual Studio 的资源生成器或 Windows SDK 的 ResGen 重新生成对应 Designer；`Game` 使用 `PublicResXFileCodeGenerator`，其他强类型资源使用 `ResXFileCodeGenerator`，HachimiEdge 直接使用 ResourceManager。Designer 由工具生成，公开的 `Game` 资源属性属于插件 API。`LocalizationTests` 检查语言资源、占位符和资源属性的一致性。
+</details>
 
-协议字段、错误码、命令、路径、稳定身份和第三方原文保持原值。内置工作区的 `Title` 和排序配置键为“启动”，界面标题按语言显示；`/workspace list` 同时列出不同的稳定身份，`/workspace switch` 与补全使用该身份。
+<details>
+<summary>连接检查与错误详情</summary>
 
-`Database.ClimaxItem`、支援卡简称、干劲和半月名称是本地化展示值。业务判断使用道具 ID、支援卡 `Type`／`IsFriendCard` 等领域字段。此次 Host 变更需要与 OldScenarioAnalyzer、OnsenScenarioAnalyzer、PioneerScenarioAnalyzer、UAFScenarioAnalyzer 的对应修复配套更新；其余插件的自有文案由插件维护。
+使用默认监听设置启动后，在电脑浏览器中打开 [连接检查地址](http://127.0.0.1:4693/notify/ping)。返回 `pong` 仅说明 URA 服务可达；游戏数据是否成功转发，仍需进入对应游戏功能查看插件输出。
+
+跨设备检查时，将地址中的 `127.0.0.1` 换成运行 URA 的电脑局域网 IP；修改过端口时使用实际端口。
+
+按 `Ctrl+B` 查看启动信息和「最近日志」。选中带异常详情的日志，右键或按 `Shift+F10`，选择「复制完整 backtrace」获取完整错误。反馈问题时附上程序版本、游戏区服、相关插件名称和错误详情；分享前检查并遮盖账号等个人信息。
+
+</details>
