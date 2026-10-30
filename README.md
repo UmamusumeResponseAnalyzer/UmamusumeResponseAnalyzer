@@ -73,7 +73,7 @@ Host **1.15.0.0** uses repository and release IDs to address URACloud downloads.
 
 # 插件开发 Plugin Development
 
-构建属性和打包命令见 [构建契约](eng/README.md)，验证入口见 [插件测试](eng/PluginTesting/README.md)。
+构建属性、打包命令及本地 SDK 验证见 [构建契约](UmamusumeResponseAnalyzer/Build/README.md)。插件业务测试位于各插件仓的 `tests/`，宿主契约测试位于 `UmamusumeResponseAnalyzer.Tests/`。
 
 * 插件直接引用宿主程序集与 Terminal.Gui，目标框架为 `.NET 10`。宿主公开 `IPlugin`、`AnalyzerAttribute`、workspace UI contract 和 Gallop DTO/endpoint catalog；插件源码使用 `UmamusumeResponseAnalyzer.Plugin`、`UmamusumeResponseAnalyzer.TerminalGui`、`Terminal.Gui.ViewBase`、`Terminal.Gui.Views`、`Gallop`、`Gallop.Endpoints` 命名空间。宿主程序集、Terminal.Gui 与 Watson 共享程序集由 Default ALC 提供；Terminal.Gui 和 Watson 的程序集版本必须与宿主一致。插件请求更高宿主程序集版本时提示更新并继续使用当前宿主程序集，不保证缺失 API 可用。
 * 插件包只能是 `Plugins/<InternalName>.zip`。ZIP 根目录必须且只能有一个 `manifest.json`，并且必须且只能有一个名为 `<InternalName>.dll` 的主程序集；根目录中的其它 managed DLL 是插件依赖程序集，卫星资源 DLL 放在对应 culture 子目录。标准打包产物只包含这些运行时文件，不包含 PDB、deps.json 或临时 metadata。ZIP 文件名必须等于 manifest `InternalName`；manifest `InternalName`、根主 DLL 文件名（不含扩展名）和主 DLL 内嵌 `AssemblyName` 必须一致。

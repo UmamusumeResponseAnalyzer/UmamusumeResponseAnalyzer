@@ -24,22 +24,36 @@
 		<None Include="$(IntermediateOutputPath)ref\$(AssemblyName).dll"
 		      Pack="true"
 		      PackagePath="ref\$(TargetFramework)\" />
-		<None Include="..\eng\URA.Plugin.Build.props"
+		<None Include="Build\URA.Plugin.Build.props"
 		      Pack="true"
 		      PackagePath="buildTransitive\UmamusumeResponseAnalyzer.props" />
-		<None Include="..\eng\URA.Plugin.Build.targets"
+		<None Include="Build\URA.Plugin.Build.targets"
 		      Pack="true"
 		      PackagePath="buildTransitive\UmamusumeResponseAnalyzer.targets" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="UmamusumeResponseAnalyzer.Tests" />
+		<InternalsVisibleTo Include="BreedersScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="CookScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="DMMPlugin.Tests" />
+		<InternalsVisibleTo Include="EventLoggerPluginSmoke" />
+		<InternalsVisibleTo Include="EventResponseAnalyzer.Tests" />
+		<InternalsVisibleTo Include="ExamplePluginSmoke" />
+		<InternalsVisibleTo Include="GamePacketCollector.Tests" />
+		<InternalsVisibleTo Include="MechaScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="NotificationsSmoke" />
+		<InternalsVisibleTo Include="OldScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="OnsenScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="RaceAnalyzerSmoke" />
+		<InternalsVisibleTo Include="TeamStadiumOpponentListResponseAnalyzerSmoke" />
+		<InternalsVisibleTo Include="UAFScenarioAnalyzerSmoke" />
+		<InternalsVisibleTo Include="EventLoggerPluginReplaySmoke" />
+		<InternalsVisibleTo Include="EventResponseAnalyzerReplaySmoke" />
+		<InternalsVisibleTo Include="GamePacketCollectorReplaySmoke" />
+		<InternalsVisibleTo Include="RamenScenarioAnalyzerReplaySmoke" />
 		<InternalsVisibleTo Include="AIRedirectorSmoke" />
 		<InternalsVisibleTo Include="LegendScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="PluginReplaySmoke" />
-		<InternalsVisibleTo Include="PluginRuntimeSmoke" />
-		<InternalsVisibleTo Include="PluginSmokeTests" />
-		<InternalsVisibleTo Include="PluginWorkspaceLifecycleSmoke" />
 		<InternalsVisibleTo Include="RamenScenarioAnalyzerSmoke" />
 		<InternalsVisibleTo Include="PioneerScenarioAnalyzerSmoke" />
 		<InternalsVisibleTo Include="PioneerEventLoggerSmoke" />

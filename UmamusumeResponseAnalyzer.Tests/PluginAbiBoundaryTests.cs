@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Gallop;
 using Gallop.Endpoints;
+using Terminal.Gui.App;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
@@ -12,6 +13,23 @@ namespace UmamusumeResponseAnalyzer.Tests
     {
         const BindingFlags PublicDeclared =
             BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+
+        [Fact]
+        public void PluginConfigurationUsesTheHostApplicationAndCancellationToken()
+        {
+            Assert.Equal(typeof(IApplication), typeof(IPluginContext)
+                .GetProperty(nameof(IPluginContext.Application))!.PropertyType);
+            var method = Assert.Single(typeof(IPlugin).GetMethods(),
+                method => method.Name == nameof(IPlugin.ConfigPromptAsync));
+            Assert.Equal(typeof(Task), method.ReturnType);
+            Assert.Collection(method.GetParameters(),
+                parameter => Assert.Equal(typeof(IApplication), parameter.ParameterType),
+                parameter =>
+                {
+                    Assert.Equal(typeof(CancellationToken), parameter.ParameterType);
+                    Assert.True(parameter.IsOptional);
+                });
+        }
 
         [Fact]
         public void PluginContractsAndGallopModelsComeFromHostAssembly()

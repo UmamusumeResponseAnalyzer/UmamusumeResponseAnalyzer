@@ -1,5 +1,8 @@
 using System.IO.Compression;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Runtime.Loader;
+using Terminal.Gui.App;
 using UmamusumeResponseAnalyzer.Plugin;
 using Xunit;
 
@@ -22,13 +25,20 @@ public sealed class PluginStartupSnapshotTests : IDisposable
     public async Task UpdatedZipAndNewDependencyTakeEffectOnlyInFreshRuntime()
     {
         WriteVersion("v1", "1.0.0", []);
+        var firstMvid = PackageMvid("Plugins/Snapshot.zip");
         PluginManager.Init();
         var original = Assert.Single(PluginManager.LoadedPlugins);
         var originalContext = AssemblyLoadContext.GetLoadContext(original.GetType().Assembly)!;
         Assert.False(originalContext.IsCollectible);
+        Assert.NotSame(AssemblyLoadContext.Default, originalContext);
+        Assert.Equal(firstMvid, original.GetType().Assembly.ManifestModule.ModuleVersionId);
+        Assert.Equal(Path.GetFullPath("Plugins/Snapshot.zip"), PluginManager.Metadatas["Snapshot"].PackagePath);
+        foreach (var shared in new[] { typeof(IPlugin).Assembly, typeof(Gallop.SingleModeChara).Assembly, typeof(IApplication).Assembly })
+            Assert.Same(shared, originalContext.LoadFromAssemblyName(shared.GetName()));
 
         File.Delete("Plugins/Snapshot.zip");
         WriteVersion("v2", "2.0.0", ["Added"]);
+        var secondMvid = PackageMvid("Plugins/Snapshot.zip");
         PluginCompiler.CompilePackage("""
             using UmamusumeResponseAnalyzer.Plugin;
             public sealed class Added : IPlugin { public void Initialize(IPluginContext context) { } }
@@ -48,6 +58,20 @@ public sealed class PluginStartupSnapshotTests : IDisposable
         Assert.Equal(new Version(2, 0, 0), PluginManager.Metadatas["Snapshot"].Version);
         Assert.Equal(2, PluginManager.LoadedPlugins.Count);
         Assert.Equal(2, Assert.Single(PluginManager.ContextGroups).Count);
+        Assert.Equal(secondMvid, PluginManager.LoadedPlugins.Single(plugin => PluginManager.InternalName(plugin) == "Snapshot")
+            .GetType().Assembly.ManifestModule.ModuleVersionId);
+    }
+
+    static Guid PackageMvid(string path)
+    {
+        using var archive = ZipFile.OpenRead(path);
+        using var stream = archive.GetEntry("Snapshot.dll")!.Open();
+        using var bytes = new MemoryStream();
+        stream.CopyTo(bytes);
+        bytes.Position = 0;
+        using var pe = new PEReader(bytes);
+        var metadata = pe.GetMetadataReader();
+        return metadata.GetGuid(metadata.GetModuleDefinition().Mvid);
     }
 
     static void WriteVersion(string text, string version, string[] dependencies)

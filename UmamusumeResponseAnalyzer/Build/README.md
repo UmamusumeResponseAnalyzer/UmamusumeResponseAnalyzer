@@ -31,7 +31,7 @@ ZIP 根目录包含 `manifest.json` 和 `<AssemblyName>.dll`。资产选择从�
 
 ## 本地包验证
 
-以下命令从仓库根目录执行，只生成引用包：
+以下命令从宿主仓库根目录执行，只生成引用包：
 
 ```powershell
 dotnet pack .\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj -c Release -o .\artifacts\nuget
@@ -44,17 +44,21 @@ dotnet pack .\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj -c Rele
 构建契约与 manifest JSON 往返验证：
 
 ```powershell
-pwsh -NoProfile -File .\eng\tests\VerifyUraPluginBuildTargets.ps1
+pwsh -NoProfile -File .\UmamusumeResponseAnalyzer.Tests\Build\VerifyUraPluginBuildTargets.ps1
 # 也可分别传入 VS 的 Bin\MSBuild.exe 与 Bin\amd64\MSBuild.exe
-pwsh -NoProfile -File .\eng\tests\VerifyUraPluginBuildTargets.ps1 -MSBuildPath '<VS-installation>\MSBuild\Current\Bin\MSBuild.exe'
+pwsh -NoProfile -File .\UmamusumeResponseAnalyzer.Tests\Build\VerifyUraPluginBuildTargets.ps1 -MSBuildPath '<VS-installation>\MSBuild\Current\Bin\MSBuild.exe'
 ```
 
 该脚本检查包布局声明、默认项目排除项、构建目标和 manifest 字符转义/默认值；它不运行完整 ZIP 资产选择或业务回调。
 
 ## 插件测试
 
-[PluginTesting/README.md](PluginTesting/README.md) 列出五个跨插件可执行测试的命令、七个 ZIP 的准备方法，以及真实语料回放的输入格式和失败条件。测试项目应实际运行；构建成功或对这些普通可执行项目执行 `dotnet test` 不等同于 smoke 通过。
+插件的业务、配置、framebuffer、回放和 ZIP 加载测试位于各插件仓的 `tests/`。测试工具由各仓独立持有；测试项目通过 `UraTestHostRoot` 引用匹配的 Host 源码，生产插件仍引用 NuGet SDK。
 
-`PluginSmokeTests` 默认执行源码实例并验证 ZIP 结构；`--package-load` 通过 `PluginManager` 运行七个 ZIP 的业务回调、输出与卸载检查。二者都要求 `URA_PLUGIN_SMOKE_PACKAGE_ROOT` 指向仅含本次七个 ZIP 的目录。
+共用 CI 递归构建并执行 `tests/**/*.csproj`。这些项目必须可执行，辅助源码直接编入测试项目。发布边界脚本由本仓默认测试入口执行，核对 NuGet 来源、生产项目引用和固定 submodule。
 
-`RandomDtoGenerator` 提供 Protocol / Analyzer 两种固定 seed 生成策略，`RandomDtoFactory` 补充插件所需剧本状态。Host 语料测试使用 `URA_PACKET_CORPUS`；`PluginReplaySmoke --self-test` 测试 HTTP 解析器及三语言可见 Error 行识别，真实回放使用 `--corpus`。缺少真实捕获时不能把自测或合成 DTO 结果记为真实语料通过。
+ZIP 业务测试在本地通过 `URA_PLUGIN_SMOKE_PACKAGE_ROOT` 指定 fresh build 目录；GitHub Actions 使用既有工作区的 `artifacts` 目录。只匹配本插件及所需依赖的 InternalName，缺失和重复均失败。普通测试构建关闭打包和部署，准备验证 ZIP 时只开启 manifest 与打包，部署始终关闭。
+
+真实捕获通过对应插件测试的 `--corpus` 参数提供。无参数入口执行自测；自测通过不代表真实语料通过。捕获及测试结果中的账号数据不得提交。
+
+宿主测试只维护协议、ABI、插件加载及 workspace 契约；不检出或运行真实插件集合。新增测试程序集若需要宿主内部接口，应先随 Host SDK 发布对应授权，再更新依赖它的插件测试。

@@ -2,10 +2,11 @@ param([string]$MSBuildPath = "dotnet")
 
 $ErrorActionPreference = "Stop"
 
-$engRoot = Split-Path -Parent $PSScriptRoot
-$propsPath = Join-Path $engRoot "URA.Plugin.Build.props"
-$targetsPath = Join-Path $engRoot "URA.Plugin.Build.targets"
-$projectPath = Join-Path (Split-Path -Parent $engRoot) "UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj"
+$hostRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$buildRoot = Join-Path $hostRoot 'UmamusumeResponseAnalyzer\Build'
+$propsPath = Join-Path $buildRoot "URA.Plugin.Build.props"
+$targetsPath = Join-Path $buildRoot "URA.Plugin.Build.targets"
+$projectPath = Join-Path $hostRoot "UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj"
 $errors = New-Object System.Collections.Generic.List[string]
 
 [xml]$project = Get-Content -LiteralPath $projectPath -Raw
