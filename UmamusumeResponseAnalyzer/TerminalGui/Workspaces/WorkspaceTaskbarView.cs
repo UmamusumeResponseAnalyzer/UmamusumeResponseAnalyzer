@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
+using Terminal.Gui.App;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
@@ -45,6 +46,7 @@ internal sealed class WorkspaceTaskbarView : View
     Workspace? laidOutHoveredWorkspace;
     int laidOutViewportWidth;
     bool titleLayoutValid;
+    (IApplication Application, object Token)? idleTimeout;
     Shortcut? pressedItem;
     int pressScreenX;
     int insertionIndex;
@@ -102,10 +104,12 @@ internal sealed class WorkspaceTaskbarView : View
 
     internal void Refresh(IReadOnlyList<Workspace> workspaces, Workspace activeWorkspace)
     {
+        var restartIdleTimeout = !ReferenceEquals(this.activeWorkspace, activeWorkspace);
         var current = OrderWorkspaces(workspaces);
         if (items.Count != current.Length ||
             items.Where((entry, index) => !ReferenceEquals(entry.Workspace, current[index])).Any())
         {
+            restartIdleTimeout |= pressedItem is not null;
             CancelInteraction(relayout: false);
             RebuildItems(current);
         }
@@ -124,25 +128,36 @@ internal sealed class WorkspaceTaskbarView : View
 
         if (pressedItem is null)
             ApplyTitleLayout();
+        if (restartIdleTimeout)
+            RestartIdleTimeout();
     }
 
     internal void CommandModeVisibilityChanged() => Hide();
 
     internal void HandleMousePosition(Mouse mouse)
     {
-        if (!mouse.Flags.HasFlag(MouseFlags.PositionReport) || pressedItem is not null)
+        if (pressedItem is not null)
             return;
 
-        if (bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
-            Show();
-        else
-            Hide();
+        if (mouse.Flags.HasFlag(MouseFlags.PositionReport))
+        {
+            if (bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
+                Show();
+            else
+                Hide();
+        }
+        else if (mouse.IsSingleDoubleOrTripleClicked &&
+                 bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
+        {
+            RestartIdleTimeout();
+        }
     }
 
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
+            StopIdleTimeout();
             CancelInteraction(relayout: false);
             foreach (var (item, _) in items)
                 DetachItem(item);
@@ -154,10 +169,13 @@ internal sealed class WorkspaceTaskbarView : View
     protected override void OnViewportChanged(DrawEventArgs e)
     {
         base.OnViewportChanged(e);
+        var wasPressed = pressedItem is not null;
         CancelInteraction(relayout: false);
         RefreshTitleMeasurements();
         titleLayoutValid = false;
         ApplyTitleLayout();
+        if (wasPressed)
+            RestartIdleTimeout();
     }
 
     void Show()
@@ -165,18 +183,14 @@ internal sealed class WorkspaceTaskbarView : View
         if (commandModeIsOpen() || items.Count == 0)
             return;
 
-        if (popup.Visible)
-        {
-            ApplyTitleLayout();
-            return;
-        }
-
         popup.Visible = true;
         ApplyTitleLayout();
+        RestartIdleTimeout();
     }
 
     void Hide()
     {
+        StopIdleTimeout();
         CancelInteraction(relayout: false);
         var resetTitleLayout = hoveredWorkspace is not null;
         hoveredWorkspace = null;
@@ -185,6 +199,32 @@ internal sealed class WorkspaceTaskbarView : View
         bottomEdgeTrigger.Visible = items.Count > 0 && !commandModeIsOpen();
         if (resetTitleLayout)
             ApplyTitleLayout();
+    }
+
+    void RestartIdleTimeout()
+    {
+        StopIdleTimeout();
+        if (!popup.Visible || pressedItem is not null)
+            return;
+
+        var application = App!;
+        var token = application.AddTimeout(TimeSpan.FromSeconds(5), () =>
+        {
+            idleTimeout = null;
+            Hide();
+            return false;
+        });
+        idleTimeout = (application, token!);
+    }
+
+    void StopIdleTimeout()
+    {
+        if (idleTimeout is not { } timeout)
+            return;
+
+        // Disposing the parent detaches this view before its timer is canceled.
+        timeout.Application.RemoveTimeout(timeout.Token);
+        idleTimeout = null;
     }
 
     void RebuildItems(IReadOnlyList<Workspace> workspaces)
@@ -415,6 +455,7 @@ internal sealed class WorkspaceTaskbarView : View
 
         if (pressedItem is null && mouse.Flags.HasFlag(MouseFlags.LeftButtonPressed))
         {
+            StopIdleTimeout();
             pressedItem = item;
             pressScreenX = mouse.ScreenPosition.X;
             insertionIndex = IndexOf(item);
@@ -470,7 +511,10 @@ internal sealed class WorkspaceTaskbarView : View
             ClearInteractionState();
 
         if (bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
+        {
             ApplyTitleLayout();
+            RestartIdleTimeout();
+        }
         else
             Hide();
     }

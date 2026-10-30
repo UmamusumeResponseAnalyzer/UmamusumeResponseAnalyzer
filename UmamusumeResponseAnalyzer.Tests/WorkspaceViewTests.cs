@@ -740,9 +740,93 @@ public sealed class WorkspaceViewTests
     }
 
     [Fact]
+    public async Task TaskbarIdleTimeoutTracksInteractionAndVisibility()
+    {
+        using var terminal = new TerminalGuiTestApp(width: 48, height: 12);
+        var alpha = new Workspace("Alpha");
+        var beta = new Workspace("Beta");
+        var workspaces = new[] { alpha, beta };
+        var commandModeOpen = false;
+        using var taskbar = new WorkspaceTaskbarView(alpha, () => commandModeOpen, _ => { }, [], _ => { });
+        taskbar.Refresh(workspaces, alpha);
+        using var window = WindowWith(new Label { Text = "BODY" }, taskbar.BottomEdgeTrigger, taskbar);
+        void OnMouse(object? sender, Mouse mouse) => taskbar.HandleMousePosition(mouse);
+        terminal.Application.Mouse.MouseEvent += OnMouse;
+        var run = await StartAsync(terminal, window);
+
+        try
+        {
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            Assert.Contains("Alpha", await AdvanceTimeAsync(terminal, 4900));
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 100));
+
+            await terminal.MoveMouseAsync(new Point(47, 11));
+            await AdvanceTimeAsync(terminal, 4000);
+            await terminal.MoveMouseAsync(new Point(46, 11));
+            Assert.Contains("Alpha", await AdvanceTimeAsync(terminal, 4900));
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 100));
+
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            await AdvanceTimeAsync(terminal, 4000);
+            await terminal.InjectAsync(MouseAt(terminal, new Point(47, 11), MouseFlags.RightButtonClicked));
+            Assert.Contains("Alpha", await AdvanceTimeAsync(terminal, 4900));
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 100));
+
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            await AdvanceTimeAsync(terminal, 4000);
+            await terminal.InvokeAsync(() => taskbar.Refresh(workspaces, beta));
+            Assert.Contains("Alpha", await AdvanceTimeAsync(terminal, 4900));
+            await terminal.InvokeAsync(() => taskbar.Refresh(workspaces, beta));
+            await terminal.RedrawAsync();
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 100));
+
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            await AdvanceTimeAsync(terminal, 4000);
+            await terminal.MoveMouseAsync(Point.Empty);
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 500));
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            Assert.Contains("Alpha", await AdvanceTimeAsync(terminal, 500));
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 4500));
+
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            await AdvanceTimeAsync(terminal, 4000);
+            await terminal.InvokeAsync(() =>
+            {
+                commandModeOpen = true;
+                taskbar.CommandModeVisibilityChanged();
+            });
+            await terminal.MoveMouseAsync(new Point(47, 11));
+            Assert.DoesNotContain("Alpha", await AdvanceTimeAsync(terminal, 500));
+            await terminal.InvokeAsync(() =>
+            {
+                commandModeOpen = false;
+                taskbar.CommandModeVisibilityChanged();
+            });
+            await terminal.MoveMouseAsync(new Point(0, 11));
+            Assert.Contains("Alpha", await AdvanceTimeAsync(terminal, 500));
+
+            await terminal.InvokeAsync(() =>
+            {
+                terminal.Application.Mouse.MouseEvent -= OnMouse;
+                window.Remove(taskbar);
+                taskbar.Dispose();
+            });
+            var screen = await AdvanceTimeAsync(terminal, 5000);
+            Assert.Contains("BODY", screen);
+            Assert.DoesNotContain("Alpha", screen);
+        }
+        finally
+        {
+            terminal.Application.Mouse.MouseEvent -= OnMouse;
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Fact]
     public async Task TaskbarHoverClickDragResizeAndViewportStayIndependent()
     {
         using var terminal = new TerminalGuiTestApp(width: 48, height: 12);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
         using var viewport = new WorkspaceViewport(new Workspace(Workspace.BootstrapTitle));
         var alpha = new Workspace("Alpha");
         var beta = new Workspace("Beta");
@@ -867,6 +951,7 @@ public sealed class WorkspaceViewTests
                     terminal,
                     gammaPoint,
                     MouseFlags.LeftButtonPressed));
+                Assert.Contains("Gamma", await AdvanceTimeAsync(terminal, 6000));
                 await terminal.InjectAsync(MouseAt(
                     terminal,
                     dragTarget,
@@ -878,6 +963,7 @@ public sealed class WorkspaceViewTests
                     viewport.Reconcile();
                     Assert.True(terminal.Application.Mouse.IsGrabbed());
                 });
+                Assert.Contains("Gamma", await AdvanceTimeAsync(terminal, 6000));
                 var outsideDragTarget = dragTarget with { Y = 10 };
                 await terminal.InjectAsync(MouseAt(
                     terminal,
@@ -898,14 +984,43 @@ public sealed class WorkspaceViewTests
                 await terminal.RedrawAsync();
                 Assert.DoesNotContain("Gamma", await terminal.CaptureScreenAsync());
 
+                await terminal.MoveMouseAsync(bottomBlank);
+                await terminal.RedrawAsync();
+                betaPoint = FindText(await terminal.CaptureScreenAsync(), "Beta");
+                var insideDragTarget = betaPoint with { X = betaPoint.X + 2 };
+                await terminal.InjectAsync(MouseAt(terminal, betaPoint, MouseFlags.LeftButtonPressed));
+                await terminal.InjectAsync(MouseAt(terminal, insideDragTarget,
+                    MouseFlags.LeftButtonPressed | MouseFlags.PositionReport));
+                await terminal.InjectAsync(MouseAt(terminal, insideDragTarget, MouseFlags.LeftButtonReleased));
+                Assert.Contains("Beta", await AdvanceTimeAsync(terminal, 4900));
+                Assert.DoesNotContain("Beta", await AdvanceTimeAsync(terminal, 100));
+
+                await terminal.MoveMouseAsync(bottomBlank);
+                await terminal.InjectAsync(MouseAt(terminal, betaPoint, MouseFlags.LeftButtonPressed));
+                await terminal.InjectAsync(MouseAt(terminal, insideDragTarget,
+                    MouseFlags.LeftButtonPressed | MouseFlags.PositionReport));
                 await terminal.ResizeAsync(16, 8);
-                await terminal.MoveMouseAsync(Point.Empty);
-                await terminal.MoveMouseAsync(new Point(0, 7));
                 await terminal.RedrawAsync();
                 screen = await terminal.CaptureScreenAsync();
                 Assert.Contains("VIEWPORT-BODY", screen);
                 Assert.Contains("…", screen);
                 Assert.Equal(7, FindText(screen, "Beta").Y);
+                Assert.False(await terminal.InvokeAsync(() => terminal.Application.Mouse.IsGrabbed()));
+                Assert.DoesNotContain("Beta", await AdvanceTimeAsync(terminal, 5000));
+
+                await terminal.InjectAsync(MouseAt(terminal, Point.Empty, MouseFlags.LeftButtonReleased));
+                await terminal.MoveMouseAsync(new Point(0, 7));
+                await terminal.RedrawAsync();
+                betaPoint = FindText(await terminal.CaptureScreenAsync(), "Beta");
+                insideDragTarget = betaPoint with { X = betaPoint.X + 2 };
+                await terminal.InjectAsync(MouseAt(terminal, betaPoint, MouseFlags.LeftButtonPressed));
+                await terminal.InjectAsync(MouseAt(terminal, insideDragTarget,
+                    MouseFlags.LeftButtonPressed | MouseFlags.PositionReport));
+                Assert.True(await terminal.InvokeAsync(() => terminal.Application.Mouse.IsGrabbed()));
+                await terminal.InvokeAsync(() => taskbar.Refresh([alpha, beta], beta));
+                Assert.False(await terminal.InvokeAsync(() => terminal.Application.Mouse.IsGrabbed()));
+                Assert.Contains("Beta", await AdvanceTimeAsync(terminal, 4900));
+                Assert.DoesNotContain("Beta", await AdvanceTimeAsync(terminal, 100));
             }
             finally
             {
@@ -1369,6 +1484,17 @@ public sealed class WorkspaceViewTests
         await run.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
+    static async Task<string> AdvanceTimeAsync(TerminalGuiTestApp terminal, int milliseconds)
+    {
+        await terminal.InvokeAsync(() =>
+        {
+            terminal.Time.Advance(TimeSpan.FromMilliseconds(milliseconds));
+            terminal.Application.TimedEvents!.RunTimers();
+            terminal.Application.LayoutAndDraw(forceRedraw: true);
+        });
+        return await terminal.CaptureScreenAsync();
+    }
+
     static Point FindText(string screen, string text)
     {
         var lines = screen.ReplaceLineEndings("\n").Split('\n');
@@ -1378,7 +1504,7 @@ public sealed class WorkspaceViewTests
             if (x >= 0)
                 return new(x + Math.Max(0, text.Length / 2), y);
         }
-        throw new InvalidOperationException($"Framebuffer 中没有找到 '{text}'。");
+        throw new InvalidOperationException($"Framebuffer 中没有找到 '{text}'。{Environment.NewLine}{screen}");
     }
 
     static Mouse MouseAt(TerminalGuiTestApp terminal, Point point, MouseFlags flags)
