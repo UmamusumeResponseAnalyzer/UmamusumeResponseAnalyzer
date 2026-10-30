@@ -27,38 +27,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="UmamusumeResponseAnalyzer.Tests" />
-		<InternalsVisibleTo Include="BreedersScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="CookScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="DMMPlugin.Tests" />
-		<InternalsVisibleTo Include="EventLoggerPluginSmoke" />
-		<InternalsVisibleTo Include="EventResponseAnalyzer.Tests" />
-		<InternalsVisibleTo Include="ExamplePluginSmoke" />
-		<InternalsVisibleTo Include="GamePacketCollector.Tests" />
-		<InternalsVisibleTo Include="MechaScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="NotificationsSmoke" />
-		<InternalsVisibleTo Include="OldScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="OnsenScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="RaceAnalyzerSmoke" />
-		<InternalsVisibleTo Include="TeamStadiumOpponentListResponseAnalyzerSmoke" />
-		<InternalsVisibleTo Include="UAFScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="EventLoggerPluginReplaySmoke" />
-		<InternalsVisibleTo Include="EventResponseAnalyzerReplaySmoke" />
-		<InternalsVisibleTo Include="GamePacketCollectorReplaySmoke" />
-		<InternalsVisibleTo Include="RamenScenarioAnalyzerReplaySmoke" />
-		<InternalsVisibleTo Include="AIRedirectorSmoke" />
-		<InternalsVisibleTo Include="LegendScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="RamenScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="PioneerScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="PioneerEventLoggerSmoke" />
-		<InternalsVisibleTo Include="FestaScenarioAnalyzerSmoke" />
-		<InternalsVisibleTo Include="SendGameStatusPluginSmoke" />
-		<InternalsVisibleTo Include="SkillEffectPluginSmoke" />
-		<InternalsVisibleTo Include="SkillTipsResponseAnalyzerSmoke" />
-		<InternalsVisibleTo Include="WinSaddleAnalyzerSmoke" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="MessagePack" Version="3.1.12" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Terminal.Gui" Version="2.5.0" />

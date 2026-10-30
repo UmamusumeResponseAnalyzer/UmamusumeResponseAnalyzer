@@ -39,28 +39,6 @@ ZIP 根目录包含 `manifest.json` 和 `<AssemblyName>.dll`。资产选择从�
 dotnet pack .\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj -c Release -o .\artifacts\nuget
 ```
 
-用临时 NuGet 配置把 `UmamusumeResponseAnalyzer` 精确映射到该目录，其他包映射到相应源。所有消费项目及递归依赖传同一组 `RestoreConfigFile` / `RestorePackagesPath`；同版本重打包后使用新的空缓存。核对各项目的 `project.assets.json` 和缓存 `.nupkg.metadata`，确认解析版本及来源。测试所用 Host 源码与引用包应来自同一份实现，包括未提交改动；仅有相同版本号或测试项目的 Host `ProjectReference` 不能证明生产插件使用了本地包。
+用临时 NuGet 配置把 `UmamusumeResponseAnalyzer` 精确映射到该目录，其他包映射到相应源。所有消费项目及递归依赖传同一组 `RestoreConfigFile` / `RestorePackagesPath`；同版本重打包后使用新的空缓存。核对各项目的 `project.assets.json` 和缓存 `.nupkg.metadata`，确认解析版本及来源。
 
 `UraCoreHelper.FindDmmGameExecutable(string? installationFile = null)` 读取官方 DMM 安装记录并返回规范化绝对路径。记录不存在或没有已安装的 `umamusume/GCL` 项时返回 `null`；记录格式错误、歧义、无效目录或缺少可执行文件时，抛出含来源与原因的本地化 `InvalidDataException`。Host 发现流程把该失败记为警告并继续检查其他来源。使用该 API 的 DMMPlugin 自动模式保留手动覆盖；发布顺序为提供此 API 的 Host 运行时与引用包，再发布依赖它的插件。
-
-构建契约与 manifest JSON 往返验证：
-
-```powershell
-pwsh -NoProfile -File .\UmamusumeResponseAnalyzer.Tests\Build\VerifyUraPluginBuildTargets.ps1
-# 也可分别传入 VS 的 Bin\MSBuild.exe 与 Bin\amd64\MSBuild.exe
-pwsh -NoProfile -File .\UmamusumeResponseAnalyzer.Tests\Build\VerifyUraPluginBuildTargets.ps1 -MSBuildPath '<VS-installation>\MSBuild\Current\Bin\MSBuild.exe'
-```
-
-该脚本检查包布局声明、默认项目排除项、构建目标和 manifest 字符转义/默认值；它不运行完整 ZIP 资产选择或业务回调。
-
-## 插件测试
-
-插件的业务、配置、framebuffer、回放和 ZIP 加载测试位于各插件仓的 `tests/`。测试工具由各仓独立持有；测试项目通过 `UraTestHostRoot` 引用匹配的 Host 源码，生产插件仍引用 NuGet SDK。
-
-共用 CI 递归构建并执行 `tests/**/*.csproj`。这些项目必须可执行，辅助源码直接编入测试项目。发布边界脚本由本仓默认测试入口执行，核对 NuGet 来源、生产项目引用和固定 submodule。
-
-ZIP 业务测试在本地通过 `URA_PLUGIN_SMOKE_PACKAGE_ROOT` 指定 fresh build 目录；GitHub Actions 使用既有工作区的 `artifacts` 目录。只匹配本插件及所需依赖的 InternalName，缺失和重复均失败。普通测试构建关闭打包和部署，准备验证 ZIP 时只开启 manifest 与打包，部署始终关闭。
-
-真实捕获通过对应插件测试的 `--corpus` 参数提供。无参数入口执行自测；自测通过不代表真实语料通过。捕获及测试结果中的账号数据不得提交。
-
-宿主测试只维护协议、ABI、插件加载及 workspace 契约；不检出或运行真实插件集合。新增测试程序集若需要宿主内部接口，应先随 Host SDK 发布对应授权，再更新依赖它的插件测试。
