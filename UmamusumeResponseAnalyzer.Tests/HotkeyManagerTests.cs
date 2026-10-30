@@ -730,8 +730,16 @@ public sealed class HotkeyManagerErrorChannelTests(PluginRuntimeFixture runtime)
             var bootstrap = host.Bootstrap;
             try
             {
+                bootstrap.ShowInformation();
+                bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Succeeded, "host-ready");
                 bootstrap.Workspace.SwitchTo();
                 await host.FlushAsync();
+                await runtime.Terminal.InvokeAsync(() => Descendants(runtime.Terminal.Application.TopRunnableView!)
+                    .Single(view => view.Id == "bootstrap-details-toggle").SetFocus());
+                await runtime.Terminal.InjectAsync(Key.Enter);
+                await runtime.Terminal.InvokeAsync(() => Descendants(runtime.Terminal.Application.TopRunnableView!)
+                    .Single(view => view.Id == "bootstrap-logs").SetFocus());
+                await runtime.Terminal.InjectAsync(Key.End);
                 HotkeyManager.UnregisterAll();
                 var laterCalls = 0;
                 HotkeyManager.Register(ConsoleKey.F1, "throws", () =>
@@ -765,5 +773,13 @@ public sealed class HotkeyManagerErrorChannelTests(PluginRuntimeFixture runtime)
                 scenario,
                 typeof(HotkeyManagerErrorChannelTests),
                 nameof(ThrowingHandler_ReportsVisibleErrorAndDoesNotBreakLaterDispatch)));
+    }
+
+    static IEnumerable<Terminal.Gui.ViewBase.View> Descendants(Terminal.Gui.ViewBase.View view)
+    {
+        yield return view;
+        foreach (var child in view.SubViews)
+            foreach (var descendant in Descendants(child))
+                yield return descendant;
     }
 }

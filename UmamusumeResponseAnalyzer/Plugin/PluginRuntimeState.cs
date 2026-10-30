@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace UmamusumeResponseAnalyzer.Plugin;
@@ -13,6 +14,22 @@ internal enum PluginLifecyclePhase
     ShuttingDown,
     Stopped,
 }
+
+internal enum PluginFailureStage
+{
+    Scan,
+    Load,
+    Initialize,
+    Start,
+    Runtime,
+}
+
+internal sealed record PluginFailure(
+    string PackagePath,
+    string? PluginName,
+    PluginFailureStage Stage,
+    Exception Error,
+    bool DisablesPlugin);
 
 internal sealed record PluginRuntimeSnapshot(
     FrozenDictionary<string, PluginManager.PluginMetadata> Metadatas,
@@ -48,6 +65,7 @@ internal sealed class PluginRuntimeState
     internal Dictionary<string, PluginManager.PluginMetadata> Metadatas { get; } =
         new(StringComparer.OrdinalIgnoreCase);
     internal List<string> FailedPlugins { get; } = [];
+    internal ConcurrentDictionary<string, PluginFailure> Failures { get; } = new(StringComparer.OrdinalIgnoreCase);
     internal List<IPlugin> LoadedPlugins { get; } = [];
     internal List<HashSet<string>> ContextGroups { get; } = [];
     internal Dictionary<string, PluginManager.PluginLoadContext> Contexts { get; } =

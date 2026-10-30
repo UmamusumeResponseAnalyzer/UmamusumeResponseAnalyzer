@@ -130,7 +130,7 @@
     <value>Press any key to return to the main menu</value>
   </data>
   <data name="I18N_Start" xml:space="preserve">
-    <value>Start!</value>
+    <value>Start</value>
   </data>
   <data name="I18N_UpdateAssets" xml:space="preserve">
     <value>Update data files</value>
@@ -151,7 +151,7 @@
     <value>Plugin repository</value>
   </data>
   <data name="I18N_QqGroup" xml:space="preserve">
-    <value>Join the QQ group (channel messages may be filtered after an account ban)</value>
+    <value>QQ group</value>
   </data>
   <data name="I18N_RedirectedConsole" xml:space="preserve">
     <value>Cannot start the interactive UI: stdin or stdout is redirected. Run URA directly in an interactive terminal such as Windows Terminal.</value>
@@ -196,7 +196,7 @@
     <value>Loading event, skill and name data.</value>
   </data>
   <data name="I18N_DatabaseUnavailable" xml:space="preserve">
-    <value>Data files are incomplete or damaged; update all data files and restart.</value>
+    <value>Data files are incomplete or damaged.</value>
   </data>
   <data name="I18N_PhasePluginInit" xml:space="preserve">
     <value>Plugin initialization</value>
@@ -405,4 +405,100 @@
   <data name="I18N_Running" xml:space="preserve">
     <value>Running: {0}</value>
   </data>
+  <data name="I18N_More" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="I18N_StartupSettings" xml:space="preserve">
+    <value>Startup settings</value>
+  </data>
+  <data name="I18N_StartupDetails" xml:space="preserve">
+    <value>Startup details</value>
+  </data>
+  <data name="I18N_Diagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="I18N_ViewError" xml:space="preserve">
+    <value>View error</value>
+  </data>
+  <data name="I18N_CopyError" xml:space="preserve">
+    <value>Copy error</value>
+  </data>
+  <data name="I18N_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="I18N_PhaseStartCallbacks" xml:space="preserve">
+    <value>Plugin startup</value>
+  </data>
+  <data name="I18N_StateRunning" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="I18N_StateSkipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="I18N_LocalAccess" xml:space="preserve">
+    <value>This device only</value>
+  </data>
+  <data name="I18N_DeviceAccess" xml:space="preserve">
+    <value>Network interface</value>
+  </data>
+  <data name="I18N_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="I18N_ListeningAddress" xml:space="preserve">
+    <value>Listening</value>
+  </data>
+  <data name="I18N_NoPluginsAvailable" xml:space="preserve">
+    <value>No plugins are loaded; plugin features are unavailable.</value>
+  </data>
+  <data name="I18N_PluginStillActive" xml:space="preserve">
+    <value>The plugin remains active.</value>
+  </data>
+  <data name="I18N_PluginUnavailable" xml:space="preserve">
+    <value>This plugin is unavailable.</value>
+  </data>
+  <data name="I18N_DataFailureAction" xml:space="preserve">
+    <value>Plugins and the listener were not started. Exit and reopen URA, then update the data files before starting.</value>
+  </data>
+  <data name="I18N_ListenerFailureAction" xml:space="preserve">
+    <value>Requests cannot be received. Check the listen address and port usage, then restart URA.</value>
+  </data>
+  <data name="I18N_StartupFailureAction" xml:space="preserve">
+    <value>Review the error details, resolve the cause, then restart URA.</value>
+  </data>
+  <data name="I18N_StartingPluginCallbacks" xml:space="preserve">
+    <value>Starting plugins.</value>
+  </data>
+  <data name="I18N_PluginCallbacksCompleted" xml:space="preserve">
+    <value>Completed startup callbacks for {0} plugins.</value>
+  </data>
+  <data name="I18N_PluginCallbacksWithFailures" xml:space="preserve">
+    <value>Plugin startup callbacks finished; {0} plugins reported problems.</value>
+  </data>
+  <data name="I18N_PluginCallbacksSkipped" xml:space="preserve">
+    <value>Prerequisite stages did not complete; plugin StartAsync was not called.</value>
+  </data>
+  <data name="I18N_StartWithPluginFailures" xml:space="preserve">
+    <value>Started; {0} plugins reported problems.</value>
+  </data>
+  <data name="I18N_ListenerDidNotStart" xml:space="preserve">
+    <value>The HTTP listener did not start.</value>
+  </data>
+  <data name="I18N_StartupStepSkipped" xml:space="preserve"><value>Prerequisite stages did not complete.</value></data>
+  <data name="I18N_ListeningEndpoint" xml:space="preserve"><value>Listening on {0}</value></data>
+  <data name="I18N_AccessSummary" xml:space="preserve">
+    <value>Access  {0} · Port {1}</value>
+  </data>
+  <data name="I18N_FooterNavigation" xml:space="preserve">
+    <value>Tab Navigate  │  Enter Confirm</value>
+  </data>
+  <data name="I18N_FooterExit" xml:space="preserve">
+    <value>Ctrl+C Exit</value>
+  </data>
+  <data name="I18N_HideError" xml:space="preserve"><value>Hide error</value></data>
+  <data name="I18N_PhaseFailure" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="I18N_ScanFailed" xml:space="preserve"><value>Scan failed</value></data>
+  <data name="I18N_InitializeFailed" xml:space="preserve"><value>Initialization failed</value></data>
+  <data name="I18N_StartCallbackFailed" xml:space="preserve"><value>Startup callback failed</value></data>
+  <data name="I18N_RuntimeFailed" xml:space="preserve"><value>Runtime failure</value></data>
+  <data name="I18N_StateUnavailable" xml:space="preserve"><value>Unavailable</value></data>
 </root>

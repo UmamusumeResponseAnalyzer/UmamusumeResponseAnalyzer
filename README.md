@@ -6,7 +6,7 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 
 * 任意可以把游戏请求/响应 MessagePack payload 发送到宿主 `/notify/request` / `/notify/response` 的 sender。请求必须带 `X-Hachimi-Game-Url` header，值为游戏原始 canonical URL；该 URL 的 path 必须命中 Gallop endpoint catalog，或能在带/不带 `/umamusume` 前缀两种形式之间切换后命中 catalog。Windows 安装入口使用 [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge) 和 [HTTP 转发插件](https://github.com/UmamusumeResponseAnalyzer/hachimi-httpforward-plugin)。
 * sender 的目标地址默认设置为 `http://127.0.0.1:4693`。如果游戏在手机或其他设备上运行，首次运行向导可把监听地址改为 `0.0.0.0`；启动时按控制台提示放行防火墙。
-* Windows 版主菜单提供 `安装 Hachimi-Edge`，支持 DMM 日服、Komoe 繁中、Steam 日服及国际服；可选择自动发现的目录或手动选择游戏 EXE。关闭目标游戏后操作，一次安装一个目录。
+* Windows 版启动 workspace 的 `更多` 提供 `安装 Hachimi-Edge`，支持 DMM 日服、Komoe 繁中、Steam 日服及国际服；可选择自动发现的目录或手动选择游戏 EXE。关闭目标游戏后操作，一次安装一个目录。
 * DMM 自动发现读取 `%APPDATA%\dmmgameplayer5\dmmgame.cnf` 中唯一的已安装 `umamusume/GCL` 记录，并验证 `umamusume.exe` 存在。记录损坏时显示警告，继续使用注册表及 Komoe 等来源。DMMPlugin 通过 Host 的 `UraCoreHelper.FindDmmGameExecutable` 复用此解析。
 
 # 安装 Installation
@@ -15,9 +15,11 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 * 将程序放在任意位置，运行 `UmamusumeResponseAnalyzer.exe`。
 * 普通启动要求 stdin 和 stdout 连接到 interactive terminal；redirected stdin/stdout 会以明确错误退出。`--version`、`--update <savePath>`、`--enable-dll-redirection` 等 CLI-only 路径不启动 TUI。
 * 首次运行按向导选择运行设备、事件数据语言和训练员性别。
-* 返回主菜单后先选择 `更新数据文件`。数据文件用于事件、技能、名称等本地解析；不完整或损坏时数据库保持不可用，插件不会初始化，HTTP server 也不会启动，程序会提示更新全部数据文件后重启。技能进化条件 `Type=0/None` 仅使用服务器完成状态，不做本地预测。未定义的技能进化条件类型只记录 warning，并按条件未满足处理，不阻断完整数据快照加载。
+* 首次设置完成后先选择 `更新数据文件`。数据文件用于事件、技能、名称等本地解析；不完整或损坏时数据库保持不可用，插件不会初始化，HTTP server 也不会启动，需要退出后重新打开程序，在启动前更新数据文件。技能进化条件 `Type=0/None` 仅使用服务器完成状态，不做本地预测。未定义的技能进化条件类型只记录 warning，并按条件未满足处理，不阻断完整数据快照加载。
 * 进入 `插件仓库`，安装需要的功能插件。没有插件时宿主仍会启动，并提供启动信息、异常记录、通知和基础分发能力。
-* 交互启动的首帧显示全屏启动 workspace 和准备中的主菜单；首次设置、插件扫描等准备完成后启用菜单。选择 `启动！` 后切换为启动信息页，再依次加载数据、初始化插件并启动 HTTP server。启动 workspace 在整个 Host session 内持续存在，显示运行环境、初始化结果、插件摘要和全局最近日志；最近日志收集宿主/插件日志和 Host 捕获的异常，最多保留 128 条。数据库加载警告、插件扫描/加载/安装诊断、程序更新文件损坏和请求分析异常还会显示 Host overlay notification；写入日志或显示 notification 均不会切换当前 workspace。终端不足 70 列时隐藏 notification overlay；宽度足够时最多同时呈现四张完整卡片，其余通知按可用高度显示余量提示。异常行可右键打开 context menu，`复制完整 backtrace` 会将完整异常链和 stack trace 写入系统 clipboard；普通日志不提供该操作。四个区域的尺寸只随 viewport 变化；超出区域的表格与日志使用 Terminal.Gui 原生滚动条，内容增长不改变 panel 布局。启动状态以紧凑结果行实时更新，不显示额外 header 或 footer。
+* 启动 workspace 在整个 Host session 内保留同一页面。首次设置、插件扫描完成后启用工具栏；选择 `启动` 后在原页显示当前阶段和监听结果，启动前操作保持原位并禁用。监听地址表示 HTTP server 的绑定结果，不表示游戏已经连接。
+* 待启动时显示接入范围、端口和折叠的启动设置；启动中只显示当前阶段，启动后通过启动详情查看阶段结果和最近日志。版本、路径与更新源从 `更多` 打开诊断信息查看。正文支持鼠标滚轮，列表到达滚动边界后继续滚动正文。后台更新保留焦点、展开状态及正在查看的日志位置。最近日志收集宿主/插件日志和 Host 捕获的异常，最多保留 128 条；异常详情及日志菜单可复制完整异常链和 stack trace。右键选中日志，或在选中异常后按 `Shift+F10` 打开菜单；菜单打开期间保留原目标，clipboard 写入失败会显示错误。
+* 数据库加载警告、插件扫描/加载/安装诊断、程序更新文件损坏和请求分析异常还会显示 Host overlay notification；写入日志或显示 notification 均不会切换当前 workspace。终端不足 70 列时隐藏 notification overlay；宽度足够时最多同时呈现四张完整卡片，其余通知按可用高度显示余量提示。
 
 # 运行与文件位置
 
@@ -26,14 +28,14 @@ UmamusumeResponseAnalyzer 是基于 Terminal.Gui 的本地 TUI 宿主。它接�
 * 默认工作目录为 `%LocalAppData%\UmamusumeResponseAnalyzer`。程序所在目录存在 `.portable` 文件夹时，使用该文件夹作为工作目录。CLI 命令保留启动时的工作目录。
 * `config.yaml`、数据文件、`Plugins/` 和 debug `packets/` 都写在工作目录下。
 * 默认监听 `http://127.0.0.1:4693`。`/notify/ping` 返回 `pong`，可作为 smoke test。
-* 启动、设置和插件设置使用占满 terminal 且无外边框的 Terminal.Gui 原生 `Menu` 页面；mouse hover 或 `Up` / `Down` 移动当前菜单项，click 或 `Enter` 直接激活。插件仓库、更新、安装 Mod 和字段编辑使用各自的 dialog，完成后返回对应的上级菜单。
+* 启动 workspace 使用 Terminal.Gui 原生按钮，`Tab` 移动焦点，click 或 `Enter` 激活；`Esc` 关闭 `更多` 并返回触发按钮。设置和插件设置使用全屏原生 `Menu`，mouse hover 或 `Up` / `Down` 移动菜单项。插件仓库、更新、安装 Mod 和字段编辑使用各自的 dialog，完成后返回原入口。
 * 启动后，focused control 未处理的 `/` 或 `Enter` 在未命中注册快捷键时打开 Command Mode；内置命令需以 `/` 开头。Command Mode 使用 Terminal.Gui 原生 `TextField` 输入，支持 `Tab` 补全、`Up` / `Down` 浏览当前进程内提交过的命令、`Esc` 取消和 `Enter` 执行。底部全宽带框 overlay 显示 ` Command Mode ` 标题、补全候选及 `+N more`、`❯` 输入区和操作 footer；窄窗口或高度不足时使用紧凑布局。
-* 鼠标移到 terminal 最底部会显示覆盖在 workspace 上的居中 taskbar popup，不占用 workspace 布局空间；过长标题会随 terminal 宽度以 `…` 缩略，当前项和 hovered 项优先显示完整标题。click workspace title 直接切换，按住左键左右拖拽可调整并持久化 taskbar 顺序；该顺序只影响 taskbar。当前项和 hover 由背景属性区分。Command Mode 显示时 taskbar 被抑制，并拥有更高的图层优先级。
+* 鼠标进入 terminal 最底行时，在该行显示覆盖在 workspace 上的居中 taskbar popup，不占用 workspace 布局空间；离开最底行隐藏，拖拽期间保持显示至释放。过长标题会随 terminal 宽度以 `…` 缩略，当前项和 hovered 项优先显示完整标题。click workspace title 直接切换，按住左键左右拖拽可调整并持久化 taskbar 顺序；该顺序只影响 taskbar。当前项和 hover 由背景属性区分。Command Mode 显示时 taskbar 被抑制，并拥有更高的图层优先级。
 * `/workspace` 或 `/workspace switch` 打开 workspace 选择器，`/workspace switch <title>` 直接切换；标题也可用双引号包围，其中 `\"` 和 `\\` 分别表示双引号和反斜杠。`/workspace list` 列出 workspace。
 * workspace 内容超出终端时默认显示底部；`Up` / `Down` 按行滚动，`PageUp` / `PageDown` 按页滚动，`Home` / `End` 跳到顶部或底部。`Left` / `Right` 不参与 workspace viewport 滚动；focused view 未处理时继续匹配已注册 hotkey。Terminal.Gui 主界面中，滚轮产生与无 modifier 的 `Up` / `Down` 相同的 workspace viewport 滚动效果；滚轮不触发快捷键，popup 或 Command Mode 存活时会被忽略。
 * Host dialog 的 `TextField` 与 `ListView` 使用 Terminal.Gui 原生 whole-view hover；focus 视觉优先于 hover，hover 不改变 focus、selection 或 marked 状态。`Button`、菜单及插件提供的 `View` 使用各控件自身的 Terminal.Gui 默认行为。workspace/plugin popup 保持 mouse click-through。popup 或 Command Mode 存活时由其优先处理按键；workspace 已到边界时按键继续交给已注册 hotkey。
 * 命令结果中的非空 message 写入全局最近日志；只有 message 而没有 display 时同时显示 global notification，有 display 时通过 popup 呈现。
-* 插件更新 workspace panel 时默认会切到该 workspace；bootstrap 刷新和异常写入不会切换当前 workspace。按 `Ctrl+B` 返回启动 workspace，按 `Ctrl+C` 退出程序。插件状态显示在启动仪表盘。退出时先停止 HTTP 接收和插件新回调，等待在途插件回调退出，再异步清理插件，最后关闭 UI。
+* 插件更新 workspace panel 时默认会切到该 workspace；bootstrap 刷新和异常写入不会切换当前 workspace。按 `Ctrl+B` 返回启动 workspace，按 `Ctrl+C` 退出程序。插件故障显示在启动 workspace，完整状态按需展开。退出时先停止 HTTP 接收和插件新回调，等待在途插件回调退出，再异步清理插件，最后关闭 UI。
 * 程序启动后会检查已加载插件是否有新版本；发现更新时只通知，不自动安装。更新插件需要进入 `插件仓库` 手动选择。
 * 更新数据文件时会先写入临时文件，下载成功后替换目标文件；失败时清理临时文件并保留已有文件。下载列表超出窗口时，可用滚动条或聚焦列表后按 `Up` / `Down`、`PageUp` / `PageDown`、`Home` / `End` 查看。
 * 开启 debug packet 保存后，请求写为 `Q`、响应写为 `R` 的 `.msgpack` 文件，文件名包含时间戳、UUIDv7 和 API endpoint path（`/` 写为 `-`）；`DEBUG` 构建额外写 `.json`，文件名只包含时间戳和 `Q`/`R`，完整 canonical URL 写在 JSON 内容中。`packets/` 中超过一天的旧文件会在下次保存时清理，单个旧文件清理失败不会中断当前请求/响应分析。

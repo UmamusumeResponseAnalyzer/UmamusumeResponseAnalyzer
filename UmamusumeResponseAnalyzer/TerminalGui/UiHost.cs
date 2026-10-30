@@ -102,6 +102,9 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         ScheduleDrain(schedule);
     }
 
+    internal void RefreshBootstrap()
+        => ScheduleDrain(session.RefreshBootstrap());
+
     internal void Notify(
         Workspace? workspace,
         string text,
@@ -499,7 +502,9 @@ internal sealed class UiHost : IUiInputSink, IDisposable
                 return UiChange.Workspace;
             case LogIngress log:
                 surface.AddLog(log.Line);
-                return UiChange.Workspace;
+                return UiChange.Bootstrap;
+            case BootstrapChangedIngress:
+                return UiChange.Bootstrap;
             case NotifyIngress notify:
                 surface.AddNotification(notify);
                 return UiChange.Notifications;

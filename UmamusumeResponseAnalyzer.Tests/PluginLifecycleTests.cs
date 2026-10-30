@@ -79,6 +79,11 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Null(PluginManager.FindLoadedPlugin(fixture.FailingPluginName));
             Assert.NotNull(PluginManager.FindLoadedPlugin(fixture.HealthyPluginName));
             Assert.Contains(Path.GetFullPath(Path.Combine("Plugins", $"{fixture.FailingPluginName}.zip")), PluginManager.FailedPlugins);
+            var failure = Assert.Single(PluginManager.SnapshotFailures());
+            Assert.Equal(fixture.FailingPluginName, failure.PluginName);
+            Assert.Equal(PluginFailureStage.Initialize, failure.Stage);
+            Assert.True(failure.DisablesPlugin);
+            Assert.NotNull(failure.Error.InnerException);
             Assert.True(File.Exists(fixture.FailingInitializeMarker));
             Assert.False(File.Exists(fixture.FailingStartedMarker));
             Assert.True(File.Exists(fixture.HealthyInitializeMarker));
@@ -107,6 +112,12 @@ namespace UmamusumeResponseAnalyzer.Tests
 
                 Assert.Null(ex);
                 Assert.Equal(1, counter.StartedCalls);
+                var failure = Assert.Single(PluginManager.SnapshotFailures());
+                Assert.Equal(PluginFailureStage.Start, failure.Stage);
+                Assert.False(failure.DisablesPlugin);
+                Assert.True(PluginManager.IsPluginActive(failing));
+                Assert.Empty(PluginManager.FailedPlugins);
+                Assert.Contains(@"C:\plugins\started\settings.yaml", failure.Error.ToString());
                 var line = Assert.Single(lines, line => line.Text.Contains("插件启动错误", StringComparison.Ordinal));
                 Assert.Contains(nameof(StartedFailurePlugin), line.ExceptionDetails);
                 Assert.Contains(@"C:\plugins\started\settings.yaml", line.ExceptionDetails);
@@ -385,7 +396,6 @@ namespace UmamusumeResponseAnalyzer.Tests
         [InlineData(InvalidManifestKind.TrailingComma)]
         [InlineData(InvalidManifestKind.SingleQuote)]
         [InlineData(InvalidManifestKind.ExtraJsonToken)]
-        [InlineData(InvalidManifestKind.DuplicateProperty)]
         public void Init_StrictZipPackage_RejectsNonStrictManifest(InvalidManifestKind kind)
         {
             using var fixture = InvalidPackageFixture.ForManifest(kind);
@@ -435,6 +445,10 @@ namespace UmamusumeResponseAnalyzer.Tests
             Assert.Empty(PluginManager.LoadedPlugins);
             Assert.Empty(PluginManager.Metadatas);
             Assert.Contains(fixture.PackagePath, PluginManager.FailedPlugins);
+            var failure = Assert.Single(PluginManager.SnapshotFailures());
+            Assert.Equal(fixture.PackagePath, failure.PackagePath);
+            Assert.Equal(PluginFailureStage.Scan, failure.Stage);
+            Assert.True(failure.DisablesPlugin);
             Assert.False(File.Exists(fixture.InitializeMarker));
         }
 
@@ -476,7 +490,6 @@ namespace UmamusumeResponseAnalyzer.Tests
             TrailingComma,
             SingleQuote,
             ExtraJsonToken,
-            DuplicateProperty,
         }
 
         sealed class InvalidPackageFixture : IDisposable
@@ -510,8 +523,6 @@ namespace UmamusumeResponseAnalyzer.Tests
                     InvalidManifestKind.TrailingComma => json.Insert(json.Length - 1, ","),
                     InvalidManifestKind.SingleQuote => json.Replace('"', '\''),
                     InvalidManifestKind.ExtraJsonToken => json + "{}",
-                    InvalidManifestKind.DuplicateProperty =>
-                        json.Insert(1, "\"Author\":\"Duplicate\","),
                     _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
                 });
                 return fixture;

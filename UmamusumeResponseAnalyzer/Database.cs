@@ -136,22 +136,27 @@ namespace UmamusumeResponseAnalyzer
         public static IReadOnlyList<int> SaddleIds => Current.SaddleIds;
         public static SuccessionRelationTable SuccessionRelation => Current.SuccessionRelation;
         #endregion
-        public static Task<DatabaseAvailability> Initialize() => Task.FromResult(Initialize(Directory.GetCurrentDirectory()));
+        public static Task<DatabaseAvailability> Initialize() => Task.FromResult(Initialize(out _));
 
-        private static DatabaseAvailability Initialize(string dataDirectory)
+        internal static DatabaseAvailability Initialize(out string? errorDetails)
         {
-            var events = Deserialize<List<Story>>(Path.Combine(dataDirectory, EVENT_NAME_FILEPATH));
-            var names = Deserialize<List<BaseName>>(Path.Combine(dataDirectory, NAMES_FILEPATH), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-            var skills = Deserialize<List<SkillData>>(Path.Combine(dataDirectory, SKILLS_FILEPATH));
-            var skillUpgrade = Deserialize<List<SkillUpgradeSpeciality>>(Path.Combine(dataDirectory, SKILL_UPGRADE_SPECIALITY_FILEPATH));
-            var talentSkill = Deserialize<Dictionary<int, TalentSkillData[]>>(Path.Combine(dataDirectory, TALENT_SKILLS_FILEPATH));
-            var factorIds = Deserialize<Dictionary<int, string>>(Path.Combine(dataDirectory, FACTOR_IDS_FILEPATH));
-            var saddleIds = Deserialize<int[]>(Path.Combine(dataDirectory, SADDLE_IDS_FILEPATH));
-            var succession = Deserialize<SuccessionRelationTable>(Path.Combine(dataDirectory, SUCCESSION_RELATION_FILEPATH));
+            var dataDirectory = Directory.GetCurrentDirectory();
+            List<string> failures = [];
+            var events = Deserialize<List<Story>>(Path.Combine(dataDirectory, EVENT_NAME_FILEPATH), failures);
+            var names = Deserialize<List<BaseName>>(Path.Combine(dataDirectory, NAMES_FILEPATH), failures, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+            var skills = Deserialize<List<SkillData>>(Path.Combine(dataDirectory, SKILLS_FILEPATH), failures);
+            var skillUpgrade = Deserialize<List<SkillUpgradeSpeciality>>(Path.Combine(dataDirectory, SKILL_UPGRADE_SPECIALITY_FILEPATH), failures);
+            var talentSkill = Deserialize<Dictionary<int, TalentSkillData[]>>(Path.Combine(dataDirectory, TALENT_SKILLS_FILEPATH), failures);
+            var factorIds = Deserialize<Dictionary<int, string>>(Path.Combine(dataDirectory, FACTOR_IDS_FILEPATH), failures);
+            var saddleIds = Deserialize<int[]>(Path.Combine(dataDirectory, SADDLE_IDS_FILEPATH), failures);
+            var succession = Deserialize<SuccessionRelationTable>(Path.Combine(dataDirectory, SUCCESSION_RELATION_FILEPATH), failures);
 
             if (events is null || names is null || skills is null || skillUpgrade is null
                 || talentSkill is null || factorIds is null || saddleIds is null || succession is null)
+            {
+                errorDetails = string.Join(Environment.NewLine + Environment.NewLine, failures);
                 return DatabaseAvailability.Unavailable;
+            }
 
             try
             {
@@ -180,11 +185,13 @@ namespace UmamusumeResponseAnalyzer
                     Array.AsReadOnly([.. saddleIds]),
                     succession);
                 Volatile.Write(ref snapshot, next);
+                errorDetails = null;
                 return DatabaseAvailability.Ready;
             }
             catch (Exception ex)
             {
                 ReportWarning(string.Format(I18N_InvalidSnapshot, ex.Message));
+                errorDetails = $"{dataDirectory}{Environment.NewLine}{ex}";
                 return DatabaseAvailability.Unavailable;
             }
         }
@@ -195,10 +202,11 @@ namespace UmamusumeResponseAnalyzer
             TerminalUi.Notify("Database", message, UiSeverity.Warning);
         }
 
-        static T? Deserialize<T>(string filepath, JsonSerializerSettings? settings = null)
+        static T? Deserialize<T>(string filepath, List<string> failures, JsonSerializerSettings? settings = null)
         {
             if (!File.Exists(filepath))
             {
+                failures.Add(string.Format(I18N_NotExist, filepath));
                 ReportWarning(string.Format(I18N_NotExist, Path.GetFileName(filepath)));
                 return default;
             }
@@ -214,14 +222,17 @@ namespace UmamusumeResponseAnalyzer
                 if (serializer.Deserialize<T>(jsonReader) is { } value)
                     return value;
 
+                failures.Add($"{filepath}: JSON null");
                 ReportWarning(string.Format(I18N_LoadFail, Path.GetFileName(filepath)));
             }
-            catch (InvalidDataException)
+            catch (InvalidDataException ex)
             {
+                failures.Add($"{filepath}{Environment.NewLine}{ex}");
                 ReportWarning(string.Format(I18N_DecompressError, Path.GetFileName(filepath)));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                failures.Add($"{filepath}{Environment.NewLine}{ex}");
                 ReportWarning(string.Format(I18N_LoadFail, Path.GetFileName(filepath)));
             }
             return default;

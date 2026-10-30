@@ -106,10 +106,12 @@ namespace UmamusumeResponseAnalyzer
                     Terminal.Gui.Input.Command.Quit);
                 shutdownBindingAdded = true;
                 HotkeyManager.OverlaySink = uiHost;
-                bootstrap.ShowPreparingMenu(I18N_Instruction, BuildStartupMenuChoices());
+                bootstrap.SetSettings(ReadBootstrapSettings());
+                bootstrap.ShowPreparing();
 
                 async Task CompleteStartupAsync()
                 {
+                    BootstrapPhaseId? currentPhase = BootstrapPhaseId.Config;
                     try
                     {
                         await uiHost.Ready.WaitAsync(lifetimeToken);
@@ -129,26 +131,15 @@ namespace UmamusumeResponseAnalyzer
                             Config.Save();
                         }
 
-                        var updateSource = string.IsNullOrWhiteSpace(Config.Updater.CustomDatabaseRepository)
-                            ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror()
-                            : Config.Updater.CustomDatabaseRepository;
-                        bootstrap.SetSettings(
-                            [
-                                (I18N_Version, Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? I18N_Unknown),
-                                (I18N_WorkingDirectory, Directory.GetCurrentDirectory()),
-                                (I18N_ConfigFile, Path.GetFullPath(Config.CONFIG_FILEPATH)),
-                                (I18N_ListenAddress, $"http://{Config.Core.ListenAddress}:{Config.Core.ListenPort}"),
-                                (I18N_DataLanguage, Config.Updater.DatabaseLanguage),
-                                (I18N_TrainerGender, Config.Updater.TrainerIsMale ? I18N_Male : I18N_Female),
-                                (I18N_UpdateSource, updateSource)
-                            ]);
+                        bootstrap.SetSettings(ReadBootstrapSettings());
                         bootstrap.SetPhase(
-                            "config",
-                            I18N_PhaseConfig,
-                            UiSeverity.Success,
+                            BootstrapPhaseId.Config,
+                            BootstrapPhaseState.Succeeded,
                             string.Format(I18N_ConfigLoaded, Config.CONFIG_FILEPATH));
 
+                        currentPhase = BootstrapPhaseId.Scan;
                         await StartPluginInitializationAsync(bootstrap, lifetimeToken);
+                        currentPhase = null;
                         try
                         {
                             await ShowMenu(bootstrap, lifetimeToken);
@@ -159,50 +150,56 @@ namespace UmamusumeResponseAnalyzer
                             return;
                         }
 
+                        var startupSettings = ReadBootstrapSettings();
+                        bootstrap.SetSettings(startupSettings);
                         bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
                         bootstrap.ShowInformation();
                         await uiHost.FlushAsync();
 
                         var serverStarted = await Task.Run(async () =>
                         {
-                            bootstrap.SetPhase("database", I18N_PhaseDatabase, UiSeverity.Info, I18N_LoadingDatabase);
-                            var databaseAvailability = await Database.Initialize();
+                            currentPhase = BootstrapPhaseId.Database;
+                            bootstrap.SetPhase(BootstrapPhaseId.Database, BootstrapPhaseState.Running, I18N_LoadingDatabase);
+                            var databaseAvailability = Database.Initialize(out var databaseErrorDetails);
                             if (databaseAvailability != DatabaseAvailability.Ready)
                             {
                                 var message = I18N_DatabaseUnavailable;
-                                bootstrap.SetPhase("database", I18N_PhaseDatabase, UiSeverity.Error, message);
-                                bootstrap.SetPhase("plugin-init", I18N_PhasePluginInit, UiSeverity.Error, I18N_PluginsSkipped);
-                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Error, I18N_ServerSkipped);
+                                bootstrap.SetPhase(BootstrapPhaseId.Database, BootstrapPhaseState.Failed, message, databaseErrorDetails);
+                                bootstrap.SetPhase(BootstrapPhaseId.Initialize, BootstrapPhaseState.Skipped, I18N_PluginsSkipped);
+                                bootstrap.SetPhase(BootstrapPhaseId.Listener, BootstrapPhaseState.Skipped, I18N_ServerSkipped);
+                                bootstrap.SetPhase(BootstrapPhaseId.StartCallbacks, BootstrapPhaseState.Skipped, I18N_PluginCallbacksSkipped);
+                                bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Failed, message, databaseErrorDetails);
                                 bootstrap.Log("Database", message, UiSeverity.Error);
                                 Environment.ExitCode = 1;
                                 return false;
                             }
-                            bootstrap.SetPhase("database", I18N_PhaseDatabase, UiSeverity.Success, I18N_DatabaseLoaded);
+                            bootstrap.SetPhase(BootstrapPhaseId.Database, BootstrapPhaseState.Succeeded, I18N_DatabaseLoaded);
 
                             lifetimeToken.ThrowIfCancellationRequested();
-                            bootstrap.SetPhase("plugin-init", I18N_PhasePluginInit, UiSeverity.Info, I18N_InitializingPlugins);
+                            currentPhase = BootstrapPhaseId.Initialize;
+                            bootstrap.SetPhase(BootstrapPhaseId.Initialize, BootstrapPhaseState.Running, I18N_InitializingPlugins);
                             PluginManager.InitializeLoadedPlugins();
                             bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true));
                             var loadedPluginCount = PluginManager.SnapshotActivePluginMetadatas().Count;
-                            var failedPluginCount = PluginManager.FailedPlugins.Count;
+                            var failedPluginCount = PluginManager.SnapshotFailures().Count;
                             bootstrap.SetPhase(
-                                "plugin-init",
-                                I18N_PhasePluginInit,
-                                failedPluginCount == 0 ? UiSeverity.Success : UiSeverity.Warning,
+                                BootstrapPhaseId.Initialize,
+                                failedPluginCount == 0 ? BootstrapPhaseState.Succeeded : BootstrapPhaseState.Warning,
                                 failedPluginCount == 0
                                     ? string.Format(I18N_PluginsInitialized, loadedPluginCount)
                                     : string.Format(I18N_PluginsInitializedWithFailures, loadedPluginCount, failedPluginCount));
 
                             lifetimeToken.ThrowIfCancellationRequested();
-                            bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Info, I18N_StartingListener);
+                            currentPhase = BootstrapPhaseId.Listener;
+                            bootstrap.SetPhase(BootstrapPhaseId.Listener, BootstrapPhaseState.Running, I18N_StartingListener);
                             try
                             {
                                 Server.Start(lifetimeToken); //启动HTTP服务器
-                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Success, string.Format(I18N_Listening, Config.Core.ListenAddress, Config.Core.ListenPort));
                             }
                             catch (Exception ex)
                             {
-                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Error, ex.Message);
+                                bootstrap.SetPhase(BootstrapPhaseId.Listener, BootstrapPhaseState.Failed, ex.Message, ex.ToString());
+                                bootstrap.SetPhase(BootstrapPhaseId.StartCallbacks, BootstrapPhaseState.Skipped, I18N_PluginCallbacksSkipped);
                                 throw;
                             }
 
@@ -218,8 +215,28 @@ namespace UmamusumeResponseAnalyzer
                                 bootstrap.Log("Plugin", message, UiSeverity.Warning);
                             }
 
-                            bootstrap.Log("Server", string.Format(I18N_Listening, Config.Core.ListenAddress, Config.Core.ListenPort), UiSeverity.Success);
-                            if (Config.Core.ListenAddress == "0.0.0.0")
+                            for (var i = 0; i < 30; i++)
+                            {
+                                if (Server.IsRunning) break;
+                                await Task.Delay(100, lifetimeToken);
+                            }
+                            if (!Server.IsRunning)
+                            {
+                                bootstrap.SetPhase(BootstrapPhaseId.Listener, BootstrapPhaseState.Failed, I18N_ListenerDidNotStart);
+                                bootstrap.SetPhase(BootstrapPhaseId.StartCallbacks, BootstrapPhaseState.Skipped, I18N_PluginCallbacksSkipped);
+                                bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Failed, I18N_ListenerDidNotStart);
+                                bootstrap.Log("Server", I18N_ListenerDidNotStart, UiSeverity.Error);
+                                Environment.ExitCode = 1;
+                                return false;
+                            }
+
+                            var endpoint = new UriBuilder(Uri.UriSchemeHttp, startupSettings.ListenHost, startupSettings.ListenPort)
+                                .Uri.GetLeftPart(UriPartial.Authority);
+                            var listening = string.Format(I18N_ListeningEndpoint, endpoint);
+                            bootstrap.SetListening(endpoint);
+                            bootstrap.SetPhase(BootstrapPhaseId.Listener, BootstrapPhaseState.Succeeded, listening);
+                            bootstrap.Log("Server", listening, UiSeverity.Success);
+                            if (startupSettings.ListenHost == "0.0.0.0")
                             {
                                 var interfaces = NetworkInterface.GetAllNetworkInterfaces()
                                        .Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback)
@@ -228,33 +245,36 @@ namespace UmamusumeResponseAnalyzer
                                        .Select(x => x.Address.ToString());
                                 foreach (var i in interfaces)
                                 {
-                                    bootstrap.Log("Server", string.Format(Localization.Server.I18N_AvailableEndpointTip, i, Config.Core.ListenPort));
+                                    bootstrap.Log("Server", string.Format(Localization.Server.I18N_AvailableEndpointTip, i, startupSettings.ListenPort));
                                 }
                             }
 
-                            for (var i = 0; i < 30; i++)
-                            {
-                                if (Server.IsRunning) break;
-                                await Task.Delay(100, lifetimeToken);
-                            }
-                            if (!Server.IsRunning)
-                            {
-                                bootstrap.SetPhase("server", I18N_PhaseServer, UiSeverity.Error, I18N_LaunchFail);
-                                Console.Error.WriteLine(I18N_LaunchFail);
-                                Environment.ExitCode = 1;
-                                return false;
-                            }
-
-                            var startedMessage = I18N_Start_Started;
-                            bootstrap.Log("URA", startedMessage, UiSeverity.Success);
-                            bootstrap.SetPhase("host", I18N_PhaseHost, UiSeverity.Success, startedMessage);
                             return true;
                         }, lifetimeToken);
 
                         if (!serverStarted)
                             return;
 
+                        currentPhase = BootstrapPhaseId.StartCallbacks;
+                        bootstrap.SetPhase(BootstrapPhaseId.StartCallbacks, BootstrapPhaseState.Running, I18N_StartingPluginCallbacks);
                         await PluginManager.TriggerStartedAsync(lifetimeToken);
+                        bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true, started: true));
+                        var startupFailures = PluginManager.SnapshotFailures();
+                        var startFailures = startupFailures.Count(failure => failure.Stage == PluginFailureStage.Start);
+                        bootstrap.SetPhase(
+                            BootstrapPhaseId.StartCallbacks,
+                            startFailures == 0 ? BootstrapPhaseState.Succeeded : BootstrapPhaseState.Warning,
+                            startFailures == 0
+                                ? string.Format(I18N_PluginCallbacksCompleted, PluginManager.SnapshotActivePluginMetadatas().Count)
+                                : string.Format(I18N_PluginCallbacksWithFailures, startFailures));
+                        var startedMessage = startupFailures.Count == 0
+                            ? I18N_Start_Started
+                            : string.Format(I18N_StartWithPluginFailures, startupFailures.Count);
+                        bootstrap.Log("URA", startedMessage, startupFailures.Count == 0 ? UiSeverity.Success : UiSeverity.Warning);
+                        bootstrap.SetPhase(BootstrapPhaseId.Host,
+                            startupFailures.Count == 0 ? BootstrapPhaseState.Succeeded : BootstrapPhaseState.Warning,
+                            startedMessage);
+                        currentPhase = null;
                         _ = CheckPluginUpdatesAsync(uiHost, lifetimeToken);
                     }
                     catch (PostShutdownProcessRequestedException ex)
@@ -274,7 +294,12 @@ namespace UmamusumeResponseAnalyzer
                         try
                         {
                             bootstrap.ShowInformation();
-                            bootstrap.SetPhase("host", I18N_PhaseHost, UiSeverity.Error, ex.Message);
+                            if (currentPhase is { } failedPhase)
+                                bootstrap.SetPhase(failedPhase, BootstrapPhaseState.Failed, ex.Message, ex.ToString());
+                            foreach (var phase in Enum.GetValues<BootstrapPhaseId>().Where(phase =>
+                                         phase > (currentPhase ?? BootstrapPhaseId.Scan) && phase < BootstrapPhaseId.Host))
+                                bootstrap.SetPhase(phase, BootstrapPhaseState.Skipped, I18N_StartupStepSkipped);
+                            bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Failed, ex.Message, ex.ToString());
                             TerminalUi.LogException("URA", ex);
                             await uiHost.FlushAsync();
                         }
@@ -367,71 +392,74 @@ namespace UmamusumeResponseAnalyzer
         static async Task StartPluginInitializationAsync(BootstrapWorkspace bootstrap, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            bootstrap.SetPhase("plugin-scan", I18N_PhasePluginScan, UiSeverity.Info, I18N_ScanningPlugins);
+            bootstrap.SetPhase(BootstrapPhaseId.Scan, BootstrapPhaseState.Running, I18N_ScanningPlugins);
             try
             {
                 await Task.Run(() => PluginManager.Init(cancellationToken), cancellationToken);
             }
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
-                bootstrap.SetPhase("plugin-scan", I18N_PhasePluginScan, UiSeverity.Error, ex.Message);
+                bootstrap.SetPhase(BootstrapPhaseId.Scan, BootstrapPhaseState.Failed, ex.Message, ex.ToString());
+                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
                 TerminalUi.LogException("Plugin", ex);
                 throw;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
             var loadedPluginCount = PluginManager.SnapshotActivePluginMetadatas().Count;
-            var failedPluginCount = PluginManager.FailedPlugins.Count;
+            var failedPluginCount = PluginManager.SnapshotFailures().Count;
             bootstrap.SetPhase(
-                "plugin-scan",
-                I18N_PhasePluginScan,
-                failedPluginCount == 0 ? UiSeverity.Success : UiSeverity.Warning,
+                BootstrapPhaseId.Scan,
+                failedPluginCount == 0 ? BootstrapPhaseState.Succeeded : BootstrapPhaseState.Warning,
                 failedPluginCount == 0
                     ? string.Format(I18N_PluginsFound, loadedPluginCount)
                     : string.Format(I18N_PluginsFoundWithFailures, loadedPluginCount, failedPluginCount));
             bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
         }
 
-        static IReadOnlyList<BootstrapPluginRow> BuildBootstrapPluginSummary(bool initialized)
+        static IReadOnlyList<BootstrapPluginRow> BuildBootstrapPluginSummary(bool initialized, bool started = false)
         {
             var metadatas = PluginManager.Metadatas;
             var loadedNames = PluginManager.SnapshotActivePluginMetadatas()
                 .Select(plugin => plugin.PluginName).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var failedPlugins = PluginManager.FailedPlugins.ToArray();
-            var pluginNamesByPath = metadatas.Values
-                .GroupBy(x => x.PackagePath, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.First().PluginName,
-                    StringComparer.OrdinalIgnoreCase);
-            var failedNames = failedPlugins
-                .Select(path => pluginNamesByPath.GetValueOrDefault(path) ?? path)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var knownNames = metadatas.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
-            List<(string SortKey, BootstrapPluginRow Row)> rows =
-            [
-                .. metadatas.Values.Select(metadata => (
-                    metadata.PluginName,
-                    new BootstrapPluginRow(
-                        metadata,
-                        loadedNames.Contains(metadata.PluginName),
-                        initialized,
-                        failedNames.Contains(metadata.PluginName))))
-            ];
-
-            foreach (var failedPath in failedPlugins)
+            var failures = PluginManager.SnapshotFailures()
+                .ToDictionary(failure => failure.PackagePath, StringComparer.OrdinalIgnoreCase);
+            List<BootstrapPluginRow> rows = [];
+            foreach (var metadata in metadatas.Values)
             {
-                var name = pluginNamesByPath.GetValueOrDefault(failedPath)
-                    ?? Path.GetFileNameWithoutExtension(failedPath);
-                if (knownNames.Add(name))
-                    rows.Add((name, new(name, string.Empty, BootstrapWorkspace.SeverityLabel(UiSeverity.Error), I18N_ScanLoadFailed)));
+                failures.Remove(metadata.PackagePath, out var failure);
+                var active = loadedNames.Contains(metadata.PluginName);
+                var state = failure is { DisablesPlugin: true } || !active
+                    ? BootstrapPluginState.Unavailable
+                    : failure is not null
+                        ? BootstrapPluginState.StartFailed
+                        : initialized ? BootstrapPluginState.Active : BootstrapPluginState.Scanned;
+                rows.Add(new(
+                    metadata.PackagePath,
+                    metadata.DisplayName == metadata.PluginName
+                        ? metadata.DisplayName
+                        : $"{metadata.DisplayName} ({metadata.PluginName})",
+                    metadata.Version.ToString(),
+                    state,
+                    failure?.Error.Message ?? (active
+                        ? started ? I18N_Start_Started : initialized ? I18N_Initialized : I18N_Scanned
+                        : I18N_Unloaded),
+                    failure?.Error.ToString(),
+                    failure?.Stage));
             }
-
+            foreach (var failure in failures.Values)
+                rows.Add(new(
+                    failure.PackagePath,
+                    failure.PluginName ?? Path.GetFileNameWithoutExtension(failure.PackagePath),
+                    string.Empty,
+                    BootstrapPluginState.Unavailable,
+                    failure.Error.Message,
+                    failure.Error.ToString(),
+                    failure.Stage));
             return
             [
                 .. rows
-                    .OrderBy(x => x.SortKey, StringComparer.OrdinalIgnoreCase)
-                    .Select(x => x.Row)
+                    .OrderBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
             ];
         }
 
@@ -503,65 +531,57 @@ namespace UmamusumeResponseAnalyzer
                 cancellationToken);
             ModalDialogs.Acknowledge(I18N_FirstRunComplete, cancellationToken);
         }
-        static List<string> BuildStartupMenuChoices()
-        {
-            var selections = new List<string>
-            {
-                I18N_Start,
-                I18N_Options,
-                I18N_PluginRepository,
-                I18N_UpdateAssets,
-                I18N_UpdateProgram,
-                I18N_QqGroup
-            };
-            if (OperatingSystem.IsWindows())
-                selections.Add(I18N_InstallUraCore);
-            return selections;
-        }
+        static BootstrapSettings ReadBootstrapSettings() => new(
+            Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? I18N_Unknown,
+            Directory.GetCurrentDirectory(),
+            Path.GetFullPath(Config.CONFIG_FILEPATH),
+            Config.Core.ListenAddress,
+            Config.Core.ListenPort,
+            Config.Updater.DatabaseLanguage,
+            Config.Updater.TrainerIsMale ? I18N_Male : I18N_Female,
+            string.IsNullOrWhiteSpace(Config.Updater.CustomDatabaseRepository)
+                ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror()
+                : Config.Updater.CustomDatabaseRepository);
 
         static async Task ShowMenu(BootstrapWorkspace bootstrap, CancellationToken cancellationToken)
         {
             while (true)
             {
-                var selected = await bootstrap.ShowMenuAsync(
-                    I18N_Instruction,
-                    BuildStartupMenuChoices(),
-                    cancellationToken: cancellationToken);
-                if (selected == I18N_Start)
+                bootstrap.SetSettings(ReadBootstrapSettings());
+                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
+                var selected = await bootstrap.ShowMenuAsync(cancellationToken);
+                if (selected == BootstrapAction.Start)
                     return;
 
                 try
                 {
-                    if (selected == I18N_Options)
+                    switch (selected)
                     {
-                        await Config.PromptAsync(cancellationToken);
-                    }
-                    else if (selected == I18N_PluginRepository)
-                    {
-                        await PluginRepository.ShowMenuAsync(cancellationToken);
-                    }
-                    else if (selected == I18N_UpdateAssets)
-                    {
-                        await ResourceUpdater.UpdateAssets(cancellationToken);
-                    }
-                    else if (selected == I18N_UpdateProgram)
-                    {
-                        await ResourceUpdater.UpdateProgram(cancellationToken);
-                    }
-                    else if (selected == I18N_InstallUraCore)
-                    {
-                        await HachimiEdgeInstaller.ShowAsync(cancellationToken);
-                    }
-                    else if (selected == I18N_QqGroup)
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "https://qm.qq.com/q/4z6xHQ908w",
-                            UseShellExecute = true
-                        });
-                        ModalDialogs.Acknowledge(
-                            I18N_QqOpened,
-                            cancellationToken);
+                        case BootstrapAction.Options:
+                            await Config.PromptAsync(cancellationToken);
+                            break;
+                        case BootstrapAction.PluginRepository:
+                            await PluginRepository.ShowMenuAsync(cancellationToken);
+                            break;
+                        case BootstrapAction.UpdateData:
+                            await ResourceUpdater.UpdateAssets(cancellationToken);
+                            break;
+                        case BootstrapAction.UpdateProgram:
+                            await ResourceUpdater.UpdateProgram(cancellationToken);
+                            break;
+                        case BootstrapAction.Hachimi:
+                            await HachimiEdgeInstaller.ShowAsync(cancellationToken);
+                            break;
+                        case BootstrapAction.QqGroup:
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "https://qm.qq.com/q/4z6xHQ908w",
+                                UseShellExecute = true
+                            });
+                            ModalDialogs.Acknowledge(I18N_QqOpened, cancellationToken);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(selected), selected, null);
                     }
                 }
                 catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)

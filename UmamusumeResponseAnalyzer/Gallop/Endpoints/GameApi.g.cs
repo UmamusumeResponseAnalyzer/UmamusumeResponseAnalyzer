@@ -48,7 +48,10 @@ public static class GameEndpointCatalog
             [typeof(GameApi.CampaignWalking.Index)] = new(typeof(GameApi.CampaignWalking.Index), "/umamusume/campaign_walking/index", typeof(CampaignWalkingIndexRequest), typeof(CampaignWalkingIndexResponse)),
             [typeof(GameApi.Card.GetCardEventSkill)] = new(typeof(GameApi.Card.GetCardEventSkill), "/umamusume/card/get_card_event_skill", typeof(CardGetCardEventSkillRequest), typeof(CardGetCardEventSkillResponse)),
             [typeof(GameApi.Card.GetReleaseCardArray)] = new(typeof(GameApi.Card.GetReleaseCardArray), "/umamusume/card/get_release_card_array", typeof(CardGetReleaseCardRequest), typeof(CardGetReleaseCardResponse)),
+            [typeof(GameApi.Card.RarityUpgrade)] = new(typeof(GameApi.Card.RarityUpgrade), "/umamusume/card/rarity_upgrade", typeof(CardRarityUpgradeRequest), typeof(CardRarityUpgradeResponse)),
             [typeof(GameApi.Card.SellPiece)] = new(typeof(GameApi.Card.SellPiece), "/umamusume/card/sell_piece", typeof(CardSellPieceRequest), typeof(CardSellPieceResponse)),
+            [typeof(GameApi.Card.SkillUpgrade)] = new(typeof(GameApi.Card.SkillUpgrade), "/umamusume/card/skill_upgrade", typeof(CardSkillUpgradeRequest), typeof(CardSkillUpgradeResponse)),
+            [typeof(GameApi.Card.TalentStrengthen)] = new(typeof(GameApi.Card.TalentStrengthen), "/umamusume/card/talent_strengthen", typeof(CardTalentStrengthenRequest), typeof(CardTalentStrengthenResponse)),
             [typeof(GameApi.Card.Unlock)] = new(typeof(GameApi.Card.Unlock), "/umamusume/card/unlock", typeof(CardUnlockRequest), typeof(CardUnlockResponse)),
             [typeof(GameApi.ChallengeMatch.ChallengeRaceOpen)] = new(typeof(GameApi.ChallengeMatch.ChallengeRaceOpen), "/umamusume/challenge_match/challenge_race_open", typeof(ChallengeMatchRaceOpenRequest), typeof(ChallengeMatchRaceOpenResponse)),
             [typeof(GameApi.ChallengeMatch.Index)] = new(typeof(GameApi.ChallengeMatch.Index), "/umamusume/challenge_match/index", typeof(ChallengeMatchIndexRequest), typeof(ChallengeMatchIndexResponse)),
@@ -139,6 +142,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.ConstWalking.CheckResult)] = new(typeof(GameApi.ConstWalking.CheckResult), "/umamusume/const_walking/check_result", typeof(ConstWalkingCheckResultRequest), typeof(ConstWalkingCheckResultResponse)),
             [typeof(GameApi.ConstWalking.GoWalking)] = new(typeof(GameApi.ConstWalking.GoWalking), "/umamusume/const_walking/go_walking", typeof(ConstWalkingGoWalkingRequest), typeof(ConstWalkingGoWalkingResponse)),
             [typeof(GameApi.ConstWalking.Index)] = new(typeof(GameApi.ConstWalking.Index), "/umamusume/const_walking/index", typeof(ConstWalkingIndexRequest), typeof(ConstWalkingIndexResponse)),
+            [typeof(GameApi.CygamesIdExternal.ApplyPendingProduct)] = new(typeof(GameApi.CygamesIdExternal.ApplyPendingProduct), "/umamusume/cygames_id_external/apply_pending_product", typeof(CygamesIdExternalApplyPendingProductRequest), typeof(CygamesIdExternalApplyPendingProductResponse)),
             [typeof(GameApi.DailyLegendRace.GetRewardList)] = new(typeof(GameApi.DailyLegendRace.GetRewardList), "/umamusume/daily_legend_race/get_reward_list", typeof(DailyLegendRaceGetRewardListRequest), typeof(DailyLegendRaceGetRewardListResponse)),
             [typeof(GameApi.DailyLegendRace.Index)] = new(typeof(GameApi.DailyLegendRace.Index), "/umamusume/daily_legend_race/index", typeof(DailyLegendRaceIndexRequest), typeof(DailyLegendRaceIndexResponse)),
             [typeof(GameApi.DailyLegendRace.RaceEntry)] = new(typeof(GameApi.DailyLegendRace.RaceEntry), "/umamusume/daily_legend_race/race_entry", typeof(DailyLegendRaceRaceEntryRequest), typeof(DailyLegendRaceRaceEntryResponse)),
@@ -203,10 +207,13 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Friend.UnFollowMulti)] = new(typeof(GameApi.Friend.UnFollowMulti), "/umamusume/friend/un_follow_multi", typeof(FriendUnFollowMultiRequest), typeof(FriendUnFollowMultiResponse)),
             [typeof(GameApi.Friend.UnFollower)] = new(typeof(GameApi.Friend.UnFollower), "/umamusume/friend/un_follower", typeof(FriendUnFollowerRequest), typeof(FriendUnFollowerResponse)),
             [typeof(GameApi.Friend.UnFollowerMulti)] = new(typeof(GameApi.Friend.UnFollowerMulti), "/umamusume/friend/un_follower_multi", typeof(FriendUnFollowerMultiRequest), typeof(FriendUnFollowerMultiResponse)),
+            [typeof(GameApi.Gacha.Exec)] = new(typeof(GameApi.Gacha.Exec), "/umamusume/gacha/exec", typeof(GachaExecRequest), typeof(GachaExecResponse)),
             [typeof(GameApi.Gacha.GetHistory)] = new(typeof(GameApi.Gacha.GetHistory), "/umamusume/gacha/get_history", typeof(GachaGetHistoryRequest), typeof(GachaGetHistoryResponse)),
             [typeof(GameApi.Gacha.GetPrizeHistory)] = new(typeof(GameApi.Gacha.GetPrizeHistory), "/umamusume/gacha/get_prize_history", typeof(GachaGetPrizeHistoryRequest), typeof(GachaGetPrizeHistoryResponse)),
+            [typeof(GameApi.Gacha.Index)] = new(typeof(GameApi.Gacha.Index), "/umamusume/gacha/index", typeof(GachaLoadRequest), typeof(GachaLoadResponse)),
             [typeof(GameApi.Gacha.LimitConvert)] = new(typeof(GameApi.Gacha.LimitConvert), "/umamusume/gacha/limit_convert", typeof(GachaLimitConvertRequest), typeof(GachaLimitConvertResponse)),
             [typeof(GameApi.Gacha.LimitExchange)] = new(typeof(GameApi.Gacha.LimitExchange), "/umamusume/gacha/limit_exchange", typeof(GachaLimitExchangeRequest), typeof(GachaLimitExchangeResponse)),
+            [typeof(GameApi.Gacha.LimitExchangeItem)] = new(typeof(GameApi.Gacha.LimitExchangeItem), "/umamusume/gacha/limit_exchange_Item", typeof(GachaLimitExchangeItemRequest), typeof(GachaLimitExchangeItemResponse)),
             [typeof(GameApi.Gacha.LimitExchangeTicket)] = new(typeof(GameApi.Gacha.LimitExchangeTicket), "/umamusume/gacha/limit_exchange_ticket", typeof(GachaLimitExchangeTicketRequest), typeof(GachaLimitExchangeTicketResponse)),
             [typeof(GameApi.Gacha.SelectPickup)] = new(typeof(GameApi.Gacha.SelectPickup), "/umamusume/gacha/select_pickup", typeof(GachaSelectPickUpRequest), typeof(GachaSelectPickUpResponse)),
             [typeof(GameApi.Gacha.SelectPickupStampsheet)] = new(typeof(GameApi.Gacha.SelectPickupStampsheet), "/umamusume/gacha/select_pickup_stampsheet", typeof(GachaSelectPickupStampsheetRequest), typeof(GachaSelectPickupStampsheetResponse)),
@@ -240,6 +247,19 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Heroes.GetRankingBorder)] = new(typeof(GameApi.Heroes.GetRankingBorder), "/umamusume/heroes/get_ranking_border", typeof(HeroesGetRankingBorderRequest), typeof(HeroesGetRankingBorderResponse)),
             [typeof(GameApi.Heroes.GetRankingCharaInfo)] = new(typeof(GameApi.Heroes.GetRankingCharaInfo), "/umamusume/heroes/get_ranking_chara_info", typeof(HeroesGetRankingCharaInfoRequest), typeof(HeroesGetRankingCharaInfoResponse)),
             [typeof(GameApi.Heroes.Index)] = new(typeof(GameApi.Heroes.Index), "/umamusume/heroes/index", typeof(HeroesIndexRequest), typeof(HeroesIndexResponse)),
+            [typeof(GameApi.Heroes.Stage1CheckHeroSkill)] = new(typeof(GameApi.Heroes.Stage1CheckHeroSkill), "/umamusume/heroes/stage1_check_hero_skill", typeof(HeroesStage1CheckHeroSkillRequest), typeof(HeroesStage1CheckHeroSkillResponse)),
+            [typeof(GameApi.Heroes.Stage1CheckOpponentTeams)] = new(typeof(GameApi.Heroes.Stage1CheckOpponentTeams), "/umamusume/heroes/stage1_check_opponent_teams", typeof(HeroesStage1CheckOpponentTeamsRequest), typeof(HeroesStage1CheckOpponentTeamsResponse)),
+            [typeof(GameApi.Heroes.Stage1CheckRound)] = new(typeof(GameApi.Heroes.Stage1CheckRound), "/umamusume/heroes/stage1_check_round", typeof(HeroesStage1CheckRoundRequest), typeof(HeroesStage1CheckRoundResponse)),
+            [typeof(GameApi.Heroes.Stage1EditTeam)] = new(typeof(GameApi.Heroes.Stage1EditTeam), "/umamusume/heroes/stage1_edit_team", typeof(HeroesStage1EditTeamRequest), typeof(HeroesStage1EditTeamResponse)),
+            [typeof(GameApi.Heroes.Stage1EditTeamName)] = new(typeof(GameApi.Heroes.Stage1EditTeamName), "/umamusume/heroes/stage1_edit_team_name", typeof(HeroesStage1EditTeamNameRequest), typeof(HeroesStage1EditTeamNameResponse)),
+            [typeof(GameApi.Heroes.Stage1FinishSet)] = new(typeof(GameApi.Heroes.Stage1FinishSet), "/umamusume/heroes/stage1_finish_set", typeof(HeroesStage1FinishSetRequest), typeof(HeroesStage1FinishSetResponse)),
+            [typeof(GameApi.Heroes.Stage1GetOpponentTeams)] = new(typeof(GameApi.Heroes.Stage1GetOpponentTeams), "/umamusume/heroes/stage1_get_opponent_teams", typeof(HeroesStage1GetOpponentTeamsRequest), typeof(HeroesStage1GetOpponentTeamsResponse)),
+            [typeof(GameApi.Heroes.Stage1GrandResult)] = new(typeof(GameApi.Heroes.Stage1GrandResult), "/umamusume/heroes/stage1_grand_result", typeof(HeroesStage1GrandResultRequest), typeof(HeroesStage1GrandResultResponse)),
+            [typeof(GameApi.Heroes.Stage1HonorSelectChara)] = new(typeof(GameApi.Heroes.Stage1HonorSelectChara), "/umamusume/heroes/stage1_honor_select_chara", typeof(HeroesStage1HonorSelectCharaRequest), typeof(HeroesStage1HonorSelectCharaResponse)),
+            [typeof(GameApi.Heroes.Stage1HonorSelectCharaList)] = new(typeof(GameApi.Heroes.Stage1HonorSelectCharaList), "/umamusume/heroes/stage1_honor_select_chara_list", typeof(HeroesStage1HonorSelectCharaListRequest), typeof(HeroesStage1HonorSelectCharaListResponse)),
+            [typeof(GameApi.Heroes.Stage1Resume)] = new(typeof(GameApi.Heroes.Stage1Resume), "/umamusume/heroes/stage1_resume", typeof(HeroesStage1ResumeRequest), typeof(HeroesStage1ResumeResponse)),
+            [typeof(GameApi.Heroes.Stage1SetOption)] = new(typeof(GameApi.Heroes.Stage1SetOption), "/umamusume/heroes/stage1_set_option", typeof(HeroesStage1SetOptionRequest), typeof(HeroesStage1SetOptionResponse)),
+            [typeof(GameApi.Heroes.Stage1StartSet)] = new(typeof(GameApi.Heroes.Stage1StartSet), "/umamusume/heroes/stage1_start_set", typeof(HeroesStage1StartSetRequest), typeof(HeroesStage1StartSetResponse)),
             [typeof(GameApi.Honor.ChangeHonor)] = new(typeof(GameApi.Honor.ChangeHonor), "/umamusume/honor/change_honor", typeof(HonorChangeHonorRequest), typeof(HonorChangeHonorResponse)),
             [typeof(GameApi.Honor.Index)] = new(typeof(GameApi.Honor.Index), "/umamusume/honor/index", typeof(HonorListRequest), typeof(HonorListResponse)),
             [typeof(GameApi.IdleSingleMode.CheckProgressLog)] = new(typeof(GameApi.IdleSingleMode.CheckProgressLog), "/umamusume/idle_single_mode/check_progress_log", typeof(IdleSingleModeCheckProgressLogRequest), typeof(IdleSingleModeCheckProgressLogResponse)),
@@ -251,9 +271,14 @@ public static class GameEndpointCatalog
             [typeof(GameApi.IdleSingleMode.Status)] = new(typeof(GameApi.IdleSingleMode.Status), "/umamusume/idle_single_mode/status", typeof(IdleSingleModeStatusRequest), typeof(IdleSingleModeStatusResponse)),
             [typeof(GameApi.Item.CheckAnivShop)] = new(typeof(GameApi.Item.CheckAnivShop), "/umamusume/item/check_aniv_shop", typeof(ItemCheckAnivShopRequest), typeof(ItemCheckAnivShopResponse)),
             [typeof(GameApi.Item.CheckSpecialMoneyShop)] = new(typeof(GameApi.Item.CheckSpecialMoneyShop), "/umamusume/item/check_special_money_shop", typeof(ItemCheckSpecialMoneyShopRequest), typeof(ItemCheckSpecialMoneyShopResponse)),
+            [typeof(GameApi.Item.CheckSupportCardShop)] = new(typeof(GameApi.Item.CheckSupportCardShop), "/umamusume/item/check_support_card_shop", typeof(ItemCheckSupportCardShopRequest), typeof(ItemCheckSupportCardShopResponse)),
+            [typeof(GameApi.Item.Exchange)] = new(typeof(GameApi.Item.Exchange), "/umamusume/item/exchange", typeof(ItemExchangeRequest), typeof(ItemExchangeResponse)),
+            [typeof(GameApi.Item.ExchangeAddFrame)] = new(typeof(GameApi.Item.ExchangeAddFrame), "/umamusume/item/exchangeAddFrame", typeof(ItemExchangeAddFrameRequest), typeof(ItemExchangeAddFrameResponse)),
             [typeof(GameApi.Item.ExchangeMulti)] = new(typeof(GameApi.Item.ExchangeMulti), "/umamusume/item/exchange_multi", typeof(ItemExchangeMultiRequest), typeof(ItemExchangeMultiResponse)),
+            [typeof(GameApi.Item.ExchangeMultiResource)] = new(typeof(GameApi.Item.ExchangeMultiResource), "/umamusume/item/exchange_multi_resource", typeof(ItemExchangeMultiResourceRequest), typeof(ItemExchangeMultiResourceResponse)),
             [typeof(GameApi.Item.ExchangeStartDash)] = new(typeof(GameApi.Item.ExchangeStartDash), "/umamusume/item/exchange_start_dash", typeof(ItemExchangeStartDashRequest), typeof(ItemExchangeStartDashResponse)),
             [typeof(GameApi.Item.Sell)] = new(typeof(GameApi.Item.Sell), "/umamusume/item/sell", typeof(ItemSellRequest), typeof(ItemSellResponse)),
+            [typeof(GameApi.Item.ShowExchange)] = new(typeof(GameApi.Item.ShowExchange), "/umamusume/item/show_exchange", typeof(ItemShowExchangeRequest), typeof(ItemShowExchangeResponse)),
             [typeof(GameApi.Item.UseRecoveryItem)] = new(typeof(GameApi.Item.UseRecoveryItem), "/umamusume/item/use_recovery_item", typeof(ItemUseRecoveryItemRequest), typeof(ItemUseRecoveryItemResponse)),
             [typeof(GameApi.Jobs.Abort)] = new(typeof(GameApi.Jobs.Abort), "/umamusume/jobs/abort", typeof(JobsAbortRequest), typeof(JobsAbortResponse)),
             [typeof(GameApi.Jobs.CheckComplete)] = new(typeof(GameApi.Jobs.CheckComplete), "/umamusume/jobs/check_complete", typeof(JobsCheckCompleteRequest), typeof(JobsCheckCompleteResponse)),
@@ -262,6 +287,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Jukebox.ChangePlayMusic)] = new(typeof(GameApi.Jukebox.ChangePlayMusic), "/umamusume/jukebox/change_play_music", typeof(JukeboxChangePlayMusicRequest), typeof(JukeboxChangePlayMusicResponse)),
             [typeof(GameApi.Jukebox.ChangeRandomRequest)] = new(typeof(GameApi.Jukebox.ChangeRandomRequest), "/umamusume/jukebox/change_random_request", typeof(JukeboxChangeRandomRequestRequest), typeof(JukeboxChangeRandomRequestResponse)),
             [typeof(GameApi.Jukebox.ChangeUserRequest)] = new(typeof(GameApi.Jukebox.ChangeUserRequest), "/umamusume/jukebox/change_user_request", typeof(JukeboxChangeUserRequestRequest), typeof(JukeboxChangeUserRequestResponse)),
+            [typeof(GameApi.Jukebox.DrawRandomRequest)] = new(typeof(GameApi.Jukebox.DrawRandomRequest), "/umamusume/jukebox/draw_random_request", typeof(JukeboxDrawRandomRequestRequest), typeof(JukeboxDrawRandomRequestResponse)),
             [typeof(GameApi.Jukebox.ExecLike)] = new(typeof(GameApi.Jukebox.ExecLike), "/umamusume/jukebox/exec_like", typeof(JukeboxExecLikeRequest), typeof(JukeboxExecLikeResponse)),
             [typeof(GameApi.Jukebox.History)] = new(typeof(GameApi.Jukebox.History), "/umamusume/jukebox/history", typeof(JukeboxHistoryRequest), typeof(JukeboxHistoryResponse)),
             [typeof(GameApi.Jukebox.Index)] = new(typeof(GameApi.Jukebox.Index), "/umamusume/jukebox/index", typeof(JukeboxIndexRequest), typeof(JukeboxIndexResponse)),
@@ -281,6 +307,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.LiveTheater.LiveStart)] = new(typeof(GameApi.LiveTheater.LiveStart), "/umamusume/live_theater/live_start", typeof(LiveTheaterLiveStartRequest), typeof(LiveTheaterLiveStartResponse)),
             [typeof(GameApi.LiveTheaterPerformersPreset.Index)] = new(typeof(GameApi.LiveTheaterPerformersPreset.Index), "/umamusume/live_theater_performers_preset/index", typeof(LiveTheaterPerformersPresetIndexRequest), typeof(LiveTheaterPerformersPresetIndexResponse)),
             [typeof(GameApi.LiveTheaterPerformersPreset.Update)] = new(typeof(GameApi.LiveTheaterPerformersPreset.Update), "/umamusume/live_theater_performers_preset/update", typeof(LiveTheaterPerformersPresetUpdateRequest), typeof(LiveTheaterPerformersPresetUpdateResponse)),
+            [typeof(GameApi.Load.Index)] = new(typeof(GameApi.Load.Index), "/umamusume/load/index", typeof(LoginRequest), typeof(LoginResponse)),
             [typeof(GameApi.MainStory.FirstClear)] = new(typeof(GameApi.MainStory.FirstClear), "/umamusume/main_story/first_clear", typeof(MainStoryFirstClearRequest), typeof(MainStoryFirstClearResponse)),
             [typeof(GameApi.MainStoryRace.GetEntryList)] = new(typeof(GameApi.MainStoryRace.GetEntryList), "/umamusume/main_story_race/get_entry_list", typeof(MainStoryRaceGetEntryListRequest), typeof(MainStoryRaceGetEntryListResponse)),
             [typeof(GameApi.MainStoryRace.GetRaceTable)] = new(typeof(GameApi.MainStoryRace.GetRaceTable), "/umamusume/main_story_race/get_race_table", typeof(MainStoryRaceGetRaceTableRequest), typeof(MainStoryRaceGetRaceTableResponse)),
@@ -291,6 +318,8 @@ public static class GameEndpointCatalog
             [typeof(GameApi.MapEvent.Index)] = new(typeof(GameApi.MapEvent.Index), "/umamusume/map_event/index", typeof(MapEventIndexRequest), typeof(MapEventIndexResponse)),
             [typeof(GameApi.MapEvent.MovieTrailerDialogRead)] = new(typeof(GameApi.MapEvent.MovieTrailerDialogRead), "/umamusume/map_event/movie_trailer_dialog_read", typeof(MapEventMovieTrailerDialogReadRequest), typeof(MapEventMovieTrailerDialogReadResponse)),
             [typeof(GameApi.MapEvent.PointExec)] = new(typeof(GameApi.MapEvent.PointExec), "/umamusume/map_event/point_exec", typeof(MapEventPointExecRequest), typeof(MapEventPointExecResponse)),
+            [typeof(GameApi.Mission.Index)] = new(typeof(GameApi.Mission.Index), "/umamusume/mission/index", typeof(MissionLoadRequest), typeof(MissionLoadResponse)),
+            [typeof(GameApi.Mission.Receive)] = new(typeof(GameApi.Mission.Receive), "/umamusume/mission/receive", typeof(MissionReceiveRequest), typeof(MissionReceiveResponse)),
             [typeof(GameApi.Note.GetDirectoryCard)] = new(typeof(GameApi.Note.GetDirectoryCard), "/umamusume/note/get_directory_card", typeof(NoteGetDirectoryCardRequest), typeof(NoteGetDirectoryCardResponse)),
             [typeof(GameApi.Note.GetNewCharaData)] = new(typeof(GameApi.Note.GetNewCharaData), "/umamusume/note/get_new_chara_data", typeof(NoteGetNewCharaDataRequest), typeof(NoteGetNewCharaDataResponse)),
             [typeof(GameApi.Note.GetNicknameData)] = new(typeof(GameApi.Note.GetNicknameData), "/umamusume/note/get_nickname_data", typeof(NoteGetNicknameDataRequest), typeof(NoteGetNicknameDataResponse)),
@@ -298,11 +327,14 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Note.Index)] = new(typeof(GameApi.Note.Index), "/umamusume/note/index", typeof(NoteLoadRequest), typeof(NoteLoadResponse)),
             [typeof(GameApi.Note.SaveCharaData)] = new(typeof(GameApi.Note.SaveCharaData), "/umamusume/note/save_chara_data", typeof(NoteSaveCharaDataRequest), typeof(NoteSaveCharaDataResponse)),
             [typeof(GameApi.Note.SaveNoteData)] = new(typeof(GameApi.Note.SaveNoteData), "/umamusume/note/save_note_data", typeof(NoteSaveNoteDataRequest), typeof(NoteSaveNoteDataResponse)),
+            [typeof(GameApi.Note.SaveVoice)] = new(typeof(GameApi.Note.SaveVoice), "/umamusume/note/save_voice", typeof(NoteSaveVoiceRequest), typeof(NoteSaveVoiceResponse)),
             [typeof(GameApi.Note.TrainerNote)] = new(typeof(GameApi.Note.TrainerNote), "/umamusume/note/trainer_note", typeof(NoteTrainerNoteRequest), typeof(NoteTrainerNoteResponse)),
             [typeof(GameApi.Note.UseGalleryKey)] = new(typeof(GameApi.Note.UseGalleryKey), "/umamusume/note/use_gallery_key", typeof(NoteUseGalleryKeyRequest), typeof(NoteUseGalleryKeyResponse)),
             [typeof(GameApi.Option.ChangeOption)] = new(typeof(GameApi.Option.ChangeOption), "/umamusume/option/change_option", typeof(OptionChangeOptionRequest), typeof(OptionChangeOptionResponse)),
             [typeof(GameApi.Payment.Cancel)] = new(typeof(GameApi.Payment.Cancel), "/umamusume/payment/cancel", typeof(PaymentCancelRequest), typeof(PaymentCancelResponse)),
+            [typeof(GameApi.Payment.Finish)] = new(typeof(GameApi.Payment.Finish), "/umamusume/payment/finish", typeof(PaymentFinishRequest), typeof(PaymentFinishResponse)),
             [typeof(GameApi.Payment.GetCoinBreakDownInfo)] = new(typeof(GameApi.Payment.GetCoinBreakDownInfo), "/umamusume/payment/get_coin_break_down_info", typeof(PaymentGetCoinBreakDownInfoRequest), typeof(PaymentGetCoinBreakDownInfoResponse)),
+            [typeof(GameApi.Payment.ItemList)] = new(typeof(GameApi.Payment.ItemList), "/umamusume/payment/item_list", typeof(PaymentItemListRequest), typeof(PaymentItemListResponse)),
             [typeof(GameApi.Payment.SendLog)] = new(typeof(GameApi.Payment.SendLog), "/umamusume/payment/send_log", typeof(PaymentSendLogRequest), typeof(PaymentSendLogResponse)),
             [typeof(GameApi.Payment.Start)] = new(typeof(GameApi.Payment.Start), "/umamusume/payment/start", typeof(PaymentStartRequest), typeof(PaymentStartResponse)),
             [typeof(GameApi.Payment.SteamMicroTxnInit)] = new(typeof(GameApi.Payment.SteamMicroTxnInit), "/umamusume/payment/steam_micro_txn_init", typeof(PaymentSteamMicroTxnInitRequest), typeof(PaymentSteamMicroTxnInitResponse)),
@@ -337,13 +369,18 @@ public static class GameEndpointCatalog
             [typeof(GameApi.PreSingleMode.GetSuccessionTrainedChara)] = new(typeof(GameApi.PreSingleMode.GetSuccessionTrainedChara), "/umamusume/pre_single_mode/get_succession_trained_chara", typeof(PreSingleModeGetSuccessionTrainedCharaRequest), typeof(PreSingleModeGetSuccessionTrainedCharaResponse)),
             [typeof(GameApi.PreSingleMode.Index)] = new(typeof(GameApi.PreSingleMode.Index), "/umamusume/pre_single_mode/index", typeof(PreSingleModeIndexRequest), typeof(PreSingleModeIndexResponse)),
             [typeof(GameApi.Present.History)] = new(typeof(GameApi.Present.History), "/umamusume/present/history", typeof(PresentHistoryRequest), typeof(PresentHistoryResponse)),
+            [typeof(GameApi.Present.Index)] = new(typeof(GameApi.Present.Index), "/umamusume/present/index", typeof(PresentIndexRequest), typeof(PresentIndexResponse)),
             [typeof(GameApi.Present.Receive)] = new(typeof(GameApi.Present.Receive), "/umamusume/present/receive", typeof(PresentReceiveRequest), typeof(PresentReceiveResponse)),
+            [typeof(GameApi.Present.ReceiveAll)] = new(typeof(GameApi.Present.ReceiveAll), "/umamusume/present/receive_all", typeof(PresentReceiveAllRequest), typeof(PresentReceiveAllResponse)),
             [typeof(GameApi.RaceFitAssistance.DetermineTargetRace)] = new(typeof(GameApi.RaceFitAssistance.DetermineTargetRace), "/umamusume/race_fit_assistance/determine_target_race", typeof(DetermineTargetRaceRequest), typeof(DetermineTargetRaceResponse)),
             [typeof(GameApi.RaceFitAssistance.Fetch)] = new(typeof(GameApi.RaceFitAssistance.Fetch), "/umamusume/race_fit_assistance/fetch", typeof(FetchRaceFitAssistanceRequest), typeof(FetchRaceFitAssistanceResponse)),
             [typeof(GameApi.RaceFitAssistance.UsersWithRecommendedSupportCard)] = new(typeof(GameApi.RaceFitAssistance.UsersWithRecommendedSupportCard), "/umamusume/race_fit_assistance/users_with_recommended_support_card", typeof(UsersWithRecommendedSupportCardRequest), typeof(UsersWithRecommendedSupportCardResponse)),
             [typeof(GameApi.Raffle.Activate)] = new(typeof(GameApi.Raffle.Activate), "/umamusume/raffle/activate", typeof(RaffleActivateRequest), typeof(RaffleActivateResponse)),
             [typeof(GameApi.Raffle.Index)] = new(typeof(GameApi.Raffle.Index), "/umamusume/raffle/index", typeof(RaffleIndexRequest), typeof(RaffleIndexResponse)),
+            [typeof(GameApi.ReadInfo.Announce)] = new(typeof(GameApi.ReadInfo.Announce), "/umamusume/read_info/announce", typeof(ReadInfoAnnounceRequest), typeof(ReadInfoAnnounceResponse)),
             [typeof(GameApi.ReadInfo.Index)] = new(typeof(GameApi.ReadInfo.Index), "/umamusume/read_info/index", typeof(ReadInfoRequest), typeof(ReadInfoResponse)),
+            [typeof(GameApi.ReadInfo.NotifyProduct)] = new(typeof(GameApi.ReadInfo.NotifyProduct), "/umamusume/read_info/notify_product", typeof(ReadInfoNotifyProductRequest), typeof(ReadInfoNotifyProductResponse)),
+            [typeof(GameApi.ReadInfo.UmaplanBonusReceivedDialog)] = new(typeof(GameApi.ReadInfo.UmaplanBonusReceivedDialog), "/umamusume/read_info/umaplan_bonus_received_dialog", typeof(ReadInfoUmaplanBonusReceivedDialogRequest), typeof(ReadInfoUmaplanBonusReceivedDialogResponse)),
             [typeof(GameApi.RoomMatch.ChangeAllowDisplay)] = new(typeof(GameApi.RoomMatch.ChangeAllowDisplay), "/umamusume/room_match/change_allow_display", typeof(RoomMatchChangeAllowDisplayRequest), typeof(RoomMatchChangeAllowDisplayResponse)),
             [typeof(GameApi.RoomMatch.ChangeLockRaceResult)] = new(typeof(GameApi.RoomMatch.ChangeLockRaceResult), "/umamusume/room_match/change_lock_race_result", typeof(RoomMatchChangeLockRaceResultRequest), typeof(RoomMatchChangeLockRaceResultResponse)),
             [typeof(GameApi.RoomMatch.ChangePresetName)] = new(typeof(GameApi.RoomMatch.ChangePresetName), "/umamusume/room_match/change_preset_name", typeof(RoomMatchRaceChangePresetNameRequest), typeof(RoomMatchRaceChangePresetNameResponse)),
@@ -550,6 +587,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.SingleModeFree.GetChoiceReward)] = new(typeof(GameApi.SingleModeFree.GetChoiceReward), "/umamusume/single_mode_free/get_choice_reward", typeof(SingleModeFreeGetChoiceRewardRequest), typeof(SingleModeFreeGetChoiceRewardResponse)),
             [typeof(GameApi.SingleModeFree.Load)] = new(typeof(GameApi.SingleModeFree.Load), "/umamusume/single_mode_free/load", typeof(SingleModeFreeLoadRequest), typeof(SingleModeFreeLoadResponse)),
             [typeof(GameApi.SingleModeFree.MultiItemExchange)] = new(typeof(GameApi.SingleModeFree.MultiItemExchange), "/umamusume/single_mode_free/multi_item_exchange", typeof(SingleModeFreeMultiItemExchangeRequest), typeof(SingleModeFreeMultiItemExchangeResponse)),
+            [typeof(GameApi.SingleModeFree.MultiItemExchange2)] = new(typeof(GameApi.SingleModeFree.MultiItemExchange2), "/umamusume/single_mode_free/multi_item_exchange_2", typeof(SingleModeFreeMultiItemExchange2Request), typeof(SingleModeFreeMultiItemExchange2Response)),
             [typeof(GameApi.SingleModeFree.MultiItemUse)] = new(typeof(GameApi.SingleModeFree.MultiItemUse), "/umamusume/single_mode_free/multi_item_use", typeof(SingleModeFreeMultiItemUseRequest), typeof(SingleModeFreeMultiItemUseResponse)),
             [typeof(GameApi.SingleModeFree.MultiRaceReserve)] = new(typeof(GameApi.SingleModeFree.MultiRaceReserve), "/umamusume/single_mode_free/multi_race_reserve", typeof(SingleModeFreeMultiRaceReserveRequest), typeof(SingleModeFreeMultiRaceReserveResponse)),
             [typeof(GameApi.SingleModeFree.RaceAnalyze)] = new(typeof(GameApi.SingleModeFree.RaceAnalyze), "/umamusume/single_mode_free/race_analyze", typeof(SingleModeFreeRaceAnalyzeRequest), typeof(SingleModeFreeRaceAnalyzeResponse)),
@@ -857,6 +895,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.SuccessionDeck.UpdateSuccessionDeckSet)] = new(typeof(GameApi.SuccessionDeck.UpdateSuccessionDeckSet), "/umamusume/succession_deck/update_succession_deck_set", typeof(UpdateSuccessionDeckSetRequest), typeof(UpdateSuccessionDeckSetResponse)),
             [typeof(GameApi.SupportCard.ChangeLock)] = new(typeof(GameApi.SupportCard.ChangeLock), "/umamusume/support_card/change_lock", typeof(SupportCardChangeLockRequest), typeof(SupportCardChangeLockResponse)),
             [typeof(GameApi.SupportCard.GetBySkill)] = new(typeof(GameApi.SupportCard.GetBySkill), "/umamusume/support_card/get_by_skill", typeof(SupportCardGetBySkillRequest), typeof(SupportCardGetBySkillResponse)),
+            [typeof(GameApi.SupportCard.GetExtendMasterInfo)] = new(typeof(GameApi.SupportCard.GetExtendMasterInfo), "/umamusume/support_card/get_extend_master_info", typeof(SupportCardGetExtendMasterInfoRequest), typeof(SupportCardGetExtendMasterInfoResponse)),
             [typeof(GameApi.SupportCard.GetSupportCardEventSkill)] = new(typeof(GameApi.SupportCard.GetSupportCardEventSkill), "/umamusume/support_card/get_support_card_event_skill", typeof(SupportCardGetSupportCardEventSkillRequest), typeof(SupportCardGetSupportCardEventSkillResponse)),
             [typeof(GameApi.SupportCard.LimitBreakItem)] = new(typeof(GameApi.SupportCard.LimitBreakItem), "/umamusume/support_card/limit_break_item", typeof(SupportCardLimitBreakItemRequest), typeof(SupportCardLimitBreakItemResponse)),
             [typeof(GameApi.SupportCard.Sell)] = new(typeof(GameApi.SupportCard.Sell), "/umamusume/support_card/sell", typeof(SupportCardSellRequest), typeof(SupportCardSellResponse)),
@@ -899,6 +938,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.Tool.PreSignup)] = new(typeof(GameApi.Tool.PreSignup), "/umamusume/tool/pre_signup", typeof(ToolPreSignupRequest), typeof(ToolPreSignupResponse)),
             [typeof(GameApi.Tool.SendLog)] = new(typeof(GameApi.Tool.SendLog), "/umamusume/tool/send_log", typeof(ToolSendLogRequest), typeof(ToolSendLogResponse)),
             [typeof(GameApi.Tool.Signup)] = new(typeof(GameApi.Tool.Signup), "/umamusume/tool/signup", typeof(ToolSignupRequest), typeof(ToolSignupResponse)),
+            [typeof(GameApi.Tool.StartSession)] = new(typeof(GameApi.Tool.StartSession), "/umamusume/tool/start_session", typeof(ToolStartSessionRequest), typeof(ToolStartSessionResponse)),
             [typeof(GameApi.Tool.UpdateForceDisplayStatus)] = new(typeof(GameApi.Tool.UpdateForceDisplayStatus), "/umamusume/tool/update_force_display_status", typeof(UpdateForceDisplayStatusRequest), typeof(UpdateForceDisplayStatusResponse)),
             [typeof(GameApi.TrainedChara.ChangeLockMulti)] = new(typeof(GameApi.TrainedChara.ChangeLockMulti), "/umamusume/trained_chara/change_lock_multi", typeof(TrainedCharaChangeLockMultiRequest), typeof(TrainedCharaChangeLockMultiResponse)),
             [typeof(GameApi.TrainedChara.ChangeMemo)] = new(typeof(GameApi.TrainedChara.ChangeMemo), "/umamusume/trained_chara/change_memo", typeof(TrainedCharaChangeMemoRequest), typeof(TrainedCharaChangeMemoResponse)),
@@ -911,6 +951,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.TrainedChara.Load)] = new(typeof(GameApi.TrainedChara.Load), "/umamusume/trained_chara/load", typeof(TrainedCharaLoadRequest), typeof(TrainedCharaLoadResponse)),
             [typeof(GameApi.TrainedChara.Remove)] = new(typeof(GameApi.TrainedChara.Remove), "/umamusume/trained_chara/remove", typeof(TrainedCharaRemoveRequest), typeof(TrainedCharaRemoveResponse)),
             [typeof(GameApi.TrainerSkill.Activate)] = new(typeof(GameApi.TrainerSkill.Activate), "/umamusume/trainer_skill/activate", typeof(TrainerSkillActivateRequest), typeof(TrainerSkillActivateResponse)),
+            [typeof(GameApi.TrainerSkill.ActivateV2)] = new(typeof(GameApi.TrainerSkill.ActivateV2), "/umamusume/trainer_skill/activate_v2", typeof(TrainerSkillActivateV2Request), typeof(TrainerSkillActivateV2Response)),
             [typeof(GameApi.TrainerSkill.Index)] = new(typeof(GameApi.TrainerSkill.Index), "/umamusume/trainer_skill/index", typeof(TrainerSkillIndexRequest), typeof(TrainerSkillIndexResponse)),
             [typeof(GameApi.TrainerSkill.SaveNotifyLastCheckTime)] = new(typeof(GameApi.TrainerSkill.SaveNotifyLastCheckTime), "/umamusume/trainer_skill/save_notify_last_check_time", typeof(TrainerSkillSaveNotifyLastCheckTimeRequest), typeof(TrainerSkillSaveNotifyLastCheckTimeResponse)),
             [typeof(GameApi.TrainerSkill.SaveShowRefundDialog)] = new(typeof(GameApi.TrainerSkill.SaveShowRefundDialog), "/umamusume/trainer_skill/save_show_refund_dialog", typeof(TrainerSkillSaveShowRefundDialogRequest), typeof(TrainerSkillSaveShowRefundDialogResponse)),
@@ -919,6 +960,7 @@ public static class GameEndpointCatalog
             [typeof(GameApi.TrainingChallenge.GetRanking)] = new(typeof(GameApi.TrainingChallenge.GetRanking), "/umamusume/training_challenge/get_ranking", typeof(TrainingChallengeGetRankingRequest), typeof(TrainingChallengeGetRankingResponse)),
             [typeof(GameApi.TrainingChallenge.Index)] = new(typeof(GameApi.TrainingChallenge.Index), "/umamusume/training_challenge/index", typeof(TrainingChallengeIndexRequest), typeof(TrainingChallengeIndexResponse)),
             [typeof(GameApi.TrainingReport.Index)] = new(typeof(GameApi.TrainingReport.Index), "/umamusume/training_report/index", typeof(TrainingReportIndexRequest), typeof(TrainingReportIndexResponse)),
+            [typeof(GameApi.TrainingReport.SavePurchaseDialogReadTime)] = new(typeof(GameApi.TrainingReport.SavePurchaseDialogReadTime), "/umamusume/training_report/save_purchase_dialog_read_time", typeof(TrainingReportSavePurchaseDialogReadTimeRequest), typeof(TrainingReportSavePurchaseDialogReadTimeResponse)),
             [typeof(GameApi.TrainingRoadmap.AddCharacter)] = new(typeof(GameApi.TrainingRoadmap.AddCharacter), "/umamusume/training_roadmap/add_character", typeof(TrainingRoadmapAddCharacterRequest), typeof(TrainingRoadmapAddCharacterResponse)),
             [typeof(GameApi.TrainingRoadmap.AddSuccessionCharacter)] = new(typeof(GameApi.TrainingRoadmap.AddSuccessionCharacter), "/umamusume/training_roadmap/add_succession_character", typeof(TrainingRoadmapAddSuccessionCharacterRequest), typeof(TrainingRoadmapAddSuccessionCharacterResponse)),
             [typeof(GameApi.TrainingRoadmap.Copy)] = new(typeof(GameApi.TrainingRoadmap.Copy), "/umamusume/training_roadmap/copy", typeof(TrainingRoadmapCopyRequest), typeof(TrainingRoadmapCopyResponse)),
@@ -1011,7 +1053,10 @@ public static class GameEndpointCatalog
             ["/umamusume/campaign_walking/index"] = ByEndpointType[typeof(GameApi.CampaignWalking.Index)],
             ["/umamusume/card/get_card_event_skill"] = ByEndpointType[typeof(GameApi.Card.GetCardEventSkill)],
             ["/umamusume/card/get_release_card_array"] = ByEndpointType[typeof(GameApi.Card.GetReleaseCardArray)],
+            ["/umamusume/card/rarity_upgrade"] = ByEndpointType[typeof(GameApi.Card.RarityUpgrade)],
             ["/umamusume/card/sell_piece"] = ByEndpointType[typeof(GameApi.Card.SellPiece)],
+            ["/umamusume/card/skill_upgrade"] = ByEndpointType[typeof(GameApi.Card.SkillUpgrade)],
+            ["/umamusume/card/talent_strengthen"] = ByEndpointType[typeof(GameApi.Card.TalentStrengthen)],
             ["/umamusume/card/unlock"] = ByEndpointType[typeof(GameApi.Card.Unlock)],
             ["/umamusume/challenge_match/challenge_race_open"] = ByEndpointType[typeof(GameApi.ChallengeMatch.ChallengeRaceOpen)],
             ["/umamusume/challenge_match/index"] = ByEndpointType[typeof(GameApi.ChallengeMatch.Index)],
@@ -1102,6 +1147,7 @@ public static class GameEndpointCatalog
             ["/umamusume/const_walking/check_result"] = ByEndpointType[typeof(GameApi.ConstWalking.CheckResult)],
             ["/umamusume/const_walking/go_walking"] = ByEndpointType[typeof(GameApi.ConstWalking.GoWalking)],
             ["/umamusume/const_walking/index"] = ByEndpointType[typeof(GameApi.ConstWalking.Index)],
+            ["/umamusume/cygames_id_external/apply_pending_product"] = ByEndpointType[typeof(GameApi.CygamesIdExternal.ApplyPendingProduct)],
             ["/umamusume/daily_legend_race/get_reward_list"] = ByEndpointType[typeof(GameApi.DailyLegendRace.GetRewardList)],
             ["/umamusume/daily_legend_race/index"] = ByEndpointType[typeof(GameApi.DailyLegendRace.Index)],
             ["/umamusume/daily_legend_race/race_entry"] = ByEndpointType[typeof(GameApi.DailyLegendRace.RaceEntry)],
@@ -1166,10 +1212,13 @@ public static class GameEndpointCatalog
             ["/umamusume/friend/un_follow_multi"] = ByEndpointType[typeof(GameApi.Friend.UnFollowMulti)],
             ["/umamusume/friend/un_follower"] = ByEndpointType[typeof(GameApi.Friend.UnFollower)],
             ["/umamusume/friend/un_follower_multi"] = ByEndpointType[typeof(GameApi.Friend.UnFollowerMulti)],
+            ["/umamusume/gacha/exec"] = ByEndpointType[typeof(GameApi.Gacha.Exec)],
             ["/umamusume/gacha/get_history"] = ByEndpointType[typeof(GameApi.Gacha.GetHistory)],
             ["/umamusume/gacha/get_prize_history"] = ByEndpointType[typeof(GameApi.Gacha.GetPrizeHistory)],
+            ["/umamusume/gacha/index"] = ByEndpointType[typeof(GameApi.Gacha.Index)],
             ["/umamusume/gacha/limit_convert"] = ByEndpointType[typeof(GameApi.Gacha.LimitConvert)],
             ["/umamusume/gacha/limit_exchange"] = ByEndpointType[typeof(GameApi.Gacha.LimitExchange)],
+            ["/umamusume/gacha/limit_exchange_Item"] = ByEndpointType[typeof(GameApi.Gacha.LimitExchangeItem)],
             ["/umamusume/gacha/limit_exchange_ticket"] = ByEndpointType[typeof(GameApi.Gacha.LimitExchangeTicket)],
             ["/umamusume/gacha/select_pickup"] = ByEndpointType[typeof(GameApi.Gacha.SelectPickup)],
             ["/umamusume/gacha/select_pickup_stampsheet"] = ByEndpointType[typeof(GameApi.Gacha.SelectPickupStampsheet)],
@@ -1203,6 +1252,19 @@ public static class GameEndpointCatalog
             ["/umamusume/heroes/get_ranking_border"] = ByEndpointType[typeof(GameApi.Heroes.GetRankingBorder)],
             ["/umamusume/heroes/get_ranking_chara_info"] = ByEndpointType[typeof(GameApi.Heroes.GetRankingCharaInfo)],
             ["/umamusume/heroes/index"] = ByEndpointType[typeof(GameApi.Heroes.Index)],
+            ["/umamusume/heroes/stage1_check_hero_skill"] = ByEndpointType[typeof(GameApi.Heroes.Stage1CheckHeroSkill)],
+            ["/umamusume/heroes/stage1_check_opponent_teams"] = ByEndpointType[typeof(GameApi.Heroes.Stage1CheckOpponentTeams)],
+            ["/umamusume/heroes/stage1_check_round"] = ByEndpointType[typeof(GameApi.Heroes.Stage1CheckRound)],
+            ["/umamusume/heroes/stage1_edit_team"] = ByEndpointType[typeof(GameApi.Heroes.Stage1EditTeam)],
+            ["/umamusume/heroes/stage1_edit_team_name"] = ByEndpointType[typeof(GameApi.Heroes.Stage1EditTeamName)],
+            ["/umamusume/heroes/stage1_finish_set"] = ByEndpointType[typeof(GameApi.Heroes.Stage1FinishSet)],
+            ["/umamusume/heroes/stage1_get_opponent_teams"] = ByEndpointType[typeof(GameApi.Heroes.Stage1GetOpponentTeams)],
+            ["/umamusume/heroes/stage1_grand_result"] = ByEndpointType[typeof(GameApi.Heroes.Stage1GrandResult)],
+            ["/umamusume/heroes/stage1_honor_select_chara"] = ByEndpointType[typeof(GameApi.Heroes.Stage1HonorSelectChara)],
+            ["/umamusume/heroes/stage1_honor_select_chara_list"] = ByEndpointType[typeof(GameApi.Heroes.Stage1HonorSelectCharaList)],
+            ["/umamusume/heroes/stage1_resume"] = ByEndpointType[typeof(GameApi.Heroes.Stage1Resume)],
+            ["/umamusume/heroes/stage1_set_option"] = ByEndpointType[typeof(GameApi.Heroes.Stage1SetOption)],
+            ["/umamusume/heroes/stage1_start_set"] = ByEndpointType[typeof(GameApi.Heroes.Stage1StartSet)],
             ["/umamusume/honor/change_honor"] = ByEndpointType[typeof(GameApi.Honor.ChangeHonor)],
             ["/umamusume/honor/index"] = ByEndpointType[typeof(GameApi.Honor.Index)],
             ["/umamusume/idle_single_mode/check_progress_log"] = ByEndpointType[typeof(GameApi.IdleSingleMode.CheckProgressLog)],
@@ -1214,9 +1276,14 @@ public static class GameEndpointCatalog
             ["/umamusume/idle_single_mode/status"] = ByEndpointType[typeof(GameApi.IdleSingleMode.Status)],
             ["/umamusume/item/check_aniv_shop"] = ByEndpointType[typeof(GameApi.Item.CheckAnivShop)],
             ["/umamusume/item/check_special_money_shop"] = ByEndpointType[typeof(GameApi.Item.CheckSpecialMoneyShop)],
+            ["/umamusume/item/check_support_card_shop"] = ByEndpointType[typeof(GameApi.Item.CheckSupportCardShop)],
+            ["/umamusume/item/exchange"] = ByEndpointType[typeof(GameApi.Item.Exchange)],
+            ["/umamusume/item/exchangeAddFrame"] = ByEndpointType[typeof(GameApi.Item.ExchangeAddFrame)],
             ["/umamusume/item/exchange_multi"] = ByEndpointType[typeof(GameApi.Item.ExchangeMulti)],
+            ["/umamusume/item/exchange_multi_resource"] = ByEndpointType[typeof(GameApi.Item.ExchangeMultiResource)],
             ["/umamusume/item/exchange_start_dash"] = ByEndpointType[typeof(GameApi.Item.ExchangeStartDash)],
             ["/umamusume/item/sell"] = ByEndpointType[typeof(GameApi.Item.Sell)],
+            ["/umamusume/item/show_exchange"] = ByEndpointType[typeof(GameApi.Item.ShowExchange)],
             ["/umamusume/item/use_recovery_item"] = ByEndpointType[typeof(GameApi.Item.UseRecoveryItem)],
             ["/umamusume/jobs/abort"] = ByEndpointType[typeof(GameApi.Jobs.Abort)],
             ["/umamusume/jobs/check_complete"] = ByEndpointType[typeof(GameApi.Jobs.CheckComplete)],
@@ -1225,6 +1292,7 @@ public static class GameEndpointCatalog
             ["/umamusume/jukebox/change_play_music"] = ByEndpointType[typeof(GameApi.Jukebox.ChangePlayMusic)],
             ["/umamusume/jukebox/change_random_request"] = ByEndpointType[typeof(GameApi.Jukebox.ChangeRandomRequest)],
             ["/umamusume/jukebox/change_user_request"] = ByEndpointType[typeof(GameApi.Jukebox.ChangeUserRequest)],
+            ["/umamusume/jukebox/draw_random_request"] = ByEndpointType[typeof(GameApi.Jukebox.DrawRandomRequest)],
             ["/umamusume/jukebox/exec_like"] = ByEndpointType[typeof(GameApi.Jukebox.ExecLike)],
             ["/umamusume/jukebox/history"] = ByEndpointType[typeof(GameApi.Jukebox.History)],
             ["/umamusume/jukebox/index"] = ByEndpointType[typeof(GameApi.Jukebox.Index)],
@@ -1244,6 +1312,7 @@ public static class GameEndpointCatalog
             ["/umamusume/live_theater/live_start"] = ByEndpointType[typeof(GameApi.LiveTheater.LiveStart)],
             ["/umamusume/live_theater_performers_preset/index"] = ByEndpointType[typeof(GameApi.LiveTheaterPerformersPreset.Index)],
             ["/umamusume/live_theater_performers_preset/update"] = ByEndpointType[typeof(GameApi.LiveTheaterPerformersPreset.Update)],
+            ["/umamusume/load/index"] = ByEndpointType[typeof(GameApi.Load.Index)],
             ["/umamusume/main_story/first_clear"] = ByEndpointType[typeof(GameApi.MainStory.FirstClear)],
             ["/umamusume/main_story_race/get_entry_list"] = ByEndpointType[typeof(GameApi.MainStoryRace.GetEntryList)],
             ["/umamusume/main_story_race/get_race_table"] = ByEndpointType[typeof(GameApi.MainStoryRace.GetRaceTable)],
@@ -1254,6 +1323,8 @@ public static class GameEndpointCatalog
             ["/umamusume/map_event/index"] = ByEndpointType[typeof(GameApi.MapEvent.Index)],
             ["/umamusume/map_event/movie_trailer_dialog_read"] = ByEndpointType[typeof(GameApi.MapEvent.MovieTrailerDialogRead)],
             ["/umamusume/map_event/point_exec"] = ByEndpointType[typeof(GameApi.MapEvent.PointExec)],
+            ["/umamusume/mission/index"] = ByEndpointType[typeof(GameApi.Mission.Index)],
+            ["/umamusume/mission/receive"] = ByEndpointType[typeof(GameApi.Mission.Receive)],
             ["/umamusume/note/get_directory_card"] = ByEndpointType[typeof(GameApi.Note.GetDirectoryCard)],
             ["/umamusume/note/get_new_chara_data"] = ByEndpointType[typeof(GameApi.Note.GetNewCharaData)],
             ["/umamusume/note/get_nickname_data"] = ByEndpointType[typeof(GameApi.Note.GetNicknameData)],
@@ -1261,11 +1332,14 @@ public static class GameEndpointCatalog
             ["/umamusume/note/index"] = ByEndpointType[typeof(GameApi.Note.Index)],
             ["/umamusume/note/save_chara_data"] = ByEndpointType[typeof(GameApi.Note.SaveCharaData)],
             ["/umamusume/note/save_note_data"] = ByEndpointType[typeof(GameApi.Note.SaveNoteData)],
+            ["/umamusume/note/save_voice"] = ByEndpointType[typeof(GameApi.Note.SaveVoice)],
             ["/umamusume/note/trainer_note"] = ByEndpointType[typeof(GameApi.Note.TrainerNote)],
             ["/umamusume/note/use_gallery_key"] = ByEndpointType[typeof(GameApi.Note.UseGalleryKey)],
             ["/umamusume/option/change_option"] = ByEndpointType[typeof(GameApi.Option.ChangeOption)],
             ["/umamusume/payment/cancel"] = ByEndpointType[typeof(GameApi.Payment.Cancel)],
+            ["/umamusume/payment/finish"] = ByEndpointType[typeof(GameApi.Payment.Finish)],
             ["/umamusume/payment/get_coin_break_down_info"] = ByEndpointType[typeof(GameApi.Payment.GetCoinBreakDownInfo)],
+            ["/umamusume/payment/item_list"] = ByEndpointType[typeof(GameApi.Payment.ItemList)],
             ["/umamusume/payment/send_log"] = ByEndpointType[typeof(GameApi.Payment.SendLog)],
             ["/umamusume/payment/start"] = ByEndpointType[typeof(GameApi.Payment.Start)],
             ["/umamusume/payment/steam_micro_txn_init"] = ByEndpointType[typeof(GameApi.Payment.SteamMicroTxnInit)],
@@ -1300,13 +1374,18 @@ public static class GameEndpointCatalog
             ["/umamusume/pre_single_mode/get_succession_trained_chara"] = ByEndpointType[typeof(GameApi.PreSingleMode.GetSuccessionTrainedChara)],
             ["/umamusume/pre_single_mode/index"] = ByEndpointType[typeof(GameApi.PreSingleMode.Index)],
             ["/umamusume/present/history"] = ByEndpointType[typeof(GameApi.Present.History)],
+            ["/umamusume/present/index"] = ByEndpointType[typeof(GameApi.Present.Index)],
             ["/umamusume/present/receive"] = ByEndpointType[typeof(GameApi.Present.Receive)],
+            ["/umamusume/present/receive_all"] = ByEndpointType[typeof(GameApi.Present.ReceiveAll)],
             ["/umamusume/race_fit_assistance/determine_target_race"] = ByEndpointType[typeof(GameApi.RaceFitAssistance.DetermineTargetRace)],
             ["/umamusume/race_fit_assistance/fetch"] = ByEndpointType[typeof(GameApi.RaceFitAssistance.Fetch)],
             ["/umamusume/race_fit_assistance/users_with_recommended_support_card"] = ByEndpointType[typeof(GameApi.RaceFitAssistance.UsersWithRecommendedSupportCard)],
             ["/umamusume/raffle/activate"] = ByEndpointType[typeof(GameApi.Raffle.Activate)],
             ["/umamusume/raffle/index"] = ByEndpointType[typeof(GameApi.Raffle.Index)],
+            ["/umamusume/read_info/announce"] = ByEndpointType[typeof(GameApi.ReadInfo.Announce)],
             ["/umamusume/read_info/index"] = ByEndpointType[typeof(GameApi.ReadInfo.Index)],
+            ["/umamusume/read_info/notify_product"] = ByEndpointType[typeof(GameApi.ReadInfo.NotifyProduct)],
+            ["/umamusume/read_info/umaplan_bonus_received_dialog"] = ByEndpointType[typeof(GameApi.ReadInfo.UmaplanBonusReceivedDialog)],
             ["/umamusume/room_match/change_allow_display"] = ByEndpointType[typeof(GameApi.RoomMatch.ChangeAllowDisplay)],
             ["/umamusume/room_match/change_lock_race_result"] = ByEndpointType[typeof(GameApi.RoomMatch.ChangeLockRaceResult)],
             ["/umamusume/room_match/change_preset_name"] = ByEndpointType[typeof(GameApi.RoomMatch.ChangePresetName)],
@@ -1513,6 +1592,7 @@ public static class GameEndpointCatalog
             ["/umamusume/single_mode_free/get_choice_reward"] = ByEndpointType[typeof(GameApi.SingleModeFree.GetChoiceReward)],
             ["/umamusume/single_mode_free/load"] = ByEndpointType[typeof(GameApi.SingleModeFree.Load)],
             ["/umamusume/single_mode_free/multi_item_exchange"] = ByEndpointType[typeof(GameApi.SingleModeFree.MultiItemExchange)],
+            ["/umamusume/single_mode_free/multi_item_exchange_2"] = ByEndpointType[typeof(GameApi.SingleModeFree.MultiItemExchange2)],
             ["/umamusume/single_mode_free/multi_item_use"] = ByEndpointType[typeof(GameApi.SingleModeFree.MultiItemUse)],
             ["/umamusume/single_mode_free/multi_race_reserve"] = ByEndpointType[typeof(GameApi.SingleModeFree.MultiRaceReserve)],
             ["/umamusume/single_mode_free/race_analyze"] = ByEndpointType[typeof(GameApi.SingleModeFree.RaceAnalyze)],
@@ -1820,6 +1900,7 @@ public static class GameEndpointCatalog
             ["/umamusume/succession_deck/update_succession_deck_set"] = ByEndpointType[typeof(GameApi.SuccessionDeck.UpdateSuccessionDeckSet)],
             ["/umamusume/support_card/change_lock"] = ByEndpointType[typeof(GameApi.SupportCard.ChangeLock)],
             ["/umamusume/support_card/get_by_skill"] = ByEndpointType[typeof(GameApi.SupportCard.GetBySkill)],
+            ["/umamusume/support_card/get_extend_master_info"] = ByEndpointType[typeof(GameApi.SupportCard.GetExtendMasterInfo)],
             ["/umamusume/support_card/get_support_card_event_skill"] = ByEndpointType[typeof(GameApi.SupportCard.GetSupportCardEventSkill)],
             ["/umamusume/support_card/limit_break_item"] = ByEndpointType[typeof(GameApi.SupportCard.LimitBreakItem)],
             ["/umamusume/support_card/sell"] = ByEndpointType[typeof(GameApi.SupportCard.Sell)],
@@ -1862,6 +1943,7 @@ public static class GameEndpointCatalog
             ["/umamusume/tool/pre_signup"] = ByEndpointType[typeof(GameApi.Tool.PreSignup)],
             ["/umamusume/tool/send_log"] = ByEndpointType[typeof(GameApi.Tool.SendLog)],
             ["/umamusume/tool/signup"] = ByEndpointType[typeof(GameApi.Tool.Signup)],
+            ["/umamusume/tool/start_session"] = ByEndpointType[typeof(GameApi.Tool.StartSession)],
             ["/umamusume/tool/update_force_display_status"] = ByEndpointType[typeof(GameApi.Tool.UpdateForceDisplayStatus)],
             ["/umamusume/trained_chara/change_lock_multi"] = ByEndpointType[typeof(GameApi.TrainedChara.ChangeLockMulti)],
             ["/umamusume/trained_chara/change_memo"] = ByEndpointType[typeof(GameApi.TrainedChara.ChangeMemo)],
@@ -1874,6 +1956,7 @@ public static class GameEndpointCatalog
             ["/umamusume/trained_chara/load"] = ByEndpointType[typeof(GameApi.TrainedChara.Load)],
             ["/umamusume/trained_chara/remove"] = ByEndpointType[typeof(GameApi.TrainedChara.Remove)],
             ["/umamusume/trainer_skill/activate"] = ByEndpointType[typeof(GameApi.TrainerSkill.Activate)],
+            ["/umamusume/trainer_skill/activate_v2"] = ByEndpointType[typeof(GameApi.TrainerSkill.ActivateV2)],
             ["/umamusume/trainer_skill/index"] = ByEndpointType[typeof(GameApi.TrainerSkill.Index)],
             ["/umamusume/trainer_skill/save_notify_last_check_time"] = ByEndpointType[typeof(GameApi.TrainerSkill.SaveNotifyLastCheckTime)],
             ["/umamusume/trainer_skill/save_show_refund_dialog"] = ByEndpointType[typeof(GameApi.TrainerSkill.SaveShowRefundDialog)],
@@ -1882,6 +1965,7 @@ public static class GameEndpointCatalog
             ["/umamusume/training_challenge/get_ranking"] = ByEndpointType[typeof(GameApi.TrainingChallenge.GetRanking)],
             ["/umamusume/training_challenge/index"] = ByEndpointType[typeof(GameApi.TrainingChallenge.Index)],
             ["/umamusume/training_report/index"] = ByEndpointType[typeof(GameApi.TrainingReport.Index)],
+            ["/umamusume/training_report/save_purchase_dialog_read_time"] = ByEndpointType[typeof(GameApi.TrainingReport.SavePurchaseDialogReadTime)],
             ["/umamusume/training_roadmap/add_character"] = ByEndpointType[typeof(GameApi.TrainingRoadmap.AddCharacter)],
             ["/umamusume/training_roadmap/add_succession_character"] = ByEndpointType[typeof(GameApi.TrainingRoadmap.AddSuccessionCharacter)],
             ["/umamusume/training_roadmap/copy"] = ByEndpointType[typeof(GameApi.TrainingRoadmap.Copy)],
@@ -2025,7 +2109,16 @@ public static partial class GameApi
         public sealed class GetReleaseCardArray : IGameEndpoint<CardGetReleaseCardRequest, CardGetReleaseCardResponse>
         {
         }
+        public sealed class RarityUpgrade : IGameEndpoint<CardRarityUpgradeRequest, CardRarityUpgradeResponse>
+        {
+        }
         public sealed class SellPiece : IGameEndpoint<CardSellPieceRequest, CardSellPieceResponse>
+        {
+        }
+        public sealed class SkillUpgrade : IGameEndpoint<CardSkillUpgradeRequest, CardSkillUpgradeResponse>
+        {
+        }
+        public sealed class TalentStrengthen : IGameEndpoint<CardTalentStrengthenRequest, CardTalentStrengthenResponse>
         {
         }
         public sealed class Unlock : IGameEndpoint<CardUnlockRequest, CardUnlockResponse>
@@ -2332,6 +2425,12 @@ public static partial class GameApi
         {
         }
     }
+    public static partial class CygamesIdExternal
+    {
+        public sealed class ApplyPendingProduct : IGameEndpoint<CygamesIdExternalApplyPendingProductRequest, CygamesIdExternalApplyPendingProductResponse>
+        {
+        }
+    }
     public static partial class DailyLegendRace
     {
         public sealed class GetRewardList : IGameEndpoint<DailyLegendRaceGetRewardListRequest, DailyLegendRaceGetRewardListResponse>
@@ -2550,16 +2649,25 @@ public static partial class GameApi
     }
     public static partial class Gacha
     {
+        public sealed class Exec : IGameEndpoint<GachaExecRequest, GachaExecResponse>
+        {
+        }
         public sealed class GetHistory : IGameEndpoint<GachaGetHistoryRequest, GachaGetHistoryResponse>
         {
         }
         public sealed class GetPrizeHistory : IGameEndpoint<GachaGetPrizeHistoryRequest, GachaGetPrizeHistoryResponse>
         {
         }
+        public sealed class Index : IGameEndpoint<GachaLoadRequest, GachaLoadResponse>
+        {
+        }
         public sealed class LimitConvert : IGameEndpoint<GachaLimitConvertRequest, GachaLimitConvertResponse>
         {
         }
         public sealed class LimitExchange : IGameEndpoint<GachaLimitExchangeRequest, GachaLimitExchangeResponse>
+        {
+        }
+        public sealed class LimitExchangeItem : IGameEndpoint<GachaLimitExchangeItemRequest, GachaLimitExchangeItemResponse>
         {
         }
         public sealed class LimitExchangeTicket : IGameEndpoint<GachaLimitExchangeTicketRequest, GachaLimitExchangeTicketResponse>
@@ -2670,6 +2778,45 @@ public static partial class GameApi
         public sealed class Index : IGameEndpoint<HeroesIndexRequest, HeroesIndexResponse>
         {
         }
+        public sealed class Stage1CheckHeroSkill : IGameEndpoint<HeroesStage1CheckHeroSkillRequest, HeroesStage1CheckHeroSkillResponse>
+        {
+        }
+        public sealed class Stage1CheckOpponentTeams : IGameEndpoint<HeroesStage1CheckOpponentTeamsRequest, HeroesStage1CheckOpponentTeamsResponse>
+        {
+        }
+        public sealed class Stage1CheckRound : IGameEndpoint<HeroesStage1CheckRoundRequest, HeroesStage1CheckRoundResponse>
+        {
+        }
+        public sealed class Stage1EditTeam : IGameEndpoint<HeroesStage1EditTeamRequest, HeroesStage1EditTeamResponse>
+        {
+        }
+        public sealed class Stage1EditTeamName : IGameEndpoint<HeroesStage1EditTeamNameRequest, HeroesStage1EditTeamNameResponse>
+        {
+        }
+        public sealed class Stage1FinishSet : IGameEndpoint<HeroesStage1FinishSetRequest, HeroesStage1FinishSetResponse>
+        {
+        }
+        public sealed class Stage1GetOpponentTeams : IGameEndpoint<HeroesStage1GetOpponentTeamsRequest, HeroesStage1GetOpponentTeamsResponse>
+        {
+        }
+        public sealed class Stage1GrandResult : IGameEndpoint<HeroesStage1GrandResultRequest, HeroesStage1GrandResultResponse>
+        {
+        }
+        public sealed class Stage1HonorSelectChara : IGameEndpoint<HeroesStage1HonorSelectCharaRequest, HeroesStage1HonorSelectCharaResponse>
+        {
+        }
+        public sealed class Stage1HonorSelectCharaList : IGameEndpoint<HeroesStage1HonorSelectCharaListRequest, HeroesStage1HonorSelectCharaListResponse>
+        {
+        }
+        public sealed class Stage1Resume : IGameEndpoint<HeroesStage1ResumeRequest, HeroesStage1ResumeResponse>
+        {
+        }
+        public sealed class Stage1SetOption : IGameEndpoint<HeroesStage1SetOptionRequest, HeroesStage1SetOptionResponse>
+        {
+        }
+        public sealed class Stage1StartSet : IGameEndpoint<HeroesStage1StartSetRequest, HeroesStage1StartSetResponse>
+        {
+        }
     }
     public static partial class Honor
     {
@@ -2712,13 +2859,28 @@ public static partial class GameApi
         public sealed class CheckSpecialMoneyShop : IGameEndpoint<ItemCheckSpecialMoneyShopRequest, ItemCheckSpecialMoneyShopResponse>
         {
         }
+        public sealed class CheckSupportCardShop : IGameEndpoint<ItemCheckSupportCardShopRequest, ItemCheckSupportCardShopResponse>
+        {
+        }
+        public sealed class Exchange : IGameEndpoint<ItemExchangeRequest, ItemExchangeResponse>
+        {
+        }
+        public sealed class ExchangeAddFrame : IGameEndpoint<ItemExchangeAddFrameRequest, ItemExchangeAddFrameResponse>
+        {
+        }
         public sealed class ExchangeMulti : IGameEndpoint<ItemExchangeMultiRequest, ItemExchangeMultiResponse>
+        {
+        }
+        public sealed class ExchangeMultiResource : IGameEndpoint<ItemExchangeMultiResourceRequest, ItemExchangeMultiResourceResponse>
         {
         }
         public sealed class ExchangeStartDash : IGameEndpoint<ItemExchangeStartDashRequest, ItemExchangeStartDashResponse>
         {
         }
         public sealed class Sell : IGameEndpoint<ItemSellRequest, ItemSellResponse>
+        {
+        }
+        public sealed class ShowExchange : IGameEndpoint<ItemShowExchangeRequest, ItemShowExchangeResponse>
         {
         }
         public sealed class UseRecoveryItem : IGameEndpoint<ItemUseRecoveryItemRequest, ItemUseRecoveryItemResponse>
@@ -2749,6 +2911,9 @@ public static partial class GameApi
         {
         }
         public sealed class ChangeUserRequest : IGameEndpoint<JukeboxChangeUserRequestRequest, JukeboxChangeUserRequestResponse>
+        {
+        }
+        public sealed class DrawRandomRequest : IGameEndpoint<JukeboxDrawRandomRequestRequest, JukeboxDrawRandomRequestResponse>
         {
         }
         public sealed class ExecLike : IGameEndpoint<JukeboxExecLikeRequest, JukeboxExecLikeResponse>
@@ -2824,6 +2989,12 @@ public static partial class GameApi
         {
         }
     }
+    public static partial class Load
+    {
+        public sealed class Index : IGameEndpoint<LoginRequest, LoginResponse>
+        {
+        }
+    }
     public static partial class MainStory
     {
         public sealed class FirstClear : IGameEndpoint<MainStoryFirstClearRequest, MainStoryFirstClearResponse>
@@ -2863,6 +3034,15 @@ public static partial class GameApi
         {
         }
     }
+    public static partial class Mission
+    {
+        public sealed class Index : IGameEndpoint<MissionLoadRequest, MissionLoadResponse>
+        {
+        }
+        public sealed class Receive : IGameEndpoint<MissionReceiveRequest, MissionReceiveResponse>
+        {
+        }
+    }
     public static partial class Note
     {
         public sealed class GetDirectoryCard : IGameEndpoint<NoteGetDirectoryCardRequest, NoteGetDirectoryCardResponse>
@@ -2886,6 +3066,9 @@ public static partial class GameApi
         public sealed class SaveNoteData : IGameEndpoint<NoteSaveNoteDataRequest, NoteSaveNoteDataResponse>
         {
         }
+        public sealed class SaveVoice : IGameEndpoint<NoteSaveVoiceRequest, NoteSaveVoiceResponse>
+        {
+        }
         public sealed class TrainerNote : IGameEndpoint<NoteTrainerNoteRequest, NoteTrainerNoteResponse>
         {
         }
@@ -2904,7 +3087,13 @@ public static partial class GameApi
         public sealed class Cancel : IGameEndpoint<PaymentCancelRequest, PaymentCancelResponse>
         {
         }
+        public sealed class Finish : IGameEndpoint<PaymentFinishRequest, PaymentFinishResponse>
+        {
+        }
         public sealed class GetCoinBreakDownInfo : IGameEndpoint<PaymentGetCoinBreakDownInfoRequest, PaymentGetCoinBreakDownInfoResponse>
+        {
+        }
+        public sealed class ItemList : IGameEndpoint<PaymentItemListRequest, PaymentItemListResponse>
         {
         }
         public sealed class SendLog : IGameEndpoint<PaymentSendLogRequest, PaymentSendLogResponse>
@@ -3027,7 +3216,13 @@ public static partial class GameApi
         public sealed class History : IGameEndpoint<PresentHistoryRequest, PresentHistoryResponse>
         {
         }
+        public sealed class Index : IGameEndpoint<PresentIndexRequest, PresentIndexResponse>
+        {
+        }
         public sealed class Receive : IGameEndpoint<PresentReceiveRequest, PresentReceiveResponse>
+        {
+        }
+        public sealed class ReceiveAll : IGameEndpoint<PresentReceiveAllRequest, PresentReceiveAllResponse>
         {
         }
     }
@@ -3054,7 +3249,16 @@ public static partial class GameApi
     }
     public static partial class ReadInfo
     {
+        public sealed class Announce : IGameEndpoint<ReadInfoAnnounceRequest, ReadInfoAnnounceResponse>
+        {
+        }
         public sealed class Index : IGameEndpoint<ReadInfoRequest, ReadInfoResponse>
+        {
+        }
+        public sealed class NotifyProduct : IGameEndpoint<ReadInfoNotifyProductRequest, ReadInfoNotifyProductResponse>
+        {
+        }
+        public sealed class UmaplanBonusReceivedDialog : IGameEndpoint<ReadInfoUmaplanBonusReceivedDialogRequest, ReadInfoUmaplanBonusReceivedDialogResponse>
         {
         }
     }
@@ -3700,6 +3904,9 @@ public static partial class GameApi
         {
         }
         public sealed class MultiItemExchange : IGameEndpoint<SingleModeFreeMultiItemExchangeRequest, SingleModeFreeMultiItemExchangeResponse>
+        {
+        }
+        public sealed class MultiItemExchange2 : IGameEndpoint<SingleModeFreeMultiItemExchange2Request, SingleModeFreeMultiItemExchange2Response>
         {
         }
         public sealed class MultiItemUse : IGameEndpoint<SingleModeFreeMultiItemUseRequest, SingleModeFreeMultiItemUseResponse>
@@ -4662,6 +4869,9 @@ public static partial class GameApi
         public sealed class GetBySkill : IGameEndpoint<SupportCardGetBySkillRequest, SupportCardGetBySkillResponse>
         {
         }
+        public sealed class GetExtendMasterInfo : IGameEndpoint<SupportCardGetExtendMasterInfoRequest, SupportCardGetExtendMasterInfoResponse>
+        {
+        }
         public sealed class GetSupportCardEventSkill : IGameEndpoint<SupportCardGetSupportCardEventSkillRequest, SupportCardGetSupportCardEventSkillResponse>
         {
         }
@@ -4812,6 +5022,9 @@ public static partial class GameApi
         public sealed class Signup : IGameEndpoint<ToolSignupRequest, ToolSignupResponse>
         {
         }
+        public sealed class StartSession : IGameEndpoint<ToolStartSessionRequest, ToolStartSessionResponse>
+        {
+        }
         public sealed class UpdateForceDisplayStatus : IGameEndpoint<UpdateForceDisplayStatusRequest, UpdateForceDisplayStatusResponse>
         {
         }
@@ -4854,6 +5067,9 @@ public static partial class GameApi
         public sealed class Activate : IGameEndpoint<TrainerSkillActivateRequest, TrainerSkillActivateResponse>
         {
         }
+        public sealed class ActivateV2 : IGameEndpoint<TrainerSkillActivateV2Request, TrainerSkillActivateV2Response>
+        {
+        }
         public sealed class Index : IGameEndpoint<TrainerSkillIndexRequest, TrainerSkillIndexResponse>
         {
         }
@@ -4882,6 +5098,9 @@ public static partial class GameApi
     public static partial class TrainingReport
     {
         public sealed class Index : IGameEndpoint<TrainingReportIndexRequest, TrainingReportIndexResponse>
+        {
+        }
+        public sealed class SavePurchaseDialogReadTime : IGameEndpoint<TrainingReportSavePurchaseDialogReadTimeRequest, TrainingReportSavePurchaseDialogReadTimeResponse>
         {
         }
     }

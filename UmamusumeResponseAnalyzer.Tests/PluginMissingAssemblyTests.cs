@@ -59,6 +59,10 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         var report = Assert.Single(diagnostics, line => line.Severity == UiSeverity.Error);
         Assert.Contains("Faulty", report.Text);
         Assert.Contains("AbsentLibrary", report.ExceptionDetails);
+        var failure = Assert.Single(PluginManager.SnapshotFailures());
+        Assert.Equal(phase == "initialize" ? PluginFailureStage.Initialize : PluginFailureStage.Load, failure.Stage);
+        Assert.True(failure.DisablesPlugin);
+        Assert.Contains("AbsentLibrary", failure.Error.ToString());
         Assert.Single(PluginManager.Contexts);
         if (phase == "initialize")
             Assert.Equal("disposed", File.ReadAllText("Faulty.disposed"));
@@ -80,7 +84,13 @@ public sealed class PluginMissingAssemblyTests : IDisposable
         var context = Assert.Single(PluginManager.Contexts).Value;
         PluginManager.InitializeLoadedPlugins();
         if (phase == "started")
+        {
             await PluginManager.TriggerStartedAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            var failure = Assert.Single(PluginManager.SnapshotFailures());
+            Assert.Equal(PluginFailureStage.Start, failure.Stage);
+            Assert.True(failure.DisablesPlugin);
+            Assert.DoesNotContain(PluginManager.SnapshotActivePluginMetadatas(), metadata => metadata.PluginName == "Faulty");
+        }
         if (phase == "config")
             await PluginConfigPrompt.RunAsync(PluginManager.FindLoadedPlugin("Faulty")!).WaitAsync(TimeSpan.FromSeconds(5));
         if (phase == "hotkey")
@@ -278,6 +288,10 @@ public sealed class PluginMissingAssemblyTests : IDisposable
 
                     await PluginConfigPrompt.RunAsync(faulty).WaitAsync(TimeSpan.FromSeconds(5));
                     Assert.True(PluginManager.IsPluginFaulted(faulty));
+                    var failure = Assert.Single(PluginManager.SnapshotFailures());
+                    Assert.Equal("Faulty", failure.PluginName);
+                    Assert.True(failure.DisablesPlugin);
+                    Assert.Contains("AbsentLibrary", failure.Error.ToString());
                     Assert.False(Signal("BackgroundCancelled").Task.IsCompleted);
                     Assert.False(File.Exists("Faulty.disposed"));
                 }

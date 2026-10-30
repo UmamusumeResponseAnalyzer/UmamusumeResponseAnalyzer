@@ -37,7 +37,11 @@ internal static partial class PluginManager
         return true;
     }
 
-    internal static bool TryDisableForMissingAssembly(IPlugin plugin, Exception error, string phase)
+    internal static bool TryDisableForMissingAssembly(
+        IPlugin plugin,
+        Exception error,
+        string phase,
+        PluginFailureStage stage = PluginFailureStage.Runtime)
     {
         if (FindMissingPluginAssembly(error) is not { } missing)
             return false;
@@ -49,6 +53,10 @@ internal static partial class PluginManager
         if (!lifecycle.TryMarkFaulted(failure))
             return true;
 
+        var name = InternalName(plugin);
+        RecordPluginFailure(
+            Metadatas.GetValueOrDefault(name)?.PackagePath ?? name,
+            name, stage, error);
         _ = lifecycle.Close();
         ReportPluginFailure("Plugin", new InvalidOperationException(failure), error.ToString());
 
@@ -63,7 +71,6 @@ internal static partial class PluginManager
                 if (lifecycle.CleanupTask is not null)
                     return;
 
-                var name = InternalName(plugin);
                 var failedPackage = Runtime.Metadatas.TryGetValue(name, out var metadata)
                     ? metadata.PackagePath
                     : name;

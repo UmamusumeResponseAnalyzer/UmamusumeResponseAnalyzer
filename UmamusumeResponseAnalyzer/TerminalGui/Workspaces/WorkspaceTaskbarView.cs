@@ -45,9 +45,6 @@ internal sealed class WorkspaceTaskbarView : View
     Workspace? laidOutHoveredWorkspace;
     int laidOutViewportWidth;
     bool titleLayoutValid;
-    bool bottomEdgeActivationSuppressed;
-    // True while the pointer is over the bar and the bar has not moved since it entered.
-    bool pointerOverBar;
     Shortcut? pressedItem;
     int pressScreenX;
     int insertionIndex;
@@ -82,15 +79,13 @@ internal sealed class WorkspaceTaskbarView : View
             Height = 1,
             CanFocus = false,
             TabStop = TabBehavior.NoStop,
-            ViewportSettings = ViewportSettingsFlags.Transparent
+            ViewportSettings = ViewportSettingsFlags.Transparent | ViewportSettingsFlags.TransparentMouse
         };
         bottomEdgeTrigger.MouseBindings.Clear();
-        // One raised row with no box, one cell of padding per side. It sits just above the bottom
-        // trigger row, where the items always were, so moving down onto the trigger still dismisses it.
         popup = new View
         {
             X = Pos.Center(),
-            Y = Pos.AnchorEnd(2),
+            Y = Pos.AnchorEnd(),
             Width = Dim.Auto(DimAutoStyle.Content, maximumContentDim: Dim.Fill(2)),
             Height = 1,
             CanFocus = false,
@@ -100,10 +95,6 @@ internal sealed class WorkspaceTaskbarView : View
         popup.Padding.Thickness = new Thickness(1, 0, 1, 0);
         popup.SetScheme(PopupScheme);
 
-        bottomEdgeTrigger.MouseEnter += BottomEdgeTriggerMouseEnter;
-        bottomEdgeTrigger.MouseLeave += BottomEdgeTriggerMouseLeave;
-        popup.MouseEnter += PopupMouseEnter;
-        popup.MouseLeave += PopupMouseLeave;
         Add(popup);
     }
 
@@ -139,17 +130,13 @@ internal sealed class WorkspaceTaskbarView : View
 
     internal void HandleMousePosition(Mouse mouse)
     {
-        if (!mouse.Flags.HasFlag(MouseFlags.PositionReport))
+        if (!mouse.Flags.HasFlag(MouseFlags.PositionReport) || pressedItem is not null)
             return;
 
-        if (!bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
-        {
-            bottomEdgeActivationSuppressed = false;
-            return;
-        }
-
-        if (!bottomEdgeActivationSuppressed)
+        if (bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
             Show();
+        else
+            Hide();
     }
 
     protected override void Dispose(bool disposing)
@@ -157,10 +144,6 @@ internal sealed class WorkspaceTaskbarView : View
         if (disposing)
         {
             CancelInteraction(relayout: false);
-            bottomEdgeTrigger.MouseEnter -= BottomEdgeTriggerMouseEnter;
-            bottomEdgeTrigger.MouseLeave -= BottomEdgeTriggerMouseLeave;
-            popup.MouseEnter -= PopupMouseEnter;
-            popup.MouseLeave -= PopupMouseLeave;
             foreach (var (item, _) in items)
                 DetachItem(item);
             items.Clear();
@@ -171,37 +154,10 @@ internal sealed class WorkspaceTaskbarView : View
     protected override void OnViewportChanged(DrawEventArgs e)
     {
         base.OnViewportChanged(e);
-        // The bar moves with the viewport, so a later leave is not the pointer moving off it.
-        pointerOverBar = false;
         CancelInteraction(relayout: false);
         RefreshTitleMeasurements();
         titleLayoutValid = false;
         ApplyTitleLayout();
-    }
-
-    void BottomEdgeTriggerMouseEnter(object? sender, CancelEventArgs e)
-    {
-        if (!bottomEdgeActivationSuppressed)
-            Show();
-    }
-
-    void BottomEdgeTriggerMouseLeave(object? sender, EventArgs e)
-    {
-        if (App?.Mouse.LastMousePosition is { } currentPosition &&
-            FrameToScreen().Contains(currentPosition))
-        {
-            bottomEdgeActivationSuppressed = false;
-        }
-
-        if (pressedItem is not null ||
-            popup.Visible &&
-            App?.Mouse.LastMousePosition is { } position &&
-            popup.FrameToScreen().Contains(position))
-        {
-            return;
-        }
-
-        Hide();
     }
 
     void Show()
@@ -217,22 +173,6 @@ internal sealed class WorkspaceTaskbarView : View
 
         popup.Visible = true;
         ApplyTitleLayout();
-    }
-
-    void PopupMouseEnter(object? sender, CancelEventArgs e) => pointerOverBar = true;
-
-    void PopupMouseLeave(object? sender, EventArgs e)
-    {
-        var leftDownward = pointerOverBar &&
-            App?.Mouse.LastMousePosition is { } position &&
-            bottomEdgeTrigger.FrameToScreen().Contains(position);
-        pointerOverBar = false;
-        if (pressedItem is not null)
-            return;
-
-        // Moving down from the bar onto the trigger row dismisses it until the pointer leaves that row.
-        bottomEdgeActivationSuppressed = leftDownward;
-        Hide();
     }
 
     void Hide()
@@ -463,9 +403,8 @@ internal sealed class WorkspaceTaskbarView : View
             }
         }
 
-        bottomEdgeActivationSuppressed = position is { } leavePosition &&
-            bottomEdgeTrigger.FrameToScreen().Contains(leavePosition);
-        Hide();
+        hoveredWorkspace = null;
+        ApplyTitleLayout();
     }
 
     void ItemMouseEvent(object? sender, Mouse mouse)
@@ -508,34 +447,32 @@ internal sealed class WorkspaceTaskbarView : View
         if (!mouse.Flags.HasFlag(MouseFlags.LeftButtonReleased))
             return;
 
-        if (!dragging)
+        if (dragging)
         {
+            var sourceIndex = IndexOf(pressedItem);
+            var targetIndex = insertionIndex;
+            mouse.Handled = true;
+            CancelInteraction(relayout: false);
+
+            if (sourceIndex != targetIndex && sourceIndex >= 0)
+            {
+                var reordered = items.Select(entry => entry.Workspace).ToList();
+                var moved = reordered[sourceIndex];
+                reordered.RemoveAt(sourceIndex);
+                reordered.Insert(Math.Clamp(targetIndex, 0, reordered.Count), moved);
+                PersistOrder(reordered);
+                RebuildItems(reordered);
+                foreach (var (shortcut, workspace) in items)
+                    shortcut.SetScheme(ReferenceEquals(workspace, activeWorkspace) ? ActiveScheme : InactiveScheme);
+            }
+        }
+        else
             ClearInteractionState();
+
+        if (bottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition))
             ApplyTitleLayout();
-            return;
-        }
-
-        var source = pressedItem;
-        var sourceIndex = IndexOf(source);
-        var targetIndex = insertionIndex;
-        mouse.Handled = true;
-        CancelInteraction(relayout: false);
-
-        if (sourceIndex == targetIndex || sourceIndex < 0)
-        {
-            ApplyTitleLayout();
-            return;
-        }
-
-        var reordered = items.Select(entry => entry.Workspace).ToList();
-        var moved = reordered[sourceIndex];
-        reordered.RemoveAt(sourceIndex);
-        reordered.Insert(Math.Clamp(targetIndex, 0, reordered.Count), moved);
-        PersistOrder(reordered);
-        RebuildItems(reordered);
-        foreach (var (shortcut, workspace) in items)
-            shortcut.SetScheme(ReferenceEquals(workspace, activeWorkspace) ? ActiveScheme : InactiveScheme);
-        ApplyTitleLayout();
+        else
+            Hide();
     }
 
     int CalculateInsertionIndex(int screenX, Shortcut source)

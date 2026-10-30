@@ -1,6 +1,7 @@
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 using System.Drawing;
 using System.Reflection;
+using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.Commands;
@@ -176,6 +177,7 @@ public sealed class UiHostRenderTests : IDisposable
 
         await terminal.MoveMouseAsync(new Point(0, 17));
         var secondPoint = await WaitForTaskbarItemAsync(second.Title, first.Title);
+        Assert.Equal(17, secondPoint.Y);
         await terminal.ClickAsync(secondPoint);
 
         await terminal.WaitForScreenAsync("SecondWorkspaceBody");
@@ -223,11 +225,27 @@ public sealed class UiHostRenderTests : IDisposable
         await terminal.ResizeAsync(100, 24);
         await terminal.RedrawAsync();
         await terminal.MoveMouseAsync(new Point(0, 23));
-        await WaitForTaskbarItemAsync(second.Title, first.Title);
+        Assert.Equal(23, (await WaitForTaskbarItemAsync(second.Title, first.Title)).Y);
         Assert.Contains(
             "SecondWorkspaceBody",
             await terminal.CaptureScreenAsync(),
             StringComparison.Ordinal);
+
+        var commandHint = i18n.CommandMode_Help.Split(" · ")[0];
+        await terminal.InjectAsync(new Key('/'));
+        await terminal.WaitForScreenAsync(commandHint);
+        await terminal.MoveMouseAsync(Point.Empty);
+        await terminal.MoveMouseAsync(new Point(0, 23));
+        await terminal.InvokeAsync(() =>
+        {
+            var taskbar = Descendants(terminal.Application.TopRunnableView!)
+                .OfType<WorkspaceTaskbarView>().Single();
+            Assert.False(taskbar.BottomEdgeTrigger.Visible);
+            Assert.False(Assert.Single(taskbar.SubViews).Visible);
+        });
+        await terminal.InjectAsync(Key.Esc);
+        await terminal.MoveMouseAsync(new Point(99, 23));
+        Assert.Equal(23, (await WaitForTaskbarItemAsync(second.Title, first.Title)).Y);
         TerminalUiLifecycleChildProcess.WriteResult("ok");
     }
 
@@ -781,12 +799,15 @@ public sealed class UiHostRenderTests : IDisposable
     public async Task BootstrapGlobalAndFailureLogsRemainHiddenUntilWorkspaceSwitch()
     {
         var bootstrap = host.Bootstrap;
+        bootstrap.ShowInformation();
+        bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Succeeded, "host-ready");
         try
         {
             bootstrap.Workspace.SwitchTo();
             await host.FlushAsync();
             bootstrap.Log("URA", "BootstrapLog", UiSeverity.Info);
             await host.FlushAsync();
+            await OpenBootstrapLogsAsync();
             await terminal.WaitForScreenAsync("BootstrapLog");
 
             var other = CreateWorkspace("Bootstrap Other");
@@ -797,6 +818,8 @@ public sealed class UiHostRenderTests : IDisposable
                 WorkspaceContent.Text("OtherWorkspaceBody"),
                 fullBleed: true,
                 switchToWorkspace: true);
+            await host.FlushAsync();
+            var focused = await terminal.InvokeAsync(() => terminal.Application.TopRunnableView!.MostFocused);
             TerminalUi.Log("ABI", "global-log-sentinel", UiSeverity.Warning);
             TerminalUi.LogException(
                 "URA",
@@ -804,6 +827,8 @@ public sealed class UiHostRenderTests : IDisposable
             await host.HandleCommandAsync("/workspace switch \"unterminated");
             await host.FlushAsync();
             await terminal.WaitForScreenAsync("OtherWorkspaceBody");
+            Assert.Same(other, Workspace.Current);
+            Assert.Same(focused, await terminal.InvokeAsync(() => terminal.Application.TopRunnableView!.MostFocused));
             var otherScreen = await terminal.CaptureScreenAsync();
             Assert.DoesNotContain(
                 "bootstrap-error-sentinel",
@@ -816,6 +841,7 @@ public sealed class UiHostRenderTests : IDisposable
 
             bootstrap.Workspace.SwitchTo();
             await host.FlushAsync();
+            await OpenBootstrapLogsAsync();
             await terminal.WaitForScreenAsync("bootstrap-error-sentinel");
             await terminal.WaitForScreenAsync("global-log-sentinel");
             var bootstrapScreen = await terminal.CaptureScreenAsync();
@@ -835,6 +861,7 @@ public sealed class UiHostRenderTests : IDisposable
     public async Task RejectedBootstrapRemovalKeepsRenderingLaterGlobalDiagnostics()
     {
         var bootstrap = host.Bootstrap;
+        bootstrap.ShowInformation();
         await terminal.ResizeAsync(120, 36);
         var survivor = CreateWorkspace("Bootstrap survivor");
         host.SetPanel(
@@ -858,7 +885,7 @@ public sealed class UiHostRenderTests : IDisposable
                 "Bootstrap",
                 new InvalidOperationException("error-after-bootstrap-rejection"));
             bootstrap.Log("Bootstrap", "bootstrap-facade-after-rejection");
-            bootstrap.SetPhase("host", "宿主", UiSeverity.Success, "删除被拒绝后仍在运行");
+            bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Succeeded, "删除被拒绝后仍在运行");
             await host.HandleCommandAsync("/workspace switch \"unterminated");
             await host.FlushAsync();
             await terminal.RedrawAsync();
@@ -873,11 +900,12 @@ public sealed class UiHostRenderTests : IDisposable
 
             bootstrap.Workspace.SwitchTo();
             await host.FlushAsync();
+            await OpenBootstrapLogsAsync();
             await terminal.WaitForScreenAsync("global-after-bootstrap-rejection");
             await terminal.WaitForScreenAsync("bootstrap-facade-after-rejection");
             await terminal.WaitForScreenAsync("error-after-bootstrap-rejection");
-            screen = await terminal.CaptureScreenAsync();
-            Assert.Contains(Localization.LaunchMenu.I18N_Environment, screen, StringComparison.Ordinal);
+            Assert.True(await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
+                .Single(view => view.Id == "bootstrap-details").Visible));
         }
         finally
         {
@@ -885,6 +913,197 @@ public sealed class UiHostRenderTests : IDisposable
             bootstrap.Workspace.SwitchTo();
             await host.FlushAsync();
         }
+    }
+
+    [Fact]
+    public async Task BootstrapCopiesOpenedErrorAndReportsClipboardFailure()
+    {
+        const string scenario = "bootstrap-clipboard";
+        if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
+        {
+            Assert.Equal("ok", await TerminalUiLifecycleProcessTests.RunChildAsync(
+                scenario, typeof(UiHostRenderTests), nameof(BootstrapCopiesOpenedErrorAndReportsClipboardFailure)));
+            return;
+        }
+        var bootstrap = host.Bootstrap;
+        var clipboard = new FakeClipboard(false, false);
+        var previousClipboard = await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard);
+        const string error = "InvalidOperationException: original-plugin-error\n at Plugin.Initialize()";
+        const string otherError = "InvalidOperationException: callback-plugin-error\n at OtherPlugin.Start()";
+        try
+        {
+            await terminal.ResizeAsync(120, 35);
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = clipboard);
+            bootstrap.ShowInformation();
+            bootstrap.SetPluginSummary([
+                new("copy-test", "CopyPlugin", "1.0", BootstrapPluginState.Unavailable, "copy-error", error, PluginFailureStage.Initialize),
+                new("other-test", "OtherPlugin", "1.0", BootstrapPluginState.StartFailed, "callback-error", otherError)
+            ]);
+            bootstrap.Workspace.SwitchTo();
+            await host.FlushAsync();
+            var view = await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!).OfType<BootstrapView>().Single());
+            var details = await terminal.InvokeAsync(() => (ListView)Descendants(view).Single(child => child.Id == "bootstrap-error-details"));
+            if (await terminal.InvokeAsync(() => details.Visible))
+            {
+                await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-show-error").SetFocus());
+                await terminal.InjectAsync(Key.Enter);
+            }
+            await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-show-error").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.WaitForScreenAsync("Plugin.Initialize()");
+            bootstrap.SetPluginSummary([
+                new("copy-test", "CopyPlugin", "1.0", BootstrapPluginState.Unavailable, "updated-error", "later-error", PluginFailureStage.Runtime),
+                new("other-test", "OtherPlugin", "1.0", BootstrapPluginState.StartFailed, "callback-error", otherError)
+            ]);
+            await host.FlushAsync();
+            await terminal.InvokeAsync(() =>
+            {
+                Assert.Equal(string.Format(Localization.LaunchMenu.I18N_PhaseFailure, "CopyPlugin",
+                    Localization.LaunchMenu.I18N_InitializeFailed), Descendants(view).Single(child => child.Id == "bootstrap-error-heading").Text);
+                Assert.Equal(Localization.LaunchMenu.I18N_PluginUnavailable,
+                    Descendants(view).Single(child => child.Id == "bootstrap-error-impact").Text);
+                Assert.Equal(error, string.Join('\n', details.Source!.ToList().Cast<string>()));
+            });
+            await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-copy-error").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            Assert.Equal(error, await terminal.InvokeAsync(clipboard.GetClipboardData));
+
+            await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-error-list").SetFocus());
+            await terminal.InjectAsync(Key.CursorDown);
+            await terminal.WaitForScreenAsync("OtherPlugin.Start()");
+            await terminal.InvokeAsync(() =>
+            {
+                var heading = Descendants(view).Single(child => child.Id == "bootstrap-error-heading").Text;
+                Assert.Contains("OtherPlugin", heading);
+                Assert.Contains(Localization.LaunchMenu.I18N_StartCallbackFailed, heading);
+                Assert.Equal(Localization.LaunchMenu.I18N_PluginStillActive,
+                    Descendants(view).Single(child => child.Id == "bootstrap-error-impact").Text);
+                Assert.Equal(otherError, string.Join('\n', details.Source!.ToList().Cast<string>()));
+            });
+            await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-copy-error").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            Assert.Equal(otherError, await terminal.InvokeAsync(clipboard.GetClipboardData));
+
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = new FakeClipboard(false, true));
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_CopyBacktraceFailed);
+            Assert.DoesNotContain(Localization.LaunchMenu.I18N_Copied, await terminal.CaptureScreenAsync());
+        }
+        finally
+        {
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = previousClipboard);
+            bootstrap.SetPluginSummary([]);
+            await host.FlushAsync();
+        }
+        TerminalUiLifecycleChildProcess.WriteResult("ok");
+    }
+
+    [Fact]
+    public async Task BootstrapLogCopyFailureIsVisibleWithoutStartupErrorsAtNarrowWidth()
+    {
+        const string scenario = "bootstrap-log-clipboard-narrow";
+        if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
+        {
+            Assert.Equal("ok", await TerminalUiLifecycleProcessTests.RunChildAsync(
+                scenario, typeof(UiHostRenderTests), nameof(BootstrapLogCopyFailureIsVisibleWithoutStartupErrorsAtNarrowWidth)));
+            return;
+        }
+        var previousClipboard = await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard);
+        try
+        {
+            await terminal.ResizeAsync(80, 24);
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = new FakeClipboard(false, true));
+            host.Bootstrap.ShowInformation();
+            host.Bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Succeeded, "host-ready");
+            TerminalUi.LogException("CopyTest", new IOException("log-copy-failure"));
+            await host.FlushAsync();
+            await OpenBootstrapLogsAsync();
+            var view = await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!).OfType<BootstrapView>().Single());
+            Assert.False(await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-errors").Visible));
+            var logs = await terminal.InvokeAsync(() => (ListView)Descendants(view).Single(child => child.Id == "bootstrap-logs"));
+            var point = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, logs.SelectedItem!.Value - logs.Viewport.Y)));
+            await terminal.InjectAsync(new Mouse { ScreenPosition = point, Flags = MouseFlags.RightButtonClicked, Timestamp = terminal.Time.Now });
+            await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_CopyBacktrace);
+            var popover = await terminal.InvokeAsync(() => terminal.Application.Popovers!.GetActivePopover());
+            host.Bootstrap.Log("CopyTest", "ordinary-log-after-menu-opened");
+            await host.FlushAsync();
+            Assert.Same(popover, await terminal.InvokeAsync(() => terminal.Application.Popovers!.GetActivePopover()));
+            await terminal.InvokeAsync(() => Descendants((Terminal.Gui.ViewBase.View)terminal.Application.Popovers!.GetActivePopover()!)
+                .OfType<MenuItem>().Single(item => item.Title == Localization.LaunchMenu.I18N_CopyBacktrace).SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            var expected = string.Concat(Localization.LaunchMenu.I18N_CopyBacktraceFailed.Where(character => !char.IsWhiteSpace(character)));
+            await terminal.WaitForAsync(async () => string.Concat((await terminal.CaptureScreenAsync())
+                .Where(character => !char.IsWhiteSpace(character))).Contains(expected, StringComparison.Ordinal));
+            var screen = await terminal.CaptureScreenAsync();
+            TestContext.Current.TestOutputHelper?.WriteLine($"UiHost log copy failure 80x24\n{screen}");
+            Assert.DoesNotContain(Localization.LaunchMenu.I18N_Copied, screen);
+        }
+        finally
+        {
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = previousClipboard);
+        }
+        TerminalUiLifecycleChildProcess.WriteResult("ok");
+    }
+
+    [Fact]
+    public async Task BootstrapLogMenuUsesMouseRowAndKeepsKeyboardTargetDuringRefresh()
+    {
+        const string scenario = "bootstrap-log-menu-input";
+        if (!TerminalUiLifecycleChildProcess.IsChild(scenario))
+        {
+            Assert.Equal("ok", await TerminalUiLifecycleProcessTests.RunChildAsync(
+                scenario, typeof(UiHostRenderTests), nameof(BootstrapLogMenuUsesMouseRowAndKeepsKeyboardTargetDuringRefresh)));
+            return;
+        }
+        var clipboard = new FakeClipboard(false, false);
+        var previousClipboard = await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard);
+        var firstError = new IOException("first-mouse-target");
+        var lastError = new InvalidOperationException("last-keyboard-target");
+        try
+        {
+            await terminal.ResizeAsync(80, 24);
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = clipboard);
+            host.Bootstrap.ShowInformation();
+            host.Bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Succeeded, "host-ready");
+            TerminalUi.LogException("CopyTest", firstError);
+            host.Bootstrap.Log("CopyTest", "ordinary-row");
+            TerminalUi.LogException("CopyTest", lastError);
+            await host.FlushAsync();
+            await OpenBootstrapLogsAsync();
+            var logs = await terminal.InvokeAsync(() => (ListView)Descendants(terminal.Application.TopRunnableView!)
+                .Single(child => child.Id == "bootstrap-logs"));
+            var selected = await terminal.InvokeAsync(() => logs.SelectedItem!.Value);
+            var viewport = await terminal.InvokeAsync(() => logs.Viewport);
+            await terminal.InjectAsync(Key.F10.WithShift);
+            await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_CopyBacktrace);
+            var popover = await terminal.InvokeAsync(() => terminal.Application.Popovers!.GetActivePopover());
+            host.Bootstrap.Log("CopyTest", "background-refresh");
+            await host.FlushAsync();
+            Assert.Same(popover, await terminal.InvokeAsync(() => terminal.Application.Popovers!.GetActivePopover()));
+            Assert.Equal(selected, await terminal.InvokeAsync(() => logs.SelectedItem));
+            Assert.Equal(viewport, await terminal.InvokeAsync(() => logs.Viewport));
+            await terminal.InjectAsync(Key.Enter);
+            Assert.Equal(lastError.ToString(), await terminal.InvokeAsync(clipboard.GetClipboardData));
+            await terminal.RedrawAsync();
+            Assert.Null(await terminal.InvokeAsync(() => terminal.Application.Popovers!.GetActivePopover()));
+            await terminal.WaitForScreenAsync("last-keyboard-target");
+
+            var ordinaryPoint = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, selected - 1 - logs.Viewport.Y)));
+            await terminal.InjectAsync(new Mouse { ScreenPosition = ordinaryPoint, Flags = MouseFlags.RightButtonClicked, Timestamp = terminal.Time.Now });
+            Assert.Equal(selected - 1, await terminal.InvokeAsync(() => logs.SelectedItem));
+            Assert.Null(await terminal.InvokeAsync(() => terminal.Application.Popovers!.GetActivePopover()));
+            var errorPoint = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, selected - 2 - logs.Viewport.Y)));
+            await terminal.InjectAsync(new Mouse { ScreenPosition = errorPoint, Flags = MouseFlags.RightButtonClicked, Timestamp = terminal.Time.Now });
+            await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_CopyBacktrace);
+            Assert.Equal(selected - 2, await terminal.InvokeAsync(() => logs.SelectedItem));
+            await terminal.InjectAsync(Key.Enter);
+            Assert.Equal(firstError.ToString(), await terminal.InvokeAsync(clipboard.GetClipboardData));
+        }
+        finally
+        {
+            await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = previousClipboard);
+        }
+        TerminalUiLifecycleChildProcess.WriteResult("ok");
     }
 
     sealed class InactiveHotkeyOwner : IPlugin
@@ -897,6 +1116,28 @@ public sealed class UiHostRenderTests : IDisposable
 
     Workspace CreateWorkspace(string title)
         => Own(host.CreateWorkspace(title));
+
+    async Task OpenBootstrapLogsAsync()
+    {
+        var view = await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!).OfType<BootstrapView>().Single());
+        var details = await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-details"));
+        if (!await terminal.InvokeAsync(() => details.Visible))
+        {
+            await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-details-toggle").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+        }
+        await terminal.RedrawAsync();
+        await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-logs").SetFocus());
+        await terminal.InjectAsync(Key.End);
+    }
+
+    static IEnumerable<Terminal.Gui.ViewBase.View> Descendants(Terminal.Gui.ViewBase.View view)
+    {
+        yield return view;
+        foreach (var child in view.SubViews)
+            foreach (var descendant in Descendants(child))
+                yield return descendant;
+    }
 
     Workspace Own(Workspace workspace)
     {

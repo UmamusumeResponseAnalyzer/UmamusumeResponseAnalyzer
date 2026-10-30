@@ -99,6 +99,7 @@ internal sealed class UiHostSurface : IDisposable
         window.ViewportChanged += WindowViewportChanged;
         window.KeyDownNotHandled += WindowKeyDownNotHandled;
         window.MouseEvent += WindowMouseEvent;
+        application.Mouse.MouseEvent += ApplicationMouseEvent;
         commandMode.VisibleChanged += CommandModeVisibleChanged;
         application.Keyboard.KeyDown += ApplicationKeyDown;
         application.LayoutAndDrawComplete += ApplicationLayoutAndDrawComplete;
@@ -159,7 +160,6 @@ internal sealed class UiHostSurface : IDisposable
     internal void AddLog(UiLogLine line)
     {
         LogAdded?.Invoke(line);
-        Viewport.InvalidatePanel(bootstrap, BootstrapWorkspace.PanelKey);
     }
 
     internal void AddNotification(NotifyIngress notification)
@@ -202,6 +202,8 @@ internal sealed class UiHostSurface : IDisposable
             RefreshNotificationOverlay();
         if (changes.HasFlag(UiChange.Hotkey))
             RefreshHotkeyOverlay();
+        if (changes.HasFlag(UiChange.Bootstrap))
+            host.Bootstrap.RefreshView();
     }
 
     internal void ExpireNotifications()
@@ -254,6 +256,7 @@ internal sealed class UiHostSurface : IDisposable
 
         application.LayoutAndDrawComplete -= ApplicationLayoutAndDrawComplete;
         application.Keyboard.KeyDown -= ApplicationKeyDown;
+        application.Mouse.MouseEvent -= ApplicationMouseEvent;
         if (commandMode is not null)
             commandMode.VisibleChanged -= CommandModeVisibleChanged;
         window.MouseEvent -= WindowMouseEvent;
@@ -336,9 +339,14 @@ internal sealed class UiHostSurface : IDisposable
             : DispatchKeyAsync(inputKey));
     }
 
+    void ApplicationMouseEvent(object? sender, Mouse mouse)
+    {
+        if (ReferenceEquals(application.TopRunnableView, window))
+            workspaceTaskbar?.HandleMousePosition(mouse);
+    }
+
     void WindowMouseEvent(object? sender, Mouse mouse)
     {
-        workspaceTaskbar?.HandleMousePosition(mouse);
         var flags = mouse.Flags;
         var verticalDelta = flags.HasFlag(MouseFlags.WheeledUp)
             ? 1
@@ -516,5 +524,6 @@ internal enum UiChange
     Workspace = 1,
     Notifications = 2,
     Hotkey = 4,
-    All = Workspace | Notifications | Hotkey
+    Bootstrap = 8,
+    All = Workspace | Notifications | Hotkey | Bootstrap
 }

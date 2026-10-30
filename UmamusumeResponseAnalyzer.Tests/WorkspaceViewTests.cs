@@ -5,6 +5,7 @@ using Terminal.Gui.Input;
 using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
+using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
 
@@ -33,7 +34,7 @@ public sealed class WorkspaceViewTests
                 [other.Title, Workspace.BootstrapTitle], order => saved = [.. order]);
             taskbar.Refresh([bootstrap, other], bootstrap);
             using var window = WindowWith(taskbar.BottomEdgeTrigger, taskbar);
-            window.MouseEvent += (_, mouse) => taskbar.HandleMousePosition(mouse);
+            terminal.Application.Mouse.MouseEvent += (_, mouse) => taskbar.HandleMousePosition(mouse);
             var run = await StartAsync(terminal, window);
             try
             {
@@ -747,6 +748,7 @@ public sealed class WorkspaceViewTests
         var beta = new Workspace("Beta");
         var gamma = new Workspace("Gamma");
         var workspaceAction = false;
+        var bottomEdgeAction = false;
         Workspace? switched = null;
         string[]? saved = null;
         var snapshot = new[] { alpha, beta, gamma };
@@ -778,9 +780,12 @@ public sealed class WorkspaceViewTests
                         Y = Pos.AnchorEnd(2)
                     };
                     action.Accepted += (_, _) => workspaceAction = true;
+                    var edgeAction = new Button { Text = "EDGE", X = 0, Y = Pos.AnchorEnd() };
+                    edgeAction.Accepted += (_, _) => bottomEdgeAction = true;
                     root.Add(
                         new Label { Text = "VIEWPORT-BODY" },
-                        action);
+                        action,
+                        edgeAction);
                     return root;
                 }),
                 1,
@@ -789,7 +794,7 @@ public sealed class WorkspaceViewTests
             taskbar.Refresh(snapshot, alpha);
 
             using var window = WindowWith(viewport, taskbar.BottomEdgeTrigger, taskbar);
-            window.MouseEvent += (_, mouse) => taskbar.HandleMousePosition(mouse);
+            terminal.Application.Mouse.MouseEvent += (_, mouse) => taskbar.HandleMousePosition(mouse);
             var run = await StartAsync(terminal, window);
             try
             {
@@ -800,9 +805,14 @@ public sealed class WorkspaceViewTests
                 Assert.Contains("Alpha", screen);
                 Assert.Contains("Beta", screen);
                 Assert.Contains("Gamma", screen);
+                Assert.Equal(11, FindText(screen, "Alpha").Y);
+                Assert.Equal(11, FindText(screen, "Beta").Y);
+                Assert.Equal(11, FindText(screen, "Gamma").Y);
 
                 await terminal.ClickAsync(FindText(screen, "GO"));
                 await terminal.WaitForAsync(() => workspaceAction);
+                await terminal.ClickAsync(FindText(await terminal.CaptureScreenAsync(), "EDGE"));
+                await terminal.WaitForAsync(() => bottomEdgeAction);
 
                 await terminal.MoveMouseAsync(new Point(0, 11));
                 await terminal.WaitForScreenAsync("Beta");
@@ -822,18 +832,22 @@ public sealed class WorkspaceViewTests
                 Assert.Contains("Gamma", await terminal.CaptureScreenAsync());
 
                 await terminal.MoveMouseAsync(betaPoint);
-                var bottomBlank = betaPoint with { Y = 11 };
+                var bottomBlank = new Point(47, 11);
                 await terminal.MoveMouseAsync(bottomBlank);
+                await terminal.RedrawAsync();
+                Assert.Contains("Gamma", await terminal.CaptureScreenAsync());
+
+                var aboveBottom = bottomBlank with { Y = 10 };
+                await terminal.MoveMouseAsync(aboveBottom);
                 await terminal.WaitForAsync(async () =>
                     !(await terminal.CaptureScreenAsync()).Contains(
                         "Gamma",
                         StringComparison.Ordinal));
 
-                await terminal.MoveMouseAsync(bottomBlank);
+                await terminal.MoveMouseAsync(aboveBottom);
                 await terminal.RedrawAsync();
                 Assert.DoesNotContain("Gamma", await terminal.CaptureScreenAsync());
 
-                await terminal.MoveMouseAsync(Point.Empty);
                 await terminal.MoveMouseAsync(bottomBlank);
                 await terminal.WaitForScreenAsync("Gamma");
                 screen = await terminal.CaptureScreenAsync();
@@ -864,14 +878,25 @@ public sealed class WorkspaceViewTests
                     viewport.Reconcile();
                     Assert.True(terminal.Application.Mouse.IsGrabbed());
                 });
+                var outsideDragTarget = dragTarget with { Y = 10 };
                 await terminal.InjectAsync(MouseAt(
                     terminal,
-                    dragTarget,
+                    outsideDragTarget,
+                    MouseFlags.LeftButtonPressed | MouseFlags.PositionReport));
+                await terminal.RedrawAsync();
+                Assert.Contains("Gamma", await terminal.CaptureScreenAsync());
+                Assert.True(await terminal.InvokeAsync(() => terminal.Application.Mouse.IsGrabbed()));
+                await terminal.InjectAsync(MouseAt(
+                    terminal,
+                    outsideDragTarget,
                     MouseFlags.LeftButtonReleased));
                 await terminal.WaitForAsync(() => saved is not null);
 
                 Assert.Equal(["Gamma", "Alpha", "Beta"], saved!);
                 Assert.Same(beta, switched);
+                Assert.False(await terminal.InvokeAsync(() => terminal.Application.Mouse.IsGrabbed()));
+                await terminal.RedrawAsync();
+                Assert.DoesNotContain("Gamma", await terminal.CaptureScreenAsync());
 
                 await terminal.ResizeAsync(16, 8);
                 await terminal.MoveMouseAsync(Point.Empty);
@@ -880,6 +905,7 @@ public sealed class WorkspaceViewTests
                 screen = await terminal.CaptureScreenAsync();
                 Assert.Contains("VIEWPORT-BODY", screen);
                 Assert.Contains("…", screen);
+                Assert.Equal(7, FindText(screen, "Beta").Y);
             }
             finally
             {
@@ -888,33 +914,91 @@ public sealed class WorkspaceViewTests
         }
     }
 
-    [Fact]
-    public async Task BootstrapDashboardRendersCoreStateAndExplicitLogText()
+    [Theory]
+    [InlineData(80, 24, "127.0.0.2", true, "127.0.0.2:4693")]
+    [InlineData(120, 35, "0:0:0:0:0:0:0:1", true, "[::1]:4693")]
+    [InlineData(80, 24, "0.0.0.0", false, "0.0.0.0:4693")]
+    public async Task BootstrapKeepsDiagnosticsAndLogsFoldedAndReflowsToolbar(
+        int width, int height, string listenHost, bool localAccess, string binding)
     {
-        using var terminal = new TerminalGuiTestApp(width: 120, height: 36);
-        const string logText = "[Plugin] bootstrap-log";
-        using var dashboard = new BootstrapDashboardView(
-            [("版本", "M1-test"), ("工作目录", "K:\\repo")],
-            [new("插件初始化", UiSeverity.Success, "初始化完成")],
-            [new("ExamplePlugin", "1.2.3", "OK", "初始化完成")],
-            [
-                .. Enumerable.Range(1, 40)
-                    .Select(index => new BootstrapLogRow("INFO", $"older-log-{index:00}")),
-                new("WARN", logText)
-            ]);
-        using var window = WindowWith(dashboard);
+        using var terminal = new TerminalGuiTestApp(width, height);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        var snapshot = new BootstrapSnapshot(
+            new("M1-test", "K:\\repo", "config.yaml", listenHost, 4693, "日文", "女", "test-update-source"),
+            [new(BootstrapPhaseId.Database, BootstrapPhaseState.Succeeded, "data-ready")],
+            [], [new("INFO", "[Plugin] bootstrap-log")], BootstrapMode.Ready, null);
+        bootstrap.Update(snapshot);
+        using var window = WindowWith(bootstrap);
         var run = await StartAsync(terminal, window);
         try
         {
             var screen = await terminal.CaptureScreenAsync();
-
-            Assert.Contains(Localization.LaunchMenu.I18N_Environment, screen);
-            Assert.Contains(Localization.LaunchMenu.I18N_InitializationResults, screen);
-            Assert.Contains(Localization.LaunchMenu.I18N_PluginSummary, screen);
-            Assert.Contains(Localization.LaunchMenu.I18N_RecentLogs, screen);
-            Assert.Contains("M1-test", screen);
-            Assert.Contains("ExamplePlugin", screen);
-            Assert.Contains($"WARN {logText}", screen);
+            TestContext.Current.TestOutputHelper?.WriteLine($"Bootstrap ready {width}x{height}\n{screen}");
+            Assert.Contains("4693", screen);
+            Assert.Contains(localAccess ? Localization.LaunchMenu.I18N_LocalAccess : Localization.LaunchMenu.I18N_DeviceAccess,
+                Descendants(bootstrap).Single(view => view.Id == "bootstrap-summary").Text);
+            Assert.DoesNotContain("M1-test", screen);
+            Assert.DoesNotContain("test-update-source", screen);
+            Assert.DoesNotContain("bootstrap-log", screen);
+            Assert.DoesNotContain("data-ready", screen);
+            Assert.True(Descendants(bootstrap).Single(view => view.Id == "bootstrap-settings-toggle").Visible);
+            Assert.False(Descendants(bootstrap).Single(view => view.Id == "bootstrap-details-toggle").Visible);
+            var toolbarButtons = Descendants(bootstrap).OfType<Button>()
+                .Where(button => new[] { "bootstrap-start", "bootstrap-options", "bootstrap-plugins", "bootstrap-update-data", "bootstrap-more" }.Contains(button.Id))
+                .ToArray();
+            Assert.Equal(5, toolbarButtons.Length);
+            Assert.All(toolbarButtons, button => Assert.Contains(button.Text, screen));
+            await terminal.ResizeAsync(38, 16);
+            await terminal.RedrawAsync();
+            var narrowScreen = await terminal.CaptureScreenAsync();
+            TestContext.Current.TestOutputHelper?.WriteLine($"Bootstrap ready 38x16\n{narrowScreen}");
+            Assert.All(toolbarButtons, button => Assert.Contains(button.Text, narrowScreen));
+            var body = Descendants(bootstrap).Single(view => view.Id == "bootstrap-body");
+            await terminal.InvokeAsync(() => body.ScrollVertical(
+                Descendants(bootstrap).Single(view => view.Id == "bootstrap-summary-detail").Frame.Y - body.Viewport.Y));
+            await terminal.RedrawAsync();
+            var scrolledScreen = await terminal.CaptureScreenAsync();
+            TestContext.Current.TestOutputHelper?.WriteLine($"Bootstrap scrolled 38x16\n{scrolledScreen}");
+            var message = new TextFormatter
+            {
+                Text = Localization.LaunchMenu.I18N_NoPluginsAvailable,
+                WordWrap = true,
+                ConstrainToWidth = body.Viewport.Width
+            };
+            Assert.All(message.GetLines(), line => Assert.Contains(line, scrolledScreen));
+            var settingsToggle = Descendants(bootstrap).Single(view => view.Id == "bootstrap-settings-toggle");
+            for (var attempt = 0; attempt < toolbarButtons.Length + 2 &&
+                 !await terminal.InvokeAsync(() => ReferenceEquals(window.MostFocused, settingsToggle)); attempt++)
+                await terminal.InjectAsync(Key.Tab);
+            Assert.Same(settingsToggle, await terminal.InvokeAsync(() => window.MostFocused));
+            Assert.Contains(Localization.LaunchMenu.I18N_StartupSettings, await terminal.CaptureScreenAsync());
+            await terminal.InvokeAsync(() =>
+            {
+                foreach (var button in toolbarButtons)
+                {
+                    var origin = button.ViewportToScreen(Point.Empty);
+                    Assert.InRange(origin.X, 0, 37);
+                    Assert.InRange(origin.Y, 0, 15);
+                    Assert.True(origin.X + button.Frame.Width <= 38);
+                }
+                Assert.True(toolbarButtons.Select(button => button.Frame.Y).Distinct().Count() > 1);
+            });
+            await terminal.ResizeAsync(width, height);
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.WaitForScreenAsync(binding);
+            await terminal.InvokeAsync(() => bootstrap.Update(snapshot with { Mode = BootstrapMode.Information, Listening = binding }));
+            await terminal.RedrawAsync();
+            Assert.False(Descendants(bootstrap).Single(view => view.Id == "bootstrap-settings-toggle").Visible);
+            var toggle = Descendants(bootstrap).Single(view => view.Id == "bootstrap-details-toggle");
+            await terminal.InvokeAsync(() => toggle.SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.WaitForScreenAsync("bootstrap-log");
+            Assert.Contains("data-ready", await terminal.CaptureScreenAsync());
+            var detailLists = Descendants(bootstrap).Single(view => view.Id == "bootstrap-details").SubViews.OfType<ListView>();
+            var emptyPluginList = Assert.Single(detailLists, list => list.Source?.Count == 0);
+            Assert.False(emptyPluginList.Visible);
+            Assert.Equal(0, emptyPluginList.Frame.Height);
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => BootstrapWorkspace.SeverityLabel((UiSeverity)int.MaxValue));
         }
@@ -929,21 +1013,28 @@ public sealed class WorkspaceViewTests
     [InlineData("😀")]
     public async Task BootstrapLogsScrollWideCharactersToVisibleEnd(string wideText)
     {
-        using var terminal = new TerminalGuiTestApp(width: 22, height: 24);
+        using var terminal = new TerminalGuiTestApp(width: 80, height: 24);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
         const string suffix = "ABCDEFGHIJKLMNOPQRS";
-        using var dashboard = new BootstrapDashboardView(
-            [], [], [], [new("INFO", wideText + suffix)]);
-        var logList = dashboard.SubViews
-            .SelectMany(view => view.SubViews)
-            .OfType<ListView>()
-            .Single();
-        using var window = WindowWith(dashboard);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        var snapshot = new BootstrapSnapshot(null, [], [], [new("INFO", wideText + suffix)], BootstrapMode.Information, "127.0.0.1:4693");
+        bootstrap.Update(snapshot);
+        var logList = (ListView)Descendants(bootstrap).Single(view => view.Id == "bootstrap-logs");
+        using var window = WindowWith(bootstrap);
         var run = await StartAsync(terminal, window);
         try
         {
+            await terminal.InvokeAsync(() => Descendants(bootstrap).Single(view => view.Id == "bootstrap-details-toggle").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.InvokeAsync(() =>
+            {
+                logList.SetFocus();
+                var text = wideText + new string('A', logList.Viewport.Width - suffix.Length - 1) + suffix;
+                bootstrap.Update(snapshot with { Logs = [new("INFO", text)] });
+            });
             await terminal.InvokeAsync(() => logList.ScrollHorizontal("● INFO ".GetColumns()));
             await terminal.RedrawAsync();
-            Assert.Contains(wideText + suffix[..^1], await terminal.CaptureScreenAsync());
+            Assert.Contains(wideText, await terminal.CaptureScreenAsync());
 
             await terminal.InvokeAsync(() =>
             {
@@ -959,6 +1050,292 @@ public sealed class WorkspaceViewTests
         {
             await StopAsync(terminal, run);
         }
+    }
+
+    [Fact]
+    public async Task BootstrapMouseWheelScrollsBodyAndChainsAtListBoundaries()
+    {
+        using var terminal = new TerminalGuiTestApp(width: 80, height: 24);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        bootstrap.Update(new(null,
+            Enum.GetValues<BootstrapPhaseId>().Select(id => new BootstrapPhase(id, BootstrapPhaseState.Succeeded, "ready")).ToArray(),
+            Enumerable.Range(1, 6).Select(index => new BootstrapPluginRow($"plugin-{index}", $"Plugin {index}", "1.0", BootstrapPluginState.Active, "active")).ToArray(),
+            Enumerable.Range(0, 40).Select(index => new BootstrapLogRow("INFO", $"wheel-log-{index:00}")).ToArray(),
+            BootstrapMode.Information, "127.0.0.1:4693"));
+        using var window = WindowWith(bootstrap);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            var body = Descendants(bootstrap).Single(view => view.Id == "bootstrap-body");
+            var toggle = Descendants(bootstrap).Single(view => view.Id == "bootstrap-details-toggle");
+            var phases = Descendants(bootstrap).Single(view => view.Id == "bootstrap-details").SubViews.OfType<ListView>().First();
+            var logs = (ListView)Descendants(bootstrap).Single(view => view.Id == "bootstrap-logs");
+            await terminal.InvokeAsync(() => toggle.SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.RedrawAsync();
+
+            var blankPoint = await terminal.InvokeAsync(() => body.ViewportToScreen(new Point(0, 1)));
+            await terminal.InjectAsync(MouseAt(terminal, blankPoint, MouseFlags.WheeledDown));
+            Assert.Equal(1, await terminal.InvokeAsync(() => body.Viewport.Y));
+            await terminal.InjectAsync(MouseAt(terminal, blankPoint, MouseFlags.WheeledUp));
+            Assert.Equal(0, await terminal.InvokeAsync(() => body.Viewport.Y));
+
+            var phasePoint = await terminal.InvokeAsync(() => phases.ViewportToScreen(new Point(2, 0)));
+            await terminal.InjectAsync(MouseAt(terminal, phasePoint, MouseFlags.WheeledDown));
+            Assert.Equal(1, await terminal.InvokeAsync(() => body.Viewport.Y));
+            Assert.Equal(0, await terminal.InvokeAsync(() => phases.Viewport.Y));
+            Assert.Same(toggle, await terminal.InvokeAsync(() => window.MostFocused));
+
+            await terminal.InvokeAsync(() => logs.SetFocus());
+            await terminal.InjectAsync(Key.End);
+            var bodyPosition = await terminal.InvokeAsync(() => body.Viewport.Y);
+            var logPosition = await terminal.InvokeAsync(() => logs.Viewport.Y);
+            var logPoint = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, logs.Viewport.Height - 1)));
+            await terminal.InjectAsync(MouseAt(terminal, logPoint, MouseFlags.WheeledUp));
+            Assert.Equal(logPosition - 1, await terminal.InvokeAsync(() => logs.Viewport.Y));
+            Assert.Equal(bodyPosition, await terminal.InvokeAsync(() => body.Viewport.Y));
+            Assert.Equal(39, await terminal.InvokeAsync(() => logs.SelectedItem));
+
+            await terminal.InjectAsync(Key.Home);
+            bodyPosition = await terminal.InvokeAsync(() => body.Viewport.Y);
+            Assert.True(bodyPosition > 0);
+            logPoint = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, 0)));
+            await terminal.InjectAsync(MouseAt(terminal, logPoint, MouseFlags.WheeledUp));
+            Assert.Equal(0, await terminal.InvokeAsync(() => logs.Viewport.Y));
+            Assert.Equal(bodyPosition - 1, await terminal.InvokeAsync(() => body.Viewport.Y));
+
+            await terminal.InjectAsync(Key.End);
+            bodyPosition = await terminal.InvokeAsync(() => body.Viewport.Y);
+            logPosition = await terminal.InvokeAsync(() => logs.Viewport.Y);
+            logPoint = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, logs.Viewport.Height - 1)));
+            await terminal.InjectAsync(MouseAt(terminal, logPoint, MouseFlags.WheeledDown));
+            Assert.Equal(logPosition, await terminal.InvokeAsync(() => logs.Viewport.Y));
+            Assert.Equal(bodyPosition + 1, await terminal.InvokeAsync(() => body.Viewport.Y));
+            Assert.Same(logs, await terminal.InvokeAsync(() => window.MostFocused));
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, MouseFlags.LeftButtonClicked)]
+    [InlineData(false, MouseFlags.LeftButtonClicked)]
+    [InlineData(false, MouseFlags.RightButtonClicked)]
+    public async Task BootstrapMouseClickKeepsItsLogRowAndTabRestoresSelectionVisibility(bool fullSequence, MouseFlags clicked)
+    {
+        using var terminal = new TerminalGuiTestApp(width: 120, height: 35);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        bootstrap.Update(new(null,
+            Enum.GetValues<BootstrapPhaseId>().Select(id => new BootstrapPhase(id, BootstrapPhaseState.Succeeded, "ready")).ToArray(),
+            Enumerable.Range(1, 6).Select(index => new BootstrapPluginRow($"plugin-{index}", $"Plugin {index}", "1.0", BootstrapPluginState.Active, "active")).ToArray(),
+            Enumerable.Range(0, 40).Select(index => new BootstrapLogRow("INFO", $"click-log-{index:00}")).ToArray(),
+            BootstrapMode.Information, "127.0.0.1:4693"));
+        using var window = WindowWith(bootstrap);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            var body = Descendants(bootstrap).Single(view => view.Id == "bootstrap-body");
+            var more = Descendants(bootstrap).Single(view => view.Id == "bootstrap-more");
+            var logs = (ListView)Descendants(bootstrap).Single(view => view.Id == "bootstrap-logs");
+            await terminal.InvokeAsync(() => Descendants(bootstrap).Single(view => view.Id == "bootstrap-details-toggle").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.InvokeAsync(() => logs.SetFocus());
+            await terminal.InjectAsync(Key.End);
+            await terminal.InvokeAsync(() => more.SetFocus());
+            var point = await terminal.InvokeAsync(() => logs.ViewportToScreen(new Point(2, 0)));
+            await terminal.InjectAsync(MouseAt(terminal, point, MouseFlags.WheeledUp));
+            var clickedRow = await terminal.InvokeAsync(() => logs.Viewport.Y);
+            var position = await terminal.InvokeAsync(() => (logs.Viewport.Location, body.Viewport.Location));
+            Assert.Equal(39, await terminal.InvokeAsync(() => logs.SelectedItem));
+            var sequence = fullSequence
+                ? new[] { MouseFlags.LeftButtonPressed, MouseFlags.LeftButtonReleased, clicked }
+                : [clicked];
+            foreach (var flags in sequence)
+                await terminal.InjectAsync(MouseAt(terminal, point, flags));
+            Assert.Equal(clickedRow, await terminal.InvokeAsync(() => logs.SelectedItem));
+            Assert.Equal(position, await terminal.InvokeAsync(() => (logs.Viewport.Location, body.Viewport.Location)));
+            Assert.Same(logs, await terminal.InvokeAsync(() => window.MostFocused));
+
+            await terminal.InvokeAsync(() => more.SetFocus());
+            await terminal.InjectAsync(MouseAt(terminal, point, MouseFlags.WheeledDown));
+            Assert.True(await terminal.InvokeAsync(() => logs.Viewport.Y > clickedRow));
+            for (var attempt = 0; attempt < 8 && !await terminal.InvokeAsync(() => logs.HasFocus); attempt++)
+                await terminal.InjectAsync(Key.Tab);
+            await terminal.InvokeAsync(() =>
+            {
+                Assert.Same(logs, window.MostFocused);
+                Assert.Equal(clickedRow, logs.SelectedItem);
+                Assert.InRange(clickedRow, logs.Viewport.Y, logs.Viewport.Y + logs.Viewport.Height - 1);
+                var selectedY = logs.ViewportToScreen(new Point(0, clickedRow - logs.Viewport.Y)).Y;
+                var bodyTop = body.ViewportToScreen(Point.Empty).Y;
+                Assert.InRange(selectedY, bodyTop, bodyTop + body.Viewport.Height - 1);
+            });
+            await terminal.WaitForScreenAsync($"click-log-{clickedRow:00}");
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Theory]
+    [InlineData(nameof(BootstrapPhaseId.Config))]
+    [InlineData(nameof(BootstrapPhaseId.Scan))]
+    [InlineData(nameof(BootstrapPhaseId.Database))]
+    [InlineData(nameof(BootstrapPhaseId.Listener))]
+    public async Task BootstrapFailureShowsOneCauseAndKeepsSkippedStepsOutOfErrors(string failedPhase)
+    {
+        using var terminal = new TerminalGuiTestApp();
+        terminal.RunOnOwnerThread(UraTheme.Apply);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        var failed = Enum.Parse<BootstrapPhaseId>(failedPhase);
+        bootstrap.Update(new(null,
+            [new(failed, BootstrapPhaseState.Failed, "primary-failure", "original-error"),
+             new(BootstrapPhaseId.StartCallbacks, BootstrapPhaseState.Skipped, "not-executed"),
+             new(BootstrapPhaseId.Host, BootstrapPhaseState.Failed, "primary-failure", "original-error")],
+            [], [], BootstrapMode.Information, null));
+        using var window = WindowWith(bootstrap);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            var screen = await terminal.CaptureScreenAsync();
+            TestContext.Current.TestOutputHelper?.WriteLine($"Bootstrap {failed} failure 80x24\n{screen}");
+            Assert.Contains("primary-failure", screen);
+            if (failed != BootstrapPhaseId.Database)
+                Assert.Contains(BootstrapWorkspace.PhaseLabel(failed),
+                    Descendants(bootstrap).Single(view => view.Id == "bootstrap-summary").Text);
+            Assert.DoesNotContain("not-executed", screen);
+            Assert.DoesNotContain("original-error", screen);
+            Assert.False(Descendants(bootstrap).Single(view => view.Id == "bootstrap-settings-toggle").Visible);
+            Assert.Equal(failed == BootstrapPhaseId.Listener, Descendants(bootstrap).Single(view => view.Id == "bootstrap-details-toggle").Visible);
+            var errors = Descendants(bootstrap).Single(view => view.Id == "bootstrap-errors");
+            Assert.Equal(1, ((ListView)Descendants(errors).Single(view => view.Id == "bootstrap-error-list")).Source!.Count);
+            Assert.All(Descendants(bootstrap).OfType<Button>()
+                .Where(button => new[] { "bootstrap-start", "bootstrap-options", "bootstrap-plugins", "bootstrap-update-data" }.Contains(button.Id)),
+                button => Assert.False(button.Enabled));
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Fact]
+    public async Task BootstrapResizeKeepsFocusedErrorActionVisibleWithoutMovingOnRefresh()
+    {
+        using var terminal = new TerminalGuiTestApp(width: 80, height: 24);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        var snapshot = new BootstrapSnapshot(null,
+            [new(BootstrapPhaseId.Database, BootstrapPhaseState.Failed,
+                Localization.LaunchMenu.I18N_DatabaseUnavailable, "database-error")],
+            [], [], BootstrapMode.Information, null);
+        bootstrap.Update(snapshot);
+        using var window = WindowWith(bootstrap);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            var copy = Descendants(bootstrap).Single(view => view.Id == "bootstrap-copy-error");
+            var body = Descendants(bootstrap).Single(view => view.Id == "bootstrap-body");
+            await terminal.InvokeAsync(() => copy.SetFocus());
+            await terminal.RedrawAsync();
+            Assert.Contains(Localization.LaunchMenu.I18N_CopyError, await terminal.CaptureScreenAsync());
+
+            await terminal.ResizeAsync(38, 16);
+            await terminal.RedrawAsync();
+            var screen = await terminal.CaptureScreenAsync();
+            TestContext.Current.TestOutputHelper?.WriteLine($"Focused error action after resize 38x16\n{screen}");
+            await terminal.InvokeAsync(() =>
+            {
+                Assert.Same(copy, window.MostFocused);
+                var bodyTop = body.ViewportToScreen(Point.Empty).Y;
+                var copyTop = copy.ViewportToScreen(Point.Empty).Y;
+                Assert.InRange(copyTop, bodyTop, bodyTop + body.Viewport.Height - copy.Frame.Height);
+            });
+            Assert.Contains(Localization.LaunchMenu.I18N_CopyError, screen);
+
+            await terminal.InvokeAsync(() => Assert.True(body.ScrollVertical(-1)));
+            await terminal.RedrawAsync();
+            var position = await terminal.InvokeAsync(() => body.Viewport.Location);
+            await terminal.InvokeAsync(() => bootstrap.Update(snapshot with { Logs = [new("INFO", "background-refresh")] }));
+            await terminal.RedrawAsync();
+            Assert.Equal(position, await terminal.InvokeAsync(() => body.Viewport.Location));
+            Assert.Same(copy, await terminal.InvokeAsync(() => window.MostFocused));
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    [Theory]
+    [InlineData((int)PluginFailureStage.Scan, nameof(Localization.LaunchMenu.I18N_ScanFailed))]
+    [InlineData((int)PluginFailureStage.Load, nameof(Localization.LaunchMenu.I18N_LoadFailed))]
+    [InlineData((int)PluginFailureStage.Initialize, nameof(Localization.LaunchMenu.I18N_InitializeFailed))]
+    [InlineData((int)PluginFailureStage.Start, nameof(Localization.LaunchMenu.I18N_StartCallbackFailed))]
+    [InlineData((int)PluginFailureStage.Runtime, nameof(Localization.LaunchMenu.I18N_RuntimeFailed))]
+    [InlineData(null, nameof(Localization.LaunchMenu.I18N_StateUnavailable))]
+    public async Task BootstrapPluginFailureKeepsListenerAndOpenedErrorStableDuringRefresh(int? failureStage, string labelResource)
+    {
+        using var terminal = new TerminalGuiTestApp(width: 120, height: 35);
+        terminal.RunOnOwnerThread(UraTheme.Apply);
+        using var bootstrap = new BootstrapView(_ => { }, () => { }, () => { });
+        const string originalError = "InvalidOperationException: plugin-load-failure\n at ExamplePlugin.Initialize()";
+        var snapshot = new BootstrapSnapshot(null, [],
+            [new("failed", "FailedPlugin", "1.0", BootstrapPluginState.Unavailable, "load-failure", originalError, (PluginFailureStage?)failureStage),
+             new("started", "StartedPlugin", "1.0", BootstrapPluginState.StartFailed, "callback-failure", "callback-error")],
+            [], BootstrapMode.Information, "127.0.0.1:4693");
+        bootstrap.Update(snapshot);
+        using var window = WindowWith(bootstrap);
+        var run = await StartAsync(terminal, window);
+        try
+        {
+            var screen = await terminal.CaptureScreenAsync();
+            Assert.Contains("127.0.0.1:4693", screen);
+            Assert.Contains(string.Format(Localization.LaunchMenu.I18N_PhaseFailure, "FailedPlugin",
+                Localization.LaunchMenu.ResourceManager.GetString(labelResource, Localization.LaunchMenu.Culture)), screen);
+            Assert.Contains(string.Format(Localization.LaunchMenu.I18N_PhaseFailure, "StartedPlugin",
+                Localization.LaunchMenu.I18N_StartCallbackFailed), screen);
+            Assert.DoesNotContain("load-failure", screen);
+            Assert.DoesNotContain("callback-failure", screen);
+            Assert.Contains(Localization.LaunchMenu.I18N_PluginUnavailable, screen);
+            await terminal.InvokeAsync(() => Descendants(bootstrap).Single(view => view.Id == "bootstrap-error-list").SetFocus());
+            await terminal.InjectAsync(Key.CursorDown);
+            await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_PluginStillActive);
+            await terminal.InjectAsync(Key.CursorUp);
+            await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_PluginUnavailable);
+            var show = Descendants(bootstrap).Single(view => view.Id == "bootstrap-show-error");
+            await terminal.InvokeAsync(() => show.SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+            await terminal.WaitForScreenAsync("ExamplePlugin.Initialize()");
+            var error = (ListView)Descendants(bootstrap).Single(view => view.Id == "bootstrap-error-details");
+            await terminal.InvokeAsync(() => error.SetFocus());
+            await terminal.InvokeAsync(() => bootstrap.Update(snapshot with
+            {
+                Plugins = [new("started", "StartedPlugin", "1.0", BootstrapPluginState.StartFailed, "callback-failure", "callback-error")],
+                Logs = [new("INFO", "background-refresh")]
+            }));
+            Assert.Equal(originalError, await terminal.InvokeAsync(() => string.Join('\n', error.Source!.ToList().Cast<string>())));
+            Assert.Same(error, await terminal.InvokeAsync(() => terminal.Application.TopRunnableView!.MostFocused));
+            await terminal.InjectAsync(Key.Esc);
+            Assert.False(await terminal.InvokeAsync(() => error.Visible));
+        }
+        finally
+        {
+            await StopAsync(terminal, run);
+        }
+    }
+
+    static IEnumerable<View> Descendants(View view)
+    {
+        yield return view;
+        foreach (var child in view.SubViews)
+            foreach (var descendant in Descendants(child))
+                yield return descendant;
     }
 
     static WorkspacePanel Panel(

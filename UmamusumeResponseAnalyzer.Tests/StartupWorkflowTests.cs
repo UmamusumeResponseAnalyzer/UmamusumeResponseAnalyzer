@@ -7,7 +7,10 @@ using System.Runtime.ExceptionServices;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
+using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 using UmamusumeResponseAnalyzer.Plugin;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using Xunit;
@@ -179,7 +182,7 @@ public sealed class StartupWorkflowTests
             var manifest = PluginPackageValidator.Validate("Plugins/StartedPlugin.zip", false).Manifest;
             ResourceUpdater.HttpClient = new HttpClient(new PluginInstallTests.PackageHandler([], manifest));
             await session.StartAsync();
-            await session.Terminal.WaitForScreenAsync(I18N_Instruction);
+            await WaitForStartupReadyAsync(session.Terminal);
             Assert.Contains(I18N_PluginRepository, session.FirstFrame);
             Assert.Contains(I18N_PreparingStartup, session.FirstFrame);
             Assert.DoesNotContain(I18N_Environment, session.FirstFrame);
@@ -187,15 +190,64 @@ public sealed class StartupWorkflowTests
             Assert.False(Server.IsRunning);
             Assert.DoesNotContain("initialized", File.ReadAllText("lifecycle.log"));
             var workspace = Workspace.Current;
-            await session.Terminal.InjectAsync(Key.Enter);
+            await ClickBootstrapAsync(session.Terminal, "bootstrap-start");
             await session.Terminal.WaitForAsync(() => File.ReadAllText("lifecycle.log").Contains("started"));
             Assert.Equal(DatabaseAvailability.Ready, Database.Availability);
             Assert.True(Server.IsRunning);
             Assert.Same(workspace, Workspace.Current);
-            await session.Terminal.WaitForScreenAsync(I18N_Initialized);
+            await session.Terminal.WaitForScreenAsync(new UriBuilder(Uri.UriSchemeHttp,
+                Config.Core.ListenAddress, Config.Core.ListenPort).Uri.GetLeftPart(UriPartial.Authority));
             await session.CloseAsync();
             Assert.False(Server.IsRunning);
             Assert.Contains("StartedPlugin disposed", File.ReadAllText("lifecycle.log"));
+        });
+
+    [Fact]
+    public Task DatabaseLoadFailureCanBeViewedAndCopied()
+        => RunScenarioAsync(nameof(DatabaseLoadFailureCanBeViewedAndCopied), async session =>
+        {
+            foreach (var (path, json) in new Dictionary<string, string>
+            {
+                ["events_male.br"] = "[]", ["skill_data.br"] = "not-json",
+                ["skill_upgrade_speciality.br"] = "[]", ["wins_saddle.br"] = "[]",
+                ["talent_skill_sets.br"] = "{}", ["factor_ids.br"] = "{}", ["succession_relation.br"] = "{}"
+            })
+            {
+                using var file = File.Create(path);
+                using var compressed = new BrotliStream(file, CompressionMode.Compress);
+                using var writer = new StreamWriter(compressed);
+                writer.Write(json);
+            }
+            await session.StartAsync();
+            var terminal = session.Terminal;
+            await WaitForStartupReadyAsync(terminal);
+            var clipboard = new FakeClipboard(false, false);
+            var previousClipboard = await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard);
+            try
+            {
+                await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = clipboard);
+                await ClickBootstrapAsync(terminal, "bootstrap-start");
+                await terminal.WaitForAsync(() => Environment.ExitCode == 1);
+                await TerminalUi.RequireHost().FlushAsync();
+                Assert.False(Server.IsRunning);
+                Assert.Equal(DatabaseAvailability.Unavailable, Database.Availability);
+                await ClickBootstrapAsync(terminal, "bootstrap-show-error");
+                await terminal.WaitForScreenAsync(nameof(Newtonsoft.Json.JsonReaderException));
+                var openedError = await terminal.InvokeAsync(() => string.Join('\n',
+                    ((ListView)Descendants(terminal.Application.TopRunnableView!)
+                        .Single(view => view.Id == "bootstrap-error-details")).Source!.ToList().Cast<string>()));
+                Assert.Contains(Path.GetFullPath(Database.NAMES_FILEPATH), openedError);
+                Assert.Contains(Path.GetFullPath(Database.SKILLS_FILEPATH), openedError);
+                Assert.Contains(nameof(Newtonsoft.Json.JsonTextReader), openedError);
+                await ClickBootstrapAsync(terminal, "bootstrap-copy-error");
+                Assert.Equal(openedError, (await terminal.InvokeAsync(clipboard.GetClipboardData))?.ReplaceLineEndings("\n"));
+                Assert.False(session.Run.IsCompleted);
+            }
+            finally
+            {
+                await terminal.InvokeAsync(() => terminal.Application.Driver!.Clipboard = previousClipboard);
+            }
+            await session.CloseAsync();
         });
 
     static async Task InstallAsync(StartupSession session, bool existing, bool shared)
@@ -215,21 +267,17 @@ public sealed class StartupWorkflowTests
         ResourceUpdater.HttpClient = new HttpClient(handler);
         await session.StartAsync();
         var terminal = session.Terminal;
-        await terminal.WaitForScreenAsync(I18N_Instruction);
+        await WaitForStartupReadyAsync(terminal);
         var host = TerminalUi.RequireHost();
         Assert.True(host.Ready.IsCompletedSuccessfully);
         var workspace = host.Bootstrap.Workspace;
-        await terminal.InjectAsync(Key.CursorDown);
-        await terminal.InjectAsync(Key.CursorDown);
-        await terminal.InjectAsync(Key.Enter);
+        await ClickBootstrapAsync(terminal, "bootstrap-plugins");
         await terminal.WaitForScreenAsync(Localization.PluginRegistry.SelectPlugins);
 
-        // 子对话框取消必须返回同一个启动菜单。
+        // 子对话框取消必须返回同一个工作区。
         await terminal.InjectAsync(Key.Esc);
-        await terminal.WaitForScreenAsync(I18N_Instruction);
-        await terminal.InjectAsync(Key.CursorDown);
-        await terminal.InjectAsync(Key.CursorDown);
-        await terminal.InjectAsync(Key.Enter);
+        await WaitForStartupReadyAsync(terminal);
+        await ClickBootstrapAsync(terminal, "bootstrap-plugins");
         await terminal.WaitForScreenAsync(Localization.PluginRegistry.SelectPlugins);
         await terminal.InjectAsync(Key.Space);
         await terminal.InjectAsync(Key.Tab);
@@ -247,20 +295,20 @@ public sealed class StartupWorkflowTests
         Assert.DoesNotContain("disposed", File.Exists("lifecycle.log") ? File.ReadAllText("lifecycle.log") : "");
         Assert.Empty(host.CompleteCommand("/plugin reload "));
         await terminal.InjectAsync(Key.Enter);
-        await terminal.WaitForScreenAsync(I18N_Instruction);
+        await WaitForStartupReadyAsync(terminal);
         Assert.Same(workspace, Workspace.Current);
 
         // 缺少数据时停在同一个信息页，不提前 Initialize 或监听 HTTP。
-        await terminal.InjectAsync(Key.Enter);
+        await ClickBootstrapAsync(terminal, "bootstrap-start");
         await terminal.WaitForAsync(() => Environment.ExitCode == 1);
         await host.FlushAsync();
         var screen = await terminal.CaptureScreenAsync();
+        TestContext.Current.TestOutputHelper?.WriteLine($"Data failure after installation\n{screen}");
         Assert.Contains(I18N_DatabaseUnavailable, screen);
-        if (existing)
-        {
-            Assert.Contains(shared ? "Anchor" : name, screen);
-            Assert.Contains("1.0.0", screen);
-        }
+        Assert.False(await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
+            .Single(view => view.Id == "bootstrap-details-toggle").Visible));
+        Assert.Equal(existing ? new Version(1, 0, 0) : null,
+            PluginManager.SnapshotActivePluginMetadatas().SingleOrDefault(p => p.PluginName == (shared ? "Anchor" : name))?.Version);
         Assert.DoesNotContain("2.0.0", screen);
         Assert.Same(workspace, Workspace.Current);
         Assert.False(Server.IsRunning);
@@ -326,7 +374,7 @@ public sealed class StartupWorkflowTests
         await terminal.InjectAsync(Key.Enter);
         await terminal.WaitForScreenAsync(I18N_FirstRunComplete[..30]);
         await terminal.InjectAsync(Key.Enter);
-        await terminal.WaitForScreenAsync(I18N_Instruction);
+        await WaitForStartupReadyAsync(terminal);
         var menu = await terminal.CaptureScreenAsync();
         Assert.Contains(I18N_Start, menu);
         Assert.Contains(I18N_Options, menu);
@@ -340,8 +388,7 @@ public sealed class StartupWorkflowTests
         Assert.Equal(["FirstSetupPlugin constructed"], File.ReadAllLines("lifecycle.log"));
         Assert.False(Server.IsRunning);
 
-        await terminal.InjectAsync(Key.CursorDown);
-        await terminal.InjectAsync(Key.Enter);
+        await ClickBootstrapAsync(terminal, "bootstrap-options");
         await terminal.WaitForScreenAsync(ConfigText.Settings_Title);
         await terminal.InjectAsync(Key.Enter);
         await terminal.WaitForScreenAsync($"{ConfigText.Tabs_Core_ShowFirstRunPrompt}: {UiText.Button_No}");
@@ -354,8 +401,18 @@ public sealed class StartupWorkflowTests
         Assert.True(saved.Core.ShowFirstRunPrompt);
         Assert.Equal("zh-TW", saved.Updater.DatabaseLanguage);
         Assert.False(saved.Updater.TrainerIsMale);
+        await terminal.InjectAsync(Key.CursorDown);
+        await terminal.InjectAsync(Key.Enter);
+        await terminal.WaitForScreenAsync(ConfigText.Tabs_Core_ListenPortPrompt);
+        await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
+            .OfType<TextField>().Single().Text = "4695");
+        await terminal.InjectAsync(Key.Enter);
+        await terminal.WaitForScreenAsync($"{ConfigText.Tabs_Core_ListenPort}: 4695");
         await terminal.InjectAsync(Key.Esc);
-        await terminal.WaitForScreenAsync(I18N_Instruction);
+        await WaitForStartupReadyAsync(terminal);
+        await terminal.RedrawAsync();
+        Assert.Contains("4695", await terminal.CaptureScreenAsync());
+        Assert.Equal(4695, Config.Deserialize(File.ReadAllText(Config.CONFIG_FILEPATH), Config.CONFIG_FILEPATH).Core.ListenPort);
         await session.CloseAsync();
     }
 
@@ -421,7 +478,7 @@ public sealed class StartupWorkflowTests
         => RunScenarioAsync(nameof(StartupMenuEscapeStopsTheHost), async session =>
         {
             await session.StartAsync();
-            await session.Terminal.WaitForScreenAsync(I18N_Instruction);
+            await WaitForStartupReadyAsync(session.Terminal);
             await session.Terminal.InjectAsync(Key.Esc);
             await session.Run.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(Server.IsRunning);
@@ -466,7 +523,8 @@ public sealed class StartupWorkflowTests
         Assert.Contains(I18N_PluginRepository, session.FirstFrame);
         Assert.DoesNotContain(I18N_Environment, session.FirstFrame);
         await session.Terminal.InjectAsync(Key.Enter);
-        await session.Terminal.WaitForScreenAsync(I18N_PreparingStartup);
+        Assert.False(await session.Terminal.InvokeAsync(() => Descendants(session.Terminal.Application.TopRunnableView!)
+            .OfType<Button>().Single(button => button.Id == "bootstrap-start").Enabled));
         Assert.Equal(DatabaseAvailability.Unavailable, Database.Availability);
         Assert.False(Server.IsRunning);
         await session.Terminal.InjectAsync(cancelKey);
@@ -516,6 +574,31 @@ public sealed class StartupWorkflowTests
             Assert.EndsWith("latest-UmamusumeResponseAnalyzer.exe", error.StartInfo.FileName);
             Assert.Equal(UiText.Host_Stopped, Assert.Throws<InvalidOperationException>(() => TerminalUi.Log("test", "late")).Message);
         });
+
+    static Task WaitForStartupReadyAsync(TerminalGuiTestApp terminal)
+        => terminal.WaitForAsync(() => terminal.InvokeAsync(() =>
+            Descendants(terminal.Application.TopRunnableView!).OfType<Button>()
+                .Any(button => button.Id == "bootstrap-start" && button.Enabled)));
+
+    static async Task ClickBootstrapAsync(TerminalGuiTestApp terminal, string id)
+    {
+        var point = await terminal.InvokeAsync(() =>
+        {
+            var button = Descendants(terminal.Application.TopRunnableView!).OfType<Button>()
+                .Single(button => button.Id == id);
+            Assert.True(button.Enabled);
+            return button.ViewportToScreen(new System.Drawing.Point(1, 0));
+        });
+        await terminal.ClickAsync(point);
+    }
+
+    static IEnumerable<View> Descendants(View view)
+    {
+        yield return view;
+        foreach (var child in view.SubViews)
+            foreach (var descendant in Descendants(child))
+                yield return descendant;
+    }
 
     static string PluginSource(string name) => $$"""
         using System.IO;

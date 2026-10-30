@@ -13,6 +13,8 @@ namespace UmamusumeResponseAnalyzer.Plugin
             => Runtime.ReadSnapshot().Metadatas;
         internal static IReadOnlyList<string> FailedPlugins
             => Runtime.ReadSnapshot().FailedPlugins;
+        internal static IReadOnlyList<PluginFailure> SnapshotFailures()
+            => Runtime.Failures.Values.ToArray();
         internal static IReadOnlyList<IPlugin> LoadedPlugins
             => Runtime.ReadSnapshot().LoadedPlugins;
         internal static IReadOnlyList<ImmutableHashSet<string>> ContextGroups
@@ -77,6 +79,18 @@ namespace UmamusumeResponseAnalyzer.Plugin
         {
             var exceptionType = exception.GetType().FullName ?? exception.GetType().Name;
             return $"exception={exceptionType}, message={exception.Message}";
+        }
+
+        static void RecordPluginFailure(
+            string packagePath,
+            string? pluginName,
+            PluginFailureStage stage,
+            Exception error,
+            bool disablesPlugin = true)
+        {
+            var failure = new PluginFailure(packagePath, pluginName, stage, error, disablesPlugin);
+            Runtime.Failures.AddOrUpdate(packagePath, failure, (_, existing) =>
+                existing.DisablesPlugin ? existing : failure);
         }
 
         internal static void ReportPluginFailure(
@@ -197,7 +211,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 if (Runtime.Phase is not PluginLifecyclePhase.Created and
                     not PluginLifecyclePhase.Stopped)
                     throw LifecyclePhaseFailure("Init");
-                if (Runtime.Metadatas.Count != 0 || Runtime.FailedPlugins.Count != 0 ||
+                if (Runtime.Metadatas.Count != 0 || Runtime.FailedPlugins.Count != 0 || Runtime.Failures.Count != 0 ||
                     Runtime.LoadedPlugins.Count != 0 || Runtime.ContextGroups.Count != 0 ||
                     Runtime.Contexts.Count != 0 || Runtime.ReadAnalyzers().Request.Length != 0 ||
                     Runtime.ReadAnalyzers().Response.Length != 0)
@@ -264,6 +278,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                     var path = Runtime.Metadatas.GetValueOrDefault(name)?.PackagePath ?? name;
                     if (!Runtime.FailedPlugins.Contains(path))
                         Runtime.FailedPlugins.Add(path);
+                    RecordPluginFailure(path, name, PluginFailureStage.Initialize, failure);
                     var cleanupFailed = false;
                     try { CleanupPluginAsync(plugin, flush: true).GetAwaiter().GetResult(); }
                     catch (Exception cleanupEx)
@@ -313,11 +328,15 @@ namespace UmamusumeResponseAnalyzer.Plugin
             }
             catch (Exception ex)
             {
-                if (IsPluginFaulted(plugin) || TryDisableForMissingAssembly(plugin, ex, "StartAsync"))
+                if (IsPluginFaulted(plugin) || TryDisableForMissingAssembly(plugin, ex, "StartAsync", PluginFailureStage.Start))
                     return;
 
+                var name = InternalName(plugin);
                 var failure = new InvalidOperationException(
-                    string.Format(i18n.StartFailed, InternalName(plugin), DescribeException(ex)));
+                    string.Format(i18n.StartFailed, name, DescribeException(ex)));
+                RecordPluginFailure(
+                    Runtime.Metadatas.GetValueOrDefault(name)?.PackagePath ?? name,
+                    name, PluginFailureStage.Start, ex, disablesPlugin: false);
                 ReportPluginFailure("Plugin", failure, ex.ToString());
             }
         }
@@ -344,6 +363,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 Runtime.LoadedPlugins.Clear();
                 Runtime.Metadatas.Clear();
                 Runtime.FailedPlugins.Clear();
+                Runtime.Failures.Clear();
                 Runtime.ContextGroups.Clear();
                 Runtime.Contexts.Clear();
                 ClearAnalyzerRegistrations();

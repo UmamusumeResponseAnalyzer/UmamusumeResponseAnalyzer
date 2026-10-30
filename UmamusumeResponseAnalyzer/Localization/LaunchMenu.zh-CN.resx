@@ -130,7 +130,7 @@
     <value>按任意键返回主菜单</value>
   </data>
   <data name="I18N_Start" xml:space="preserve">
-    <value>启动！</value>
+    <value>启动</value>
   </data>
   <data name="I18N_UpdateAssets" xml:space="preserve">
     <value>更新数据文件</value>
@@ -151,7 +151,7 @@
     <value>插件仓库</value>
   </data>
   <data name="I18N_QqGroup" xml:space="preserve">
-    <value>加入QQ群（号被封过之后在频道里说话会概率被夹</value>
+    <value>QQ群</value>
   </data>
   <data name="I18N_RedirectedConsole" xml:space="preserve">
     <value>无法启动交互界面：stdin 或 stdout 已被重定向。请在 Windows Terminal 等交互式终端中直接运行 URA。</value>
@@ -196,7 +196,7 @@
     <value>正在加载事件、技能、名称等数据。</value>
   </data>
   <data name="I18N_DatabaseUnavailable" xml:space="preserve">
-    <value>数据文件不完整或损坏；请更新全部数据文件后重新启动。</value>
+    <value>数据文件不完整或损坏。</value>
   </data>
   <data name="I18N_PhasePluginInit" xml:space="preserve">
     <value>插件初始化</value>
@@ -405,4 +405,100 @@
   <data name="I18N_Running" xml:space="preserve">
     <value>正在执行：{0}</value>
   </data>
+  <data name="I18N_More" xml:space="preserve">
+    <value>更多</value>
+  </data>
+  <data name="I18N_StartupSettings" xml:space="preserve">
+    <value>启动设置</value>
+  </data>
+  <data name="I18N_StartupDetails" xml:space="preserve">
+    <value>启动详情</value>
+  </data>
+  <data name="I18N_Diagnostics" xml:space="preserve">
+    <value>诊断信息</value>
+  </data>
+  <data name="I18N_ViewError" xml:space="preserve">
+    <value>查看错误</value>
+  </data>
+  <data name="I18N_CopyError" xml:space="preserve">
+    <value>复制错误</value>
+  </data>
+  <data name="I18N_Copied" xml:space="preserve">
+    <value>已复制</value>
+  </data>
+  <data name="I18N_PhaseStartCallbacks" xml:space="preserve">
+    <value>插件启动回调</value>
+  </data>
+  <data name="I18N_StateRunning" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="I18N_StateSkipped" xml:space="preserve">
+    <value>已跳过</value>
+  </data>
+  <data name="I18N_LocalAccess" xml:space="preserve">
+    <value>仅本机</value>
+  </data>
+  <data name="I18N_DeviceAccess" xml:space="preserve">
+    <value>网络接口</value>
+  </data>
+  <data name="I18N_Port" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="I18N_ListeningAddress" xml:space="preserve">
+    <value>正在监听</value>
+  </data>
+  <data name="I18N_NoPluginsAvailable" xml:space="preserve">
+    <value>未加载插件，插件功能不可用。</value>
+  </data>
+  <data name="I18N_PluginStillActive" xml:space="preserve">
+    <value>插件仍活动。</value>
+  </data>
+  <data name="I18N_PluginUnavailable" xml:space="preserve">
+    <value>此插件不可用。</value>
+  </data>
+  <data name="I18N_DataFailureAction" xml:space="preserve">
+    <value>插件和监听未启动。请退出并重新打开 URA，在启动前更新数据文件。</value>
+  </data>
+  <data name="I18N_ListenerFailureAction" xml:space="preserve">
+    <value>无法接收请求。请检查监听地址和端口占用后重启 URA。</value>
+  </data>
+  <data name="I18N_StartupFailureAction" xml:space="preserve">
+    <value>请查看错误详情，排除原因后重启 URA。</value>
+  </data>
+  <data name="I18N_StartingPluginCallbacks" xml:space="preserve">
+    <value>正在启动插件。</value>
+  </data>
+  <data name="I18N_PluginCallbacksCompleted" xml:space="preserve">
+    <value>已完成 {0} 个插件的启动回调。</value>
+  </data>
+  <data name="I18N_PluginCallbacksWithFailures" xml:space="preserve">
+    <value>插件启动回调完成，{0} 个插件存在问题。</value>
+  </data>
+  <data name="I18N_PluginCallbacksSkipped" xml:space="preserve">
+    <value>前置阶段未完成，未调用插件 StartAsync。</value>
+  </data>
+  <data name="I18N_StartWithPluginFailures" xml:space="preserve">
+    <value>已启动，{0} 个插件存在问题。</value>
+  </data>
+  <data name="I18N_ListenerDidNotStart" xml:space="preserve">
+    <value>HTTP 监听未启动。</value>
+  </data>
+  <data name="I18N_StartupStepSkipped" xml:space="preserve"><value>前置阶段未完成。</value></data>
+  <data name="I18N_ListeningEndpoint" xml:space="preserve"><value>监听 {0}</value></data>
+  <data name="I18N_AccessSummary" xml:space="preserve">
+    <value>接入范围　{0} · 端口 {1}</value>
+  </data>
+  <data name="I18N_FooterNavigation" xml:space="preserve">
+    <value>Tab 切换　│　Enter 确认</value>
+  </data>
+  <data name="I18N_FooterExit" xml:space="preserve">
+    <value>Ctrl+C 退出</value>
+  </data>
+  <data name="I18N_HideError" xml:space="preserve"><value>收起错误</value></data>
+  <data name="I18N_PhaseFailure" xml:space="preserve"><value>{0}：{1}</value></data>
+  <data name="I18N_ScanFailed" xml:space="preserve"><value>扫描失败</value></data>
+  <data name="I18N_InitializeFailed" xml:space="preserve"><value>初始化失败</value></data>
+  <data name="I18N_StartCallbackFailed" xml:space="preserve"><value>启动回调失败</value></data>
+  <data name="I18N_RuntimeFailed" xml:space="preserve"><value>运行期故障</value></data>
+  <data name="I18N_StateUnavailable" xml:space="preserve"><value>不可用</value></data>
 </root>

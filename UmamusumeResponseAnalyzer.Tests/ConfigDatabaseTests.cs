@@ -536,6 +536,12 @@ namespace UmamusumeResponseAnalyzer.Tests
                 }
                 var publishedEvents = Database.Events;
 
+                await WriteAsync<object?>(directory, Database.NAMES_FILEPATH, null);
+                Assert.Equal(DatabaseAvailability.Unavailable, Database.Initialize(out var errorDetails));
+                Assert.Contains(Path.Combine(directory, Database.NAMES_FILEPATH), errorDetails);
+                Assert.Contains("JSON null", errorDetails);
+                Assert.Same(publishedEvents, Database.Events);
+
                 File.Delete(Path.Combine(directory, Database.NAMES_FILEPATH));
                 var unavailable = await Database.Initialize();
                 await runtime.Host.FlushAsync();

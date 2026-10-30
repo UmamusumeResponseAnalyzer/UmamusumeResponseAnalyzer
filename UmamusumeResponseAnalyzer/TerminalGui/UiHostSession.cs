@@ -151,6 +151,15 @@ internal sealed class UiHostSession
         }
     }
 
+    internal bool RefreshBootstrap()
+    {
+        lock (gate)
+        {
+            EnsureAvailableLocked();
+            return AdmitLocked(new BootstrapChangedIngress());
+        }
+    }
+
     internal void EnsureWorkspaceAvailable(Workspace? workspace)
     {
         lock (gate)
@@ -507,6 +516,8 @@ internal sealed record RemovePanelIngress(
     string Key) : UiHostIngress;
 
 internal sealed record LogIngress(UiLogLine Line) : UiHostIngress;
+
+internal sealed record BootstrapChangedIngress : UiHostIngress;
 
 internal sealed record NotifyIngress(
     Workspace? Workspace,

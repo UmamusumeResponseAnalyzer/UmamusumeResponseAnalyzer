@@ -27,9 +27,10 @@ internal static partial class PluginManager
         foreach (var zip in pluginsDir.GetFiles("*.zip", SearchOption.TopDirectoryOnly)
                      .OrderBy(file => file.Name, StringComparer.OrdinalIgnoreCase))
         {
+            PluginMetadata? metadata = null;
             try
             {
-                var metadata = ReadPluginPackage(zip.FullName, LanguageConfig.GetCulture());
+                metadata = ReadPluginPackage(zip.FullName, LanguageConfig.GetCulture());
                 if (conflictedNames.Contains(metadata.PluginName))
                     throw new InvalidDataException(
                         string.Format(i18n.InternalNameConflict, metadata.PluginName));
@@ -39,15 +40,19 @@ internal static partial class PluginManager
                     conflictedNames.Add(metadata.PluginName);
                     if (!Runtime.FailedPlugins.Contains(existing.PackagePath))
                         Runtime.FailedPlugins.Add(existing.PackagePath);
-                    throw new InvalidDataException(
+                    var conflict = new InvalidDataException(
                         string.Format(i18n.InternalNamePackageConflict, existing.PluginName, existing.PackagePath,
                             metadata.PluginName, metadata.PackagePath));
+                    RecordPluginFailure(existing.PackagePath, existing.PluginName, PluginFailureStage.Scan, conflict);
+                    throw conflict;
                 }
                 scanned.Add(metadata.PluginName, metadata);
             }
             catch (Exception ex)
             {
-                ReportPluginDiagnostic(new InvalidDataException(string.Format(i18n.InvalidPackage, zip.FullName), ex));
+                var failure = new InvalidDataException(string.Format(i18n.InvalidPackage, zip.FullName), ex);
+                RecordPluginFailure(zip.FullName, metadata?.PluginName, PluginFailureStage.Scan, failure);
+                ReportPluginDiagnostic(failure);
                 if (!Runtime.FailedPlugins.Contains(zip.FullName))
                     Runtime.FailedPlugins.Add(zip.FullName);
             }
@@ -166,6 +171,7 @@ internal static partial class PluginManager
                 foreach (var name in ordered)
                 {
                     Runtime.FailedPlugins.Add(Runtime.Metadatas[name].PackagePath);
+                    RecordPluginFailure(Runtime.Metadatas[name].PackagePath, name, PluginFailureStage.Load, ex);
                 }
                 ReportPluginDiagnostic(ex);
                 continue;
@@ -178,6 +184,7 @@ internal static partial class PluginManager
                 if (failure is null)
                     continue;
                 Runtime.FailedPlugins.Add(metadata.PackagePath);
+                RecordPluginFailure(metadata.PackagePath, metadata.PluginName, PluginFailureStage.Load, failure);
                 ReportPluginDiagnostic(failure);
             }
         }

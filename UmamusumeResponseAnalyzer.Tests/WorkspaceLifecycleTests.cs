@@ -77,6 +77,8 @@ public sealed class WorkspaceLifecycleTests(PluginRuntimeFixture fixture) : IDis
         await terminal.ResizeAsync(120, 30);
         await terminal.RedrawAsync();
         var bootstrap = host.Bootstrap;
+        bootstrap.ShowInformation();
+        bootstrap.SetPhase(BootstrapPhaseId.Host, BootstrapPhaseState.Succeeded, "host-ready");
         var run = Guid.NewGuid().ToString("N")[..8];
         var expected = Enumerable.Range(0, 4)
             .Select(index => $"L{run}-{index}")
@@ -86,6 +88,15 @@ public sealed class WorkspaceLifecycleTests(PluginRuntimeFixture fixture) : IDis
         for (var index = 0; index < expected.Length; index++)
             TerminalUi.Log("Admission", expected[index]);
         await host.FlushAsync();
+
+        var view = await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!).OfType<BootstrapView>().Single());
+        if (!await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-details").Visible))
+        {
+            await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-details-toggle").SetFocus());
+            await terminal.InjectAsync(Key.Enter);
+        }
+        await terminal.InvokeAsync(() => Descendants(view).Single(child => child.Id == "bootstrap-logs").SetFocus());
+        await terminal.InjectAsync(Key.End);
 
         await terminal.WaitForScreenAsync(expected[^1]);
         var screen = await terminal.CaptureScreenAsync();
@@ -102,12 +113,20 @@ public sealed class WorkspaceLifecycleTests(PluginRuntimeFixture fixture) : IDis
         ownedWorkspaces.Add(workspace);
         return workspace;
     }
+
+    static IEnumerable<Terminal.Gui.ViewBase.View> Descendants(Terminal.Gui.ViewBase.View view)
+    {
+        yield return view;
+        foreach (var child in view.SubViews)
+            foreach (var descendant in Descendants(child))
+                yield return descendant;
+    }
 }
 
 public sealed class WorkspaceLifecycleProcessTests
 {
     [Fact]
-    public async Task FirstVisibleFrameContainsBootstrapDashboardBeforeOrdinaryEmptyState()
+    public async Task FirstVisibleFrameContainsPreparingBootstrapBeforeOrdinaryEmptyState()
     {
         const string scenario = "workspace-bootstrap-first-frame";
         const string result = "workspace-bootstrap-first-frame-ok";
@@ -117,16 +136,27 @@ public sealed class WorkspaceLifecycleProcessTests
             var host = TerminalUiLifecycleChildProcess.InitializeHost(
                 terminal,
                 CancellationToken.None);
-            var frames = new ConcurrentQueue<string>();
+            var frames = new ConcurrentQueue<(string Screen, int WorkspaceWidth, int SummaryWidth)>();
+
+            static IEnumerable<Terminal.Gui.ViewBase.View> Descendants(Terminal.Gui.ViewBase.View view)
+            {
+                yield return view;
+                foreach (var child in view.SubViews)
+                    foreach (var descendant in Descendants(child))
+                        yield return descendant;
+            }
 
             void CaptureFrame(object? sender, EventArgs e)
             {
                 if (terminal.Application.TopRunnableView is null)
                     return;
-                frames.Enqueue((terminal.Application.Driver
+                var views = Descendants(terminal.Application.TopRunnableView).ToArray();
+                var bootstrap = views.OfType<BootstrapView>().Single();
+                var summary = views.Single(view => view.Id == "bootstrap-summary");
+                frames.Enqueue(((terminal.Application.Driver
                     ?? throw new InvalidOperationException(
                         "Terminal.Gui driver was not initialized."))
-                    .ToString());
+                    .ToString(), bootstrap.Viewport.Width, summary.Frame.Width));
             }
 
             terminal.RunOnOwnerThread(() =>
@@ -138,14 +168,18 @@ public sealed class WorkspaceLifecycleProcessTests
                     terminal.Application.LayoutAndDrawComplete -= CaptureFrame);
                 var visibleFrames = frames.ToArray();
                 Assert.NotEmpty(visibleFrames);
-                var firstFrame = visibleFrames[0];
-                Assert.Contains(Localization.LaunchMenu.I18N_Environment, firstFrame, StringComparison.Ordinal);
-                Assert.Contains(Localization.LaunchMenu.I18N_InitializationResults, firstFrame, StringComparison.Ordinal);
-                Assert.Contains(Localization.LaunchMenu.I18N_PluginSummary, firstFrame, StringComparison.Ordinal);
-                Assert.Contains(Localization.LaunchMenu.I18N_RecentLogs, firstFrame, StringComparison.Ordinal);
+                var first = visibleFrames[0];
+                Assert.Equal(first.WorkspaceWidth - 4, first.SummaryWidth);
+                var firstFrame = first.Screen;
+                Assert.Contains(Localization.LaunchMenu.I18N_Start, firstFrame, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_Options, firstFrame, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_PreparingStartup, firstFrame, StringComparison.Ordinal);
+                Assert.DoesNotContain(Localization.LaunchMenu.I18N_Environment, firstFrame, StringComparison.Ordinal);
+                Assert.DoesNotContain(Localization.LaunchMenu.I18N_PluginSummary, firstFrame, StringComparison.Ordinal);
+                Assert.DoesNotContain(Localization.LaunchMenu.I18N_RecentLogs, firstFrame, StringComparison.Ordinal);
                 Assert.All(visibleFrames, frame => Assert.DoesNotContain(
                     string.Format(i18n.Workspace_NoOutput, i18n.Workspace_BootstrapTitle),
-                    frame,
+                    frame.Screen,
                     StringComparison.Ordinal));
 
                 var emptyWorkspace = Workspace.Create("Ordinary empty workspace");
@@ -170,7 +204,7 @@ public sealed class WorkspaceLifecycleProcessTests
             await TerminalUiLifecycleProcessTests.RunChildAsync(
                 scenario,
                 typeof(WorkspaceLifecycleProcessTests),
-                nameof(FirstVisibleFrameContainsBootstrapDashboardBeforeOrdinaryEmptyState)));
+                nameof(FirstVisibleFrameContainsPreparingBootstrapBeforeOrdinaryEmptyState)));
     }
 
     [Fact]
@@ -328,11 +362,11 @@ public sealed class WorkspaceLifecycleProcessTests
                 workspace.Remove();
                 Assert.Same(bootstrap, Workspace.Current);
                 await host.FlushAsync();
-                await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_Environment);
+                await terminal.WaitForScreenAsync(Localization.LaunchMenu.I18N_PreparingStartup);
                 var screen = await terminal.CaptureScreenAsync();
-                Assert.Contains(Localization.LaunchMenu.I18N_InitializationResults, screen, StringComparison.Ordinal);
-                Assert.Contains(Localization.LaunchMenu.I18N_PluginSummary, screen, StringComparison.Ordinal);
-                Assert.Contains(Localization.LaunchMenu.I18N_RecentLogs, screen, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_Start, screen, StringComparison.Ordinal);
+                Assert.Contains(Localization.LaunchMenu.I18N_Options, screen, StringComparison.Ordinal);
+                Assert.DoesNotContain(Localization.LaunchMenu.I18N_RecentLogs, screen, StringComparison.Ordinal);
                 Assert.DoesNotContain("当前没有 workspace。", screen, StringComparison.Ordinal);
 
                 TerminalUiLifecycleChildProcess.WriteResult(result);

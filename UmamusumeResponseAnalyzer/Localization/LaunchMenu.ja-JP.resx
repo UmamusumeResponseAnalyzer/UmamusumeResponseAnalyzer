@@ -130,7 +130,7 @@
     <value>任意のキーを押してメインメニューに戻る</value>
   </data>
   <data name="I18N_Start" xml:space="preserve">
-    <value>スタート！</value>
+    <value>スタート</value>
   </data>
   <data name="I18N_UpdateAssets" xml:space="preserve">
     <value>データファイルを更新</value>
@@ -151,7 +151,7 @@
     <value>プラグインリポジトリ</value>
   </data>
   <data name="I18N_QqGroup" xml:space="preserve">
-    <value>QQグループに参加（アカウント停止歴があるとチャンネルの発言が非表示になる場合があります）</value>
+    <value>QQグループ</value>
   </data>
   <data name="I18N_RedirectedConsole" xml:space="preserve">
     <value>対話画面を起動できません。stdin または stdout がリダイレクトされています。Windows Terminal などの対話型端末で URA を直接実行してください。</value>
@@ -196,7 +196,7 @@
     <value>イベント・スキル・名前などのデータを読み込み中です。</value>
   </data>
   <data name="I18N_DatabaseUnavailable" xml:space="preserve">
-    <value>データファイルが不足しているか破損しています。すべてのデータファイルを更新して再起動してください。</value>
+    <value>データファイルが不足しているか破損しています。</value>
   </data>
   <data name="I18N_PhasePluginInit" xml:space="preserve">
     <value>プラグイン初期化</value>
@@ -405,4 +405,100 @@
   <data name="I18N_Running" xml:space="preserve">
     <value>実行中：{0}</value>
   </data>
+  <data name="I18N_More" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="I18N_StartupSettings" xml:space="preserve">
+    <value>起動設定</value>
+  </data>
+  <data name="I18N_StartupDetails" xml:space="preserve">
+    <value>起動の詳細</value>
+  </data>
+  <data name="I18N_Diagnostics" xml:space="preserve">
+    <value>診断情報</value>
+  </data>
+  <data name="I18N_ViewError" xml:space="preserve">
+    <value>エラーを表示</value>
+  </data>
+  <data name="I18N_CopyError" xml:space="preserve">
+    <value>エラーをコピー</value>
+  </data>
+  <data name="I18N_Copied" xml:space="preserve">
+    <value>コピーしました</value>
+  </data>
+  <data name="I18N_PhaseStartCallbacks" xml:space="preserve">
+    <value>プラグイン起動</value>
+  </data>
+  <data name="I18N_StateRunning" xml:space="preserve">
+    <value>実行中</value>
+  </data>
+  <data name="I18N_StateSkipped" xml:space="preserve">
+    <value>スキップ</value>
+  </data>
+  <data name="I18N_LocalAccess" xml:space="preserve">
+    <value>この端末のみ</value>
+  </data>
+  <data name="I18N_DeviceAccess" xml:space="preserve">
+    <value>ネットワーク接続</value>
+  </data>
+  <data name="I18N_Port" xml:space="preserve">
+    <value>ポート</value>
+  </data>
+  <data name="I18N_ListeningAddress" xml:space="preserve">
+    <value>待受中</value>
+  </data>
+  <data name="I18N_NoPluginsAvailable" xml:space="preserve">
+    <value>プラグインが読み込まれていないため、プラグイン機能は利用できません。</value>
+  </data>
+  <data name="I18N_PluginStillActive" xml:space="preserve">
+    <value>プラグインは動作中です。</value>
+  </data>
+  <data name="I18N_PluginUnavailable" xml:space="preserve">
+    <value>このプラグインは利用できません。</value>
+  </data>
+  <data name="I18N_DataFailureAction" xml:space="preserve">
+    <value>プラグインと待受は開始されませんでした。URA を終了して再度開き、起動前にデータファイルを更新してください。</value>
+  </data>
+  <data name="I18N_ListenerFailureAction" xml:space="preserve">
+    <value>リクエストを受信できません。待受アドレスとポートの使用状況を確認し、URA を再起動してください。</value>
+  </data>
+  <data name="I18N_StartupFailureAction" xml:space="preserve">
+    <value>エラーの詳細を確認し、原因を解消してから URA を再起動してください。</value>
+  </data>
+  <data name="I18N_StartingPluginCallbacks" xml:space="preserve">
+    <value>プラグインを起動しています。</value>
+  </data>
+  <data name="I18N_PluginCallbacksCompleted" xml:space="preserve">
+    <value>{0} 個のプラグインの起動コールバックが完了しました。</value>
+  </data>
+  <data name="I18N_PluginCallbacksWithFailures" xml:space="preserve">
+    <value>プラグイン起動コールバックが完了し、{0} 個のプラグインで問題がありました。</value>
+  </data>
+  <data name="I18N_PluginCallbacksSkipped" xml:space="preserve">
+    <value>前提となる処理が完了していないため、プラグインの StartAsync は呼び出されませんでした。</value>
+  </data>
+  <data name="I18N_StartWithPluginFailures" xml:space="preserve">
+    <value>起動しました。{0} 個のプラグインで問題がありました。</value>
+  </data>
+  <data name="I18N_ListenerDidNotStart" xml:space="preserve">
+    <value>HTTP 待受が開始されませんでした。</value>
+  </data>
+  <data name="I18N_StartupStepSkipped" xml:space="preserve"><value>前提となる処理が完了していません。</value></data>
+  <data name="I18N_ListeningEndpoint" xml:space="preserve"><value>{0} で待受中</value></data>
+  <data name="I18N_AccessSummary" xml:space="preserve">
+    <value>接続範囲　{0} · ポート {1}</value>
+  </data>
+  <data name="I18N_FooterNavigation" xml:space="preserve">
+    <value>Tab 移動　│　Enter 確定</value>
+  </data>
+  <data name="I18N_FooterExit" xml:space="preserve">
+    <value>Ctrl+C 終了</value>
+  </data>
+  <data name="I18N_HideError" xml:space="preserve"><value>エラーを閉じる</value></data>
+  <data name="I18N_PhaseFailure" xml:space="preserve"><value>{0}：{1}</value></data>
+  <data name="I18N_ScanFailed" xml:space="preserve"><value>スキャン失敗</value></data>
+  <data name="I18N_InitializeFailed" xml:space="preserve"><value>初期化失敗</value></data>
+  <data name="I18N_StartCallbackFailed" xml:space="preserve"><value>起動コールバック失敗</value></data>
+  <data name="I18N_RuntimeFailed" xml:space="preserve"><value>実行時エラー</value></data>
+  <data name="I18N_StateUnavailable" xml:space="preserve"><value>利用不可</value></data>
 </root>

@@ -21,15 +21,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="$(IntermediateOutputPath)ref\$(AssemblyName).dll"
-		      Pack="true"
-		      PackagePath="ref\$(TargetFramework)\" />
-		<None Include="Build\URA.Plugin.Build.props"
-		      Pack="true"
-		      PackagePath="buildTransitive\UmamusumeResponseAnalyzer.props" />
-		<None Include="Build\URA.Plugin.Build.targets"
-		      Pack="true"
-		      PackagePath="buildTransitive\UmamusumeResponseAnalyzer.targets" />
+		<None Include="$(IntermediateOutputPath)ref\$(AssemblyName).dll" Pack="true" PackagePath="ref\$(TargetFramework)\" />
+		<None Include="Build\URA.Plugin.Build.props" Pack="true" PackagePath="buildTransitive\UmamusumeResponseAnalyzer.props" />
+		<None Include="Build\URA.Plugin.Build.targets" Pack="true" PackagePath="buildTransitive\UmamusumeResponseAnalyzer.targets" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -57,6 +51,7 @@
 		<InternalsVisibleTo Include="RamenScenarioAnalyzerSmoke" />
 		<InternalsVisibleTo Include="PioneerScenarioAnalyzerSmoke" />
 		<InternalsVisibleTo Include="PioneerEventLoggerSmoke" />
+		<InternalsVisibleTo Include="FestaScenarioAnalyzerSmoke" />
 		<InternalsVisibleTo Include="SendGameStatusPluginSmoke" />
 		<InternalsVisibleTo Include="SkillEffectPluginSmoke" />
 		<InternalsVisibleTo Include="SkillTipsResponseAnalyzerSmoke" />
@@ -64,7 +59,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MessagePack" Version="3.1.7" />
+		<PackageReference Include="MessagePack" Version="3.1.12" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Terminal.Gui" Version="2.4.17" />
 		<PackageReference Include="Watson.Lite" Version="6.6.0" />

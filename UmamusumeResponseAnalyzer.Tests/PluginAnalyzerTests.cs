@@ -10,6 +10,7 @@ using Gallop.Endpoints;
 using MessagePack;
 using Newtonsoft.Json.Linq;
 using Terminal.Gui.App;
+using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using UmamusumeResponseAnalyzer.TerminalGui;
 using UmamusumeResponseAnalyzer.Plugin;
@@ -243,6 +244,9 @@ namespace UmamusumeResponseAnalyzer.Tests
             {
                 bootstrap.Workspace.SwitchTo();
                 await host.FlushAsync();
+                await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
+                    .Single(view => view.Id == "bootstrap-details-toggle").SetFocus());
+                await terminal.InjectAsync(Key.Enter);
                 await terminal.RedrawAsync();
                 var screen = await terminal.CaptureScreenAsync();
 
@@ -397,9 +401,17 @@ namespace UmamusumeResponseAnalyzer.Tests
                 var bootstrap = host.Bootstrap;
                 try
                 {
+                    bootstrap.ShowInformation();
+                    bootstrap.SetListening(notificationClient!.BaseAddress!.Authority);
                     bootstrap.Workspace.SwitchTo();
                     await host.FlushAsync();
                     await terminal.ResizeAsync(320, 48);
+                    await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
+                        .Single(view => view.Id == "bootstrap-details-toggle").SetFocus());
+                    await terminal.InjectAsync(Key.Enter);
+                    await terminal.InvokeAsync(() => Descendants(terminal.Application.TopRunnableView!)
+                        .Single(view => view.Id == "bootstrap-logs").SetFocus());
+                    await terminal.InjectAsync(Key.End);
                     await terminal.RedrawAsync();
 
                     var malformedPayloadPlugin = new ResponseDispatchPlugin();
@@ -434,6 +446,14 @@ namespace UmamusumeResponseAnalyzer.Tests
                     scenario,
                     typeof(PluginAnalyzerTests),
                     nameof(DispatchKnownEndpointFailures_RemainReported)));
+        }
+
+        static IEnumerable<View> Descendants(View view)
+        {
+            yield return view;
+            foreach (var child in view.SubViews)
+                foreach (var descendant in Descendants(child))
+                    yield return descendant;
         }
 
         [Fact]
