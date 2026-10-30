@@ -77,8 +77,10 @@ namespace UmamusumeResponseAnalyzer
         }
         internal static bool IsRunning => instance?.IsListening
             ?? (defaultInstance.IsValueCreated && defaultInstance.Value.IsListening);
+        internal static CancellationToken LifetimeToken { get; private set; }
         internal static void Start(CancellationToken hostCancellationToken)
         {
+            LifetimeToken = hostCancellationToken;
             var server = Instance;
             var routes = server.Routes.PreAuthentication.Static;
             routes.Add(

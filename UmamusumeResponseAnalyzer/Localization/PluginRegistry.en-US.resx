@@ -282,4 +282,16 @@ This plugin will execute code on this computer.</value>
   <data name="AnalyzerDisabledMissingAssembly" xml:space="preserve">
     <value>Analyzer registration {1} (plugin {0}, endpoint {2}) is disabled until process exit because required assembly {4} is missing during {3}: {5}</value>
   </data>
+  <data name="RouteFailed" xml:space="preserve">
+    <value>Plugin route failed: plugin={0}, path={1}, {2}</value>
+  </data>
+  <data name="RouteSignatureInvalid" xml:space="preserve">
+    <value>Invalid plugin route signature: plugin={0}, method={1}, expected={2}</value>
+  </data>
+  <data name="RoutePathInvalid" xml:space="preserve">
+    <value>Invalid plugin route path or HTTP method: plugin={0}, relative path={1}</value>
+  </data>
+  <data name="RouteDuplicate" xml:space="preserve">
+    <value>Plugin route already registered: {0} {1}</value>
+  </data>
 </root>

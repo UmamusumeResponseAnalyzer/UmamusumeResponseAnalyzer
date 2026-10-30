@@ -282,4 +282,16 @@
   <data name="AnalyzerDisabledMissingAssembly" xml:space="preserve">
     <value>プラグイン {0} の analyzer 登録 {1}（endpoint：{2}）は、{3} の実行中に必須アセンブリ {4} が見つからなかったため、この登録のみプロセス終了まで無効になりました：{5}</value>
   </data>
+  <data name="RouteFailed" xml:space="preserve">
+    <value>プラグインルートの処理に失敗しました: plugin={0}, path={1}, {2}</value>
+  </data>
+  <data name="RouteSignatureInvalid" xml:space="preserve">
+    <value>プラグインルートのシグネチャが無効です: plugin={0}, method={1}, expected={2}</value>
+  </data>
+  <data name="RoutePathInvalid" xml:space="preserve">
+    <value>プラグインルートのパスまたは HTTP メソッドが無効です: plugin={0}, relative path={1}</value>
+  </data>
+  <data name="RouteDuplicate" xml:space="preserve">
+    <value>プラグインルートは登録済みです: {0} {1}</value>
+  </data>
 </root>

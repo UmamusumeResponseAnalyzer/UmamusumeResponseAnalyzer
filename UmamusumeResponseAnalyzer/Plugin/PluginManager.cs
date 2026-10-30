@@ -230,7 +230,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
                 plugin.Initialize(new PluginContext(TerminalUi.RequireHost(), plugin, available));
                 var plan = registrations.Commit();
                 lifecycle.CompleteInitialization();
-                CommitAnalyzerRegistrations(plan);
+                CommitPluginRegistrations(plan);
                 lifecycle.Open();
             }
             catch

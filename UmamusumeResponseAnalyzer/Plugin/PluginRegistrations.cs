@@ -25,9 +25,11 @@ internal sealed record AnalyzerRegistration(
 
 internal sealed class PluginRegistrationStage(
     IPlugin plugin,
-    IEnumerable<AnalyzerRegistration>? initialAnalyzers = null) : IDisposable
+    IEnumerable<AnalyzerRegistration>? initialAnalyzers = null,
+    IEnumerable<PluginRouteRegistration>? initialRoutes = null) : IDisposable
 {
     readonly List<AnalyzerRegistration> analyzers = initialAnalyzers?.ToList() ?? [];
+    readonly List<PluginRouteRegistration> routes = initialRoutes?.ToList() ?? [];
     bool committed;
     internal bool IsDisposed { get; private set; }
 
@@ -36,23 +38,28 @@ internal sealed class PluginRegistrationStage(
     internal void Add(IEnumerable<AnalyzerRegistration> registrations)
         => analyzers.AddRange(registrations);
 
-    internal IReadOnlyList<AnalyzerRegistration> Commit()
+    internal PluginRegistrationPlan Commit()
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (committed)
             throw new InvalidOperationException(string.Format(i18n.RegistrationAlreadyCommitted, PluginManager.InternalName(Plugin)));
 
         committed = true;
-        return [.. analyzers];
+        return new([.. analyzers], [.. routes]);
     }
 
     public void Dispose()
     {
         IsDisposed = true;
         analyzers.Clear();
+        routes.Clear();
         PluginManager.EndRegistrationStage(this);
     }
 }
+
+internal sealed record PluginRegistrationPlan(
+    IReadOnlyList<AnalyzerRegistration> Analyzers,
+    IReadOnlyList<PluginRouteRegistration> Routes);
 
 internal static partial class PluginManager
 {
@@ -68,7 +75,8 @@ internal static partial class PluginManager
 
         var stage = new PluginRegistrationStage(
             plugin,
-            includeAttributeAnalyzers ? CreateAttributeRegistrations(plugin) : null);
+            includeAttributeAnalyzers ? CreateAttributeRegistrations(plugin) : null,
+            includeAttributeAnalyzers ? CreateRouteRegistrations(plugin) : null);
         ActiveRegistrationStage.Value = stage;
         return stage;
     }
@@ -297,11 +305,11 @@ internal static partial class PluginManager
 
     internal static void CommitRegistrationStage(
         IPlugin plugin,
-        IReadOnlyList<AnalyzerRegistration> registrations)
+        PluginRegistrationPlan registrations)
     {
         var lifecycle = RequireLifecycle(plugin);
         lifecycle.ValidateRegistrationCommit();
-        CommitAnalyzerRegistrations(registrations);
+        CommitPluginRegistrations(registrations);
     }
 
     internal static void CommitAnalyzerRegistrations(IEnumerable<AnalyzerRegistration> registrations)

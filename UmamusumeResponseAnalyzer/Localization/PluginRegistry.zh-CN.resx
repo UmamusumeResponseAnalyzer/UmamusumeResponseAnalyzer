@@ -282,4 +282,16 @@
   <data name="AnalyzerDisabledMissingAssembly" xml:space="preserve">
     <value>插件 {0} 的 analyzer 注册 {1}（endpoint：{2}）在 {3} 阶段缺少必需程序集 {4}，该条注册已停用至进程退出：{5}</value>
   </data>
+  <data name="RouteFailed" xml:space="preserve">
+    <value>插件路由处理失败：插件={0}，路径={1}，{2}</value>
+  </data>
+  <data name="RouteSignatureInvalid" xml:space="preserve">
+    <value>插件路由签名无效：插件={0}，方法={1}，要求={2}</value>
+  </data>
+  <data name="RoutePathInvalid" xml:space="preserve">
+    <value>插件路由路径或 HTTP 方法无效：插件={0}，相对路径={1}</value>
+  </data>
+  <data name="RouteDuplicate" xml:space="preserve">
+    <value>插件路由已注册：{0} {1}</value>
+  </data>
 </root>

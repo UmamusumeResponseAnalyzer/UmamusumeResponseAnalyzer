@@ -146,6 +146,11 @@ internal static partial class PluginManager
         var name = InternalName(plugin);
         var failures = new List<Exception>();
         await lifecycle.Close();
+        try { RemoveRoutes(plugin); }
+        catch (Exception error)
+        {
+            failures.Add(new InvalidOperationException(string.Format(i18n.CleanupPhaseFailed, name, "RemoveRoutes"), error));
+        }
 
         using (HotkeyManager.RegisterScope(plugin))
         {

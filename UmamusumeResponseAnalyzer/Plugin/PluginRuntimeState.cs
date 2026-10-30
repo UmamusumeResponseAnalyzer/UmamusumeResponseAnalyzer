@@ -54,6 +54,7 @@ internal sealed class PluginRuntimeState
         new(StringComparer.OrdinalIgnoreCase);
     internal PluginLifecyclePhase Phase { get; set; }
     internal ConditionalWeakTable<IPlugin, PluginLifecycle> Lifecycles { get; } = new();
+    internal Dictionary<IPlugin, List<PluginRouteRegistration>> Routes { get; } = [];
     internal SemaphoreSlim LifecycleGate { get; } = new(1, 1);
 
     internal bool ShutdownRequested

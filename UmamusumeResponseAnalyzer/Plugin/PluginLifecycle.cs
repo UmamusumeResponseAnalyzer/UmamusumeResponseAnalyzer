@@ -5,6 +5,7 @@ namespace UmamusumeResponseAnalyzer.Plugin;
 internal sealed class PluginLifecycle(IPlugin plugin)
 {
     readonly object gate = new();
+    readonly CancellationTokenSource stopping = new();
     TaskCompletionSource? callbackDrain;
     int inFlight;
     bool initializing;
@@ -14,6 +15,7 @@ internal sealed class PluginLifecycle(IPlugin plugin)
 
     internal IPlugin Plugin { get; } = plugin;
     internal Task? CleanupTask { get; set; }
+    internal CancellationToken Stopping => stopping.Token;
 
     internal string? Failure
     {
@@ -36,8 +38,9 @@ internal sealed class PluginLifecycle(IPlugin plugin)
             failure = reason;
             accepting = false;
             closed = true;
-            return true;
         }
+        stopping.Cancel();
+        return true;
     }
 
     internal bool IsAccepting
@@ -105,14 +108,18 @@ internal sealed class PluginLifecycle(IPlugin plugin)
 
     internal Task Close()
     {
+        Task drain;
         lock (gate)
         {
             accepting = false;
             closed = true;
-            return inFlight == 0
+            drain = inFlight == 0
                 ? Task.CompletedTask
                 : (callbackDrain ??= new(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
         }
+        // Cancellation can release a route's callback lease, so run it outside gate and before draining.
+        stopping.Cancel();
+        return drain;
     }
 
     internal bool TryEnterCallback(out IDisposable? lease)

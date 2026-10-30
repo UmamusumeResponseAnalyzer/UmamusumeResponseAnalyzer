@@ -111,3 +111,16 @@ public sealed class RequestAnalyzerAttribute<TEndpoint>(int priority = 0)
 public sealed class ResponseAnalyzerAttribute<TEndpoint>(int priority = 0)
     : AnalyzerAttribute(typeof(TEndpoint), AnalyzerKind.Response, priority)
     where TEndpoint : IGameEndpoint;
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public sealed class RouteAttribute(WatsonWebserver.Core.HttpMethod method, string path) : Attribute
+{
+    public WatsonWebserver.Core.HttpMethod Method { get; } = method;
+    public string Path { get; } = path;
+}
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public sealed class WebSocketRouteAttribute(string path) : Attribute
+{
+    public string Path { get; } = path;
+}
