@@ -127,13 +127,13 @@
     <value>待ち受けアドレス</value>
   </data>
   <data name="Tabs_Core_ListenAddressPrompt" xml:space="preserve">
-    <value>待ち受けアドレスを入力してください（既定：127.0.0.1、管理者権限の場合は 0.0.0.0）</value>
+    <value>待ち受けアドレスを入力してください（既定：127.0.0.1、管理者権限の場合は 0.0.0.0）。実行中の変更は URA の再起動後に反映されます。</value>
   </data>
   <data name="Tabs_Core_ListenPort" xml:space="preserve">
     <value>待ち受けポート</value>
   </data>
   <data name="Tabs_Core_ListenPortPrompt" xml:space="preserve">
-    <value>待ち受けポートを入力してください（既定：4693）</value>
+    <value>待ち受けポートを入力してください（既定：4693）。実行中の変更は URA の再起動後に反映されます。</value>
   </data>
   <data name="Tabs_Core_Title" xml:space="preserve">
     <value>コア</value>

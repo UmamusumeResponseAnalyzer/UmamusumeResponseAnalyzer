@@ -153,7 +153,7 @@ namespace UmamusumeResponseAnalyzer
 
                         var startupSettings = ReadBootstrapSettings();
                         bootstrap.SetSettings(startupSettings);
-                        bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
+                        bootstrap.SetPluginSummary(BuildBootstrapPluginSummary());
                         bootstrap.ShowInformation();
                         await uiHost.FlushAsync();
 
@@ -180,7 +180,7 @@ namespace UmamusumeResponseAnalyzer
                             currentPhase = BootstrapPhaseId.Initialize;
                             bootstrap.SetPhase(BootstrapPhaseId.Initialize, BootstrapPhaseState.Running, I18N_InitializingPlugins);
                             PluginManager.InitializeLoadedPlugins();
-                            bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true));
+                            bootstrap.SetPluginSummary(BuildBootstrapPluginSummary());
                             var loadedPluginCount = PluginManager.SnapshotActivePluginMetadatas().Count;
                             var failedPluginCount = PluginManager.SnapshotFailures().Count;
                             bootstrap.SetPhase(
@@ -259,7 +259,7 @@ namespace UmamusumeResponseAnalyzer
                         currentPhase = BootstrapPhaseId.StartCallbacks;
                         bootstrap.SetPhase(BootstrapPhaseId.StartCallbacks, BootstrapPhaseState.Running, I18N_StartingPluginCallbacks);
                         await PluginManager.TriggerStartedAsync(lifetimeToken);
-                        bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: true, started: true));
+                        bootstrap.SetPluginSummary(BuildBootstrapPluginSummary());
                         var startupFailures = PluginManager.SnapshotFailures();
                         var startFailures = startupFailures.Count(failure => failure.Stage == PluginFailureStage.Start);
                         bootstrap.SetPhase(
@@ -312,9 +312,34 @@ namespace UmamusumeResponseAnalyzer
                     }
                 }
 
-                // RunAsync 会同步进入 run loop，必须先创建 startup waiter。
-                _ = CompleteStartupAsync();
+                async Task RunBootstrapAsync()
+                {
+                    try
+                    {
+                        await CompleteStartupAsync();
+                        lifetimeToken.ThrowIfCancellationRequested();
+                        await ShowMenu(bootstrap, lifetimeToken, allowStartup: false);
+                    }
+                    catch (PostShutdownProcessRequestedException ex)
+                    {
+                        workflowFailure = ExceptionDispatchInfo.Capture(ex);
+                        lifetimeCts.Cancel();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        lifetimeCts.Cancel();
+                    }
+                    catch (Exception ex)
+                    {
+                        workflowFailure ??= ExceptionDispatchInfo.Capture(ex);
+                        uiHost.RequestShutdown();
+                    }
+                }
+
+                // RunAsync 会同步进入 run loop，必须先创建菜单等待任务。
+                var bootstrapTask = RunBootstrapAsync();
                 await uiHost.RunAsync();
+                await bootstrapTask;
             }
             catch (Exception ex)
             {
@@ -401,7 +426,7 @@ namespace UmamusumeResponseAnalyzer
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
                 bootstrap.SetPhase(BootstrapPhaseId.Scan, BootstrapPhaseState.Failed, ex.Message, ex.ToString());
-                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
+                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary());
                 TerminalUi.LogException("Plugin", ex);
                 throw;
             }
@@ -415,11 +440,13 @@ namespace UmamusumeResponseAnalyzer
                 failedPluginCount == 0
                     ? string.Format(I18N_PluginsFound, loadedPluginCount)
                     : string.Format(I18N_PluginsFoundWithFailures, loadedPluginCount, failedPluginCount));
-            bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
+            bootstrap.SetPluginSummary(BuildBootstrapPluginSummary());
         }
 
-        static IReadOnlyList<BootstrapPluginRow> BuildBootstrapPluginSummary(bool initialized, bool started = false)
+        static IReadOnlyList<BootstrapPluginRow> BuildBootstrapPluginSummary()
         {
+            var initialized = PluginManager.Phase is PluginLifecyclePhase.Initialized or PluginLifecyclePhase.Started;
+            var started = PluginManager.Phase == PluginLifecyclePhase.Started;
             var metadatas = PluginManager.Metadatas;
             var loadedNames = PluginManager.SnapshotActivePluginMetadatas()
                 .Select(plugin => plugin.PluginName).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -544,13 +571,13 @@ namespace UmamusumeResponseAnalyzer
                 ? "https://github.com/UmamusumeResponseAnalyzer/Assets/raw/refs/heads/main/".AllowMirror()
                 : Config.Updater.CustomDatabaseRepository);
 
-        static async Task ShowMenu(BootstrapWorkspace bootstrap, CancellationToken cancellationToken)
+        static async Task ShowMenu(BootstrapWorkspace bootstrap, CancellationToken cancellationToken, bool allowStartup = true)
         {
             while (true)
             {
                 bootstrap.SetSettings(ReadBootstrapSettings());
-                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary(initialized: false));
-                var selected = await bootstrap.ShowMenuAsync(cancellationToken);
+                bootstrap.SetPluginSummary(BuildBootstrapPluginSummary());
+                var selected = await bootstrap.ShowMenuAsync(cancellationToken, allowStartup);
                 if (selected == BootstrapAction.Start)
                     return;
 
@@ -585,8 +612,14 @@ namespace UmamusumeResponseAnalyzer
                             throw new ArgumentOutOfRangeException(nameof(selected), selected, null);
                     }
                 }
+                catch (PostShutdownProcessRequestedException) { throw; }
                 catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
                 {
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException && !cancellationToken.IsCancellationRequested)
+                {
+                    TerminalUi.LogException("URA", ex);
+                    ModalDialogs.Acknowledge(TerminalUi.FormatExceptionLogMessage(ex), cancellationToken);
                 }
                 cancellationToken.ThrowIfCancellationRequested();
             }

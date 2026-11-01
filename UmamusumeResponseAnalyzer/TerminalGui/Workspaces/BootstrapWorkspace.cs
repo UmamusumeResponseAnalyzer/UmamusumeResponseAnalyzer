@@ -40,7 +40,7 @@ internal sealed record BootstrapLogRow(
 internal sealed record BootstrapSnapshot(
     BootstrapSettings? Settings, IReadOnlyList<BootstrapPhase> Phases,
     IReadOnlyList<BootstrapPluginRow> Plugins, IReadOnlyList<BootstrapLogRow> Logs,
-    BootstrapMode Mode, string? Listening, BootstrapAction? RunningAction = null);
+    BootstrapMode Mode, string? Listening, BootstrapAction? RunningAction = null, bool StartupAllowed = true);
 
 internal sealed class BootstrapWorkspace : IDisposable
 {
@@ -54,6 +54,7 @@ internal sealed class BootstrapWorkspace : IDisposable
     BootstrapSettings? settings;
     IReadOnlyList<BootstrapPluginRow> plugins = [];
     BootstrapMode mode;
+    bool startupAllowed = true;
     BootstrapAction? runningAction;
     string? listening;
     BootstrapView? view;
@@ -92,7 +93,7 @@ internal sealed class BootstrapWorkspace : IDisposable
         uiHost.RefreshBootstrap();
     }
 
-    internal async Task<BootstrapAction> ShowMenuAsync(CancellationToken cancellationToken)
+    internal async Task<BootstrapAction> ShowMenuAsync(CancellationToken cancellationToken, bool allowStartup = true)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var selection = new TaskCompletionSource<BootstrapAction>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -103,6 +104,7 @@ internal sealed class BootstrapWorkspace : IDisposable
                 throw new InvalidOperationException(I18N_MenuPending);
             menuSelection = selection;
             mode = BootstrapMode.Ready;
+            startupAllowed = allowStartup;
             runningAction = null;
         }
         uiHost.RefreshBootstrap();
@@ -114,13 +116,22 @@ internal sealed class BootstrapWorkspace : IDisposable
     {
         lock (gate)
         {
-            if (mode != BootstrapMode.Ready || menuSelection?.TrySetResult(action) != true)
+            if (!CanChoose(mode, startupAllowed, action) || menuSelection?.TrySetResult(action) != true)
                 return;
             runningAction = action;
             mode = action == BootstrapAction.Start ? BootstrapMode.Starting : BootstrapMode.Busy;
         }
         uiHost.RefreshBootstrap();
     }
+
+    internal static bool CanChoose(BootstrapMode mode, bool startupAllowed, BootstrapAction action) =>
+        mode == BootstrapMode.Ready && action switch
+        {
+            BootstrapAction.Options or BootstrapAction.QqGroup => true,
+            BootstrapAction.Hachimi => OperatingSystem.IsWindows(),
+            BootstrapAction.Start or BootstrapAction.PluginRepository or BootstrapAction.UpdateData or BootstrapAction.UpdateProgram => startupAllowed,
+            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
+        };
 
     void Cancel()
     {
@@ -137,6 +148,7 @@ internal sealed class BootstrapWorkspace : IDisposable
             menuSelection?.TrySetCanceled();
             menuSelection = null;
             mode = BootstrapMode.Information;
+            startupAllowed = false;
         }
         uiHost.RefreshBootstrap();
     }
@@ -207,7 +219,7 @@ internal sealed class BootstrapWorkspace : IDisposable
         {
             if (disposed || view is null)
                 return;
-            snapshot = new(settings, phases.Values.ToArray(), plugins, logs.ToArray(), mode, listening, runningAction);
+            snapshot = new(settings, phases.Values.ToArray(), plugins, logs.ToArray(), mode, listening, runningAction, startupAllowed);
         }
         view.Update(snapshot);
     }
@@ -287,6 +299,7 @@ internal sealed class BootstrapView : View
         Highlight = new Attribute(UraTheme.Sunken, UraTheme.OnActiveTab)
     };
 
+    static readonly BootstrapAction[] ToolbarActions = [BootstrapAction.Start, BootstrapAction.Options, BootstrapAction.PluginRepository, BootstrapAction.UpdateData];
     readonly Action<BootstrapAction> choose;
     readonly Action onDisposed;
     readonly Label heading;
@@ -364,10 +377,9 @@ internal sealed class BootstrapView : View
             new() { Id = "bootstrap-plugins", Text = I18N_PluginRepository },
             new() { Id = "bootstrap-update-data", Text = I18N_UpdateAssets }
         ];
-        var actionValues = new[] { BootstrapAction.Start, BootstrapAction.Options, BootstrapAction.PluginRepository, BootstrapAction.UpdateData };
         for (var index = 0; index < actions.Length; index++)
         {
-            var action = actionValues[index];
+            var action = ToolbarActions[index];
             actions[index].Accepting += (_, e) => { e.Handled = true; choose(action); };
         }
         more = new Button { Id = "bootstrap-more", Text = $"{I18N_More} ▾" };
@@ -527,7 +539,7 @@ internal sealed class BootstrapView : View
                 LayoutBody();
                 showError.SetFocus();
             }
-            else if (snapshot.Mode is BootstrapMode.Preparing or BootstrapMode.Ready or BootstrapMode.Busy)
+            else if (snapshot.StartupAllowed && snapshot.Mode is BootstrapMode.Preparing or BootstrapMode.Ready or BootstrapMode.Busy)
                 requestShutdown();
             return true;
         });
@@ -542,7 +554,7 @@ internal sealed class BootstrapView : View
         {
             initialized = true;
             if (snapshot.Mode == BootstrapMode.Ready)
-                actions[0].SetFocus();
+                actions.First(button => button.Enabled).SetFocus();
             else
                 summary.SetFocus();
         };
@@ -555,16 +567,16 @@ internal sealed class BootstrapView : View
         var previous = snapshot;
         snapshot = value;
         var focusedAction = actions.FirstOrDefault(button => button.HasFocus);
-        foreach (var button in actions)
-            button.Enabled = value.Mode == BootstrapMode.Ready;
+        for (var index = 0; index < actions.Length; index++)
+            actions[index].Enabled = BootstrapWorkspace.CanChoose(value.Mode, value.StartupAllowed, ToolbarActions[index]);
         if (focusedAction is not null && !focusedAction.Enabled)
             more.SetFocus();
         else if (initialized && previous.Mode == BootstrapMode.Preparing && value.Mode == BootstrapMode.Ready &&
             !userInteracted && (App?.TopRunnableView?.MostFocused is null ||
                 ReferenceEquals(App.TopRunnableView.MostFocused, more) || ReferenceEquals(App.TopRunnableView.MostFocused, summary)))
             actions[0].SetFocus();
-        foreach (var (item, _) in moreActions)
-            item.Enabled = value.Mode == BootstrapMode.Ready;
+        foreach (var (item, action) in moreActions)
+            item.Enabled = BootstrapWorkspace.CanChoose(value.Mode, value.StartupAllowed, action);
 
         summary.Text = Summary(value);
         var failed = value.Phases.FirstOrDefault(phase => phase.Id != BootstrapPhaseId.Host && phase.State == BootstrapPhaseState.Failed)
@@ -572,7 +584,7 @@ internal sealed class BootstrapView : View
         summaryDetail.Text = failed is not null
             ? failed.Id == BootstrapPhaseId.Database ? I18N_DataFailureAction
                 : failed.Id == BootstrapPhaseId.Listener ? I18N_ListenerFailureAction : I18N_StartupFailureAction
-            : value.Plugins.Count == 0 && (value.Mode == BootstrapMode.Ready || value.Listening is not null)
+            : value.Plugins.Count == 0 && (value.Mode == BootstrapMode.Ready && value.StartupAllowed || value.Listening is not null)
                 ? I18N_NoPluginsAvailable : string.Empty;
         summaryDetail.Visible = summaryDetail.Text.Length > 0;
         var summaryAppearance = new Attribute(
@@ -638,7 +650,7 @@ internal sealed class BootstrapView : View
 
     static string Summary(BootstrapSnapshot state)
     {
-        if (state.Mode == BootstrapMode.Ready)
+        if (state.Mode == BootstrapMode.Ready && state.StartupAllowed)
         {
             var access = state.Settings is { } settings
                 ? string.Format(I18N_AccessSummary,
@@ -649,9 +661,12 @@ internal sealed class BootstrapView : View
                 : string.Empty;
             return access;
         }
-        if (state.Mode == BootstrapMode.Busy && state.RunningAction is { } action)
-            return string.Format(I18N_Running, BootstrapWorkspace.ActionLabel(action));
         var listening = state.Listening is { } endpoint ? $"{I18N_ListeningAddress}  {endpoint}" : string.Empty;
+        if (state.Mode == BootstrapMode.Busy && state.RunningAction is { } action)
+        {
+            var operation = string.Format(I18N_Running, BootstrapWorkspace.ActionLabel(action));
+            return listening.Length == 0 ? operation : $"{listening}\n{operation}";
+        }
         var failed = state.Phases.FirstOrDefault(phase => phase.Id != BootstrapPhaseId.Host && phase.State == BootstrapPhaseState.Failed)
             ?? state.Phases.FirstOrDefault(phase => phase.State == BootstrapPhaseState.Failed);
         if (failed is not null)
@@ -767,8 +782,8 @@ internal sealed class BootstrapView : View
         detailsToggle.Text = $"{(detailsExpanded ? "▾" : "▸")} {I18N_StartupDetails}";
         diagnosticsToggle.Text = $"{(diagnosticsExpanded ? "▾" : "▸")} {I18N_Diagnostics}";
         showError.Text = errorExpanded ? I18N_HideError : I18N_ViewError;
-        settingsToggle.Visible = snapshot.Mode is BootstrapMode.Ready or BootstrapMode.Busy;
-        detailsToggle.Visible = snapshot.Mode == BootstrapMode.Information && (snapshot.Listening is not null || snapshot.Phases.Any(phase =>
+        settingsToggle.Visible = snapshot.StartupAllowed && snapshot.Mode is BootstrapMode.Ready or BootstrapMode.Busy;
+        detailsToggle.Visible = !snapshot.StartupAllowed && (snapshot.Listening is not null || snapshot.Phases.Any(phase =>
             phase.Id == BootstrapPhaseId.Listener && phase.State == BootstrapPhaseState.Failed ||
             phase.Id == BootstrapPhaseId.Host && phase.State is BootstrapPhaseState.Succeeded or BootstrapPhaseState.Warning));
         settingsText.Visible = settingsToggle.Visible && settingsExpanded;
@@ -924,7 +939,7 @@ internal sealed class BootstrapView : View
                     continue;
                 var item = new MenuItem(BootstrapWorkspace.ActionLabel(action), action: () => choose(action))
                 {
-                    Enabled = snapshot.Mode == BootstrapMode.Ready
+                    Enabled = BootstrapWorkspace.CanChoose(snapshot.Mode, snapshot.StartupAllowed, action)
                 };
                 moreActions.Add((item, action));
                 items.Add(item);

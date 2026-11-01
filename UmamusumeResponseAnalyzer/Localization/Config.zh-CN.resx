@@ -127,13 +127,13 @@
     <value>监听地址</value>
   </data>
   <data name="Tabs_Core_ListenAddressPrompt" xml:space="preserve">
-    <value>请输入监听地址(默认:127.0.0.1 管理员权限时为0.0.0.0)</value>
+    <value>请输入监听地址(默认:127.0.0.1 管理员权限时为0.0.0.0)。运行中修改将在重启 URA 后生效。</value>
   </data>
   <data name="Tabs_Core_ListenPort" xml:space="preserve">
     <value>监听端口</value>
   </data>
   <data name="Tabs_Core_ListenPortPrompt" xml:space="preserve">
-    <value>请输入监听端口(默认:4693)</value>
+    <value>请输入监听端口(默认:4693)。运行中修改将在重启 URA 后生效。</value>
   </data>
   <data name="Tabs_Core_Title" xml:space="preserve">
     <value>核心</value>

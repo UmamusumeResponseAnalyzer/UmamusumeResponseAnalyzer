@@ -8,6 +8,7 @@ namespace UmamusumeResponseAnalyzer.Plugin
     internal static partial class PluginManager
     {
         static readonly PluginRuntimeState Runtime = new();
+        internal static PluginLifecyclePhase Phase => Runtime.Phase;
 
         internal static FrozenDictionary<string, PluginMetadata> Metadatas
             => Runtime.ReadSnapshot().Metadatas;

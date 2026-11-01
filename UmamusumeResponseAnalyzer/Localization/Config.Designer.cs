@@ -150,7 +150,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
 
         /// <summary>
-        ///   查找类似 Enter the listen address (default: 127.0.0.1; 0.0.0.0 with administrator privileges) 的本地化字符串。
+        ///   查找类似 Enter the listen address (default: 127.0.0.1; 0.0.0.0 with administrator privileges). Runtime changes take effect after restarting URA. 的本地化字符串。
         /// </summary>
         internal static string Tabs_Core_ListenAddressPrompt {
             get {
@@ -168,7 +168,7 @@ namespace UmamusumeResponseAnalyzer.Localization {
         }
 
         /// <summary>
-        ///   查找类似 Enter the listen port (default: 4693) 的本地化字符串。
+        ///   查找类似 Enter the listen port (default: 4693). Runtime changes take effect after restarting URA. 的本地化字符串。
         /// </summary>
         internal static string Tabs_Core_ListenPortPrompt {
             get {

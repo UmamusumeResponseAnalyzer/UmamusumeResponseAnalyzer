@@ -127,13 +127,13 @@
     <value>Listen address</value>
   </data>
   <data name="Tabs_Core_ListenAddressPrompt" xml:space="preserve">
-    <value>Enter the listen address (default: 127.0.0.1; 0.0.0.0 with administrator privileges)</value>
+    <value>Enter the listen address (default: 127.0.0.1; 0.0.0.0 with administrator privileges). Runtime changes take effect after restarting URA.</value>
   </data>
   <data name="Tabs_Core_ListenPort" xml:space="preserve">
     <value>Listen port</value>
   </data>
   <data name="Tabs_Core_ListenPortPrompt" xml:space="preserve">
-    <value>Enter the listen port (default: 4693)</value>
+    <value>Enter the listen port (default: 4693). Runtime changes take effect after restarting URA.</value>
   </data>
   <data name="Tabs_Core_Title" xml:space="preserve">
     <value>Core</value>
