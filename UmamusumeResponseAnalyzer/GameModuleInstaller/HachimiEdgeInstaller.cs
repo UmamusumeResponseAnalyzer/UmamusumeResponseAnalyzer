@@ -132,6 +132,7 @@ internal static class HachimiEdgeInstaller
     internal static (string Config, string ForwardConfig) MergeConfigurations(string directory, string notifier)
     {
         var config = ReadConfiguration(Path.Combine(directory, HachimiEdgeGame.ConfigPath));
+        config["disable_auto_update_check"] = true;
         JsonArray libraries;
         if (!config.TryGetPropertyValue("load_libraries", out var node)) config["load_libraries"] = libraries = [];
         else if (node is JsonArray list && list.All(n => n is JsonValue value && value.TryGetValue<string>(out _))) libraries = list;
