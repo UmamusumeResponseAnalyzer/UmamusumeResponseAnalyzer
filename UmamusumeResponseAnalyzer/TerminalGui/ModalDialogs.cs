@@ -408,6 +408,59 @@ static class ModalDialogs
             return result;
         }, cancellationToken);
 
+    internal static (bool Resize, StartupWindowSizeMode Preference) AskStartupWindowSize(
+        int columns,
+        int rows,
+        CancellationToken cancellationToken)
+        => RunOnOwner((app, token) =>
+        {
+            using var dialog = CreateDialog(i18n.Dialog_WindowSizeTitle, height: 10);
+            dialog.Width = Dim.Func(_ => Math.Min(64, app.Screen.Width - 2));
+            var title = dialog.SubViews.First();
+            title.X = 2;
+            title.Y = 1;
+            title.Width = Dim.Fill(2);
+            title.Height = 1;
+            var currentSize = new Label
+            {
+                X = 2, Y = 3, Width = Dim.Fill(2), Height = 1,
+                Text = string.Format(i18n.Dialog_WindowSizeCurrent, columns, rows)
+            };
+            currentSize.SetScheme(new Scheme(UraTheme.Dialog)
+            {
+                Normal = new Terminal.Gui.Drawing.Attribute(UraTheme.Muted, UraTheme.Surface)
+            });
+            var question = new Label
+            {
+                X = 2, Y = 4, Width = Dim.Fill(2), Height = 1,
+                Text = string.Format(i18n.Dialog_WindowSizeQuestion, StartupWindowSize.Columns, StartupWindowSize.Rows)
+            };
+            var result = (Resize: false, Preference: StartupWindowSizeMode.Ask);
+            var choices = new[]
+            {
+                (Text: i18n.Button_Always, Resize: true, Preference: StartupWindowSizeMode.Always),
+                (Text: i18n.Button_Never, Resize: false, Preference: StartupWindowSizeMode.Never),
+                (Text: i18n.Button_Yes, Resize: true, Preference: StartupWindowSizeMode.Ask),
+                (Text: i18n.Button_No, Resize: false, Preference: StartupWindowSizeMode.Ask)
+            };
+            dialog.Add(currentSize, question);
+            foreach (var choice in choices)
+            {
+                var isDefault = choice is { Resize: true, Preference: StartupWindowSizeMode.Ask };
+                var button = CreateButton(choice.Text, isDefault, () =>
+                {
+                    result = (choice.Resize, choice.Preference);
+                    app.RequestStop(dialog);
+                });
+                button.X = Pos.Align(Alignment.Center, AlignmentModes.AddSpaceBetweenItems);
+                button.Y = 6;
+                dialog.Add(button);
+            }
+            dialog.SubViews.OfType<Button>().Single(button => button.IsDefault).SetFocus();
+            Run(app, dialog, token);
+            return result;
+        }, cancellationToken);
+
     internal static bool Acknowledge(
         string? title = null,
         CancellationToken cancellationToken = default)

@@ -153,4 +153,10 @@
   <data name="I18N_ResponsePluginFailed" xml:space="preserve">
     <value>レスポンス解析プラグインの処理に失敗しました: plugin={0}, {1}</value>
   </data>
+  <data name="I18N_IncompletePacketBody" xml:space="preserve">
+    <value>パケット本文が不完全です：API={0}、期待値={1} バイト、受信={2} バイト。プラグインには配信されませんでした。</value>
+  </data>
+  <data name="I18N_InvalidRequestId" xml:space="preserve">
+    <value>ヘッダー {0} がないか形式が無効です。空でない GUID の N 形式（ハイフンなしの16進数32文字）が必要です。ゲーム転送プラグインと URA を同時に更新してください。</value>
+  </data>
 </root>

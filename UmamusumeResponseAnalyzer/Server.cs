@@ -64,12 +64,14 @@ namespace UmamusumeResponseAnalyzer
             new WebserverSettings(Config.Core.ListenAddress, Config.Core.ListenPort),
             ctx => ctx.Response.Send(string.Empty)));
         static WebserverLite? instance;
+        static readonly SemaphoreSlim dispatchGate = new(1, 1);
 
         // 禁止 beforefieldinit；配置只在首次获取 Instance 时读取。
         static Server() { }
 
         const string GameEndpointPathPrefix = "/umamusume";
         const string CanonicalUrlHeaderName = "X-Hachimi-Game-Url";
+        const string RequestIdHeaderName = "X-Hachimi-Request-Id";
         internal static WebserverLite Instance
         {
             get => instance ?? defaultInstance.Value;
@@ -131,19 +133,53 @@ namespace UmamusumeResponseAnalyzer
             HttpContextBase ctx,
             CancellationToken cancellationToken)
         {
-            var buffer = ctx.Request.DataAsBytes;
             var canonicalUrl = ctx.Request.Headers[CanonicalUrlHeaderName];
             if (string.IsNullOrWhiteSpace(canonicalUrl))
                 throw new InvalidOperationException(string.Format(I18N_CanonicalHeaderMissing, CanonicalUrlHeaderName));
 
+            var buffer = await ctx.Request.ReadBodyAsync(cancellationToken);
+            if (buffer is null || ctx.Request.Headers["Content-Length"] is not null &&
+                buffer.LongLength != ctx.Request.ContentLength)
+            {
+                var error = new InvalidDataException(string.Format(
+                    Localization.Server.ResourceManager.GetString("I18N_IncompletePacketBody", Localization.Server.Culture)!,
+                    ExtractEndpointPath(canonicalUrl), ctx.Request.ContentLength, buffer?.LongLength ?? 0));
+                TerminalUi.Notify("Server", error.Message, UiSeverity.Error);
+                TerminalUi.LogException("Server", error);
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(error.Message);
+                return;
+            }
+
+            var requestIdValue = ctx.Request.Headers[RequestIdHeaderName];
+            if (requestIdValue?.Length != 32 || !Guid.TryParseExact(requestIdValue, "N", out var requestId) || requestId == Guid.Empty)
+            {
+                var message = string.Format(
+                    Localization.Server.ResourceManager.GetString("I18N_InvalidRequestId", Localization.Server.Culture)!,
+                    RequestIdHeaderName);
+                TerminalUi.Log("Server", message, UiSeverity.Error);
+                ctx.Response.StatusCode = 400;
+                await ctx.Response.Send(message);
+                return;
+            }
+
             var headers = new GameHttpHeaders(
+                requestId,
                 ctx.Request.Headers["X-Hachimi-sid"],
                 ctx.Request.Headers["X-Hachimi-app-ver"],
                 ctx.Request.Headers["X-Hachimi-res-ver"],
                 ctx.Request.Headers["X-Hachimi-viewerid"],
                 ctx.Request.Headers["X-Hachimi-device"],
                 ctx.Request.Headers["X-Hachimi-device-subtype"]);
-            await DispatchPacket(kind, canonicalUrl, buffer, headers);
+            await dispatchGate.WaitAsync(cancellationToken);
+            try
+            {
+                await DispatchPacket(kind, canonicalUrl, buffer, headers);
+            }
+            finally
+            {
+                dispatchGate.Release();
+            }
             cancellationToken.ThrowIfCancellationRequested();
             await ctx.Response.Send(string.Empty);
         }
@@ -183,7 +219,7 @@ namespace UmamusumeResponseAnalyzer
                 if (!TryResolveEndpoint(canonicalUrl, out var descriptor))
                     return;
 
-                SaveDebugPacket(kind, canonicalUrl, buffer);
+                SaveDebugPacket(kind, canonicalUrl, buffer, headers.RequestId);
 
                 var registrations = PluginManager.SnapshotAnalyzerRegistrations(kind, descriptor.EndpointType);
                 if (registrations.Length == 0)
@@ -202,7 +238,7 @@ namespace UmamusumeResponseAnalyzer
             }
         }
 
-        static void SaveDebugPacket(AnalyzerKind kind, string canonicalUrl, byte[] buffer)
+        static void SaveDebugPacket(AnalyzerKind kind, string canonicalUrl, byte[] buffer, Guid requestId)
         {
             if (!Config.Misc.SaveResponseForDebug)
                 return;
@@ -214,11 +250,12 @@ namespace UmamusumeResponseAnalyzer
             var suffix = kind == AnalyzerKind.Request ? "Q" : "R";
             var timestamp = DateTime.Now.ToString("yy-MM-dd HH-mm-ss-fff");
             var endpointName = ExtractEndpointPath(canonicalUrl)[1..].Replace('/', '-');
-            File.WriteAllBytes($"packets/{timestamp}-{Guid.CreateVersion7():N}{suffix}-{endpointName}.msgpack", buffer);
+            File.WriteAllBytes($"packets/{timestamp}-{requestId:N}{suffix}-{endpointName}.msgpack", buffer);
 #if DEBUG
             var debugJson = new JObject
             {
                 ["url"] = canonicalUrl,
+                ["requestId"] = requestId.ToString("N"),
                 ["payload"] = JToken.Parse(MessagePackSerializer.ConvertToJson(buffer)),
             };
             File.WriteAllText($"packets/{timestamp}{suffix}.json", debugJson.ToString(Newtonsoft.Json.Formatting.None));

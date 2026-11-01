@@ -294,4 +294,10 @@ This plugin will execute code on this computer.</value>
   <data name="RouteDuplicate" xml:space="preserve">
     <value>Plugin route already registered: {0} {1}</value>
   </data>
+
+  <data name="InvalidPackagePath" xml:space="preserve"><value>Invalid or duplicate package path: {0}</value></data>
+  <data name="UnsupportedRuntimeAsset" xml:space="preserve"><value>Unsupported runtime asset: {0}</value></data>
+  <data name="ExpectedNativeX64" xml:space="preserve"><value>Expected a native Windows x64 DLL: {0}</value></data>
+  <data name="NativeLibraryConflict" xml:space="preserve"><value>Native library content conflict in group {0}: {1}</value></data>
+  <data name="NativeCacheMismatch" xml:space="preserve"><value>Native library cache differs from the plugin package: {0}</value></data>
 </root>

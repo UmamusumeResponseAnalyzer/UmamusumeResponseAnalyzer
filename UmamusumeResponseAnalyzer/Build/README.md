@@ -1,5 +1,7 @@
 # URA 插件构建契约
 
+游戏通知的 RequestId、正文与 headers 约定见[游戏通知契约](../../docs/packet-forwarding.md)。
+
 `UmamusumeResponseAnalyzer` NuGet 包提供 Host 引用程序集，并通过 `buildTransitive` 导入 [URA.Plugin.Build.props](URA.Plugin.Build.props) 和 [URA.Plugin.Build.targets](URA.Plugin.Build.targets)。构建目标生成 `manifest.json`、选择 NuGet 运行时资产、制作插件 ZIP，并可复制到本机插件目录。
 
 ## 引用与构建属性
@@ -25,11 +27,25 @@ manifest 序列化在运行时加载构建宿主的 `Newtonsoft.Json.dll`：`dot
 
 ZIP 根目录包含 `manifest.json` 和 `<AssemblyName>.dll`。资产选择从插件直接声明的非自动 NuGet 包开始遍历依赖，排除 Host 包这条引用分支。插件直接引用的运行时包仍参与选择；仅提供 Host 共享 ABI 程序集的包在此处终止遍历。共享程序集为 `UmamusumeResponseAnalyzer`、`Terminal.Gui`、`Watson.Lite`、`WatsonWebserver.Core` 和 `WatsonWebserver.Lite`。
 
-普通托管依赖 DLL 放到 ZIP 根目录，语言资源 DLL 保留目录；插件自身的 `<AssemblyName>.resources.dll` 也随包复制。标记为 native 的资产、非 DLL 运行时文件、PDB、deps.json、临时文件、危险路径或不同来源的同名目标均使打包失败。`project.assets.json` 必须包含与本次 `TargetFramework` / `RuntimeIdentifier` 完全一致的目标。
+普通托管依赖 DLL 放到 ZIP 根目录，语言资源 DLL 保留目录；插件自身的 `<AssemblyName>.resources.dll` 也随包复制。Windows x64 原生 DLL 保留在 `runtimes/win-x64/native/`。其他 native 资产、非 DLL 运行时文件、PDB、deps.json、临时文件、危险路径或不同来源的同名目标均使打包失败。`project.assets.json` 必须包含与本次 `TargetFramework` / `RuntimeIdentifier` 完全一致的目标。
+
+Host 验证原生 DLL 的 PE x64 架构和 ZIP 路径。每个插件依赖组按包内容哈希解压到数据目录的 `PluginData/.native/`，首次使用时加载；已有缓存必须通过 SHA-256 校验。同组同名原生 DLL 的内容必须相同。
 
 对 ZIP 验证构建显式使用 `Release`、`RuntimeIdentifier=win-x64`、`SelfContained=false`、`PlatformTarget=AnyCPU`。Visual Studio full-framework MSBuild 在插件打包未指定 RID 时设置后三项；`dotnet` 构建应自行传入 RID。资产冲突错误会提示指定 RID，不会猜选某个 DLL。
 
 部署目标仅在 `$(LOCALAPPDATA)\UmamusumeResponseAnalyzer\Plugins\` 已存在时复制 ZIP，并可覆盖同名文件；验证时传 `DeployUraPluginToLocalAppDataOnBuild=false`。
+
+## 宿主单文件发布
+
+本机发布配置 `Properties/PublishProfiles/standalone.pubxml` 被 Git 忽略。配置使用 `net10.0`、`win-x64`、自包含单文件发布，并通过 `EnableCompressionInSingleFile=true` 压缩内嵌程序集；压缩会增加启动时的解压开销。保留嵌入调试符号和语言资源。
+
+`PublishTrimmed=false` 保留开放插件所需的运行时能力。`TrimMode=partial` 也会裁剪 .NET 框架及声明支持裁剪的依赖，发布时无法获知后装插件使用的全部 API。
+
+从宿主仓库根目录发布到独立构建目录：
+
+```powershell
+dotnet publish .\UmamusumeResponseAnalyzer\UmamusumeResponseAnalyzer.csproj -p:PublishProfile=standalone -p:PublishDir="$PWD\artifacts\standalone\"
+```
 
 ## 本地包验证
 

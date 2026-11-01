@@ -130,6 +130,7 @@ namespace UmamusumeResponseAnalyzer
                     Download(progress, I18N_DownloadEventsInstruction, Database.EVENT_NAME_FILEPATH, token),
                     Download(progress, I18N_DownloadNamesInstruction, Database.NAMES_FILEPATH, token),
                     Download(progress, I18N_DownloadSkillDataInstruction, Database.SKILLS_FILEPATH, token),
+                    Download(progress, Database.SKILL_PLANNING_FILEPATH, Database.SKILL_PLANNING_FILEPATH, token),
                     Download(progress, I18N_DownloadTalentSkillInstruction, Database.TALENT_SKILLS_FILEPATH, token),
                     Download(progress, I18N_DownloadFactorIdsInstruction, Database.FACTOR_IDS_FILEPATH, token),
                     Download(progress, I18N_DownloadSkillUpgradeSpecialityInstruction, Database.SKILL_UPGRADE_SPECIALITY_FILEPATH, token),

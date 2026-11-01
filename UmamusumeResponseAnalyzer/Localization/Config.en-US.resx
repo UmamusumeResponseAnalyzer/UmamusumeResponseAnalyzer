@@ -216,4 +216,16 @@
   <data name="PluginUnloaded" xml:space="preserve">
     <value>Cannot open settings because the plugin was unloaded: {0}</value>
   </data>
+  <data name="Tabs_Misc_StartupWindowSize" xml:space="preserve">
+    <value>Startup window size</value>
+  </data>
+  <data name="StartupWindowSize_Ask" xml:space="preserve">
+    <value>Ask each time</value>
+  </data>
+  <data name="StartupWindowSize_Always" xml:space="preserve">
+    <value>Always resize</value>
+  </data>
+  <data name="StartupWindowSize_Never" xml:space="preserve">
+    <value>Never resize</value>
+  </data>
 </root>

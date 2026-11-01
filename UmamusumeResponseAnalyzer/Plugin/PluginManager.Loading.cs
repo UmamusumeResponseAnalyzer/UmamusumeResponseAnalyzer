@@ -276,7 +276,7 @@ internal static partial class PluginManager
         using var archive = new ZipArchive(bytes, ZipArchiveMode.Read);
         var entry = archive.GetEntry(entryName)
                     ?? throw new InvalidDataException(string.Format(i18n.PackageEntryMissing, package.PackagePath, entryName));
-        var stream = new MemoryStream();
+        var stream = new MemoryStream(checked((int)entry.Length));
         using (var source = entry.Open())
             source.CopyTo(stream);
         stream.Position = 0;
@@ -288,6 +288,9 @@ internal static partial class PluginManager
         readonly Dictionary<string, (PluginMetadata Package, string Entry)> availableAssemblies =
             new(StringComparer.OrdinalIgnoreCase);
         readonly PluginMetadata[] packages;
+        readonly Dictionary<string, (PluginMetadata Package, string Entry)> nativeLibraries = new(StringComparer.OrdinalIgnoreCase);
+        string? nativeDirectory;
+        readonly object nativeGate = new();
 
         internal PluginLoadContext(string name, IEnumerable<PluginMetadata>? packages = null) : base(name)
         {
@@ -298,6 +301,14 @@ internal static partial class PluginManager
                     ? null
                     : throw new MissingPluginAssemblyException(requested);
             this.packages = packages?.ToArray() ?? [];
+            foreach (var package in this.packages)
+                foreach (var entry in GetNativeEntries(package))
+                {
+                    var file = Path.GetFileName(entry);
+                    if (nativeLibraries.TryGetValue(file, out var existing) && !SameAssemblyBytes(existing, (package, entry)))
+                        throw new InvalidDataException(string.Format(i18n.ResourceManager.GetString("NativeLibraryConflict", i18n.Culture)!, name, file));
+                    nativeLibraries[file] = (package, entry);
+                }
             foreach (var package in this.packages)
                 foreach (var (assemblyName, entry) in package.Assemblies)
                     if (availableAssemblies.TryGetValue(assemblyName, out var existing))
@@ -324,6 +335,50 @@ internal static partial class PluginManager
             using var leftStream = CreateZipEntryStream(left.Package, left.Entry);
             using var rightStream = CreateZipEntryStream(right.Package, right.Entry);
             return SHA256.HashData(leftStream).AsSpan().SequenceEqual(SHA256.HashData(rightStream));
+        }
+
+        static IEnumerable<string> GetNativeEntries(PluginMetadata package)
+        {
+            using var stream = new MemoryStream(package.PackageBytes, writable: false);
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+            return archive.Entries.Where(x => x.FullName.StartsWith("runtimes/win-x64/native/", StringComparison.Ordinal))
+                .Select(x => x.FullName).ToArray();
+        }
+
+        protected override nint LoadUnmanagedDll(string unmanagedDllName)
+        {
+            var file = unmanagedDllName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ? unmanagedDllName : unmanagedDllName + ".dll";
+            if (!nativeLibraries.ContainsKey(file))
+                return 0;
+            lock (nativeGate)
+            {
+                if (nativeDirectory is null)
+                {
+                    using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                    foreach (var package in packages.OrderBy(x => x.PluginName, StringComparer.Ordinal))
+                        hash.AppendData(SHA256.HashData(package.PackageBytes));
+                    var directory = Path.GetFullPath(Path.Combine("PluginData", ".native", Convert.ToHexString(hash.GetHashAndReset())));
+                    Directory.CreateDirectory(directory);
+                    foreach (var (name, asset) in nativeLibraries)
+                    {
+                        using var content = CreateZipEntryStream(asset.Package, asset.Entry);
+                        var path = Path.Combine(directory, name);
+                        if (File.Exists(path))
+                        {
+                            using var existing = File.OpenRead(path);
+                            if (!SHA256.HashData(existing).AsSpan().SequenceEqual(SHA256.HashData(content)))
+                                throw new InvalidDataException(string.Format(i18n.ResourceManager.GetString("NativeCacheMismatch", i18n.Culture)!, path));
+                        }
+                        else
+                        {
+                            using var destination = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                            content.CopyTo(destination);
+                        }
+                    }
+                    nativeDirectory = directory;
+                }
+                return LoadUnmanagedDllFromPath(Path.Combine(nativeDirectory, file));
+            }
         }
 
         protected override Assembly? Load(AssemblyName name)

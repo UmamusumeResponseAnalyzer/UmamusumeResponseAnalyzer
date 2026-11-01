@@ -153,4 +153,10 @@
   <data name="I18N_ResponsePluginFailed" xml:space="preserve">
     <value>响应分析插件处理失败: plugin={0}, {1}</value>
   </data>
+  <data name="I18N_IncompletePacketBody" xml:space="preserve">
+    <value>数据包正文不完整：接口={0}，预期={1} 字节，实际收到={2} 字节。此包未派发给插件。</value>
+  </data>
+  <data name="I18N_InvalidRequestId" xml:space="preserve">
+    <value>请求头 {0} 缺失或格式无效：必须是非空 GUID 的 N 格式（32 位十六进制字符，不含连字符）。请同步更新游戏转发器与 URA。</value>
+  </data>
 </root>

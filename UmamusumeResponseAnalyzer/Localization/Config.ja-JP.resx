@@ -216,4 +216,16 @@
   <data name="PluginUnloaded" xml:space="preserve">
     <value>プラグインがアンロードされたため、設定を開けません: {0}</value>
   </data>
+  <data name="Tabs_Misc_StartupWindowSize" xml:space="preserve">
+    <value>起動時のウィンドウサイズ</value>
+  </data>
+  <data name="StartupWindowSize_Ask" xml:space="preserve">
+    <value>毎回確認</value>
+  </data>
+  <data name="StartupWindowSize_Always" xml:space="preserve">
+    <value>常に変更</value>
+  </data>
+  <data name="StartupWindowSize_Never" xml:space="preserve">
+    <value>変更しない</value>
+  </data>
 </root>

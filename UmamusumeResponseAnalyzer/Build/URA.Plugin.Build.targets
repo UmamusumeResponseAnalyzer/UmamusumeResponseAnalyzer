@@ -291,10 +291,10 @@
             }
 
             var assetType = candidate.GetMetadata("AssetType");
-            if (string.Equals(assetType, "native", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Native package asset '{candidate.ItemSpec}' is unsupported by the current plugin Host and cannot be packaged.");
-            }
+            var isNative = string.Equals(assetType, "native", StringComparison.OrdinalIgnoreCase);
+            if (isNative && (!pathInPackage.StartsWith("runtimes/win-x64/native/", StringComparison.Ordinal)
+                || !originalDestination.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Unsupported native runtime asset '{pathInPackage}'; expected a win-x64 DLL.");
             if (IsSharedAssembly(originalDestination))
             {
                 continue;
@@ -305,7 +305,8 @@
             {
                 throw new InvalidOperationException($"Runtime package asset '{candidate.ItemSpec}' is not a managed DLL and cannot be packaged.");
             }
-            var destination = isCultureResource ? originalDestination : fileName;
+            var destination = isNative ? Path.Combine("runtimes", "win-x64", "native", fileName)
+                : isCultureResource ? originalDestination : fileName;
             if (string.Equals(destination, "manifest.json", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(destination, MainAssemblyName + ".dll", StringComparison.OrdinalIgnoreCase))
             {

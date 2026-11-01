@@ -32,7 +32,8 @@ namespace UmamusumeResponseAnalyzer
         /// <returns></returns>
         private static void ApplyHint(SkillData skill, SingleModeChara chara_info, int level)
         {
-            var cutted = chara_info.chara_effect_id_array.Contains(7) ? 10 : 0; //切者
+            var conditionDiscount = chara_info.chara_effect_id_array.Contains(7) ? 10
+                : chara_info.chara_effect_id_array.Contains(40) ? 4 : 0; // 同组状态：切者优先于勤勉好学。
             var off = level switch //打折等级
             {
                 0 => 0,
@@ -42,7 +43,7 @@ namespace UmamusumeResponseAnalyzer
                 4 => 35,
                 5 => 40
             };
-            skill.Cost = skill.Cost * (100 - off - cutted) / 100;
+            skill.Cost = skill.Cost * (100 - off - conditionDiscount) / 100;
             // 猜测游戏内hint level排序顺序为先看最高的白，再看金，一致的看DisplayOrder
             if (skill.Rarity == 2)
             {
@@ -227,46 +228,20 @@ namespace UmamusumeResponseAnalyzer
         public (int GroupId, int Rarity, int Rate) Deconstruction(int id)
             => GetRequiredById(id).Deconstruction();
 
-        public void Evolve(SingleModeChara chara_info, IEnumerable<SkillData> willLearnSkills = null!)
+        public void Evolve(SingleModeChara chara_info)
         {
             var defaults = source ?? throw new InvalidOperationException(Localization.Database.I18N_SkillManagerSourceMissing);
             list.ForEach(x => x.Upgrades.Clear());
-            willLearnSkills ??= [];
-            if (Database.TalentSkill.TryGetValue(chara_info.card_id, out var talents))
+            var catalog = Database.SkillCatalog;
+            foreach (var rule in catalog.GetEvolutions(chara_info))
             {
-                foreach (var talent in talents.Where(x => x.Rank <= chara_info.talent_level))
-                {
-                    if (talent.CanUpgrade(chara_info, out _, willLearnSkills))
-                    {
-                        foreach (var upgradedSkillId in talent.UpgradeSkills.Keys)
-                        {
-                            var upgraded = defaults.GetRequiredById(upgradedSkillId).Clone();
-                            SkillManagerGenerator.ApplyProper(upgraded, chara_info);
-                            upgraded.Cost = GetRequiredById(talent.SkillId).Cost;
-                            upgraded.IsScenarioEvolution = false;
-                            GetRequiredById(talent.SkillId).Upgrades.Add(upgraded);
-                        }
-                    }
-                }
-            }
-            //添加剧本进化
-            foreach (var upgraded in Database.SkillUpgradeSpeciality.Values)
-            {
-                if (TryFindById(upgraded.BaseSkillId, out var baseSkill)
-                    && chara_info.scenario_id == upgraded.ScenarioId)
-                {
-                    foreach (var j in upgraded.UpgradeSkills)
-                    {
-                        if (j.Value.GroupBy(x => x.Group).All(x => x.Any(y => y.IsArchived(chara_info, willLearnSkills))))
-                        {
-                            var upgradedSkill = defaults.GetRequiredById(j.Key).Clone();
-                            SkillManagerGenerator.ApplyProper(upgradedSkill, chara_info);
-                            upgradedSkill.Cost = baseSkill.Cost;
-                            upgradedSkill.IsScenarioEvolution = true;
-                            baseSkill.Upgrades.Add(upgradedSkill);
-                        }
-                    }
-                }
+                if (!TryFindById(rule.BaseSkillId, out var baseSkill) || !catalog.IsComplete(rule, chara_info))
+                    continue;
+                var upgraded = defaults.GetRequiredById(rule.SkillId).Clone();
+                SkillManagerGenerator.ApplyProper(upgraded, chara_info);
+                upgraded.Cost = baseSkill.Cost;
+                upgraded.IsScenarioEvolution = rule.Kind == SkillEvolutionKind.Scenario;
+                baseSkill.Upgrades.Add(upgraded);
             }
         }
         public void RemoveLearned(SingleModeChara chara_info)

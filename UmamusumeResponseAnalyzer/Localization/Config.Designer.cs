@@ -60,6 +60,14 @@ namespace UmamusumeResponseAnalyzer.Localization {
             }
         }
 
+        internal static string Tabs_Misc_StartupWindowSize => ResourceManager.GetString("Tabs_Misc_StartupWindowSize", resourceCulture);
+
+        internal static string StartupWindowSize_Ask => ResourceManager.GetString("StartupWindowSize_Ask", resourceCulture);
+
+        internal static string StartupWindowSize_Always => ResourceManager.GetString("StartupWindowSize_Always", resourceCulture);
+
+        internal static string StartupWindowSize_Never => ResourceManager.GetString("StartupWindowSize_Never", resourceCulture);
+
         /// <summary>
         ///   查找类似 Invalid configuration file &quot;{0}&quot;, field {1}: {2}. 的本地化字符串。
         /// </summary>

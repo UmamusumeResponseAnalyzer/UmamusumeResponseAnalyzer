@@ -153,4 +153,10 @@
   <data name="I18N_ResponsePluginFailed" xml:space="preserve">
     <value>Response analyzer plugin failed: plugin={0}, {1}</value>
   </data>
+  <data name="I18N_IncompletePacketBody" xml:space="preserve">
+    <value>Incomplete packet body: endpoint={0}, expected={1} bytes, received={2} bytes. The packet was not dispatched.</value>
+  </data>
+  <data name="I18N_InvalidRequestId" xml:space="preserve">
+    <value>Missing or invalid {0} header: expected a non-empty GUID in N format (32 hexadecimal characters without hyphens). Update the game forwarder and URA together.</value>
+  </data>
 </root>

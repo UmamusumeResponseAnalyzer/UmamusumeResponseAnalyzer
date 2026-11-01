@@ -115,6 +115,7 @@ namespace UmamusumeResponseAnalyzer
                     try
                     {
                         await uiHost.Ready.WaitAsync(lifetimeToken);
+                        StartupWindowSize.Apply(lifetimeToken);
                         await ResourceUpdater.HandleStartupProgramUpdateAsync(lifetimeToken);
                         if (Config.Core.ShowFirstRunPrompt)
                         {

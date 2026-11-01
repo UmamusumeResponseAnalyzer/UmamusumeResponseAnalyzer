@@ -338,20 +338,45 @@ namespace UmamusumeResponseAnalyzer
         }
     }
 
+    public enum StartupWindowSizeMode { Ask, Always, Never }
+
     public class MiscConfig
     {
         public bool SaveResponseForDebug { get; set; }
+        public StartupWindowSizeMode StartupWindowSize { get; set; } = StartupWindowSizeMode.Ask;
+
         public void Prompt(CancellationToken cancellationToken)
         {
-            var label = i18n.Tabs_Debug_SaveResponseForDebug;
-            var selected = ModalDialogs.MultiSelect(
-                i18n.Tabs_Debug_Title,
-                [label],
-                SaveResponseForDebug ? [label] : [],
-                cancellationToken: cancellationToken);
-            SaveResponseForDebug = selected.Contains(label);
-            Config.Save();
+            while (true)
+            {
+                var debugItem = $"{i18n.Tabs_Debug_SaveResponseForDebug}: {(SaveResponseForDebug ? UiText.Button_Yes : UiText.Button_No)}";
+                var sizeItem = $"{i18n.Tabs_Misc_StartupWindowSize}: {WindowSizeModeLabel(StartupWindowSize)}";
+                var selected = ModalDialogs.Menu(
+                    i18n.Tabs_Misc_Title,
+                    new[] { debugItem, sizeItem, i18n.Return },
+                    cancellationToken: cancellationToken);
+                if (selected == i18n.Return)
+                    return;
+
+                if (selected == debugItem)
+                    SaveResponseForDebug = !SaveResponseForDebug;
+                else if (selected == sizeItem)
+                    StartupWindowSize = ModalDialogs.Menu(
+                        i18n.Tabs_Misc_StartupWindowSize,
+                        Enum.GetValues<StartupWindowSizeMode>(),
+                        WindowSizeModeLabel,
+                        cancellationToken);
+                Config.Save();
+            }
         }
+
+        static string WindowSizeModeLabel(StartupWindowSizeMode mode) => mode switch
+        {
+            StartupWindowSizeMode.Ask => i18n.StartupWindowSize_Ask,
+            StartupWindowSizeMode.Always => i18n.StartupWindowSize_Always,
+            StartupWindowSizeMode.Never => i18n.StartupWindowSize_Never,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
     }
     #endregion
 }

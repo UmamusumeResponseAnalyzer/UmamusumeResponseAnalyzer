@@ -294,4 +294,10 @@ This plugin will execute code on this computer.</value>
   <data name="RouteDuplicate" xml:space="preserve">
     <value>Plugin route already registered: {0} {1}</value>
   </data>
+
+  <data name="InvalidPackagePath" xml:space="preserve"><value>插件包路径无效或重复：{0}</value></data>
+  <data name="UnsupportedRuntimeAsset" xml:space="preserve"><value>不支持的运行时文件：{0}</value></data>
+  <data name="ExpectedNativeX64" xml:space="preserve"><value>需要 Windows x64 原生 DLL：{0}</value></data>
+  <data name="NativeLibraryConflict" xml:space="preserve"><value>加载组 {0} 中的原生库内容冲突：{1}</value></data>
+  <data name="NativeCacheMismatch" xml:space="preserve"><value>原生库缓存与插件包内容不一致：{0}</value></data>
 </root>

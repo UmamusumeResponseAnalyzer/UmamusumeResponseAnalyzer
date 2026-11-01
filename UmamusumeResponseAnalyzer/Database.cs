@@ -22,6 +22,8 @@ namespace UmamusumeResponseAnalyzer
             ? DatabaseAvailability.Unavailable
             : DatabaseAvailability.Ready;
 
+        public static SkillCatalog SkillCatalog => Current.SkillCatalog;
+
         private static DatabaseSnapshot Current => Volatile.Read(ref snapshot)
             ?? throw new InvalidOperationException(I18N_NotLoaded);
 
@@ -29,6 +31,7 @@ namespace UmamusumeResponseAnalyzer
         internal static string EVENT_NAME_FILEPATH => $"events_{(Config.Updater.TrainerIsMale ? "male" : "female")}.br";
         internal const string NAMES_FILEPATH = "names.br";
         internal const string SKILLS_FILEPATH = "skill_data.br";
+        internal const string SKILL_PLANNING_FILEPATH = "skill_planning.br";
         internal const string TALENT_SKILLS_FILEPATH = "talent_skill_sets.br";
         internal const string FACTOR_IDS_FILEPATH = "factor_ids.br";
         internal const string SKILL_UPGRADE_SPECIALITY_FILEPATH = "skill_upgrade_speciality.br";
@@ -176,6 +179,7 @@ namespace UmamusumeResponseAnalyzer
                 }
 
                 var next = new DatabaseSnapshot(
+                    SkillCatalog.Load(Path.Combine(dataDirectory, SKILL_PLANNING_FILEPATH)),
                     new SkillManagerGenerator(skills),
                     skillUpgrade.ToFrozenDictionary(x => (x.BaseSkillId, x.ScenarioId)),
                     events.ToFrozenDictionary(x => x.Id),
@@ -240,6 +244,7 @@ namespace UmamusumeResponseAnalyzer
     }
 
     internal sealed record DatabaseSnapshot(
+        SkillCatalog SkillCatalog,
         SkillManagerGenerator Skills,
         FrozenDictionary<(int BaseSkillId, int ScenarioId), SkillUpgradeSpeciality> SkillUpgradeSpeciality,
         FrozenDictionary<int, Story> Events,

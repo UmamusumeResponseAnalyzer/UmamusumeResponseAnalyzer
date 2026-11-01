@@ -71,6 +71,7 @@ public readonly record struct AnalyzerInvocation<TPayload>(
     GameHttpHeaders Headers);
 
 public sealed record GameHttpHeaders(
+    Guid RequestId,
     string? Sid,
     string? AppVer,
     string? ResVer,

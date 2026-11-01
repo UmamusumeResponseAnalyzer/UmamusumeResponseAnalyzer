@@ -205,4 +205,19 @@
   <data name="Command_WorkspacesTitle" xml:space="preserve">
     <value>Workspaces</value>
   </data>
+  <data name="Button_Always" xml:space="preserve">
+    <value>Always</value>
+  </data>
+  <data name="Button_Never" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Dialog_WindowSizeTitle" xml:space="preserve">
+    <value>Resize window</value>
+  </data>
+  <data name="Dialog_WindowSizeCurrent" xml:space="preserve">
+    <value>Current size: {0} × {1} (columns × rows)</value>
+  </data>
+  <data name="Dialog_WindowSizeQuestion" xml:space="preserve">
+    <value>Resize to {0} × {1}?</value>
+  </data>
 </root>

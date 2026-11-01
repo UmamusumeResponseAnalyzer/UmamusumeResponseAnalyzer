@@ -68,6 +68,26 @@ internal static class PluginPackageValidator
             throw new InvalidDataException(string.Format(i18n.RootAssemblyRequired, mainEntryName));
         ValidateMainAssemblyIdentity(mainEntries[0], manifest.InternalName);
 
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in archive.Entries)
+        {
+            var parts = entry.FullName.Split('/');
+            if (entry.FullName.Contains('\\') || parts.Any(x => x is "." or "..") || entry.FullName.StartsWith('/')
+                || !paths.Add(entry.FullName))
+                throw new InvalidDataException(string.Format(i18n.ResourceManager.GetString("InvalidPackagePath", i18n.Culture)!, entry.FullName));
+            if (!entry.FullName.StartsWith("runtimes/", StringComparison.Ordinal))
+                continue;
+            if (parts.Length != 4 || parts[1] != "win-x64" || parts[2] != "native" || !parts[3].EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException(string.Format(i18n.ResourceManager.GetString("UnsupportedRuntimeAsset", i18n.Culture)!, entry.FullName));
+            using var source = entry.Open();
+            using var content = new MemoryStream(checked((int)entry.Length));
+            source.CopyTo(content);
+            content.Position = 0;
+            using var pe = new PEReader(content);
+            if (pe.HasMetadata || pe.PEHeaders.CoffHeader.Machine != Machine.Amd64)
+                throw new InvalidDataException(string.Format(i18n.ResourceManager.GetString("ExpectedNativeX64", i18n.Culture)!, entry.FullName));
+        }
+
         var assemblies = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in rootDlls)
         {

@@ -153,4 +153,10 @@
   <data name="I18N_ResponsePluginFailed" xml:space="preserve">
     <value>Response analyzer plugin failed: plugin={0}, {1}</value>
   </data>
+  <data name="I18N_IncompletePacketBody" xml:space="preserve">
+    <value>Incomplete packet body: endpoint={0}, expected={1} bytes, received={2} bytes. The packet was not dispatched.</value>
+  </data>
+  <data name="I18N_InvalidRequestId" xml:space="preserve">
+    <value>请求头 {0} 缺失或格式无效：必须是非空 GUID 的 N 格式（32 位十六进制字符，不含连字符）。请同步更新游戏转发器与 URA。</value>
+  </data>
 </root>

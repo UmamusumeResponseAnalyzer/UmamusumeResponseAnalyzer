@@ -60,6 +60,16 @@ namespace UmamusumeResponseAnalyzer.Localization {
             }
         }
 
+        internal static string Button_Always => ResourceManager.GetString("Button_Always", resourceCulture);
+
+        internal static string Button_Never => ResourceManager.GetString("Button_Never", resourceCulture);
+
+        internal static string Dialog_WindowSizeTitle => ResourceManager.GetString("Dialog_WindowSizeTitle", resourceCulture);
+
+        internal static string Dialog_WindowSizeCurrent => ResourceManager.GetString("Dialog_WindowSizeCurrent", resourceCulture);
+
+        internal static string Dialog_WindowSizeQuestion => ResourceManager.GetString("Dialog_WindowSizeQuestion", resourceCulture);
+
         /// <summary>
         ///   查找类似 Cancel 的本地化字符串。
         /// </summary>

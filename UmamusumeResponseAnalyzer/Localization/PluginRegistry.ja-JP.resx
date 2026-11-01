@@ -294,4 +294,10 @@
   <data name="RouteDuplicate" xml:space="preserve">
     <value>プラグインルートは登録済みです: {0} {1}</value>
   </data>
+
+  <data name="InvalidPackagePath" xml:space="preserve"><value>プラグインのパスが無効または重複しています：{0}</value></data>
+  <data name="UnsupportedRuntimeAsset" xml:space="preserve"><value>未対応のランタイムファイル：{0}</value></data>
+  <data name="ExpectedNativeX64" xml:space="preserve"><value>Windows x64 ネイティブ DLL が必要です：{0}</value></data>
+  <data name="NativeLibraryConflict" xml:space="preserve"><value>ロードグループ {0} のネイティブライブラリが競合しています：{1}</value></data>
+  <data name="NativeCacheMismatch" xml:space="preserve"><value>ネイティブキャッシュがプラグインの内容と一致しません：{0}</value></data>
 </root>

@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 		<Version>1.15.0.0</Version>
 		<PackageId>UmamusumeResponseAnalyzer</PackageId>
-		<PackageVersion>2026.10.31.1</PackageVersion>
+		<PackageVersion>2026.11.1.2</PackageVersion>
 		<Description>UmamusumeResponseAnalyzer plugin compile-time API.</Description>
 		<Authors>EtherealAO</Authors>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
