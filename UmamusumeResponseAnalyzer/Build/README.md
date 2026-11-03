@@ -10,6 +10,14 @@
 
 宿主使用 Terminal.Gui 2.5.0，插件运行时共用宿主加载的程序集。直接引用 Terminal.Gui 包的插件应与宿主版本一致。
 
+## 工作区输入与通知
+
+SDK `2026.11.4` 的 `Workspace.MouseEvent` 使用 `EventHandler<Mouse>`，在控件处理之前同步传入原始鼠标事件。仅当前显示工作区的正文与空白区域接收事件；命令模式、模态对话框、快捷键 popup、任务栏和通知区域不分发。插件通过 `Handled` 消费输入，自行保留正文中滚动条等可操作控件的行为，并在卸载时退订。
+
+`Workspace.Notify(key, text, severity, ttl, shortcuts)` 按工作区与 `key` 原位更新通知并重置持续时间；已过期的通知重新显示。省略 `key` 的重载每次新增通知。默认 Info 持续 5 秒，Warning/Error 持续 10 秒；替换时同步释放原通知的快捷键。使用这些 API 的插件须配套支持它们的 Host 运行时与引用包。
+
+## 构建属性
+
 | 属性 | 默认值或作用 |
 | --- | --- |
 | `IsUraPlugin` | `false`；插件在项目中显式启用 |

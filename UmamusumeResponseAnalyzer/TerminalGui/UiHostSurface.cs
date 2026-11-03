@@ -171,7 +171,21 @@ internal sealed class UiHostSurface : IDisposable
             return;
         }
 
-        notifications.Add(notification);
+        var index = notification.Key is null
+            ? -1
+            : notifications.FindIndex(existing =>
+                ReferenceEquals(existing.Workspace, notification.Workspace) &&
+                existing.Key == notification.Key);
+        if (index < 0)
+        {
+            notifications.Add(notification);
+        }
+        else
+        {
+            HotkeyManager.UnregisterNotificationShortcuts(
+                notifications[index].ShortcutRegistrationId);
+            notifications[index] = notification;
+        }
     }
 
     internal void ShowPopup(HotkeyPopup popup) => hotkeyPopup = popup;
@@ -341,8 +355,37 @@ internal sealed class UiHostSurface : IDisposable
 
     void ApplicationMouseEvent(object? sender, Mouse mouse)
     {
-        if (ReferenceEquals(application.TopRunnableView, window))
-            workspaceTaskbar?.HandleMousePosition(mouse);
+        if (window is null || !ReferenceEquals(application.TopRunnableView, window))
+            return;
+
+        workspaceTaskbar?.HandleMousePosition(mouse);
+        if (mouse.Handled || renderedWorkspace.IsRemoved ||
+            commandMode is { IsOpen: true } || HotkeyManager.HasPriorityPopup ||
+            workspaceViewport is null ||
+            !workspaceViewport.FrameToScreen().Contains(mouse.ScreenPosition) ||
+            workspaceTaskbar?.BottomEdgeTrigger.FrameToScreen().Contains(mouse.ScreenPosition) == true ||
+            notificationOverlay is { Visible: true } &&
+            notificationOverlay.FrameToScreen().Contains(mouse.ScreenPosition))
+        {
+            return;
+        }
+
+        var target = mouse.View;
+        while (target is not null && !ReferenceEquals(target, workspaceViewport))
+            target = target.SuperView;
+        if (target is null)
+            return;
+
+        try
+        {
+            renderedWorkspace.RaiseMouseEvent(mouse);
+        }
+        catch (Exception ex)
+        {
+            mouse.Handled = true;
+            TerminalUi.LogException("URA", ex);
+            TerminalUi.Notify("URA", ex.Message, UiSeverity.Error);
+        }
     }
 
     void WindowMouseEvent(object? sender, Mouse mouse)

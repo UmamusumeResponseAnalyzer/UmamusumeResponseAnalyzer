@@ -110,7 +110,8 @@ internal sealed class UiHost : IUiInputSink, IDisposable
         string text,
         UiSeverity severity,
         TimeSpan? ttl,
-        UiShortcut[] shortcuts)
+        UiShortcut[] shortcuts,
+        string? key = null)
     {
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(shortcuts);
@@ -127,7 +128,8 @@ internal sealed class UiHost : IUiInputSink, IDisposable
                 text,
                 severity,
                 expiresAt,
-                shortcutRegistrationId);
+                shortcutRegistrationId,
+                key);
             ScheduleDrain(schedule);
         }
         catch

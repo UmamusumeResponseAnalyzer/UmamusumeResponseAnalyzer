@@ -1,3 +1,4 @@
+using Terminal.Gui.Input;
 using i18n = UmamusumeResponseAnalyzer.Localization.TerminalGui;
 namespace UmamusumeResponseAnalyzer.TerminalGui;
 
@@ -14,6 +15,10 @@ public sealed class Workspace
     }
 
     public string Title { get; }
+
+    public event EventHandler<Mouse>? MouseEvent;
+
+    internal void RaiseMouseEvent(Mouse mouse) => MouseEvent?.Invoke(this, mouse);
 
     internal string DisplayTitle => Title == BootstrapTitle ? i18n.Workspace_BootstrapTitle : Title;
 
@@ -47,6 +52,17 @@ public sealed class Workspace
         TimeSpan? ttl = null,
         params UiShortcut[] shortcuts)
         => TerminalUi.RequireHost().Notify(this, text, severity, ttl, shortcuts);
+
+    public void Notify(
+        string key,
+        string text,
+        UiSeverity severity = UiSeverity.Info,
+        TimeSpan? ttl = null,
+        params UiShortcut[] shortcuts)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        TerminalUi.RequireHost().Notify(this, text, severity, ttl, shortcuts, key);
+    }
 
     public void SwitchTo()
         => TerminalUi.RequireHost().SwitchWorkspace(this);

@@ -175,7 +175,8 @@ internal sealed class UiHostSession
         string text,
         UiSeverity severity,
         DateTimeOffset expiresAt,
-        long shortcutRegistrationId)
+        long shortcutRegistrationId,
+        string? key)
     {
         lock (gate)
         {
@@ -187,7 +188,8 @@ internal sealed class UiHostSession
                 text,
                 severity,
                 expiresAt,
-                shortcutRegistrationId));
+                shortcutRegistrationId,
+                key));
         }
     }
 
@@ -524,7 +526,8 @@ internal sealed record NotifyIngress(
     string Text,
     UiSeverity Severity,
     DateTimeOffset ExpiresAt,
-    long ShortcutRegistrationId) : UiHostIngress;
+    long ShortcutRegistrationId,
+    string? Key) : UiHostIngress;
 
 internal sealed record SwitchWorkspaceIngress(Workspace Workspace) : UiHostIngress;
 
