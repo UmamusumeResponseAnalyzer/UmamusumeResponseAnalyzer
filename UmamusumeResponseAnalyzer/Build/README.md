@@ -16,6 +16,14 @@ SDK `2026.11.4` 的 `Workspace.MouseEvent` 使用 `EventHandler<Mouse>`，在控
 
 `Workspace.Notify(key, text, severity, ttl, shortcuts)` 按工作区与 `key` 原位更新通知并重置持续时间；已过期的通知重新显示。省略 `key` 的重载每次新增通知。默认 Info 持续 5 秒，Warning/Error 持续 10 秒；替换时同步释放原通知的快捷键。使用这些 API 的插件须配套支持它们的 Host 运行时与引用包。
 
+## 属性评分
+
+SDK `2026.11.6` 的 `Database.StatusToPoint(int status)` 计算单项属性的预计评价分。输入必须非负；结果类型为 `int`，中间计算使用 `long`，结果溢出时抛出 `OverflowException`。没有固定的属性上限，负数抛出 `ArgumentOutOfRangeException`。
+
+0～1200 按 50 点区间系数累加，1201～2000 按 10 点区间计算增量，2000 以上每 25 点一档、每点增量从 18.3 起逐档增加 0.1；累计小数保留到单项属性最终取整。0～2000 与替换前的表值逐项一致。高属性历史验证覆盖 150 个不同速度值，最高 2338；更高数值及其他四维的高段按公式外推。
+
+从 `List<int>` 属性接口迁移的插件应将 `Database.StatusToPoint[value]` 改为 `Database.StatusToPoint(value)`，并使用配套 Host 源码生成的 SDK 重新编译。Host 不保留旧属性接口，已编译的旧调用方不能直接加载此变更。
+
 ## 构建属性
 
 | 属性 | 默认值或作用 |
